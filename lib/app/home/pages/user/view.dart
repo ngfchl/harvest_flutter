@@ -24,14 +24,27 @@ class UserWidget extends StatelessWidget {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: (controller.userinfo?.isStaff == true || controller.userinfo?.isStaff == true)
-          ? ShadIconButton.ghost(
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ShadIconButton.ghost(
+            icon: Icon(
+              Icons.refresh_outlined,
+              size: 24,
+              color: shadColorScheme.primary,
+            ),
+            onPressed: () => controller.getUserListFromServer(),
+          ),
+          if (controller.userinfo?.isStaff == true || controller.userinfo?.isStaff == true)
+            ShadIconButton.ghost(
               icon: Icon(Icons.add, size: 24, color: shadColorScheme.primary),
               onPressed: () async {
                 _showEditBottomSheet(context: context);
               },
             )
-          : null,
+        ],
+      ),
       body: GetBuilder<UserController>(builder: (controller) {
         return EasyRefresh(
           header: ClassicHeader(

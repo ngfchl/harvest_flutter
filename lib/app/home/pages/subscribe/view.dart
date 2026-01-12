@@ -32,16 +32,30 @@ class _SubscribePageState extends State<SubscribePage> {
     return GetBuilder<SubscribeController>(builder: (controller) {
       return Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: ShadIconButton.ghost(
-          icon: Icon(
-            Icons.add,
-            size: 24,
-            color: shadColorScheme.primary,
-          ),
-          onPressed: () async {
-            // await _openEditDialog(null);
-            await _openEditDialogX(null);
-          },
+        floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ShadIconButton.ghost(
+              icon: Icon(
+                Icons.refresh_outlined,
+                size: 24,
+                color: shadColorScheme.primary,
+              ),
+              onPressed: () => controller.getSubscribeFromServer(),
+            ),
+            ShadIconButton.ghost(
+              icon: Icon(
+                Icons.add,
+                size: 24,
+                color: shadColorScheme.primary,
+              ),
+              onPressed: () async {
+                // await _openEditDialog(null);
+                await _openEditDialogX(null);
+              },
+            ),
+          ],
         ),
         body: GetBuilder<SubscribeController>(builder: (controller) {
           return Stack(

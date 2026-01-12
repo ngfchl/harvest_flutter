@@ -48,30 +48,45 @@ class TaskPage extends StatelessWidget {
             children: [
               Scaffold(
                 backgroundColor: Colors.transparent,
-                floatingActionButton: ShadMenubar(
-                  border: ShadBorder.none,
-                  backgroundColor: Colors.transparent,
-                  padding: EdgeInsets.zero,
-                  items: [
-                    ShadMenubarItem(
+                floatingActionButton: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  spacing: 5,
+                  children: [
+                    ShadIconButton.ghost(
+                      icon: Icon(
+                        Icons.refresh_outlined,
+                        size: 24,
+                        color: shadColorScheme.primary,
+                      ),
+                      onPressed: () => controller.getTaskInfo(),
+                    ),
+                    ShadMenubar(
+                      border: ShadBorder.none,
+                      backgroundColor: Colors.transparent,
+                      padding: EdgeInsets.zero,
                       items: [
-                        ShadContextMenuItem(
-                          leading: Icon(Icons.add_outlined, size: 18, color: shadColorScheme.foreground),
-                          onPressed: () {
-                            editTask(null, context);
-                          },
-                          child: Text('计划任务'),
-                        ),
-                        ShadContextMenuItem(
-                          leading: Icon(Icons.link_outlined, size: 18, color: shadColorScheme.foreground),
-                          onPressed: () {
-                            editTorrentMoveTask(null, context);
-                          },
-                          child: Text('转种任务'),
+                        ShadMenubarItem(
+                          items: [
+                            ShadContextMenuItem(
+                              leading: Icon(Icons.add_outlined, size: 18, color: shadColorScheme.foreground),
+                              onPressed: () {
+                                editTask(null, context);
+                              },
+                              child: Text('计划任务'),
+                            ),
+                            ShadContextMenuItem(
+                              leading: Icon(Icons.link_outlined, size: 18, color: shadColorScheme.foreground),
+                              onPressed: () {
+                                editTorrentMoveTask(null, context);
+                              },
+                              child: Text('转种任务'),
+                            )
+                          ],
+                          child: Icon(Icons.add, size: 24, color: shadColorScheme.primary),
                         )
                       ],
-                      child: Icon(Icons.add, size: 24, color: shadColorScheme.primary),
-                    )
+                    ),
                   ],
                 ),
                 body: Column(
@@ -126,197 +141,208 @@ class TaskPage extends StatelessWidget {
                   ],
                 ),
               ),
-              EasyRefresh(
-                header: ClassicHeader(
-                  dragText: '下拉刷新...',
-                  readyText: '松开刷新',
-                  processingText: '正在刷新...',
-                  processedText: '刷新完成',
-                  textStyle: TextStyle(
-                    fontSize: 16,
-                    color: shadColorScheme.foreground,
-                    fontWeight: FontWeight.bold,
+              Scaffold(
+                backgroundColor: Colors.transparent,
+                body: EasyRefresh(
+                  header: ClassicHeader(
+                    dragText: '下拉刷新...',
+                    readyText: '松开刷新',
+                    processingText: '正在刷新...',
+                    processedText: '刷新完成',
+                    textStyle: TextStyle(
+                      fontSize: 16,
+                      color: shadColorScheme.foreground,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    messageStyle: TextStyle(
+                      fontSize: 12,
+                      color: shadColorScheme.foreground,
+                    ),
                   ),
-                  messageStyle: TextStyle(
-                    fontSize: 12,
-                    color: shadColorScheme.foreground,
+                  onRefresh: () => controller.getTaskInfo(),
+                  child: ListView.builder(
+                    itemCount: controller.taskItemList.length,
+                    itemBuilder: (
+                      context,
+                      index,
+                    ) {
+                      TaskItem item = controller.taskItemList[index];
+                      var shadColorScheme = ShadTheme.of(context).colorScheme;
+                      return CustomCard(
+                        child: Slidable(
+                          key: ValueKey(item.uuid),
+                          endActionPane: item.state?.toLowerCase() == 'success' || item.state?.toLowerCase() == 'failed'
+                              ? ActionPane(
+                                  motion: const ScrollMotion(),
+                                  extentRatio: 0.25,
+                                  children: [
+                                    SlidableAction(
+                                      flex: 1,
+                                      borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                      onPressed: (context) async {
+                                        Get.defaultDialog(
+                                          title: '任务执行结果',
+                                          content: item.state?.toLowerCase() == 'success'
+                                              ? Text(item.result!)
+                                              : Text(item.traceback.toString()),
+                                        );
+                                      },
+                                      backgroundColor: const Color(0xFF0A9D96),
+                                      foregroundColor: Colors.white,
+                                      icon: Icons.copy_sharp,
+                                      label: '结果',
+                                    ),
+                                  ],
+                                )
+                              : ActionPane(
+                                  motion: const ScrollMotion(),
+                                  extentRatio: 0.5,
+                                  children: [
+                                    SlidableAction(
+                                      flex: 1,
+                                      borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                      onPressed: (context) async {
+                                        Get.defaultDialog(
+                                          title: '确认',
+                                          radius: 5,
+                                          titleStyle: const TextStyle(
+                                              fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
+                                          middleText: '确定要删除任务吗？',
+                                          actions: [
+                                            ShadButton.outline(
+                                              onPressed: () {
+                                                Get.back(result: false);
+                                              },
+                                              child: const Text('取消'),
+                                            ),
+                                            ShadButton.destructive(
+                                              onPressed: () async {
+                                                Get.back(result: true);
+                                                var res = await controller.abortTask(item);
+                                                if (res.code == 0) {
+                                                  Get.snackbar('删除通知', res.msg.toString(),
+                                                      colorText: shadColorScheme.foreground);
+                                                } else {
+                                                  Get.snackbar('删除通知', res.msg.toString(),
+                                                      colorText: shadColorScheme.destructive);
+                                                }
+                                              },
+                                              child: const Text('确认'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                      backgroundColor: const Color(0xFFB11211),
+                                      foregroundColor: Colors.white,
+                                      // icon: Icons.delete,
+                                      label: '取消',
+                                    ),
+                                    SlidableAction(
+                                      flex: 1,
+                                      borderRadius: const BorderRadius.all(Radius.circular(8)),
+                                      onPressed: (context) async {
+                                        Get.defaultDialog(
+                                          title: '确认',
+                                          radius: 5,
+                                          titleStyle: const TextStyle(
+                                              fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
+                                          middleText: '确定要删除任务吗？',
+                                          actions: [
+                                            ShadButton.outline(
+                                              onPressed: () {
+                                                Get.back(result: false);
+                                              },
+                                              child: const Text('取消'),
+                                            ),
+                                            ShadButton.destructive(
+                                              onPressed: () async {
+                                                Get.back(result: true);
+                                                var res = await controller.revokeTask(item);
+                                                if (res.code == 0) {
+                                                  Get.snackbar('删除通知', res.msg.toString(),
+                                                      colorText: shadColorScheme.foreground);
+                                                } else {
+                                                  Get.snackbar('删除通知', res.msg.toString(),
+                                                      colorText: shadColorScheme.destructive);
+                                                }
+                                              },
+                                              child: const Text('确认'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                      backgroundColor: const Color(0xFFE30303),
+                                      foregroundColor: Colors.white,
+                                      // icon: Icons.delete,
+                                      label: '中断',
+                                    ),
+                                  ],
+                                ),
+                          child: ListTile(
+                            dense: true,
+                            title: Text(
+                              item.name ?? 'unknown',
+                              style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                            ),
+                            subtitle: item.succeeded != null
+                                ? Text(
+                                    "完成时间：${DateTime.fromMillisecondsSinceEpoch((item.succeeded! * 1000).toInt())}",
+                                    style: TextStyle(fontSize: 8, color: Colors.green),
+                                  )
+                                : item.started != null
+                                    ? Text(
+                                        "开始时间：${DateTime.fromMillisecondsSinceEpoch((item.started! * 1000).toInt())}",
+                                        style: TextStyle(fontSize: 8, color: Colors.orange),
+                                      )
+                                    : item.received != null
+                                        ? Text(
+                                            "接收时间：${DateTime.fromMillisecondsSinceEpoch((item.received! * 1000).toInt())}",
+                                            style: TextStyle(fontSize: 8, color: Colors.blue),
+                                          )
+                                        : null,
+                            trailing: SizedBox(
+                                width: 60,
+                                child: CustomTextTag(
+                                  labelText: item.state?.toLowerCase() ?? 'unknown',
+                                )),
+                            onTap: () {
+                              item.succeeded == null && item.failed == null
+                                  ? Get.defaultDialog(
+                                      title: '任务详情',
+                                      content: CustomCard(
+                                        height: Get.height * 0.6,
+                                        width: Get.width * 0.8,
+                                        padding: const EdgeInsets.all(8),
+                                        child: Text('任务尚未完成，请稍后查看结果！'),
+                                      ),
+                                    )
+                                  : Get.defaultDialog(
+                                      title: '任务详情',
+                                      content: Container(
+                                        height: Get.height * 0.6,
+                                        width: Get.width * 0.8,
+                                        padding: const EdgeInsets.all(8),
+                                        child: Markdown(
+                                          data: item.result?.substring(1, item.result!.length - 2) ?? '',
+                                          softLineBreak: true, // ⬅️ 每个 \n 都当作 <br> 处理
+                                          styleSheet: MarkdownStyleSheet.fromTheme(ShadTheme.of(context) as ThemeData),
+                                        ),
+                                      ),
+                                    );
+                            },
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                onRefresh: () => controller.getTaskInfo(),
-                child: ListView.builder(
-                  itemCount: controller.taskItemList.length,
-                  itemBuilder: (
-                    context,
-                    index,
-                  ) {
-                    TaskItem item = controller.taskItemList[index];
-                    var shadColorScheme = ShadTheme.of(context).colorScheme;
-                    return CustomCard(
-                      child: Slidable(
-                        key: ValueKey(item.uuid),
-                        endActionPane: item.state?.toLowerCase() == 'success' || item.state?.toLowerCase() == 'failed'
-                            ? ActionPane(
-                                motion: const ScrollMotion(),
-                                extentRatio: 0.25,
-                                children: [
-                                  SlidableAction(
-                                    flex: 1,
-                                    borderRadius: const BorderRadius.all(Radius.circular(8)),
-                                    onPressed: (context) async {
-                                      Get.defaultDialog(
-                                        title: '任务执行结果',
-                                        content: item.state?.toLowerCase() == 'success'
-                                            ? Text(item.result!)
-                                            : Text(item.traceback.toString()),
-                                      );
-                                    },
-                                    backgroundColor: const Color(0xFF0A9D96),
-                                    foregroundColor: Colors.white,
-                                    icon: Icons.copy_sharp,
-                                    label: '结果',
-                                  ),
-                                ],
-                              )
-                            : ActionPane(
-                                motion: const ScrollMotion(),
-                                extentRatio: 0.5,
-                                children: [
-                                  SlidableAction(
-                                    flex: 1,
-                                    borderRadius: const BorderRadius.all(Radius.circular(8)),
-                                    onPressed: (context) async {
-                                      Get.defaultDialog(
-                                        title: '确认',
-                                        radius: 5,
-                                        titleStyle: const TextStyle(
-                                            fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
-                                        middleText: '确定要删除任务吗？',
-                                        actions: [
-                                          ShadButton.outline(
-                                            onPressed: () {
-                                              Get.back(result: false);
-                                            },
-                                            child: const Text('取消'),
-                                          ),
-                                          ShadButton.destructive(
-                                            onPressed: () async {
-                                              Get.back(result: true);
-                                              var res = await controller.abortTask(item);
-                                              if (res.code == 0) {
-                                                Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: shadColorScheme.foreground);
-                                              } else {
-                                                Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: shadColorScheme.destructive);
-                                              }
-                                            },
-                                            child: const Text('确认'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                    backgroundColor: const Color(0xFFB11211),
-                                    foregroundColor: Colors.white,
-                                    // icon: Icons.delete,
-                                    label: '取消',
-                                  ),
-                                  SlidableAction(
-                                    flex: 1,
-                                    borderRadius: const BorderRadius.all(Radius.circular(8)),
-                                    onPressed: (context) async {
-                                      Get.defaultDialog(
-                                        title: '确认',
-                                        radius: 5,
-                                        titleStyle: const TextStyle(
-                                            fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
-                                        middleText: '确定要删除任务吗？',
-                                        actions: [
-                                          ShadButton.outline(
-                                            onPressed: () {
-                                              Get.back(result: false);
-                                            },
-                                            child: const Text('取消'),
-                                          ),
-                                          ShadButton.destructive(
-                                            onPressed: () async {
-                                              Get.back(result: true);
-                                              var res = await controller.revokeTask(item);
-                                              if (res.code == 0) {
-                                                Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: shadColorScheme.foreground);
-                                              } else {
-                                                Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: shadColorScheme.destructive);
-                                              }
-                                            },
-                                            child: const Text('确认'),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                    backgroundColor: const Color(0xFFE30303),
-                                    foregroundColor: Colors.white,
-                                    // icon: Icons.delete,
-                                    label: '中断',
-                                  ),
-                                ],
-                              ),
-                        child: ListTile(
-                          dense: true,
-                          title: Text(
-                            item.name ?? 'unknown',
-                            style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                          ),
-                          subtitle: item.succeeded != null
-                              ? Text(
-                                  "完成时间：${DateTime.fromMillisecondsSinceEpoch((item.succeeded! * 1000).toInt())}",
-                                  style: TextStyle(fontSize: 8, color: Colors.green),
-                                )
-                              : item.started != null
-                                  ? Text(
-                                      "开始时间：${DateTime.fromMillisecondsSinceEpoch((item.started! * 1000).toInt())}",
-                                      style: TextStyle(fontSize: 8, color: Colors.orange),
-                                    )
-                                  : item.received != null
-                                      ? Text(
-                                          "接收时间：${DateTime.fromMillisecondsSinceEpoch((item.received! * 1000).toInt())}",
-                                          style: TextStyle(fontSize: 8, color: Colors.blue),
-                                        )
-                                      : null,
-                          trailing: SizedBox(
-                              width: 60,
-                              child: CustomTextTag(
-                                labelText: item.state?.toLowerCase() ?? 'unknown',
-                              )),
-                          onTap: () {
-                            item.succeeded == null && item.failed == null
-                                ? Get.defaultDialog(
-                                    title: '任务详情',
-                                    content: CustomCard(
-                                      height: Get.height * 0.6,
-                                      width: Get.width * 0.8,
-                                      padding: const EdgeInsets.all(8),
-                                      child: Text('任务尚未完成，请稍后查看结果！'),
-                                    ),
-                                  )
-                                : Get.defaultDialog(
-                                    title: '任务详情',
-                                    content: Container(
-                                      height: Get.height * 0.6,
-                                      width: Get.width * 0.8,
-                                      padding: const EdgeInsets.all(8),
-                                      child: Markdown(
-                                        data: item.result?.substring(1, item.result!.length - 2) ?? '',
-                                        softLineBreak: true, // ⬅️ 每个 \n 都当作 <br> 处理
-                                        styleSheet: MarkdownStyleSheet.fromTheme(ShadTheme.of(context) as ThemeData),
-                                      ),
-                                    ),
-                                  );
-                          },
-                        ),
-                      ),
-                    );
-                  },
+                floatingActionButton: ShadIconButton.ghost(
+                  icon: Icon(
+                    Icons.refresh_outlined,
+                    size: 24,
+                    color: shadColorScheme.primary,
+                  ),
+                  onPressed: () => controller.getTaskInfo(),
                 ),
               )
             ],

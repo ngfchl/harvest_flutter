@@ -31,6 +31,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
         backgroundColor: Colors.transparent,
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
           children: [
             ShadIconButton.ghost(
                 onPressed: () async {
@@ -54,6 +55,14 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                   size: 24,
                   color: shadColorScheme.primary,
                 )),
+            ShadIconButton.ghost(
+              icon: Icon(
+                Icons.refresh_outlined,
+                size: 24,
+                color: shadColorScheme.primary,
+              ),
+              onPressed: () => controller.getTagsFromServer(),
+            ),
             ShadIconButton.ghost(
               icon: Icon(
                 Icons.add,

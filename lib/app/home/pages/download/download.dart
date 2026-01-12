@@ -115,14 +115,6 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          // IconButton(
-          //   icon: Icon(
-          //     controller.isTimerActive ? Icons.pause : Icons.play_arrow,
-          //     size: 20,
-          //     color: ShadTheme.of(context).colorScheme.foreground,
-          //   ),
-          //   onPressed: () => controller.toggleRealTimeState(),
-          // ),
           ShadIconButton.ghost(
             icon: Icon(
               controller.isLoading ? Icons.pause_outlined : Icons.play_arrow_outlined,
@@ -332,6 +324,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                   ),
                 );
               }),
+          ShadIconButton.ghost(
+            icon: Icon(
+              Icons.refresh_outlined,
+              size: 24,
+              color: shadColorScheme.primary,
+            ),
+            onPressed: () => controller.getDownloaderListFromServer(withStatus: true),
+          ),
           ShadIconButton.ghost(
             icon: Icon(
               Icons.add_outlined,

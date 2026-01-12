@@ -29,14 +29,27 @@ class _MyRssPageState extends State<MyRssPage> {
     return GetBuilder<MyRssController>(builder: (controller) {
       return Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: ShadIconButton.ghost(
-          icon: Icon(
-            Icons.add,
-            size: 24,
-          ),
-          onPressed: () {
-            _openEditDialog(null);
-          },
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ShadIconButton.ghost(
+              icon: Icon(
+                Icons.refresh_outlined,
+                size: 24,
+                color: shadColorScheme.primary,
+              ),
+              onPressed: () => controller.getMyRssFromServer(),
+            ),
+            ShadIconButton.ghost(
+              icon: Icon(
+                Icons.add,
+                size: 24,
+              ),
+              onPressed: () {
+                _openEditDialog(null);
+              },
+            ),
+          ],
         ),
         body: GetBuilder<MyRssController>(builder: (controller) {
           return EasyRefresh(
