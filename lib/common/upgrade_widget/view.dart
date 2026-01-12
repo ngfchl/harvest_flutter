@@ -19,9 +19,32 @@ class UpgradeWidgetPage extends StatelessWidget {
         popover: (context) => GetBuilder<HomeController>(builder: (controller) {
           List<Tab> tabs = [
             // if (controller.homeController.updateLogState != null)
-            const Tab(text: 'Docker更新'),
-            const Tab(text: '配置更新'),
-            const Tab(text: '手动更新'),
+            Tab(
+              child: Text(
+                'Docker更新',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: controller.updateLogState?.update == true
+                        ? shadColorScheme.destructive
+                        : shadColorScheme.foreground),
+              ),
+            ),
+            Tab(
+              child: Text(
+                '配置更新',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: controller.updateSitesState?.update == true
+                        ? shadColorScheme.destructive
+                        : shadColorScheme.foreground),
+              ),
+            ),
+            Tab(
+              child: Text(
+                '手动更新',
+                style: TextStyle(fontSize: 12),
+              ),
+            ),
           ];
           return ConstrainedBox(
             constraints: BoxConstraints(maxHeight: 300, maxWidth: 300),
@@ -29,7 +52,9 @@ class UpgradeWidgetPage extends StatelessWidget {
               length: tabs.length,
               child: Scaffold(
                 backgroundColor: Colors.transparent,
-                appBar: TabBar(tabs: tabs),
+                appBar: TabBar(tabs: tabs,
+                    indicatorColor: shadColorScheme.primary,
+                ),
                 body: TabBarView(
                   children: [
                     // if (controller.homeController.updateLogState != null)
