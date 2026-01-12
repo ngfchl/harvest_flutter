@@ -118,8 +118,14 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                                 borderRadius: BorderRadius.circular(8.0),
                                                 child: CachedNetworkImage(
                                                   imageUrl: '$cacheServer${e.poster}',
-                                                  placeholder: (context, url) =>
-                                                      const Center(child: CircularProgressIndicator()),
+                                                  placeholder: (context, url) => Center(
+                                                    child: SizedBox(
+                                                        height: 24,
+                                                        width: 24,
+                                                        child: CircularProgressIndicator(
+                                                          color: shadColorScheme.primary,
+                                                        )),
+                                                  ),
                                                   errorWidget: (context, url, error) =>
                                                       Image.asset('assets/images/avatar.png'),
                                                   width: 100,
@@ -149,7 +155,15 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                           ),
                         ),
                       ),
-                      if (controller.isLoading == true) const Center(child: CircularProgressIndicator())
+                      if (controller.isLoading == true)
+                        Center(
+                          child: SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: shadColorScheme.primary,
+                              )),
+                        ),
                     ],
                   ),
                 ),
@@ -224,8 +238,14 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                                 borderRadius: BorderRadius.circular(8.0),
                                                 child: CachedNetworkImage(
                                                   imageUrl: '$cacheServer${e.poster}',
-                                                  placeholder: (context, url) =>
-                                                      const Center(child: CircularProgressIndicator()),
+                                                  placeholder: (context, url) => Center(
+                                                    child: SizedBox(
+                                                        height: 24,
+                                                        width: 24,
+                                                        child: CircularProgressIndicator(
+                                                          color: shadColorScheme.primary,
+                                                        )),
+                                                  ),
                                                   errorWidget: (context, url, error) =>
                                                       Image.asset('assets/images/avatar.png'),
                                                   width: 100,
@@ -255,7 +275,12 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                           ),
                         ),
                       ),
-                      if (controller.isLoading == true) const Center(child: CircularProgressIndicator())
+                      if (controller.isLoading == true)
+                        Center(
+                          child: CircularProgressIndicator(
+                            color: shadColorScheme.primary,
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -362,261 +387,24 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                 child: controller.selectTypeTag == "TOP250"
                                     ? Wrap(
                                         alignment: WrapAlignment.spaceAround,
-                                        children: controller.douBanTop250
-                                            .map((e) => InkWell(
-                                                  onTap: () async {
-                                                    _buildOperateDialog(e);
-                                                  },
-                                                  onLongPress: () {
-                                                    Logger.instance.i('WebView');
-                                                    Get.toNamed(Routes.WEBVIEW, arguments: {
-                                                      'url': e.douBanUrl,
-                                                    });
-                                                  },
-                                                  child: CustomCard(
-                                                    color: Colors.transparent,
-                                                    padding: const EdgeInsets.all(8),
-                                                    child: Row(
-                                                      children: [
-                                                        Stack(
-                                                          children: [
-                                                            ClipRRect(
-                                                              borderRadius: BorderRadius.circular(5.0),
-                                                              child: CachedNetworkImage(
-                                                                imageUrl: '$cacheServer${e.poster}',
-                                                                placeholder: (context, url) =>
-                                                                    const Center(child: CircularProgressIndicator()),
-                                                                errorWidget: (context, url, error) =>
-                                                                    Image.asset('assets/images/avatar.png'),
-                                                                width: 100,
-                                                                height: 150,
-                                                                fit: BoxFit.fitWidth,
-                                                              ),
-                                                            ),
-                                                            Positioned(
-                                                              top: 0,
-                                                              right: 0,
-                                                              child: Center(
-                                                                child: Container(
-                                                                  color: ShadTheme.of(context).colorScheme.background,
-                                                                  width: 30,
-                                                                  child: Text(
-                                                                    e.rank,
-                                                                    overflow: TextOverflow.ellipsis,
-                                                                    textAlign: TextAlign.center,
-                                                                    style: TextStyle(
-                                                                        color: ShadTheme.of(context)
-                                                                            .colorScheme
-                                                                            .foreground,
-                                                                        fontSize: 12),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Positioned(
-                                                              bottom: 0,
-                                                              child: Container(
-                                                                color: ShadTheme.of(context).colorScheme.background,
-                                                                width: 100,
-                                                                child: Text(
-                                                                  e.title,
-                                                                  overflow: TextOverflow.ellipsis,
-                                                                  textAlign: TextAlign.center,
-                                                                  style: TextStyle(
-                                                                      color:
-                                                                          ShadTheme.of(context).colorScheme.foreground,
-                                                                      fontSize: 12),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        Expanded(
-                                                            child: Padding(
-                                                          padding: const EdgeInsets.only(left: 12),
-                                                          child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              Text(
-                                                                e.subtitle.toString(),
-                                                                style: ShadTheme.of(context).textTheme.h4,
-                                                              ),
-                                                              Tooltip(
-                                                                message: e.cast.toString(),
-                                                                triggerMode: TooltipTriggerMode.tap,
-                                                                margin: const EdgeInsets.symmetric(horizontal: 36),
-                                                                child: Text(
-                                                                  e.cast,
-                                                                  style: const TextStyle(fontSize: 13),
-                                                                  maxLines: 2,
-                                                                  overflow: TextOverflow.ellipsis,
-                                                                ),
-                                                              ),
-                                                              Tooltip(
-                                                                message: e.desc.toString(),
-                                                                triggerMode: TooltipTriggerMode.tap,
-                                                                margin: const EdgeInsets.symmetric(horizontal: 36),
-                                                                child: Text(
-                                                                  '${e.desc}',
-                                                                  style: const TextStyle(fontSize: 13),
-                                                                  maxLines: 1,
-                                                                  overflow: TextOverflow.ellipsis,
-                                                                ),
-                                                              ),
-                                                              Row(
-                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                children: [
-                                                                  Tooltip(
-                                                                    message: '评分：${e.ratingNum}',
-                                                                    child: RatingBar.readOnly(
-                                                                      initialRating: double.parse(e.ratingNum) / 2,
-                                                                      filledIcon: Icons.star,
-                                                                      emptyIcon: Icons.star_border,
-                                                                      emptyColor: Colors.redAccent,
-                                                                      filledColor:
-                                                                          ShadTheme.of(context).colorScheme.foreground,
-                                                                      halfFilledColor: Colors.amberAccent,
-                                                                      halfFilledIcon: Icons.star_half,
-                                                                      maxRating: 5,
-                                                                      size: 18,
-                                                                    ),
-                                                                  ),
-                                                                  Text(e.evaluateNum),
-                                                                ],
-                                                              ),
-                                                              Text(
-                                                                e.quote,
-                                                                style: ShadTheme.of(context).textTheme.h4,
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ))
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ))
-                                            .toList())
+                                        children:
+                                            controller.douBanTop250.map((e) => buildTop250Item(e, context)).toList())
                                     : Wrap(
                                         alignment: WrapAlignment.spaceAround,
-                                        children: controller.rankMovieList
-                                            .map((e) => InkWell(
-                                                  onTap: () async {
-                                                    _buildOperateDialog(e);
-                                                  },
-                                                  onLongPress: () {
-                                                    Logger.instance.i('WebView');
-                                                    Get.toNamed(Routes.WEBVIEW, arguments: {
-                                                      'url': e.douBanUrl,
-                                                    });
-                                                  },
-                                                  child: CustomCard(
-                                                    padding: const EdgeInsets.all(8),
-                                                    child: Row(
-                                                      children: [
-                                                        Stack(
-                                                          children: [
-                                                            ClipRRect(
-                                                              borderRadius: BorderRadius.circular(5.0),
-                                                              child: CachedNetworkImage(
-                                                                imageUrl: '$cacheServer${e.poster}',
-                                                                placeholder: (context, url) =>
-                                                                    const Center(child: CircularProgressIndicator()),
-                                                                errorWidget: (context, url, error) =>
-                                                                    Image.asset('assets/images/avatar.png'),
-                                                                width: 100,
-                                                                height: 150,
-                                                                fit: BoxFit.fitWidth,
-                                                              ),
-                                                            ),
-                                                            Positioned(
-                                                              top: 0,
-                                                              right: 0,
-                                                              child: Container(
-                                                                color: ShadTheme.of(context).colorScheme.background,
-                                                                width: 20,
-                                                                child: Text(
-                                                                  e.rank.toString(),
-                                                                  overflow: TextOverflow.ellipsis,
-                                                                  textAlign: TextAlign.center,
-                                                                  style: TextStyle(
-                                                                      color:
-                                                                          ShadTheme.of(context).colorScheme.foreground,
-                                                                      fontSize: 12),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Positioned(
-                                                              bottom: 0,
-                                                              child: Container(
-                                                                color: ShadTheme.of(context).colorScheme.background,
-                                                                width: 100,
-                                                                child: Text(
-                                                                  e.title,
-                                                                  overflow: TextOverflow.ellipsis,
-                                                                  textAlign: TextAlign.center,
-                                                                  style: TextStyle(
-                                                                      color:
-                                                                          ShadTheme.of(context).colorScheme.foreground,
-                                                                      fontSize: 12),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        Expanded(
-                                                            child: Padding(
-                                                          padding: const EdgeInsets.only(left: 12),
-                                                          child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              Text(
-                                                                e.title.toString(),
-                                                                style: ShadTheme.of(context).textTheme.h4,
-                                                              ),
-                                                              Tooltip(
-                                                                message: e.actors.toString(),
-                                                                triggerMode: TooltipTriggerMode.tap,
-                                                                margin: const EdgeInsets.symmetric(horizontal: 36),
-                                                                child: Text(
-                                                                  e.actors.toString(),
-                                                                  style: const TextStyle(fontSize: 13),
-                                                                  maxLines: 2,
-                                                                  overflow: TextOverflow.ellipsis,
-                                                                ),
-                                                              ),
-                                                              Row(
-                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                children: [
-                                                                  Tooltip(
-                                                                    message: '评分：${e.rating.first}',
-                                                                    child: RatingBar.readOnly(
-                                                                      initialRating: double.parse(e.rating.first) / 2,
-                                                                      filledIcon: Icons.star,
-                                                                      emptyIcon: Icons.star_border,
-                                                                      emptyColor: Colors.redAccent,
-                                                                      filledColor:
-                                                                          ShadTheme.of(context).colorScheme.foreground,
-                                                                      halfFilledColor: Colors.amberAccent,
-                                                                      halfFilledIcon: Icons.star_half,
-                                                                      maxRating: 5,
-                                                                      size: 18,
-                                                                    ),
-                                                                  ),
-                                                                  Text(e.voteCount.toString()),
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ))
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ))
-                                            .toList()),
+                                        children:
+                                            controller.rankMovieList.map((e) => buildRankItem(e, context)).toList()),
                               ),
                             ),
                           ),
-                          if (controller.isLoading == true) const Center(child: CircularProgressIndicator())
+                          if (controller.isLoading == true)
+                            Center(
+                              child: SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: shadColorScheme.primary,
+                                  )),
+                            ),
                         ],
                       ),
                     ),
@@ -628,6 +416,243 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
         ),
       );
     });
+  }
+
+  InkWell buildRankItem(RankMovie e, BuildContext context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    return InkWell(
+      onTap: () async {
+        _buildOperateDialog(e);
+      },
+      onLongPress: () {
+        Logger.instance.i('WebView');
+        Get.toNamed(Routes.WEBVIEW, arguments: {
+          'url': e.douBanUrl,
+        });
+      },
+      child: CustomCard(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15.0),
+                  child: CachedNetworkImage(
+                    imageUrl: '$cacheServer${e.poster}',
+                    placeholder: (context, url) => Center(
+                      child: SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            color: shadColorScheme.primary,
+                          )),
+                    ),
+                    errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
+                    width: 80,
+                    height: 120,
+                    fit: BoxFit.fitWidth,
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  child: Container(
+                    color: shadColorScheme.background,
+                    width: 80,
+                    child: Center(
+                      child: Tooltip(
+                        message: e.title.toString(),
+                        triggerMode: TooltipTriggerMode.tap,
+                        margin: const EdgeInsets.symmetric(horizontal: 36),
+                        child: Text(
+                          "${e.rank}.${e.title}",
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+                child: Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 3,
+                children: [
+                  Text(
+                    e.title.toString(),
+                    style: ShadTheme.of(context).textTheme.large.copyWith(fontSize: 15),
+                  ),
+                  Tooltip(
+                    message: e.actors.toString(),
+                    triggerMode: TooltipTriggerMode.tap,
+                    margin: const EdgeInsets.symmetric(horizontal: 36),
+                    child: Text(
+                      e.actors.toString(),
+                      style: const TextStyle(fontSize: 13),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    '上映日期：${e.releaseDate} 发行地：${e.regions}',
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Tooltip(
+                        message: '评分：${e.rating.first}',
+                        child: RatingBar.readOnly(
+                          initialRating: double.parse(e.rating.first) / 2,
+                          filledIcon: Icons.star,
+                          emptyIcon: Icons.star_border,
+                          emptyColor: Colors.redAccent,
+                          filledColor: shadColorScheme.primary,
+                          halfFilledColor: Colors.amberAccent,
+                          halfFilledIcon: Icons.star_half,
+                          maxRating: 5,
+                          size: 16,
+                        ),
+                      ),
+                      Text('投票数：${e.voteCount.toString()}'),
+                    ],
+                  ),
+                ],
+              ),
+            ))
+          ],
+        ),
+      ),
+    );
+  }
+
+  InkWell buildTop250Item(TopMovieInfo e, BuildContext context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    return InkWell(
+      onTap: () async {
+        _buildOperateDialog(e);
+      },
+      onLongPress: () {
+        Logger.instance.i('WebView');
+        Get.toNamed(Routes.WEBVIEW, arguments: {
+          'url': e.douBanUrl,
+        });
+      },
+      child: CustomCard(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15.0),
+                  child: CachedNetworkImage(
+                    imageUrl: '$cacheServer${e.poster}',
+                    placeholder: (context, url) => Center(
+                      child: SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            color: shadColorScheme.primary,
+                          )),
+                    ),
+                    errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
+                    width: 80,
+                    height: 120,
+                    fit: BoxFit.fitWidth,
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  child: Container(
+                    color: shadColorScheme.background,
+                    width: 80,
+                    child: Center(
+                      child: Tooltip(
+                        message: "${e.title}.${e.subtitle}",
+                        triggerMode: TooltipTriggerMode.tap,
+                        margin: const EdgeInsets.symmetric(horizontal: 36),
+                        child: Text(
+                          "${e.rank}.${e.title}",
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: shadColorScheme.foreground, fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+                child: Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                spacing: 3,
+                children: [
+                  Text(
+                    e.subtitle.toString(),
+                    style: ShadTheme.of(context).textTheme.large.copyWith(fontSize: 15),
+                  ),
+                  Tooltip(
+                    message: e.cast.toString(),
+                    triggerMode: TooltipTriggerMode.tap,
+                    margin: const EdgeInsets.symmetric(horizontal: 36),
+                    child: Text(
+                      e.cast,
+                      style: const TextStyle(fontSize: 13),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Tooltip(
+                    message: e.desc.toString(),
+                    triggerMode: TooltipTriggerMode.tap,
+                    margin: const EdgeInsets.symmetric(horizontal: 36),
+                    child: Text(
+                      '${e.desc}',
+                      style: const TextStyle(fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Tooltip(
+                        message: '评分：${e.ratingNum}',
+                        child: RatingBar.readOnly(
+                          initialRating: double.parse(e.ratingNum) / 2,
+                          filledIcon: Icons.star,
+                          emptyIcon: Icons.star_border,
+                          emptyColor: Colors.redAccent,
+                          filledColor: shadColorScheme.primary,
+                          halfFilledColor: Colors.amberAccent,
+                          halfFilledIcon: Icons.star_half,
+                          maxRating: 5,
+                          size: 16,
+                        ),
+                      ),
+                      Text(e.evaluateNum),
+                    ],
+                  ),
+                  Text(
+                    e.quote,
+                    style: ShadTheme.of(context).textTheme.blockquote.copyWith(fontSize: 13),
+                  ),
+                ],
+              ),
+            ))
+          ],
+        ),
+      ),
+    );
   }
 
   Future<dynamic> _buildOperateDialog(mediaInfo) async {
@@ -681,10 +706,17 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                           borderRadius: BorderRadius.circular(8.0),
                           child: CachedNetworkImage(
                             imageUrl: '$cacheServer${mediaInfo.poster}',
-                            placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                            placeholder: (context, url) => Center(
+                              child: SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: shadColorScheme.primary,
+                                  )),
+                            ),
                             errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
-                            width: 120,
-                            height: 180,
+                            width: 100,
+                            height: 150,
                             fit: BoxFit.fitWidth,
                           ),
                         ),
@@ -698,9 +730,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                             Text(
                               '${videoDetail.title}${videoDetail.year}',
                               style: TextStyle(
-                                  color: shadColorScheme.foreground,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700),
+                                  color: shadColorScheme.foreground, fontSize: 20, fontWeight: FontWeight.w700),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -810,7 +840,14 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                       borderRadius: BorderRadius.circular(8.0),
                                       child: CachedNetworkImage(
                                         imageUrl: '$cacheServer$imgUrl',
-                                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                        placeholder: (context, url) => Center(
+                                          child: SizedBox(
+                                              height: 24,
+                                              width: 24,
+                                              child: CircularProgressIndicator(
+                                                color: shadColorScheme.primary,
+                                              )),
+                                        ),
                                         height: 160,
                                         fit: BoxFit.fitWidth,
                                       ),
@@ -856,8 +893,14 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                           borderRadius: BorderRadius.circular(8.0),
                                           child: CachedNetworkImage(
                                             imageUrl: '$cacheServer${worker.imgUrl}',
-                                            placeholder: (context, url) =>
-                                                const Center(child: CircularProgressIndicator()),
+                                            placeholder: (context, url) => Center(
+                                              child: SizedBox(
+                                                  height: 24,
+                                                  width: 24,
+                                                  child: CircularProgressIndicator(
+                                                    color: shadColorScheme.primary,
+                                                  )),
+                                            ),
                                             width: 100,
                                             height: 150,
                                             fit: BoxFit.fitWidth,
