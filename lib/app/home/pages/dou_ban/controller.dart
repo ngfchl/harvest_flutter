@@ -122,7 +122,7 @@ class DouBanController extends GetxController {
   getDouBanMovieHot(String tag) async {
     isLoading = true;
     update();
-    CommonResponse res = await getDouBanHotMovieApi(tag, 51);
+    CommonResponse res = await getDouBanHotMovieApi(tag, 60);
     if (res.succeed) {
       douBanMovieHot.clear();
       douBanMovieHot = res.data;
@@ -134,7 +134,7 @@ class DouBanController extends GetxController {
   getDouBanTvHot(String tag) async {
     isLoading = true;
     update();
-    CommonResponse res = await getDouBanHotTvApi(tag, 51);
+    CommonResponse res = await getDouBanHotTvApi(tag, 60);
     if (res.succeed) {
       douBanTvHot.clear();
       douBanTvHot = res.data;
