@@ -94,6 +94,7 @@ class TrController extends GetxController {
   }
 
   Future<void> initData() async {
+    logger_helper.Logger.instance.i('正在初始化 TrController 数据');
     pageSize = SPUtil.getInt('pageSize', defaultValue: 30) * 100;
     trackerToWebSiteMap.addAll(mySiteController.buildTrackerToWebSite());
     duration = SPUtil.getDouble('duration', defaultValue: 3.0);
@@ -110,9 +111,13 @@ class TrController extends GetxController {
 
     /// 订阅所有种子
     await getAllTorrents();
+
+    /// 启动定时器
+    startPeriodicTimer();
   }
 
   void getTrackerList() {
+    logger_helper.Logger.instance.i('正在获取 Tracker 列表');
     for (var torrent in torrents) {
       if (torrent.trackerStats.isEmpty == true) {
         continue;
@@ -134,6 +139,7 @@ class TrController extends GetxController {
   }
 
   void startPeriodicTimer() {
+    logger_helper.Logger.instance.i('开始定时器');
     // 设置定时器，每隔一定时间刷新下载器数据
     periodicTimer = Timer.periodic(Duration(milliseconds: (duration * 1000).toInt()), (Timer t) async {
       // 在定时器触发时获取最新的下载器数据
@@ -147,6 +153,7 @@ class TrController extends GetxController {
   }
 
   void timerToStop() {
+    logger_helper.Logger.instance.i('${timerDuration * 60} 秒停止定时器');
     Timer(Duration(seconds: (timerDuration * 60).toInt()), () {
       if (periodicTimer != null && periodicTimer?.isActive == true) {
         periodicTimer?.cancel();
@@ -156,13 +163,15 @@ class TrController extends GetxController {
   }
 
   V1 getTrInstance(Downloader downloader) {
+    logger_helper.Logger.instance.i('正在初始化 transmission： ${downloader.name} === ${downloader.host}:${downloader.port}');
     Transmission transmission = Transmission('${downloader.protocol}://${downloader.host}:${downloader.port}',
         AuthKeys(downloader.username, downloader.password),
-        logConfig: const ConfigLogger.recommended());
+        logConfig: const ConfigLogger.showNone());
     return transmission.v1;
   }
 
   Future getTrSpeed() async {
+    logger_helper.Logger.instance.i('正在获取上传下载速度');
     var res = await client.session.sessionStats();
     if (res['result'] == "success") {
       trStats = TransmissionStats.fromJson(res["arguments"]);
@@ -171,11 +180,13 @@ class TrController extends GetxController {
   }
 
   Future<String> getTrDefaultSavePath() async {
+    logger_helper.Logger.instance.i('正在获取默认保存路径');
     var res = await client.session.sessionGet(fields: SessionArgs().downloadDir());
     return res['arguments']['download-dir'];
   }
 
   void filterTorrentsByState() {
+    logger_helper.Logger.instance.i('正在根据状态筛选种子');
     if (trTorrentState == null) {
       return;
     }
@@ -194,11 +205,16 @@ class TrController extends GetxController {
 
   void filterTorrentsByError() {
     logger_helper.Logger.instance.i(selectedCategory);
+    if (selectedError == '全部') {
+      return;
+    }
     if (selectedError.isNotEmpty && selectedError != '错误') {
       showTorrents = showTorrents.where((torrent) => torrent.errorString.contains(selectedError)).toList();
     }
     if (selectedError == '错误') {
-      showTorrents = showTorrents.where((torrent) => torrent.errorString.isNotEmpty).toList();
+      showTorrents = showTorrents
+          .where((torrent) => torrent.errorString.isNotEmpty || torrent.trackerList?.isEmpty == true)
+          .toList();
     }
   }
 
@@ -217,7 +233,9 @@ class TrController extends GetxController {
 
   void filterTorrentsByLabel() {
     // LoggerHelper.Logger.instance.d('搜索关键字：${searchKey.value}');
-
+    if (selectedLabel == "全部") {
+      return;
+    }
     if (selectedLabel?.isNotEmpty == true) {
       showTorrents = showTorrents.where((torrent) => torrent.labels.contains(selectedLabel)).toList();
     }
@@ -229,7 +247,8 @@ class TrController extends GetxController {
       showTorrents = showTorrents.where((torrent) => torrent.trackerStats.isEmpty == true).toList();
     } else if (selectedTracker != null && selectedTracker == '全部') {
     } else if (selectedTracker != null && selectedTracker == '红种') {
-      showTorrents = showTorrents.where((torrent) => torrent.error == 2).toList();
+      showTorrents =
+          showTorrents.where((torrent) => torrent.error == 2 || torrent.trackerList?.isEmpty == true).toList();
     } else if (selectedTracker != null && selectedTracker?.isNotEmpty == true) {
       showTorrents = showTorrents
           .where((torrent) => trackerHashes[selectedTracker]?.contains(torrent.hashString) == true)
@@ -239,19 +258,22 @@ class TrController extends GetxController {
   }
 
   void filterTorrents() {
+    logger_helper.Logger.instance.i('正在筛选种子');
     showTorrents = torrents;
     update();
     logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByCategory();
     logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByState();
-    // LoggerHelper.Logger.instance.d(showTorrents.length);
+    logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsBySearchKey();
+    logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByLabel();
-    // LoggerHelper.Logger.instance.d(showTorrents.length);
+    logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByTracker();
+    logger_helper.Logger.instance.d(showTorrents.length);
     filterTorrentsByError();
-    // logger_helper.Logger.instance.d(showTorrents.length);
+    logger_helper.Logger.instance.d(showTorrents.length);
     sortTorrents();
     update();
     logger_helper.Logger.instance.i(showTorrents.length);
@@ -336,6 +358,7 @@ class TrController extends GetxController {
   }
 
   Future<void> getAllTorrents() async {
+    logger_helper.Logger.instance.i('正在获取所有种子');
     TorrentFields fields = TorrentFields()
         .activityDate
         .addedDate
@@ -385,6 +408,12 @@ class TrController extends GetxController {
 
     if (torrents.isEmpty) {
       List<int> ids = await getTorrentIds();
+      if (ids.isEmpty) {
+        logger_helper.Logger.instance.i('没有种子');
+        isLoading = false;
+        update();
+        return;
+      }
       for (int i = 0; i < ids.length; i += pageSize) {
         if (exitState) {
           break;
@@ -409,9 +438,11 @@ class TrController extends GetxController {
   }
 
   Future<List<int>> getTorrentIds() async {
+    logger_helper.Logger.instance.i('正在获取种子 ID 列表');
     Map res = await client.torrent.torrentGet(fields: TorrentFields().id);
     if (res['result'] == "success") {
       List<int> ids = (res['arguments']["torrents"] as List).map((e) => e["id"] as int).toList();
+      logger_helper.Logger.instance.e('获取到 ${ids.length} 个种子 ID');
       return ids;
     } else {
       logger_helper.Logger.instance.e('Failed to fetch torrent count');
@@ -428,6 +459,7 @@ class TrController extends GetxController {
   }
 
   void sortTorrents() {
+    logger_helper.Logger.instance.i('正在排序种子');
     switch (sortKey) {
       case 'name':
         showTorrents.sort((a, b) => a.name.compareTo(b.name));
@@ -469,6 +501,7 @@ class TrController extends GetxController {
   }
 
   Future<void> getAllCategory() async {
+    logger_helper.Logger.instance.i('正在获取所有种子分类');
     defaultSavePath = await getTrDefaultSavePath();
     Set<Map<String, String>> uniqueCategories = {
       {'name': '全部', 'value': 'all_torrents'}
@@ -492,6 +525,7 @@ class TrController extends GetxController {
   }
 
   Future<void> getTrFreeSpace() async {
+    logger_helper.Logger.instance.i('正在获取 TR 免费空间');
     defaultSavePath = await getTrDefaultSavePath();
     // LoggerHelper.Logger.instance.d(res['arguments']['download-dir']);
 
@@ -503,7 +537,7 @@ class TrController extends GetxController {
   }
 
   void filterTorrentsByCategory() {
-    logger_helper.Logger.instance.i(selectedCategory);
+    logger_helper.Logger.instance.i('当前分类：$selectedCategory');
     if (selectedCategory != '全部') {
       showTorrents = showTorrents.where((torrent) {
         return torrent.downloadDir.contains(selectedCategory);
@@ -547,26 +581,9 @@ class TrController extends GetxController {
     return CommonResponse.success(msg: msg);
   }
 
-  Future<CommonResponse> removeErrorTracker() async {
+  Future<CommonResponse> removeErrorTracker(List<String> toRemoveTorrentList) async {
     try {
-      List<String> toRemoveTorrentList = [];
-      var groupedTorrents = groupBy(torrents, (t) => t.name);
-      for (var group in groupedTorrents.values) {
-        var hasTracker = group.any((t) => t.error != 2);
-        if (!hasTracker) {
-          group.sort((t1, t2) => t2.percentDone.compareTo(t1.percentDone));
-          toRemoveTorrentList.addAll(group.skip(1).map((t) => t.hashString));
-        } else {
-          toRemoveTorrentList.addAll(group.where((element) => element.error == 2).map((t) => t.hashString));
-        }
-      }
-
-      logger_helper.Logger.instance.i(toRemoveTorrentList);
-      logger_helper.Logger.instance.i(toRemoveTorrentList.length);
-      if (toRemoveTorrentList.isEmpty) {
-        return CommonResponse.success(msg: '没有需要清理的种子！');
-      }
-      await controlTorrents(command: 'delete', ids: toRemoveTorrentList, deleteFiles: false);
+      await controlTorrents(command: 'torrentRemove', ids: toRemoveTorrentList, deleteFiles: false);
       showTorrents.removeWhere((element) => toRemoveTorrentList.contains(element.hashString));
       String msg = '清理出错种子成功，本次共清理${toRemoveTorrentList.length}个种子！';
       logger_helper.Logger.instance.i(msg);

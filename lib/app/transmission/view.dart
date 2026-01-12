@@ -42,7 +42,7 @@ class TrPage extends StatelessWidget {
             backgroundColor: shadColorScheme.background,
             title: "退出",
             content: Text(
-              '确定要退出内置浏览器？',
+              '确定要退出  Transmission 吗？',
               style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
             ),
             middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
@@ -58,6 +58,7 @@ class TrPage extends StatelessWidget {
             confirm: ShadButton.destructive(
               size: ShadButtonSize.sm,
               onPressed: () async {
+                controller.timerToStop();
                 Navigator.of(context).pop(false);
                 Get.back();
               },
@@ -622,7 +623,7 @@ class TrPage extends StatelessWidget {
                           ListTile(
                             dense: true,
                             title: Text(
-                              '错误【${controller.torrents.where((torrent) => torrent.errorString.isNotEmpty).length}】',
+                              '错误【${controller.torrents.where((torrent) => torrent.errorString.isNotEmpty || torrent.trackerList?.isEmpty == true).length}】',
                             ),
                             titleTextStyle: TextStyle(color: shadColorScheme.foreground),
                             selected: controller.selectedError == '错误',
@@ -796,11 +797,59 @@ class TrPage extends StatelessWidget {
                             ),
                           ),
                           onTap: () async {
-                            CommonResponse res = await controller.removeErrorTracker();
-                            Get.snackbar('清理红种', res.msg,
-                                colorText: res.code == 0 ? shadColorScheme.primary : shadColorScheme.destructive);
-                            await controller.getAllTorrents();
-                            controller.update();
+                            RxBool doing = false.obs;
+                            List<String> toRemoveTorrentList = [];
+                            var groupedTorrents = groupBy(controller.torrents, (t) => t.name);
+                            for (var group in groupedTorrents.values) {
+                              group.sort((t1, t2) => t2.percentDone.compareTo(t1.percentDone));
+                              toRemoveTorrentList.addAll(group
+                                  .skip(1)
+                                  .where((t) => t.trackerList?.isEmpty == true || t.error > 0)
+                                  .map((t) => t.hashString));
+                            }
+                            logger_helper.Logger.instance.i(toRemoveTorrentList);
+                            logger_helper.Logger.instance.i(toRemoveTorrentList.length);
+                            if (toRemoveTorrentList.isEmpty) {
+                              Get.snackbar('没有需要清理的种子', '');
+                              return;
+                            }
+                            Get.defaultDialog(
+                              title: '确定要清理红种吗？',
+                              content: Text('将清理掉有错误或无Tracker的种子，\n所有辅种的种子都会保留最后一份。'
+                                  '\n本次将清理${toRemoveTorrentList.length}个种子。'),
+                              radius: 10,
+                              backgroundColor: shadColorScheme.background,
+                              actions: [
+                                ShadButton.ghost(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () {
+                                    Get.back();
+                                  },
+                                  child: Text('取消'),
+                                ),
+                                ShadButton.destructive(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () async {
+                                    CommonResponse res = await controller.removeErrorTracker(toRemoveTorrentList);
+                                    if (res.succeed) {
+                                      Get.back();
+                                      await controller.getAllTorrents();
+                                      controller.update();
+                                      Get.snackbar('清理红种', res.msg, colorText: shadColorScheme.foreground);
+                                    } else {
+                                      Get.snackbar('清理红种', res.msg, colorText: shadColorScheme.destructive);
+                                    }
+                                  },
+                                  leading: Obx(() => doing.value
+                                      ? SizedBox(
+                                          height: 18,
+                                          width: 18,
+                                          child: CircularProgressIndicator(color: shadColorScheme.primary))
+                                      : SizedBox.shrink()),
+                                  child: Text('确定'),
+                                ),
+                              ],
+                            );
                           },
                         ),
                         PopupMenuItem<String>(
@@ -956,6 +1005,7 @@ class TrPage extends StatelessWidget {
 
   Widget _buildTrTorrentCard(TrTorrent torrentInfo, context) {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
+    final trackerHost = getTrackerHost(torrentInfo);
     return GetBuilder<TrController>(builder: (controller) {
       return CustomCard(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -1571,28 +1621,30 @@ class TrPage extends StatelessWidget {
                           children: [
                             Row(
                               children: [
-                                if (torrentInfo.trackerStats.isNotEmpty)
-                                  Row(children: [
-                                    const Icon(
-                                      Icons.link,
-                                      size: 10,
-                                    ),
-                                    Tooltip(
-                                      message: torrentInfo.trackerStats.first.announce,
-                                      child: Text(
-                                        controller
+                                torrentInfo.trackerStats.isNotEmpty
+                                    ? CustomTextTag(
+                                        labelText: controller
                                                 .trackerToWebSiteMap[controller.trackerToWebSiteMap.keys
-                                                    .firstWhereOrNull((String element) => element.contains(
-                                                        Uri.parse(torrentInfo.trackerStats.first.announce).host))]
+                                                    .firstWhereOrNull(
+                                                        (String element) => element.contains(trackerHost))]
                                                 ?.name ??
-                                            Uri.parse(torrentInfo.trackerStats.first.announce).host,
-                                        style: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
+                                            trackerHost,
+                                        icon: const Icon(
+                                          Icons.link_outlined,
+                                          size: 10,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : CustomTextTag(
+                                        labelText: trackerHost,
+                                        backgroundColor: shadColorScheme.destructive,
+                                        icon: Icon(
+                                          Icons.link_off_outlined,
+                                          size: 10,
+                                          color: Colors.white,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                  ]),
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1764,6 +1816,7 @@ class TrPage extends StatelessWidget {
 
   void _openTorrentInfoDetail(TrTorrent torrentInfo, context) async {
     logger_helper.Logger.instance.i(torrentInfo.files);
+    logger_helper.Logger.instance.i(torrentInfo.trackerList?.isEmpty);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
       shape: const RoundedRectangleBorder(
@@ -1783,48 +1836,53 @@ class TrPage extends StatelessWidget {
           spacing: 10,
           children: [
             Text(torrentInfo.name, style: TextStyle(fontSize: 16, color: shadColorScheme.foreground)),
+            Text(torrentInfo.error.toString(), style: TextStyle(fontSize: 16, color: shadColorScheme.foreground)),
             Expanded(
               child: GetBuilder<TrController>(builder: (controller) {
-                var repeatTorrents = controller.torrents
-                    .where((element) => element.name == torrentInfo.name)
-                    .map((e) => MetaDataItem.fromJson({
-                          "name": controller
-                                  .trackerToWebSiteMap[controller.trackers.entries
-                                      .firstWhere((entry) => entry.value.contains(e.hashString))
-                                      .key]
-                                  ?.name ??
-                              controller.trackers.entries.firstWhere((entry) => entry.value.contains(e.hashString)).key,
-                          "value": e,
-                        }))
-                    .map((e) => Tooltip(
-                          message: e.value.error > 0
-                              ? '${Uri.parse(e.value.trackerStats[0].announce).host} 错误信息： ${e.value.errorString}'
-                              : Uri.parse(e.value.trackerStats[0].announce).host,
-                          child: InputChip(
-                            labelPadding: EdgeInsets.zero,
-                            backgroundColor: RandomColor()
-                                .randomColor(colorHue: ColorHue.orange, colorBrightness: ColorBrightness.dark),
-                            shadowColor: Colors.orangeAccent,
-                            elevation: 3,
-                            label: SizedBox(
-                              width: 52,
-                              child: Text(
-                                e.name,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                            avatar: e.value.error == 0
-                                ? const Icon(Icons.link, color: Colors.green)
-                                : const Icon(Icons.link_off, color: Colors.red),
-                            onPressed: () {
-                              _openTorrentInfoDetail(e.value, context);
-                            },
-                            onDeleted: () {
-                              _removeTorrent([e.value.hashString], context);
-                            },
-                          ),
-                        ))
-                    .toList();
+                var repeatTorrents = controller.torrents.where((element) => element.name == torrentInfo.name).map((e) {
+                  final entry =
+                      controller.trackers.entries.firstWhereOrNull((entry) => entry.value.contains(e.hashString));
+
+                  String name;
+                  if (entry == null) {
+                    name = "Unknown";
+                  } else {
+                    name = controller.trackerToWebSiteMap[entry.key]?.name ?? entry.key;
+                  }
+
+                  return MetaDataItem.fromJson({
+                    "name": name,
+                    "value": e,
+                  });
+                }).map((e) {
+                  final trackerHost = getTrackerHost(e.value);
+                  return Tooltip(
+                    message: e.value.error > 0 ? '$trackerHost 错误信息：${e.value.errorString ?? "未知错误"}' : trackerHost,
+                    child: InputChip(
+                      labelPadding: EdgeInsets.zero,
+                      backgroundColor:
+                          RandomColor().randomColor(colorHue: ColorHue.orange, colorBrightness: ColorBrightness.dark),
+                      shadowColor: Colors.orangeAccent,
+                      elevation: 3,
+                      label: SizedBox(
+                        width: 52,
+                        child: Text(
+                          e.name,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      avatar: e.value.error == 0
+                          ? const Icon(Icons.link, color: Colors.green)
+                          : const Icon(Icons.link_off, color: Colors.red),
+                      onPressed: () {
+                        _openTorrentInfoDetail(e.value, context);
+                      },
+                      onDeleted: () {
+                        _removeTorrent([e.value.hashString], context);
+                      },
+                    ),
+                  );
+                }).toList();
                 return ShadAccordion<String>.multiple(
                   initialValue: [
                     'torrentInfo',
@@ -2380,6 +2438,18 @@ class TrPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String getTrackerHost(TrTorrent torrent) {
+    if (torrent.trackerStats.isEmpty) {
+      return "无 Tracker";
+    }
+    try {
+      final uri = Uri.parse(torrent.trackerStats.first.announce);
+      return uri.host;
+    } catch (e) {
+      return "无效 Tracker";
+    }
   }
 
   Future<void> _removeTorrent(List<String> ids, BuildContext context) async {
