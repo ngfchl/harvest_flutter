@@ -838,8 +838,10 @@ class TaskPage extends StatelessWidget {
                       controller: folderMapController,
                       maxLines: 3,
                       labelText: '文件夹映射',
-                      helperText: '1. 格式：源文件夹->目标文件夹，多个映射请换行。\n2. 只有匹配上箭头前面的源文件夹才会被转移到目标文件夹，留空表示转移全部种子。',
+                      helperText:
+                          '1. 格式：源文件夹->目标文件夹，多个映射请换行。\n2. 只有匹配上箭头前面的源文件夹才会被转移到目标文件夹。\n留空表示转移全部种子。\n3. 未完成的种子会被忽略',
                       helperStyle: TextStyle(fontSize: 10, color: shadColorScheme.foreground),
+                      scrollPhysics: AlwaysScrollableScrollPhysics(),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
