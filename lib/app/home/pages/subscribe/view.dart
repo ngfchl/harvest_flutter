@@ -52,7 +52,7 @@ class _SubscribePageState extends State<SubscribePage> {
               ),
               onPressed: () async {
                 // await _openEditDialog(null);
-                await _openEditDialogX(null);
+                await _openEditDialogX(null, shadColorScheme);
               },
             ),
           ],
@@ -81,10 +81,10 @@ class _SubscribePageState extends State<SubscribePage> {
                   children: controller.subList.map((Subscribe sub) => _buildSub(sub)).toList(),
                 ),
               ),
-              if (controller.isAddFormLoading)
+              if (controller.loading)
                 Center(
                   child: CircularProgressIndicator(
-                    color: shadColorScheme.primary,
+                    color: shadColorScheme.foreground,
                   ),
                 )
             ],
@@ -109,7 +109,7 @@ class _SubscribePageState extends State<SubscribePage> {
                   borderRadius: const BorderRadius.all(Radius.circular(8)),
                   onPressed: (context) async {
                     // await _openEditDialog(sub);
-                    await _openEditDialogX(sub);
+                    await _openEditDialogX(sub, shadColorScheme);
                   },
                   flex: 1,
                   backgroundColor: const Color(0xFF0392CF),
@@ -186,7 +186,7 @@ class _SubscribePageState extends State<SubscribePage> {
                         color: ShadTheme.of(context).colorScheme.foreground.withValues(alpha: opacity * 255)),
                   ),
                   onTap: () {
-                    _openEditDialogX(sub);
+                    _openEditDialogX(sub, shadColorScheme);
                   },
                   trailing: IconButton(
                     icon: sub.available == true
@@ -264,7 +264,7 @@ class _SubscribePageState extends State<SubscribePage> {
     super.dispose();
   }
 
-  Future<void> _openEditDialogX(Subscribe? sub) async {
+  Future<void> _openEditDialogX(Subscribe? sub, ShadColorScheme shadColorScheme) async {
     controller.isAddFormLoading = true;
     controller.update();
     final dialogController = Get.put(EditDialogController());
@@ -277,15 +277,23 @@ class _SubscribePageState extends State<SubscribePage> {
     }
 
     await dialogController.init(sub);
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
     EditDialogController editDialogController = Get.find();
-    CommonResponse res = await editDialogController.subController
-        .getDownloaderCategoryList(controller.downloadController.dataList.first);
-    if (!res.succeed) {
-      Get.snackbar('出错啦！', res.msg, colorText: shadColorScheme.destructive);
-    } else {
-      editDialogController.categories.value = res.data;
+    Downloader? selectedDownloader =
+        controller.downloadController.dataList.firstWhereOrNull((d) => d.id == sub?.downloaderId);
+
+    if (selectedDownloader != null) {
+      CommonResponse res = await editDialogController.subController.getDownloaderCategoryList(selectedDownloader!);
+      if (!res.succeed) {
+        Get.snackbar('出错啦！', res.msg, colorText: shadColorScheme.destructive);
+      } else {
+        editDialogController.categories.value = res.data;
+      }
+      if (sub != null || editDialogController.categories.isEmpty) {
+        Get.snackbar('出错啦！', '请先给QB下载器添加分类！', colorText: shadColorScheme.destructive);
+        return;
+      }
     }
+
     Rx<String> category = ''.obs;
     controller.isAddFormLoading = false;
     controller.update();
@@ -295,12 +303,12 @@ class _SubscribePageState extends State<SubscribePage> {
         borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
       ),
       GetBuilder<EditDialogController>(
-        builder: (controller) => Stack(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              height: MediaQuery.of(context).size.height * 0.9,
-              child: Column(
+        builder: (controller) => CustomCard(
+          height: MediaQuery.of(context).size.height * 0.8,
+          padding: const EdgeInsets.all(12),
+          child: Stack(
+            children: [
+              Column(
                 children: [
                   Text(
                     controller.title,
@@ -321,7 +329,7 @@ class _SubscribePageState extends State<SubscribePage> {
                             padding: const EdgeInsets.all(8),
                             child: ShadSelect<Downloader>(
                                 placeholder: const Text('选择下载器'),
-                                initialValue: controller.subController.downloadController.dataList.first,
+                                initialValue: selectedDownloader,
                                 decoration: ShadDecoration(
                                   border: ShadBorder(
                                     merge: false,
@@ -342,13 +350,17 @@ class _SubscribePageState extends State<SubscribePage> {
                                   controller.update();
                                   controller.downloaderController.text = item!.id.toString();
                                   CommonResponse res = await controller.subController.getDownloaderCategoryList(item);
+                                  controller.subController.isDownloaderLoading = false;
+                                  controller.update();
                                   if (!res.succeed) {
                                     Get.snackbar('出错啦！', res.msg, colorText: shadColorScheme.destructive);
                                     return;
                                   }
+                                  if (res.data.isEmpty) {
+                                    Get.snackbar('出错啦！', '请先给QB下载器添加分类！', colorText: shadColorScheme.destructive);
+                                    return;
+                                  }
                                   controller.categories.value = res.data;
-                                  controller.subController.isDownloaderLoading = false;
-                                  controller.update();
                                   if (controller.categories.isNotEmpty) {
                                     controller.downloaderCategoryController.text =
                                         controller.categories.keys.toList()[0];
@@ -550,7 +562,7 @@ class _SubscribePageState extends State<SubscribePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ShadButton.outline(
+                      ShadButton.ghost(
                         size: ShadButtonSize.sm,
                         onPressed: () {
                           Get.back();
@@ -559,9 +571,8 @@ class _SubscribePageState extends State<SubscribePage> {
                         leading: Icon(
                           Icons.cancel,
                           size: 18,
-                          color: shadColorScheme.destructiveForeground,
                         ),
-                        child: Text('取消', style: TextStyle(color: shadColorScheme.destructiveForeground)),
+                        child: Text('取消'),
                       ),
                       ShadButton.destructive(
                         size: ShadButtonSize.sm,
@@ -584,9 +595,13 @@ class _SubscribePageState extends State<SubscribePage> {
                   ),
                 ],
               ),
-            ),
-            if (controller.subController.isDownloaderLoading) Center(child: const CircularProgressIndicator())
-          ],
+              if (controller.subController.isDownloaderLoading)
+                Center(
+                    child: CircularProgressIndicator(
+                  color: shadColorScheme.foreground,
+                ))
+            ],
+          ),
         ),
       ),
       isScrollControlled: true,

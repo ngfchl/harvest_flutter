@@ -23,6 +23,7 @@ class SubscribeController extends GetxController {
   List<SubTag> tags = [];
   bool isDownloaderLoading = false;
   bool isAddFormLoading = false;
+  bool loading = false;
 
   @override
   void onInit() async {
@@ -31,12 +32,15 @@ class SubscribeController extends GetxController {
   }
 
   Future<void> initData() async {
+    loading = true;
+    update();
     await subTagController.initData();
     await rssController.initData();
     tagCategoryList = subTagController.tagCategoryList;
     tags = subTagController.tags.where((e) => e.available == true).toList();
     Logger.instance.i(tagCategoryList);
     await getSubscribeFromServer();
+    loading = false;
     update();
   }
 
