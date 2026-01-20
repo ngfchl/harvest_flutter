@@ -88,7 +88,7 @@ class _WebViewPageState extends State<WebViewPage> {
         backgroundColor: Colors.transparent,
         extendBody: true,
         appBar: AppBar(
-          backgroundColor: shadColorScheme.background.withOpacity(opacity),
+          backgroundColor: shadColorScheme.background,
           foregroundColor: shadColorScheme.foreground,
           title: Text(
             controller.pageTitle.value,

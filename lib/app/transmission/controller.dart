@@ -42,7 +42,7 @@ class TrController extends GetxController {
   int torrentCount = 0;
   String? selectedTracker = '全部';
   String? selectedLabel = '全部';
-  String selectedError = '全部';
+  String selectedError = '';
   List<String> errors = [];
   bool exitState = false;
   int pageSize = 20;

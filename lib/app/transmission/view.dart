@@ -71,7 +71,7 @@ class TrPage extends StatelessWidget {
         child: BackgroundContainer(
           child: Scaffold(
             appBar: AppBar(
-              backgroundColor: shadColorScheme.background.withOpacity(opacity),
+              backgroundColor: shadColorScheme.background,
               title: Row(
                 children: [
                   Expanded(

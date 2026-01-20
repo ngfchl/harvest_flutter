@@ -189,7 +189,7 @@ class _LoginPageState extends State<LoginPage> {
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
-            backgroundColor: themeData.colorScheme.background.withOpacity(opacity),
+            backgroundColor: themeData.colorScheme.background,
             elevation: 1,
             title: Text(
               '服务器列表',

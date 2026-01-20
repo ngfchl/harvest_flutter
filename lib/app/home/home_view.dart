@@ -98,7 +98,7 @@ class HomeView extends GetView<HomeController> {
                   controller.useBackground ? Colors.transparent : shadColorScheme.background.withOpacity(opacity),
               extendBody: true,
               appBar: AppBar(
-                backgroundColor: shadColorScheme.background.withOpacity(opacity),
+                backgroundColor: shadColorScheme.background,
                 iconTheme: IconThemeData(color: shadColorScheme.foreground),
                 toolbarHeight: 40,
                 elevation: 0,
