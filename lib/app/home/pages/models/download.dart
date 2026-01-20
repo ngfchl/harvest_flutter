@@ -35,7 +35,7 @@ class Downloader {
     required this.brush,
     required this.sortId,
     required this.status,
-    this.prefs = const {},
+    this.prefs = null,
   });
 
   factory Downloader.fromJson(Map<String, dynamic> json) {
@@ -64,7 +64,7 @@ class Downloader {
           ? (json['category'] == 'Qb'
               ? QbittorrentPreferences.fromJson(json['prefs'] as Map<String, dynamic>)
               : TransmissionConfig.fromJson(json['prefs'] as Map<String, dynamic>))
-          : {},
+          : null,
     );
   }
 

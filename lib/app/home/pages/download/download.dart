@@ -815,9 +815,14 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               ShadButton.outline(
                                 size: ShadButtonSize.sm,
                                 onPressed: () {
+                                  if (downloader.prefs == null) {
+                                    Get.snackbar('出错咯', '下载器连接失败！');
+                                    return;
+                                  }
+                                  String savePath = downloader.prefs?.savePath ?? '/downloads/';
+                                  logger_helper.Logger.instance.i(savePath);
                                   TextEditingController nameController = TextEditingController();
-                                  TextEditingController pathController =
-                                      TextEditingController(text: downloader.prefs.savePath ?? '');
+                                  TextEditingController pathController = TextEditingController(text: savePath);
                                   Get.defaultDialog(
                                       radius: 5,
                                       title: '添加分类',
@@ -877,6 +882,10 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               ShadButton.outline(
                                 size: ShadButtonSize.sm,
                                 onPressed: () {
+                                  if (downloader.prefs == null) {
+                                    Get.snackbar('出错咯', '下载器连接失败！');
+                                    return;
+                                  }
                                   TextEditingController nameController = TextEditingController();
                                   Get.defaultDialog(
                                       radius: 5,
@@ -2269,7 +2278,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
 
   void _openAddTorrentDialog(Downloader downloader) async {
     try {
-      if (controller.addTorrentLoading == true) {
+      if (downloader.prefs == null || controller.addTorrentLoading == true) {
+        Get.snackbar('出错咯', '下载器连接失败！');
         return;
       }
       controller.addTorrentLoading = true;
