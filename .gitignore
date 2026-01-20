@@ -48,3 +48,6 @@ android/key.properties
 .gradle
 
 /devtools_options.yaml
+/Output/harvest_2026.0113.01+209_x86_64-windows.exe
+/setup.iss
+/build_iss.ps1

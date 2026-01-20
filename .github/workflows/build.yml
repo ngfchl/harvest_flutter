@@ -147,26 +147,107 @@ jobs:
       - name: 安装 Flutter 依赖
         run: flutter pub get
 
+      - name: 提取版本号和设置文件名
+        id: app_info
+        shell: pwsh
+        run: |
+          $versionLine = Get-Content pubspec.yaml | Where-Object { $_ -match '^version:\s*' }
+          if (-not $versionLine) {
+            Write-Error "Version not found in pubspec.yaml"
+            exit 1
+          }
+          $version = ($versionLine -split ':\s*', 2)[1].Trim()
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
       - name: 打包 Windows x86 发行版
         run: flutter build windows --release
 
       - name: 生成 Windows x86 发行版文件名
         id: build_windows_x86  # 定义一个步骤 ID，用于后续引用
+        shell: pwsh   # 👈 必须加！
         run: |
-          $versionLine = Get-Content pubspec.yaml | Where-Object { $_ -match '^version:' }
-          $version = ($versionLine -split ':\s*')[1].Trim()
+          $version = "${{ steps.app_info.outputs.version }}"
           $arch="x86_64"
           $FILE_NAME="harvest_${version}_${arch}-windows.zip"
           Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $FILE_NAME  # 压缩为 zip 文件
           echo "file_name=$FILE_NAME" >> $env:GITHUB_OUTPUT
           echo "app_version=$version" >> $env:GITHUB_OUTPUT
           ls -l $FILE_NAME
+          Write-Host "✅ Created ZIP: $FILE_NAME"
+
+      - name: 📦 Generate Setup Installer
+        id: build_windows_setup
+        uses: dawidd6/setup-inno@v1
+        shell: pwsh  # 👈 显式指定
+        run: |
+          Write-Host "0 Build Setup for Windows x64"
+          $version = "${{ steps.app_info.outputs.version }}"
+          $versionWithDot = $version -replace '\+', '.'
+          $SETUP_FILE_NAME="harvest_${version}_x86_64-windows-setup"
+          
+          Write-Host "1. 提取版本号和设置文件名"
+          $parts = $versionWithDot -split '\.' | ForEach-Object {
+            if ($_ -match '^\d+$') {
+              [string][int]$_  # 关键：[int] 自动去除前导零
+            } else {
+              $_  # 非数字保留（但你的版本应该全是数字）
+            }
+          }
+        
+          Write-Host "2. 重组版本号（最多4段）"
+          $winVersion = ($parts[0..3] -join '.')
+          
+          Write-Host "3. 生成 iss 脚本（内联）"
+          $issContent = @"
+          [Setup]
+          AppName=Harvest
+          AppId={{71709563-2F36-4E78-A348-33FC151E52B2}}
+          AppVersion=$version
+          VersionInfoVersion=$winVersion
+          AppVerName=Harvest
+          AppPublisher=NewPtools
+          DefaultDirName={autopf}\Harvest
+          OutputBaseFilename=$SETUP_FILE_NAME
+          Compression=lzma2
+          SolidCompression=yes
+          ArchitecturesAllowed=x64compatible
+          ArchitecturesInstallIn64BitMode=x64compatible
+          
+          SetupIconFile=assets/favicon.ico
+          [Files]
+          Source: "build/windows/x64/runner/Release/*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+            
+          [Tasks]
+          Name: "desktopicon"; Description: "创建桌面快捷方式"; GroupDescription: "附加任务:"; Flags: checkedonce 
+            
+          [Icons]
+          Name: "{autoprograms}\Harvest"; Filename: "{app}\harvest.exe"
+          Name: "{autodesktop}\Harvest"; Filename: "{app}\harvest.exe"; Tasks: desktopicon
+          "@
+          
+          Write-Host "3. 用 GBK 编码写入 setup.iss"
+          $encoding = [System.Text.Encoding]::GetEncoding(936)
+          [System.IO.File]::WriteAllLines("setup.iss", $issContent, $encoding)
+            
+          Write-Host "4. 执行 Inno Setup 编译"
+          if (test-path ".\setup.iss") {
+            iscc setup.iss
+          }
+          
+          if (test-path ".\${SETUP_FILE_NAME}") {
+            Write-Host "✅ Created EXE: ${SETUP_FILE_NAME}"
+          } else {
+            Write-Host "❌ Failed to create EXE: ${SETUP_FILE_NAME}"
+          }
+          echo "setup_file_name=${SETUP_FILE_NAME}" >> $env:GITHUB_OUTPUT
 
       - name: 发布 Windows x86 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
-          files: ${{ github.workspace }}/${{ steps.build_windows_x86.outputs.file_name }}
+          files: |
+            ${{ github.workspace }}/${{ steps.build_windows_x86.outputs.file_name }}
+            ${{ github.workspace }}/Output/${{ steps.build_windows_setup.outputs.setup_file_name }}
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
           name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
           draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
@@ -497,6 +578,7 @@ jobs:
           
             # Windows
             ("harvest_\($v)_x86_64-windows.zip"): "\($base)/harvest_\($v)_x86_64-windows.zip",
+            ("harvest_\($v)_x86_64-windows.msix"): "\($base)/harvest_\($v)_x86_64-windows.msix",
           
             # macOS
             ("harvest_\($v)_x86_64-macos.dmg"): "\($base)/harvest_\($v)_x86_64-macos.dmg",
