@@ -613,7 +613,7 @@ class TrPage extends StatelessWidget {
                             ),
                             titleTextStyle: TextStyle(color: shadColorScheme.foreground),
                             selected: controller.selectedError == '',
-                            selectedColor: shadColorScheme.destructive,
+                            selectedColor: shadColorScheme.foreground,
                             onTap: () {
                               Get.back();
                               controller.selectedError = '';
@@ -635,11 +635,18 @@ class TrPage extends StatelessWidget {
                             },
                           ),
                           ...controller.errors.map((error) {
-                            int count = controller.torrents
-                                .where((torrent) => torrent.errorString.contains(error))
-                                .toList()
-                                .length;
-
+                            int count;
+                            if (error == 'NoTracker') {
+                              count = controller.torrents
+                                  .where((torrent) => torrent.trackerList?.isEmpty == true)
+                                  .toList()
+                                  .length;
+                            } else {
+                              count = controller.torrents
+                                  .where((torrent) => torrent.errorString.contains(error))
+                                  .toList()
+                                  .length;
+                            }
                             bool selected = controller.selectedError == error;
                             return ListTile(
                               dense: true,
@@ -830,12 +837,13 @@ class TrPage extends StatelessWidget {
                                 ShadButton.destructive(
                                   size: ShadButtonSize.sm,
                                   onPressed: () async {
+                                    doing.value = true;
                                     CommonResponse res = await controller.removeErrorTracker(toRemoveTorrentList);
+                                    doing.value = false;
                                     if (res.succeed) {
                                       Get.back();
-                                      await controller.getAllTorrents();
-                                      controller.update();
                                       Get.snackbar('清理红种', res.msg, colorText: shadColorScheme.foreground);
+                                      await controller.getAllTorrents();
                                     } else {
                                       Get.snackbar('清理红种', res.msg, colorText: shadColorScheme.destructive);
                                     }

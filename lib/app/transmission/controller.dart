@@ -208,13 +208,14 @@ class TrController extends GetxController {
     if (selectedError == '全部') {
       return;
     }
-    if (selectedError.isNotEmpty && selectedError != '错误') {
-      showTorrents = showTorrents.where((torrent) => torrent.errorString.contains(selectedError)).toList();
-    }
     if (selectedError == '错误') {
       showTorrents = showTorrents
           .where((torrent) => torrent.errorString.isNotEmpty || torrent.trackerList?.isEmpty == true)
           .toList();
+    } else if (selectedError == 'NoTracker') {
+      showTorrents = showTorrents.where((torrent) => torrent.trackerList?.isEmpty == true).toList();
+    } else {
+      showTorrents = showTorrents.where((torrent) => torrent.errorString.contains(selectedError)).toList();
     }
   }
 
@@ -432,6 +433,10 @@ class TrController extends GetxController {
     }
     labels = torrents.expand((e) => e.labels).toSet().toList();
     errors.addAll(torrents.map<String>((item) => item.errorString).toSet().where((el) => el.isNotEmpty).toList());
+    if (torrents.any((element) => element.trackerList?.isEmpty == true)) {
+      errors.add('NoTracker');
+    }
+    errors = errors.toSet().toList();
     getTrackerList();
     await getAllCategory();
     filterTorrents();
@@ -525,7 +530,7 @@ class TrController extends GetxController {
   }
 
   Future<void> getTrFreeSpace() async {
-    logger_helper.Logger.instance.i('正在获取 TR 免费空间');
+    logger_helper.Logger.instance.i('正在获取 TR 剩余空间');
     defaultSavePath = await getTrDefaultSavePath();
     // LoggerHelper.Logger.instance.d(res['arguments']['download-dir']);
 
@@ -583,7 +588,12 @@ class TrController extends GetxController {
 
   Future<CommonResponse> removeErrorTracker(List<String> toRemoveTorrentList) async {
     try {
-      await controlTorrents(command: 'torrentRemove', ids: toRemoveTorrentList, deleteFiles: false);
+      Map<dynamic, dynamic> res =
+          await controlTorrents(command: 'torrentRemove', ids: toRemoveTorrentList, deleteFiles: false);
+      Map<String, dynamic> result = Map<String, dynamic>.from(res);
+      if (result['result'] != 'success') {
+        return CommonResponse.error(msg: '清理出错种子失败！');
+      }
       showTorrents.removeWhere((element) => toRemoveTorrentList.contains(element.hashString));
       String msg = '清理出错种子成功，本次共清理${toRemoveTorrentList.length}个种子！';
       logger_helper.Logger.instance.i(msg);
