@@ -193,7 +193,7 @@ jobs:
               $_  # 非数字保留（但你的版本应该全是数字）
             }
           }
-        
+          
           Write-Host "2. 重组版本号（最多4段）"
           $winVersion = ($parts[0..3] -join '.')
           
@@ -216,10 +216,10 @@ jobs:
           SetupIconFile=assets/favicon.ico
           [Files]
           Source: "build/windows/x64/runner/Release/*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-            
+          
           [Tasks]
           Name: "desktopicon"; Description: "创建桌面快捷方式"; GroupDescription: "附加任务:"; Flags: checkedonce 
-            
+          
           [Icons]
           Name: "{autoprograms}\Harvest"; Filename: "{app}\harvest.exe"
           Name: "{autodesktop}\Harvest"; Filename: "{app}\harvest.exe"; Tasks: desktopicon
@@ -228,18 +228,18 @@ jobs:
           Write-Host "3. 用 GBK 编码写入 setup.iss"
           $encoding = [System.Text.Encoding]::GetEncoding(936)
           [System.IO.File]::WriteAllLines("setup.iss", $issContent, $encoding)
-            
+          
           Write-Host "4. 执行 Inno Setup 编译"
           if (test-path ".\setup.iss") {
             iscc setup.iss
           }
           
-          if (test-path ".\${SETUP_FILE_NAME}") {
+          if (test-path ".\${SETUP_FILE_NAME}.exe") {
             Write-Host "✅ Created EXE: ${SETUP_FILE_NAME}"
           } else {
             Write-Host "❌ Failed to create EXE: ${SETUP_FILE_NAME}"
           }
-          echo "setup_file_name=${SETUP_FILE_NAME}" >> $env:GITHUB_OUTPUT
+          echo "setup_file_name=${SETUP_FILE_NAME}.exe" >> $env:GITHUB_OUTPUT
 
       - name: 发布 Windows x86 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
