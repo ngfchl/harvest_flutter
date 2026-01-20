@@ -578,7 +578,7 @@ jobs:
           
             # Windows
             ("harvest_\($v)_x86_64-windows.zip"): "\($base)/harvest_\($v)_x86_64-windows.zip",
-            ("harvest_\($v)_x86_64-windows.msix"): "\($base)/harvest_\($v)_x86_64-windows.msix",
+            ("harvest_\($v)_x86_64-windows-setup.exe"): "\($base)/harvest_\($v)_x86_64-windows-setup.exe",
           
             # macOS
             ("harvest_\($v)_x86_64-macos.dmg"): "\($base)/harvest_\($v)_x86_64-macos.dmg",
