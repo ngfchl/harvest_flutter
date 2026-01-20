@@ -302,7 +302,7 @@ class AppUpgradePage extends StatelessWidget {
         fileName: e.key, // 例如 "harvest_2025.1103.01+181_arm64.apk"
         // 可选：限制类型（但 saveFile 不强制校验扩展名）
         type: FileType.custom,
-        allowedExtensions: ['apk', 'ipa', 'dmg', 'zip', 'tar.gz', 'tar', 'gz'],
+        allowedExtensions: ['apk', 'ipa', 'dmg', 'zip', 'tar.gz', 'tar', 'gz', 'exe', 'msi', 'deb'],
       );
       if (savePath != null) {
         await _downloadInstallationPackage(savePath, e.key, cancelToken);
@@ -340,10 +340,10 @@ class AppUpgradePage extends StatelessWidget {
       downloadUrl = downloadLinks[appUpgradeController.newVersion];
       await downloadAndSaveWithFilePicker(downloadUrl!, appUpgradeController.newVersion, buttonKey, cancelToken);
     } else if (Platform.isWindows) {
-      appUpgradeController.newVersion = '${prefix}_x86_64-windows.zip';
+      appUpgradeController.newVersion = '${prefix}_x86_64-windows-setup.exe';
       String savePath = "${appDocDir.path}/${appUpgradeController.newVersion}";
       await _downloadInstallationPackage(savePath, appUpgradeController.newVersion, cancelToken);
-      await Process.run('explorer.exe', [savePath.replaceAll('/', '\\')]);
+      await Process.start(savePath, []);
     } else if (Platform.isMacOS) {
       try {
         final result = await Process.run('uname', ['-m']);
