@@ -21,13 +21,13 @@ Future<CommonResponse> removeSourceApi(String path) async {
 Future<CommonResponse> editSourceApi(String path, String newName) async {
   return await editData(Api.SOURCE_OPERATE, {}, queryParameters: {"file_path": path, "new_name": newName});
 }
-//
-// /// 保存用户信息
-// addUserModelApi(UserModel user) async {
-//   String apiUrl = Api.AUTH_USER;
-//   return await addData(apiUrl, user.toJson());
-// }
-//
+
+/// 硬链接资源
+Future<CommonResponse> hardLinkSourceApi(String path) async {
+  String apiUrl = Api.SOURCE_HARD_LINK;
+  return await fetchBasicData(apiUrl, queryParameters: {"path": path});
+}
+
 // ///  修改用户信息
 // removeUserModelApi(UserModel user) async {
 //   String apiUrl = '${Api.AUTH_USER}/${user.id}';

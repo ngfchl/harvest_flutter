@@ -77,4 +77,8 @@ class FileManageController extends GetxController {
   Future<CommonResponse> writeScrapeInfoApi(String path, MediaItem mediaItem) async {
     return await saveTMDBMatchApi(path, mediaItem.toJson());
   }
+
+  Future<CommonResponse> hardLinkSource(String path) async {
+    return await hardLinkSourceApi(path);
+  }
 }

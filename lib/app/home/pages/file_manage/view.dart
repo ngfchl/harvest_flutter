@@ -350,7 +350,25 @@ class FileManagePage extends StatelessWidget {
                           //                     size: 16,),
                           //   label: Text("打开目录"),
                           // ),
-                          if (item.isDir)
+                          if (item.isDir) ...[
+                            ShadButton.ghost(
+                              onPressed: () async {
+                                Get.back();
+                                CommonResponse res = await controller.hardLinkSource(item.path);
+
+                                Get.snackbar(
+                                  '硬链接通知',
+                                  res.msg.toString(),
+                                  colorText: res.succeed ? shadColorScheme.foreground : shadColorScheme.destructive,
+                                );
+                              },
+                              leading: Icon(
+                                Icons.movie_filter_outlined,
+                                color: shadColorScheme.foreground,
+                                size: 16,
+                              ),
+                              child: Tooltip(message: item.path, child: Text("硬链接")),
+                            ),
                             ShadButton.ghost(
                               onPressed: () async {
                                 Get.back();
@@ -446,7 +464,6 @@ class FileManagePage extends StatelessWidget {
                               ),
                               child: Text("电影刮削"),
                             ),
-                          if (item.isDir)
                             ShadButton.ghost(
                               onPressed: () async {
                                 Get.back();
@@ -519,6 +536,7 @@ class FileManagePage extends StatelessWidget {
                               ),
                               child: Text("电视剧刮削"),
                             ),
+                          ],
                           ShadButton.ghost(
                             onPressed: () async {
                               doFileAction(item.path, 'search_seed');

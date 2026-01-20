@@ -145,6 +145,7 @@ class Api {
 
   // 资源管理
   static const String SOURCE_LIST = "source/all";
+  static const String SOURCE_HARD_LINK = "source/hard_link";
   static const String SOURCE_URL = "source/file/url";
   static const String SOURCE_ACCESS = "source/file/access";
   static const String SOURCE_OPERATE = "source/file/operate";
