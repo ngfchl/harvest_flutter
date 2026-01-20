@@ -177,10 +177,10 @@ jobs:
 
       - name: 📦 Generate Setup Installer
         id: build_windows_setup
-        uses: dawidd6/setup-inno@v1
-        shell: pwsh  # 👈 显式指定
+        shell: pwsh
         run: |
           Write-Host "0 Build Setup for Windows x64"
+          choco install innosetup
           $version = "${{ steps.app_info.outputs.version }}"
           $versionWithDot = $version -replace '\+', '.'
           $SETUP_FILE_NAME="harvest_${version}_x86_64-windows-setup"
