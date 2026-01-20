@@ -16,28 +16,30 @@ class SPUtil {
     return _instance;
   }
 
-  static setLocalStorage<T>(String key, T value) {
+  static Future<bool> setLocalStorage<T>(String key, T value)async  {
     String type = value.runtimeType.toString();
-
+    bool res = false;
     switch (type) {
       case "String":
-        setString(key, value as String);
+        res = await setString(key, value as String);
         break;
       case "int":
-        setInt(key, value as int);
+        res = await setInt(key, value as int);
         break;
       case "bool":
-        setBool(key, value as bool);
+        res = await setBool(key, value as bool);
         break;
       case "double":
-        setDouble(key, value as double);
+        res = await setDouble(key, value as double);
         break;
       case "List<String>":
-        setStringList(key, value as List<String>);
+        res = await setStringList(key, value as List<String>);
         break;
       default:
+        res = false;
         throw Exception("Unsupported type $type");
     }
+    return res;
   }
 
   /// 获取持久化数据
@@ -172,7 +174,7 @@ class SPUtil {
   }
 
   /// 判断是否是json字符串
-  static _isJson(String value) {
+  static bool _isJson(String value) {
     try {
       const JsonDecoder().convert(value);
       return true;

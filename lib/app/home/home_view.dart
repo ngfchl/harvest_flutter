@@ -13,7 +13,6 @@ import 'package:harvest/common/card_view.dart';
 import 'package:harvest/common/form_widgets.dart';
 import 'package:harvest/common/utils.dart';
 import 'package:harvest/theme/background_container.dart';
-import 'package:harvest/theme/color_storage.dart';
 import 'package:harvest/utils/logger_helper.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
@@ -207,7 +206,7 @@ class HomeView extends GetView<HomeController> {
                           InkWell(
                             onTap: () async {
                               controller.authPrivateMode = !controller.authPrivateMode;
-                              await SPUtil.setLocalStorage('authPrivateMode', controller.authPrivateMode);
+                              SPUtil.setLocalStorage('authPrivateMode', controller.authPrivateMode);
                               controller.update();
                             },
                             child: Text(

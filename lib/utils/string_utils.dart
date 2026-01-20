@@ -63,7 +63,7 @@ class FileSizeConvert {
   }
 }
 
-main() {
+void main() {
   print(FileSizeConvert.parseToByte("1024B"));
   print(FileSizeConvert.parseToFileSize(4575067883175));
 }

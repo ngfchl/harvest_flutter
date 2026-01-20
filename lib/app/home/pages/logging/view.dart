@@ -44,7 +44,7 @@ class LoggingPage extends StatelessWidget {
                           IconButton(
                             onPressed: () async {
                               controller.filterLevel = Level.all;
-                              await controller.clearLogs();
+                              controller.clearLogs();
                               controller.update();
                             },
                             icon: Icon(

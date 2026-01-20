@@ -1,4 +1,4 @@
-library flutter_client_sse;
+library;
 
 import 'dart:async';
 import 'dart:convert';
@@ -31,7 +31,7 @@ enum SSERequestType { GET, POST }
 
 /// A client for subscribing to Server-Sent Events (SSE).
 class SSEClient {
-  static http.Client _client = new http.Client();
+  static http.Client _client = http.Client();
 
   /// Retry the SSE connection after a delay.
   ///
@@ -98,7 +98,7 @@ class SSEClient {
     while (true) {
       try {
         _client = http.Client();
-        var request = new http.Request(
+        var request = http.Request(
           method == SSERequestType.GET ? "GET" : "POST",
           Uri.parse(url),
         );
@@ -150,7 +150,7 @@ class SSEClient {
                     break;
                   case 'data':
                     currentSSEModel.data =
-                        (currentSSEModel.data ?? '') + value + '\n';
+                        '${currentSSEModel.data ?? ''}$value\n';
                     break;
                   case 'id':
                     currentSSEModel.id = value;

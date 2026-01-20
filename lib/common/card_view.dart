@@ -47,7 +47,7 @@ class CustomCard extends StatelessWidget {
         color: Color(0x00000000),
         blurRadius: 6,
         spreadRadius: 5,
-        offset: const Offset(0, 2),
+        offset: Offset(0, 2),
         blurStyle: BlurStyle.inner,
       ),
       BoxShadow(

@@ -3680,7 +3680,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 res.msg.toString(),
                 colorText: shadColorScheme.foreground,
               );
-              controller.showStatusList.removeWhere((item) => mySite?.id == item.id);
+              controller.showStatusList.removeWhere((item) => mySite.id == item.id);
               controller.update();
               await controller.getSiteStatusFromServer();
             } else {

@@ -13,19 +13,19 @@ Future<CommonResponse> getTagListApi() async {
 }
 
 ///  修改下载器信息
-editSubTagApi(SubTag tag) async {
+Future<CommonResponse> editSubTagApi(SubTag tag) async {
   String apiUrl = '${Api.SUB_TAG}/${tag.id}';
   return await editData(apiUrl, tag.toJson());
 }
 
 /// 保存下载器信息
-addSubTagApi(SubTag tag) async {
+Future<CommonResponse> addSubTagApi(SubTag tag) async {
   String apiUrl = Api.SUB_TAG;
   return await addData(apiUrl, tag.toJson());
 }
 
 ///  修改下载器信息
-removeSubTagApi(SubTag tag) async {
+Future<CommonResponse> removeSubTagApi(SubTag tag) async {
   String apiUrl = '${Api.SUB_TAG}/${tag.id}';
   return await removeData(apiUrl);
 }
@@ -36,19 +36,19 @@ Future<CommonResponse> getMyRssListApi() async {
 }
 
 ///  修改下载器信息
-editMyRssApi(MyRss rss) async {
+Future<CommonResponse> editMyRssApi(MyRss rss) async {
   String apiUrl = '${Api.SUB_RSS}/${rss.id}';
   return await editData(apiUrl, rss.toJson());
 }
 
 /// 保存下载器信息
-addMyRssApi(MyRss rss) async {
+Future<CommonResponse> addMyRssApi(MyRss rss) async {
   String apiUrl = Api.SUB_RSS;
   return await addData(apiUrl, rss.toJson());
 }
 
 ///  删除信息
-removeMyRssApi(MyRss rss) async {
+Future<CommonResponse> removeMyRssApi(MyRss rss) async {
   String apiUrl = '${Api.SUB_RSS}/${rss.id}';
   return await removeData(apiUrl);
 }
@@ -59,19 +59,19 @@ Future<CommonResponse> getSubscribeListApi() async {
 }
 
 ///  修改信息
-editSubscribeApi(Subscribe sub) async {
+Future<CommonResponse> editSubscribeApi(Subscribe sub) async {
   String apiUrl = '${Api.SUB_SUB}/${sub.id}';
   return await editData(apiUrl, sub.toJson());
 }
 
 /// 保存信息
-addSubscribeApi(Subscribe sub) async {
+Future<CommonResponse> addSubscribeApi(Subscribe sub) async {
   String apiUrl = Api.SUB_SUB;
   return await addData(apiUrl, sub.toJson());
 }
 
 ///  删除信息
-removeSubscribeApi(Subscribe sub) async {
+Future<CommonResponse> removeSubscribeApi(Subscribe sub) async {
   String apiUrl = '${Api.SUB_SUB}/${sub.id}';
   return await removeData(apiUrl);
 }

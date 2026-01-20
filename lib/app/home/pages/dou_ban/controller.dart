@@ -67,24 +67,30 @@ class DouBanController extends GetxController {
     super.onInit();
   }
 
-  initData() async {
+  Future<void> initData() async {
     await getRankListByType(selectTypeTag);
     await getDouBanMovieHot(selectMovieTag);
     await getDouBanTvHot(selectTvTag);
     update();
   }
 
-  getDouBanMovieTags() async {
-    douBanMovieTags = await getCategoryTagsApi(category: 'movie');
+  Future<void> getDouBanMovieTags() async {
+    var response =  await getCategoryTagsApi(category: 'movie');
+    if (response.succeed) {
+      douBanMovieTags = List<String>.from(response.data ?? []);
+    }
     update();
   }
 
-  getDouBanVideoTags() async {
-    douBanTvTags = await getCategoryTagsApi(category: 'tv');
+  Future<void> getDouBanVideoTags() async {
+    var response = await getCategoryTagsApi(category: 'tv');
+    if (response.succeed) {
+      douBanTvTags = List<String>.from(response.data ?? []);
+    }
     update();
   }
 
-  getRankListByType(String type) async {
+  Future<void> getRankListByType(String type) async {
     int? typeId = typeMap[type];
     Logger.instance.d(typeId);
     if (typeId == null || typeId == 0) {
@@ -119,7 +125,7 @@ class DouBanController extends GetxController {
   //   update();
   // }
 
-  getDouBanMovieHot(String tag) async {
+  Future<void> getDouBanMovieHot(String tag) async {
     isLoading = true;
     update();
     CommonResponse res = await getDouBanHotMovieApi(tag, 60);
@@ -131,7 +137,7 @@ class DouBanController extends GetxController {
     update();
   }
 
-  getDouBanTvHot(String tag) async {
+  Future<void> getDouBanTvHot(String tag) async {
     isLoading = true;
     update();
     CommonResponse res = await getDouBanHotTvApi(tag, 60);
@@ -152,7 +158,7 @@ class DouBanController extends GetxController {
     return '';
   }
 
-  getVideoDetail(String url) async {
+  Future getVideoDetail(String url) async {
     isLoading = true;
     update();
     String id = extractDoubanId(url);
@@ -166,7 +172,7 @@ class DouBanController extends GetxController {
     return res;
   }
 
-  goSearchPage(VideoDetail detail) async {
+  Future<void> goSearchPage(VideoDetail detail) async {
     Get.back();
     String searchKey = detail.title;
     if (detail.imdb.isNotEmpty) {

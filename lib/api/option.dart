@@ -10,19 +10,19 @@ Future<CommonResponse> getOptionListApi() async {
 }
 
 ///  修改下载器信息
-editOptionApi(Option option) async {
+Future<CommonResponse> editOptionApi(Option option) async {
   String apiUrl = '${Api.OPTION_OPERATE}/${option.id}';
   return await editData(apiUrl, option.toJson());
 }
 
 /// 保存下载器信息
-addOptionApi(Option option) async {
+Future<CommonResponse> addOptionApi(Option option) async {
   String apiUrl = Api.OPTION_OPERATE;
   return await addData(apiUrl, option.toJson());
 }
 
 ///  修改下载器信息
-removeOptionApi(Option option) async {
+Future<CommonResponse> removeOptionApi(Option option) async {
   String apiUrl = '${Api.OPTION_OPERATE}/${option.id}';
   return await removeData(apiUrl);
 }
@@ -40,7 +40,7 @@ Future<CommonResponse> speedTestApi() async {
 }
 
 /// 订阅标签 导入
-importBaseSubTag() async {
+Future<CommonResponse> importBaseSubTag() async {
   try {
     final response = await DioUtil().get(
       Api.IMPORT_SUB_TAG,

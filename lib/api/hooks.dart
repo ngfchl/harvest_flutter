@@ -29,12 +29,11 @@ Future<CommonResponse<List?>> fetchBasicList<T>(String apiEndpoint,
       String msg = '成功获取到${dataList.length}条数据';
       return CommonResponse<List>.success(data: dataList, msg: msg);
     } else {
-      return CommonResponse.fromJson(response.data, (p0) => null);
+      return CommonResponse.fromJson(response.data, (p0) => p0);
     }
   } else {
     String msg = '获取数据列表失败: ${response.statusCode}';
-    // GFToast.showToast(msg, context);
-    return CommonResponse<List<T>>.error(msg: msg);
+    return CommonResponse<List?>.error(msg: msg);
   }
 }
 

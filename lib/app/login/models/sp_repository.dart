@@ -19,17 +19,14 @@ class ServerRepository {
   void getServers() {
     if (SPUtil.containsKey('servers')) {
       List<Object?> storageData = SPUtil.getLocalStorage('servers');
-      serverList = storageData
-          .map((data) => Server.fromJson(
-              json.decode(data as String) as Map<String, dynamic>))
-          .toList();
+      serverList =
+          storageData.map((data) => Server.fromJson(json.decode(data as String) as Map<String, dynamic>)).toList();
     }
   }
 
 // 插入新的服务器信息
   Future<CommonResponse> insertServer(Server server) async {
-    bool exists = serverList
-        .any((existingServer) => existingServer.entry == server.entry);
+    bool exists = serverList.any((existingServer) => existingServer.entry == server.entry);
     if (exists) {
       return CommonResponse.error(msg: '服务器已存在');
     }
@@ -40,8 +37,7 @@ class ServerRepository {
     server = server.copyWith(id: serverList.length + 1);
     serverList.add(server);
 
-    bool res = await SPUtil.setStringList(
-        'servers', serverList.map((e) => json.encode(e.toJson())).toList());
+    bool res = await SPUtil.setStringList('servers', serverList.map((e) => json.encode(e.toJson())).toList());
     if (res) {
       getServers();
       return CommonResponse.success(msg: '服务器 ${server.name} 添加成功');
@@ -53,14 +49,12 @@ class ServerRepository {
   Future<CommonResponse> updateServer(Server server) async {
     try {
       if (server.selected) {
-        serverList =
-            serverList.map((e) => e.copyWith(selected: false)).toList();
+        serverList = serverList.map((e) => e.copyWith(selected: false)).toList();
       }
       int index = serverList.indexWhere((element) => element.id == server.id);
       if (index >= 0) {
         serverList[index] = server;
-        bool res = await SPUtil.setStringList(
-            'servers', serverList.map((e) => json.encode(e.toJson())).toList());
+        bool res = await SPUtil.setStringList('servers', serverList.map((e) => json.encode(e.toJson())).toList());
         if (res) {
           getServers();
           return CommonResponse.success(msg: '服务器 ${server.name} 更新成功');
@@ -78,10 +72,9 @@ class ServerRepository {
     try {
       Logger.instance.i('删除服务器: $key');
       serverList.removeWhere((element) => element.id == key);
-      var res = await SPUtil.setLocalStorage(
-          'servers', serverList.map((e) => json.encode(e.toJson())).toList());
-      Logger.instance.i('删除服务器结果: $res');
-      if (res == null) {
+      var res = await SPUtil.setLocalStorage('servers', serverList.map((e) => json.encode(e.toJson())).toList());
+      Logger.instance.i('删除服务器结果');
+      if (res == true) {
         getServers();
         return CommonResponse.success(msg: '服务器删除成功');
       }

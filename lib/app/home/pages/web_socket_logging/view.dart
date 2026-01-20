@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_floating/floating/manager/floating_manager.dart';
 import 'package:flutter_floating/flutter_floating.dart';
 import 'package:get/get.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';

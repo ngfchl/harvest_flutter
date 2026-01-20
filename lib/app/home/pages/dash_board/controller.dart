@@ -143,7 +143,7 @@ class DashBoardController extends GetxController {
     return eligibleKeys.isEmpty ? "" : designations[eligibleKeys.last]!;
   }
 
-  initChartData() async {
+  Future<void> initChartData() async {
     // 记录开始时间
     DateTime startTime = DateTime.now();
     CommonResponse res = await getDashBoardDataApi(14);
@@ -188,7 +188,7 @@ class DashBoardController extends GetxController {
     Logger.instance.d('加载首页数据耗时: ${duration.inMilliseconds} 毫秒');
   }
 
-  loadCacheDashData() async {
+  Future<void> loadCacheDashData() async {
     String key = '$baseUrl - DASHBOARD_DATA';
     try {
       Map<String, dynamic>? data = await SPUtil.getCache(key);
@@ -211,7 +211,7 @@ class DashBoardController extends GetxController {
   ///@description
   ///@updateTime
    */
-  parseDashData(data) {
+  void parseDashData(data) {
     emailMap =
         (data['emailCount'] as List? ?? []).map((item) => MetaDataItem.fromJson(item as Map<String, dynamic>)).toList();
     usernameMap = (data['usernameCount'] as List? ?? [])

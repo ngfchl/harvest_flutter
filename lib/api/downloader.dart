@@ -39,25 +39,25 @@ Future<CommonResponse> repeatSingleDownloader(int downloaderId) async {
 }
 
 ///  修改下载器信息
-editDownloaderApi(Downloader downloader) async {
+Future<CommonResponse> editDownloaderApi(Downloader downloader) async {
   String apiUrl = '${Api.DOWNLOADER_LIST}/${downloader.id}';
   return await editData(apiUrl, downloader.toJson());
 }
 
 /// 保存下载器信息
-saveDownloaderApi(Downloader downloader) async {
+Future<CommonResponse> saveDownloaderApi(Downloader downloader) async {
   String apiUrl = Api.DOWNLOADER_LIST;
   return await addData(apiUrl, downloader.toJson());
 }
 
 ///  修改下载器信息
-removeDownloaderApi(Downloader downloader) async {
+Future<CommonResponse> removeDownloaderApi(Downloader downloader) async {
   String apiUrl = '${Api.DOWNLOADER_LIST}/${downloader.id}';
   return await removeData(apiUrl);
 }
 
 ///  修改Tracker信息
-replaceTorrentTrackerApi(int downloaderId, Map<String, dynamic> params) async {
+Future<CommonResponse> replaceTorrentTrackerApi(int downloaderId, Map<String, dynamic> params) async {
   String apiUrl = '${Api.DOWNLOADER_TRACKER_REPLACE}/$downloaderId';
   return await editData(apiUrl, params);
 }

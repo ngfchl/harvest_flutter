@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -157,7 +158,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     return response;
   }
 
-  getTMDBMovieDetail(int id) async {
+  Future<CommonResponse> getTMDBMovieDetail(int id) async {
     var res = await tmdb.getTMDBMovieInfoApi(id);
     logger_helper.Logger.instance.d(res);
     if (!res.succeed) {
@@ -166,7 +167,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     return CommonResponse.success(data: MovieDetail.fromJson(res.data as Map<String, dynamic>));
   }
 
-  getTMDBTVDetail(int id) async {
+  Future<CommonResponse> getTMDBTVDetail(int id) async {
     var res = await tmdb.getTMDBTvInfoApi(id);
     logger_helper.Logger.instance.d(res);
     if (!res.succeed) {
@@ -185,7 +186,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     }
   }
 
-  doTMDBSearch(info) async {
+  Future<void> doTMDBSearch(info) async {
     String searchKey;
     String? imdbId;
     if (info.runtimeType == MediaItem) {
@@ -194,7 +195,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
         isLoading = false;
         logger_helper.Logger.instance.e(detail.msg);
         update();
-        return detail;
+        return;
       }
       searchKey = detail.data.title;
       imdbId = detail.data.imdbId;

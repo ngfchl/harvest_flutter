@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:harvest/api/task.dart';
+import 'package:harvest/models/common_response.dart';
 import 'package:logger/logger.dart';
 
 import '../../../../models/flower.dart';
@@ -34,11 +35,11 @@ class LoggingController extends GetxController {
     super.onInit();
   }
 
-  getTaskInfo(TaskItem item) async {
+  Future<CommonResponse> getTaskInfo(TaskItem item) async {
     return await getTaskItemInfo(item);
   }
 
-  onScroll() {
+  void onScroll() {
     if (scrollController.position.atEdge) {
       if (scrollController.position.pixels == 0) {
         shouldScrollToBottom = false;
@@ -51,7 +52,7 @@ class LoggingController extends GetxController {
     update();
   }
 
-  onNewLog() {
+  void onNewLog() {
     if (shouldScrollToBottom) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (scrollController.hasClients) {
@@ -62,12 +63,12 @@ class LoggingController extends GetxController {
     update();
   }
 
-  clearLogs() {
+  void clearLogs() {
     logger_helper.memoryLogOutput.clearLogs();
     update();
   }
 
-  setLogLevel(Level level) {
+  void setLogLevel(Level level) {
     filterLevel = level;
     update();
   }
@@ -81,7 +82,7 @@ class LoggingController extends GetxController {
     return contents;
   }
 
-  switchLogging() async {
+  Future<void> switchLogging() async {
     switch (currentLog) {
       case 'logging':
         accessUrl = '$baseUrl/supervisor';

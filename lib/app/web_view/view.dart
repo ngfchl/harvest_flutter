@@ -220,7 +220,7 @@ class _WebViewPageState extends State<WebViewPage> {
                         if (response.code == 0) {
                           Get.snackbar(
                             '保存成功！',
-                            response.msg!,
+                            response.msg,
                             snackPosition: SnackPosition.TOP,
                             colorText: ShadTheme.of(context).colorScheme.foreground,
                             duration: const Duration(seconds: 3),
@@ -228,7 +228,7 @@ class _WebViewPageState extends State<WebViewPage> {
                         } else {
                           Get.snackbar(
                             '保存出错啦！',
-                            response.msg!,
+                            response.msg,
                             snackPosition: SnackPosition.TOP,
                             colorText: ShadTheme.of(context).colorScheme.destructive,
                             duration: const Duration(seconds: 3),
@@ -394,7 +394,7 @@ class _WebViewPageState extends State<WebViewPage> {
     return false;
   }
 
-  getTorrentLink() async {
+  Future<void> getTorrentLink() async {
     controller.isTorrentPath = controller.checkTorrentPath(controller.url);
     Logger.instance.d('当前是否为种子页面: ${controller.isTorrentPath}');
     controller.update();

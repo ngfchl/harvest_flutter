@@ -12,7 +12,7 @@ class UserController extends GetxController {
   List<UserModel> userList = <UserModel>[];
   AuthInfo? userinfo;
 
-  getUserListFromServer() async {
+  Future<void> getUserListFromServer() async {
     Logger.instance.i('从服务器拉取用户列表');
     CommonResponse response = await getUserModelListApi();
     if (response.code == 0) {
@@ -35,7 +35,7 @@ class UserController extends GetxController {
     update();
   }
 
-  saveUserModel(UserModel user) async {
+  Future<CommonResponse> saveUserModel(UserModel user) async {
     CommonResponse res;
     Logger.instance.i(user.toJson());
     if (user.id == 0) {
@@ -49,7 +49,7 @@ class UserController extends GetxController {
     return res;
   }
 
-  removeUserModel(UserModel user) async {
+  Future<CommonResponse> removeUserModel(UserModel user) async {
     CommonResponse res = await removeUserModelApi(user);
     if (res.code == 0) {
       await getUserListFromServer();
@@ -57,7 +57,7 @@ class UserController extends GetxController {
     return res;
   }
 
-  initData() async {
+  Future<void> initData() async {
     isLoading = true;
     update();
     await getUserListFromServer();

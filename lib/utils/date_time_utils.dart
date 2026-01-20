@@ -25,7 +25,7 @@ bool isToday(String dateString) {
 }
 
 /// 给一个时间戳计算时长
-calcDurationFromTimeStamp(int timestamp) {
+String calcDurationFromTimeStamp(int timestamp) {
   return formatDuration(DateTime.now()
       .difference(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000))
       .inSeconds);

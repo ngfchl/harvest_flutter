@@ -108,7 +108,7 @@ class SiteColorConfig {
     // 2️⃣ 转成 Map
     final map = current.toJson();
     // print('更新前的配置：${map[key]}');
-    print('准备更新的内容：${key} ==== ${color.value}');
+    print('准备更新的内容：$key ==== ${color.value}');
     // 3️⃣ 只更新指定 key
     map[key] = color.toARGB32();
     print('准备更新的内容：$key ==== ${color.toARGB32()}');

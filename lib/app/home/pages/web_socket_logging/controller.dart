@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_floating/floating/listener/event_listener.dart';
 import 'package:flutter_floating/flutter_floating.dart';
 import 'package:get/get.dart';
 import 'package:web_socket_channel/status.dart' as status;
@@ -67,14 +66,14 @@ class WebSocketLoggingController extends GetxController {
     super.onInit();
   }
 
-  changeLogLevel(int level) {
+  void changeLogLevel(int level) {
     filterLevel = level;
     // todo 后端返回日志格式需要处理
     // filterLogs();
     update();
   }
 
-  filterLogs() {
+  void filterLogs() {
     switch (filterLevel) {
       case 0:
         showLogList = logList;
@@ -94,7 +93,7 @@ class WebSocketLoggingController extends GetxController {
     update();
   }
 
-  fetchingWebSocketLogList() async {
+  Future<void> fetchingWebSocketLogList() async {
     // 打开加载状态
     isLoading = true;
     update();
@@ -129,7 +128,7 @@ class WebSocketLoggingController extends GetxController {
     }
   }
 
-  fetchingLogList() async {
+  Future<void> fetchingLogList() async {
     // 打开加载状态
     isLoading = true;
     update();
@@ -213,7 +212,7 @@ class WebSocketLoggingController extends GetxController {
     update();
   }
 
-  stopFetchLog() async {
+  Future<void> stopFetchLog() async {
     isLoading = false;
     // subscription.cancel();
     await channel.sink.close(status.normalClosure);
@@ -222,7 +221,7 @@ class WebSocketLoggingController extends GetxController {
     update();
   }
 
-  exit() {
+  void exit() {
     stopFetchLog();
     logList.clear();
   }

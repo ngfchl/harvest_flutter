@@ -21,7 +21,7 @@ class TaskController extends GetxController {
     update();
   }
 
-  getTaskInfo() async {
+  Future<void> getTaskInfo() async {
     isLoading = true;
     update();
 
@@ -97,19 +97,19 @@ class TaskController extends GetxController {
     return res;
   }
 
-  getTaskItemInfo(TaskItem item) async {
+  Future getTaskItemInfo(TaskItem item) async {
     return await getTaskItemInfo(item);
   }
 
-  getTaskResult(TaskItem item) async {
+  Future<CommonResponse> getTaskResult(TaskItem item) async {
     return await getTaskItemResult(item);
   }
 
-  abortTask(TaskItem item) async {
+  Future<CommonResponse> abortTask(TaskItem item) async {
     return await abortTaskItem(item);
   }
 
-  revokeTask(TaskItem item) async {
+  Future<CommonResponse> revokeTask(TaskItem item) async {
     return await revokeTaskItem(item);
   }
 }

@@ -86,7 +86,7 @@ List<int> getRandomIndices(int listLength, int count) {
   return indices;
 }
 
-checkEditController(TextEditingController controller, String field, context) {
+bool checkEditController(TextEditingController controller, String field, context) {
   if (controller.text.isEmpty) {
     Get.snackbar('字段检查', '$field 不能为空！', colorText: ShadTheme.of(context).colorScheme.destructive);
     return false;
@@ -94,9 +94,7 @@ checkEditController(TextEditingController controller, String field, context) {
   return true;
 }
 
-/**
- * 计算宽度因子
- */
+/// 计算宽度因子
 double getWidthFactor(context) {
   final size = MediaQuery.of(context).size;
   double factor = size.width - 200;

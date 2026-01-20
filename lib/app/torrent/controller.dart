@@ -161,7 +161,7 @@ class TorrentController extends GetxController {
     super.onInit();
   }
 
-  initClient() async {
+  Future<void> initClient() async {
     if (downloader.category.toLowerCase() == 'qb') {
       client = await getQbInstance(downloader);
     } else {
@@ -209,7 +209,7 @@ class TorrentController extends GetxController {
     super.onClose();
   }
 
-  getAllCategory() async {
+  Future<void> getAllCategory() async {
     if (categories.isNotEmpty) {
       return;
     }
@@ -260,7 +260,7 @@ class TorrentController extends GetxController {
     update();
   }
 
-  sortTorrents() {
+  void sortTorrents() {
     if (downloader.category.toLowerCase() == 'qb') {
       switch (sortKey.value) {
         case 'name':
@@ -365,7 +365,7 @@ class TorrentController extends GetxController {
     }).toList();
   }
 
-  filterTorrentsByState() {
+  void filterTorrentsByState() {
     final isQbCategory = downloader.category.toLowerCase() == 'qb';
     final selectedState = isQbCategory ? torrentState.value : trTorrentState.value;
 
@@ -377,7 +377,7 @@ class TorrentController extends GetxController {
     }
   }
 
-  filterTorrentsBySearchKey() {
+  void filterTorrentsBySearchKey() {
     // LoggerHelper.Logger.instance.d('搜索关键字：${searchKey.value}');
 
     if (searchKey.value.isNotEmpty) {
@@ -386,7 +386,7 @@ class TorrentController extends GetxController {
     }
   }
 
-  filterTorrents() {
+  void filterTorrents() {
     showTorrents.value = torrents;
     // LoggerHelper.Logger.instance.d(showTorrents.length);
     filterTorrentsByCategory();
@@ -528,7 +528,7 @@ class TorrentController extends GetxController {
     return res['arguments']['download-dir'];
   }
 
-  getTrFreeSpace() async {
+  Future<void> getTrFreeSpace() async {
     defaultSavePath = await getTrDefaultSavePath();
     // LoggerHelper.Logger.instance.d(res['arguments']['download-dir']);
 
@@ -536,12 +536,12 @@ class TorrentController extends GetxController {
     freeSpace.value = TrFreeSpace.fromJson(response['arguments'] as Map<String, dynamic>).sizeBytes!;
   }
 
-  getQbFreeSpace() async {
+  Future<void> getQbFreeSpace() async {
     MainData m = await client.sync.getMainData();
     freeSpace.value = m.serverState!.freeSpaceOnDisk!;
   }
 
-  getFreeSpace() async {
+  Future<void> getFreeSpace() async {
     if (downloader.category.toLowerCase() == 'qb') {
       getQbFreeSpace();
     } else {

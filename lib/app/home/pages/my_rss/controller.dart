@@ -21,11 +21,11 @@ class MyRssController extends GetxController {
     super.onInit();
   }
 
-  initData() async {
+  Future<void> initData() async {
     await getMyRssFromServer();
   }
 
-  getMyRssFromServer() async {
+  Future<void> getMyRssFromServer() async {
     CommonResponse response = await getMyRssListApi();
     if (response.code == 0) {
       rssList = response.data;
@@ -47,7 +47,7 @@ class MyRssController extends GetxController {
     super.onClose();
   }
 
-  saveMyRss(MyRss rss) async {
+  Future<CommonResponse> saveMyRss(MyRss rss) async {
     CommonResponse res;
     Logger.instance.i(rss.toJson());
     if (rss.id == 0) {
@@ -61,7 +61,7 @@ class MyRssController extends GetxController {
     return res;
   }
 
-  removeMyRss(MyRss rss) async {
+  Future<CommonResponse> removeMyRss(MyRss rss) async {
     CommonResponse res = await removeMyRssApi(rss);
     if (res.code == 0) {
       await getMyRssFromServer();

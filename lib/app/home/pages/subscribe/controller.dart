@@ -30,7 +30,7 @@ class SubscribeController extends GetxController {
     super.onInit();
   }
 
-  initData() async {
+  Future<void> initData() async {
     await subTagController.initData();
     await rssController.initData();
     tagCategoryList = subTagController.tagCategoryList;
@@ -40,7 +40,7 @@ class SubscribeController extends GetxController {
     update();
   }
 
-  getDownloaderListFromServer() async {
+  Future<void> getDownloaderListFromServer() async {
     try {
       isDownloaderLoading = true;
       update();
@@ -53,7 +53,7 @@ class SubscribeController extends GetxController {
     update();
   }
 
-  getSubscribeFromServer() async {
+  Future<void> getSubscribeFromServer() async {
     CommonResponse response = await getSubscribeListApi();
     if (response.code == 0) {
       subList = response.data;
@@ -75,7 +75,7 @@ class SubscribeController extends GetxController {
     super.onClose();
   }
 
-  saveSubscribe(Subscribe sub) async {
+  Future<CommonResponse> saveSubscribe(Subscribe sub) async {
     CommonResponse res;
     Logger.instance.i(sub.toJson());
     if (sub.id == 0) {
@@ -89,7 +89,7 @@ class SubscribeController extends GetxController {
     return res;
   }
 
-  removeSubscribe(Subscribe sub) async {
+  Future<CommonResponse> removeSubscribe(Subscribe sub) async {
     CommonResponse res = await removeSubscribeApi(sub);
     if (res.code == 0) {
       await getSubscribeFromServer();

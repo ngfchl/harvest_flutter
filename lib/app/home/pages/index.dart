@@ -1,4 +1,4 @@
-library pages;
+library;
 
 // export 'dashboard.dart';
 export 'download/download.dart';

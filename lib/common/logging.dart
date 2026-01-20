@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_floating/floating/manager/floating_manager.dart';
 import 'package:flutter_floating/flutter_floating.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
@@ -70,7 +69,7 @@ class LoggingView extends StatelessWidget {
                             IconButton(
                               onPressed: () async {
                                 controller.filterLevel = Level.all;
-                                await controller.clearLogs();
+                                controller.clearLogs();
                                 controller.update();
                               },
                               icon: Icon(

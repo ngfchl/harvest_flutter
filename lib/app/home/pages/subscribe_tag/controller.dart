@@ -23,11 +23,11 @@ class SubscribeTagController extends GetxController {
     {'name': '资源分类', 'value': 'category'},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
 
-  initData() async {
+  Future<void> initData() async {
     await getTagsFromServer();
   }
 
-  getTagsFromServer() async {
+  Future<void> getTagsFromServer() async {
     CommonResponse response = await getTagListApi();
     if (response.code == 0) {
       tags = response.data;
@@ -55,7 +55,7 @@ class SubscribeTagController extends GetxController {
     super.onClose();
   }
 
-  saveSubTag(SubTag tag) async {
+  Future<CommonResponse> saveSubTag(SubTag tag) async {
     CommonResponse res;
     if (tag.id == 0) {
       res = await addSubTagApi(tag);
@@ -68,7 +68,7 @@ class SubscribeTagController extends GetxController {
     return res;
   }
 
-  removeSubTag(SubTag tag) async {
+  Future<CommonResponse> removeSubTag(SubTag tag) async {
     CommonResponse res = await removeSubTagApi(tag);
     if (res.code == 0) {
       await getTagsFromServer();

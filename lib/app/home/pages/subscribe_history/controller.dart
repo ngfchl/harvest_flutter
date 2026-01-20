@@ -13,11 +13,11 @@ class SubscribeHistoryController extends GetxController {
     super.onInit();
   }
 
-  initData() async {
+  Future<void> initData() async {
     await getSubHistoryFromServer();
   }
 
-  getSubHistoryFromServer() async {
+  Future<void> getSubHistoryFromServer() async {
     CommonResponse response = await getSubHistoryListApi();
     if (response.succeed) {
       subHistory = response.data;
@@ -39,11 +39,11 @@ class SubscribeHistoryController extends GetxController {
     super.onClose();
   }
 
-  removeHistory(SubHistory history) async {
+  Future<CommonResponse> removeHistory(SubHistory history) async {
     return await deleteSubHistoryListApi(history);
   }
 
-  pushTorrent(SubHistory history) async {
+  Future<CommonResponse> pushTorrent(SubHistory history) async {
     return await pushTorrentApi(history);
   }
 }
