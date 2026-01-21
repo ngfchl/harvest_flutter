@@ -212,8 +212,11 @@ jobs:
           SolidCompression=yes
           ArchitecturesAllowed=x64compatible
           ArchitecturesInstallIn64BitMode=x64compatible
-          
           SetupIconFile=assets/favicon.ico
+          
+          [Languages]
+          Name: "chinese"; MessagesFile: "ChineseSimplified.isl";
+          
           [Files]
           Source: "build/windows/x64/runner/Release/*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
           
@@ -223,6 +226,9 @@ jobs:
           [Icons]
           Name: "{autoprograms}\Harvest"; Filename: "{app}\harvest.exe"
           Name: "{autodesktop}\Harvest"; Filename: "{app}\harvest.exe"; Tasks: desktopicon
+          
+          [Run]
+          Filename: "{app}\harvest.exe"; Description: "打开 Harvest 应用程序"; Flags: nowait postinstall skipifsilent
           "@
           
           Write-Host "3. 用 GBK 编码写入 setup.iss"
