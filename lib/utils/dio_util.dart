@@ -30,7 +30,7 @@ class CustomInterceptors extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     debugPrint('CustomInterceptors.onError: status=${err.response?.statusCode}, url=${err.requestOptions.uri}');
     final status = err.response?.statusCode ?? 0;
-    if (status == 401 || status == 403) {
+    if ([302, 401, 403].contains(status)) {
       // 如果 SPUtil.setBool 是异步，建议 await；若为同步可直接调用
       // 若为 Future，则可以: await SPUtil.setBool(...); 但 onError 不是 async，这里用微任务
       SPUtil.setBool('isLogin', false);
@@ -203,6 +203,10 @@ class DioUtil {
     };
     if (token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
+    }
+    String proxyToken = SPUtil.getString('ProxyToken');
+    if (proxyToken.isNotEmpty) {
+      headers['cookie'] = SPUtil.getString('ProxyToken');
     }
     return headers;
   }
