@@ -80,8 +80,9 @@ class MyApp extends StatelessWidget {
               locale: const Locale('zh', 'CN'),
               fallbackLocale: const Locale('en', 'US'),
               onReady: () async {
-                await Future.delayed(const Duration(seconds: 3));
-                FlutterNativeSplash.remove();
+                await Future.delayed(const Duration(seconds: 3), () {
+                  FlutterNativeSplash.remove();
+                });
               },
             );
           });
