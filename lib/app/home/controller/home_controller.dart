@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -46,6 +48,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   AuthPeriod? authInfo;
   bool useBackground = false;
   bool authPrivateMode = false;
+  Timer? _orientationUpdateTimer;
 
   // final mySiteController = Get.put(MySiteController());
 
@@ -56,7 +59,10 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   @override
   void onClose() {
     searchController.dispose();
-    WidgetsBinding.instance.removeObserver(this);
+    if (PlatformTool.isDesktopOS()) {
+      WidgetsBinding.instance.removeObserver(this);
+    }
+    _orientationUpdateTimer?.cancel();
     super.onClose();
   }
 
@@ -105,6 +111,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     try {
       Logger.instance.d('初始化主题模式');
       isDarkMode = Get.isDarkMode;
+      isPortrait = PlatformTool.isPortrait();
       useBackground = SPUtil.getBool('useBackground');
       authPrivateMode = SPUtil.getBool('authPrivateMode', defaultValue: false);
       initDio();
@@ -146,7 +153,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     checkUpdate();
     super.onInit();
 
-    WidgetsBinding.instance.addObserver(this);
     if (!kIsWeb) {
       interval(
         appLifecycle.lifecycle,
@@ -165,24 +171,32 @@ class HomeController extends GetxController with WidgetsBindingObserver {
         time: const Duration(minutes: 10),
       );
     }
-    _updateOrientation();
+    if (PlatformTool.isDesktopOS()) {
+      WidgetsBinding.instance.addObserver(this);
+      _updateOrientation();
+    }
   }
 
   //** 屏幕旋转监听 **//
   void _updateOrientation() {
-    isPortrait = PlatformTool.isPortrait();
-    isSmallHorizontalScreen = PlatformTool.isSmallHorizontalScreen();
-    final size = MediaQueryData.fromView(
-      WidgetsBinding.instance.platformDispatcher.views.first,
-    ).size;
-    Logger.instance.i('ScreenSize: width=${size.width}, height=${size.height}');
-    SPUtil.setDouble('ScreenSizeHeight', size.height);
-    SPUtil.setDouble('ScreenSizeWidth', size.width);
+    _orientationUpdateTimer?.cancel();
+    _orientationUpdateTimer = Timer(const Duration(milliseconds: 500), () {
+      isPortrait = PlatformTool.isPortrait();
+      isSmallHorizontalScreen = PlatformTool.isSmallHorizontalScreen();
+      final size = MediaQueryData.fromView(
+        WidgetsBinding.instance.platformDispatcher.views.first,
+      ).size;
+      // Logger.instance.i('ScreenSize: width=${size.width}, height=${size.height}');
+      SPUtil.setDouble('ScreenSizeHeight', size.height);
+      SPUtil.setDouble('ScreenSizeWidth', size.width);
+    });
   }
 
   @override
   void didChangeMetrics() {
-    _updateOrientation();
+    if (PlatformTool.isDesktopOS()) {
+      _updateOrientation();
+    }
   }
 
   void initDio() async {
