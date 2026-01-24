@@ -805,7 +805,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
           children: [
             CustomCard(
               key: Key("${mySite.id}-${mySite.site}"),
-              color: siteColorConfig.siteNameColor.value.withOpacity(opacity),
+              color: shadColorScheme.background,
               padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
               child: ShadContextMenuRegion(
                 decoration: ShadDecoration(
@@ -2203,7 +2203,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         Obx(() {
           return CustomCard(
             key: Key("${mySite.id}-${mySite.site}"),
-            color: siteColorConfig.siteCardColor.value.withOpacity(opacity),
+            color: shadColorScheme.background,
             child: Slidable(
               key: ValueKey('${mySite.id}_${mySite.nickname}'),
               startActionPane: ActionPane(
