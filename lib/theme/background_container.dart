@@ -37,6 +37,7 @@ class BackgroundContainer extends GetView<ThemeController> {
               imageUrl: useProxy ? '$proxy$image' : image,
               fit: BoxFit.cover,
               errorWidget: (_, __, ___) => Image.asset("assets/images/background.png", fit: BoxFit.cover),
+              placeholder: (_, __) => Image.asset("assets/images/background.png", fit: BoxFit.cover),
             );
 
       return Stack(
@@ -44,7 +45,7 @@ class BackgroundContainer extends GetView<ThemeController> {
           /// 背景淡入淡出
           Positioned.fill(
             child: AnimatedSwitcher(
-              duration: Duration(milliseconds: 600),
+              duration: Duration(milliseconds: 500),
               switchInCurve: Curves.easeInOut,
               switchOutCurve: Curves.easeInOut,
               child: SizedBox.expand(

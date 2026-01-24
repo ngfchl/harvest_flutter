@@ -88,67 +88,73 @@ class HomeView extends GetView<HomeController> {
             // buttonColor: Colors.red,
           );
         },
-        child: RepaintBoundary(
-          key: _captureKey,
-          child: BackgroundContainer(
-            child: Scaffold(
-              key: _globalKey,
-              backgroundColor:
-                  controller.useBackground ? Colors.transparent : shadColorScheme.background.withOpacity(opacity),
-              extendBody: true,
-              appBar: AppBar(
-                backgroundColor: shadColorScheme.background,
-                iconTheme: IconThemeData(color: shadColorScheme.foreground),
-                toolbarHeight: 40,
-                elevation: 0,
-                actions: <Widget>[
-                  _actionButtonList(context),
-                ],
-              ),
-              body: GetBuilder<HomeController>(builder: (controller) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (!controller.isPortrait)
-                      controller.isSmallHorizontalScreen
-                          ? SizedBox(
-                              width: 120,
-                              // height: double.infinity,
-                              child: _buildMenuBar(context),
-                            )
-                          : CustomCard(
-                              width: 200,
-                              color: shadColorScheme.background.withOpacity(opacity),
-                              child: _buildMenuBar(context),
-                            ),
-                    Expanded(
-                        child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 3),
-                      child: PageView(
-                        controller: controller.pageController,
-                        physics: const NeverScrollableScrollPhysics(),
-                        onPageChanged: (index) {
-                          // controller.initPage.value = index;
-                          // controller.update();
-                        },
-                        children: controller.pages,
-                      ),
-                    ))
+        child: SafeArea(
+          bottom: true,
+          top: false,
+          left:  false,
+          right: false,
+          child: RepaintBoundary(
+            key: _captureKey,
+            child: BackgroundContainer(
+              child: Scaffold(
+                key: _globalKey,
+                backgroundColor:
+                    controller.useBackground ? Colors.transparent : shadColorScheme.background.withOpacity(opacity),
+                extendBody: true,
+                appBar: AppBar(
+                  backgroundColor: shadColorScheme.background,
+                  iconTheme: IconThemeData(color: shadColorScheme.foreground),
+                  toolbarHeight: 40,
+                  elevation: 0,
+                  actions: <Widget>[
+                    _actionButtonList(context),
                   ],
-                );
-              }),
-              drawer: controller.isPortrait
-                  ? SizedBox(
-                      width: 200,
-                      child: Drawer(
-                        semanticLabel: 'Harvest',
-                        elevation: 10,
-                        backgroundColor: shadColorScheme.background.withOpacity(opacity),
-                        child: _buildMenuBar(context),
-                      ),
-                    )
-                  : null,
-              drawerEdgeDragWidth: 75,
+                ),
+                body: GetBuilder<HomeController>(builder: (controller) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!controller.isPortrait)
+                        controller.isSmallHorizontalScreen
+                            ? SizedBox(
+                                width: 120,
+                                // height: double.infinity,
+                                child: _buildMenuBar(context),
+                              )
+                            : CustomCard(
+                                width: 200,
+                                color: shadColorScheme.background.withOpacity(opacity),
+                                child: _buildMenuBar(context),
+                              ),
+                      Expanded(
+                          child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 3),
+                        child: PageView(
+                          controller: controller.pageController,
+                          physics: const NeverScrollableScrollPhysics(),
+                          onPageChanged: (index) {
+                            // controller.initPage.value = index;
+                            // controller.update();
+                          },
+                          children: controller.pages,
+                        ),
+                      ))
+                    ],
+                  );
+                }),
+                drawer: controller.isPortrait
+                    ? SizedBox(
+                        width: 200,
+                        child: Drawer(
+                          semanticLabel: 'Harvest',
+                          elevation: 10,
+                          backgroundColor: shadColorScheme.background,
+                          child: _buildMenuBar(context),
+                        ),
+                      )
+                    : null,
+                drawerEdgeDragWidth: 75,
+              ),
             ),
           ),
         ),
