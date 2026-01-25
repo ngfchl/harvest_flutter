@@ -90,7 +90,10 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<MySiteController>(builder: (controller) {
       return SafeArea(
-        bottom: false,
+        bottom: true,
+        top: false,
+        left: false,
+        right: false,
         child: Scaffold(
           backgroundColor: Colors.transparent,
           body: Column(

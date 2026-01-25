@@ -766,6 +766,10 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
             children = children.reversed.toList();
           }
           return SafeArea(
+            bottom: true,
+            top: false,
+            left: false,
+            right: false,
             child: Scaffold(
               backgroundColor: Colors.transparent,
               floatingActionButton:
