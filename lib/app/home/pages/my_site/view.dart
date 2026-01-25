@@ -1,10 +1,11 @@
-import 'dart:math';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:easy_refresh/easy_refresh.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +20,6 @@ import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:file_picker/file_picker.dart';
 
 import '../../../../api/api.dart';
 import '../../../../api/mysite.dart';
@@ -734,7 +734,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       return Obx(() {
         return CustomCard(
           key: Key("${mySite.id}-${mySite.site}"),
-          color: siteColorConfig.siteCardColor.value.withOpacity(opacity),
+          color: shadColorScheme.background.withOpacity(opacity),
           child: ListTile(
             // dense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
@@ -805,7 +805,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
           children: [
             CustomCard(
               key: Key("${mySite.id}-${mySite.site}"),
-              color: shadColorScheme.background,
+              color: shadColorScheme.background.withOpacity(opacity),
               padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
               child: ShadContextMenuRegion(
                 decoration: ShadDecoration(
@@ -1766,345 +1766,347 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                 ),
               ),
             ),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Expanded(
-                child: CustomCard(
-                  color: siteColorConfig.uploadedIconColor.value.withOpacity(opacity),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CustomTextTag(
-                        backgroundColor: Colors.transparent,
-                        labelText: '上传',
-                        labelColor: siteColorConfig.uploadedColor.value,
-                        fontSize: 13,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        icon: Icon(
-                          Icons.cloud_upload_outlined,
-                          color: siteColorConfig.uploadedIconColor.value,
-                          size: 16,
-                        ),
-                      ),
-                      Text(
-                        '今日：${FileSizeConvert.parseToFileSize(mySite.dailyDelta.uploaded)}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: siteColorConfig.uploadedColor.value,
-                        ),
-                      ),
-                      Text(
-                        '总计：${FileSizeConvert.parseToFileSize(status?.uploaded)}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: siteColorConfig.uploadedColor.value,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: CustomCard(
-                  color: siteColorConfig.downloadedIconColor.value.withOpacity(opacity),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CustomTextTag(
-                        backgroundColor: Colors.transparent,
-                        labelText: '下载',
-                        fontSize: 13,
-                        labelColor: siteColorConfig.downloadedColor.value,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        icon: Icon(
-                          Icons.cloud_download_outlined,
-                          color: siteColorConfig.downloadedIconColor.value,
-                          size: 16,
-                        ),
-                      ),
-                      Text(
-                        '今日：${FileSizeConvert.parseToFileSize(mySite.dailyDelta.downloaded)}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: siteColorConfig.downloadedColor.value,
-                        ),
-                      ),
-                      Text(
-                        '总计：${FileSizeConvert.parseToFileSize(status?.downloaded)}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: siteColorConfig.downloadedColor.value,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ]),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Expanded(
-                child: CustomCard(
-                  color: siteColorConfig.seedVolumeIconColor.value.withOpacity(opacity),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                  child: Column(
-                    children: [
-                      CustomTextTag(
-                        backgroundColor: Colors.transparent,
-                        labelText: '做种量',
-                        labelColor: siteColorConfig.seedVolumeNumColor.value,
-                        fontSize: 12,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        icon: Icon(
-                          Icons.storage_outlined,
-                          color: siteColorConfig.seedVolumeIconColor.value,
-                          size: 16,
-                        ),
-                      ),
-                      Text(
-                        FileSizeConvert.parseToFileSize(status?.seedVolume),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: siteColorConfig.seedVolumeNumColor.value,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: CustomCard(
-                  color: siteColorConfig.seedIconColor.value.withOpacity(opacity),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                  child: Column(
-                    children: [
-                      CustomTextTag(
-                        backgroundColor: Colors.transparent,
-                        labelText: '做种数',
-                        labelColor: siteColorConfig.seedNumColor.value,
-                        fontSize: 12,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        icon: Icon(
-                          Icons.arrow_upward_outlined,
-                          color: siteColorConfig.seedIconColor.value,
-                          size: 16,
-                        ),
-                      ),
-                      Text(
-                        status!.seed.toString(),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: siteColorConfig.seedNumColor.value,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: CustomCard(
-                  color: siteColorConfig.bonusIconColor.value.withOpacity(opacity),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                  child: Column(
-                    children: [
-                      CustomTextTag(
-                        backgroundColor: Colors.transparent,
-                        labelText: '魔力值',
-                        labelColor: siteColorConfig.bonusNumColor.value,
-                        fontSize: 12,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        icon: Icon(
-                          Icons.monetization_on_outlined,
-                          color: siteColorConfig.bonusIconColor.value,
-                          size: 14,
-                        ),
-                      ),
-                      Text(
-                        formatNumber(status.myBonus, fixed: 0),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: siteColorConfig.bonusNumColor.value,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: CustomCard(
-                  color: siteColorConfig.scoreIconColor.value.withOpacity(opacity),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                  child: Column(
-                    children: [
-                      CustomTextTag(
-                        backgroundColor: Colors.transparent,
-                        labelText: '积分',
-                        labelColor: siteColorConfig.scoreNumColor.value,
-                        fontSize: 12,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        icon: Icon(
-                          Icons.diamond_outlined,
-                          color: siteColorConfig.scoreIconColor.value,
-                          size: 14,
-                        ),
-                      ),
-                      Text(
-                        formatNumber(status.myScore, fixed: 0),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: siteColorConfig.scoreNumColor.value,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ]),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Expanded(
-                child: CustomCard(
-                  color: siteColorConfig.publishedIconColor.value.withOpacity(opacity),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                  child: Column(
-                    children: [
-                      CustomTextTag(
-                        backgroundColor: Colors.transparent,
-                        labelText: '发种数',
-                        labelColor: siteColorConfig.publishedNumColor.value,
-                        fontSize: 12,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        icon: Icon(
-                          Icons.file_upload_outlined,
-                          color: siteColorConfig.publishedIconColor.value,
-                          size: 14,
-                        ),
-                      ),
-                      Text(
-                        formatNumber(status.published, fixed: 0),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: siteColorConfig.publishedNumColor.value,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: CustomCard(
-                  color: siteColorConfig.downloadIconColor.value.withOpacity(opacity),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                  child: Column(
-                    children: [
-                      CustomTextTag(
-                        backgroundColor: Colors.transparent,
-                        labelText: '下载中',
-                        labelColor: siteColorConfig.downloadNumColor.value,
-                        fontSize: 12,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        icon: Icon(
-                          Icons.arrow_downward_outlined,
-                          color: siteColorConfig.downloadIconColor.value,
-                          size: 14,
-                        ),
-                      ),
-                      Text(
-                        '${status.leech}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: siteColorConfig.downloadNumColor.value,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: CustomCard(
-                  color: siteColorConfig.ratioIconColor.value.withOpacity(opacity),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                  child: Column(
-                    children: [
-                      CustomTextTag(
-                        backgroundColor: Colors.transparent,
-                        labelText: '分享率',
-                        labelColor: siteColorConfig.ratioNumColor.value,
-                        fontSize: 12,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        icon: Icon(
-                          Icons.percent_outlined,
-                          color: siteColorConfig.ratioIconColor.value,
-                          size: 14,
-                        ),
-                      ),
-                      Text(
-                        formatNumber(status.ratio),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: siteColorConfig.ratioNumColor.value,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: CustomCard(
-                  color: siteColorConfig.perBonusIconColor.value.withOpacity(opacity),
-                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-                  child: Column(
-                    children: [
-                      CustomTextTag(
-                        backgroundColor: Colors.transparent,
-                        labelText: '时魔',
-                        labelColor: siteColorConfig.perBonusNumColor.value,
-                        fontSize: 12,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        icon: Icon(
-                          Icons.hourglass_bottom_outlined,
-                          color: siteColorConfig.perBonusIconColor.value,
-                          size: 14,
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            formatNumber(status.bonusHour, fixed: 0),
-                            // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: siteColorConfig.perBonusNumColor.value,
-                            ),
+            if (status != null) ...[
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Expanded(
+                  child: CustomCard(
+                    color: siteColorConfig.uploadedIconColor.value.withOpacity(opacity),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CustomTextTag(
+                          backgroundColor: Colors.transparent,
+                          labelText: '上传',
+                          labelColor: siteColorConfig.uploadedColor.value,
+                          fontSize: 13,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.max,
+                          icon: Icon(
+                            Icons.cloud_upload_outlined,
+                            color: siteColorConfig.uploadedIconColor.value,
+                            size: 16,
                           ),
-                          if (website.spFull > 0 && status.bonusHour > 0)
+                        ),
+                        Text(
+                          '今日：${FileSizeConvert.parseToFileSize(mySite.dailyDelta.uploaded)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: siteColorConfig.uploadedColor.value,
+                          ),
+                        ),
+                        Text(
+                          '总计：${FileSizeConvert.parseToFileSize(status.uploaded)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: siteColorConfig.uploadedColor.value,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: CustomCard(
+                    color: siteColorConfig.downloadedIconColor.value.withOpacity(opacity),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CustomTextTag(
+                          backgroundColor: Colors.transparent,
+                          labelText: '下载',
+                          fontSize: 13,
+                          labelColor: siteColorConfig.downloadedColor.value,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.max,
+                          icon: Icon(
+                            Icons.cloud_download_outlined,
+                            color: siteColorConfig.downloadedIconColor.value,
+                            size: 16,
+                          ),
+                        ),
+                        Text(
+                          '今日：${FileSizeConvert.parseToFileSize(mySite.dailyDelta.downloaded)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: siteColorConfig.downloadedColor.value,
+                          ),
+                        ),
+                        Text(
+                          '总计：${FileSizeConvert.parseToFileSize(status.downloaded)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: siteColorConfig.downloadedColor.value,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ]),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Expanded(
+                  child: CustomCard(
+                    color: siteColorConfig.seedVolumeIconColor.value.withOpacity(opacity),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                    child: Column(
+                      children: [
+                        CustomTextTag(
+                          backgroundColor: Colors.transparent,
+                          labelText: '做种量',
+                          labelColor: siteColorConfig.seedVolumeNumColor.value,
+                          fontSize: 12,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          icon: Icon(
+                            Icons.storage_outlined,
+                            color: siteColorConfig.seedVolumeIconColor.value,
+                            size: 16,
+                          ),
+                        ),
+                        Text(
+                          FileSizeConvert.parseToFileSize(status.seedVolume),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: siteColorConfig.seedVolumeNumColor.value,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: CustomCard(
+                    color: siteColorConfig.seedIconColor.value.withOpacity(opacity),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                    child: Column(
+                      children: [
+                        CustomTextTag(
+                          backgroundColor: Colors.transparent,
+                          labelText: '做种数',
+                          labelColor: siteColorConfig.seedNumColor.value,
+                          fontSize: 12,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          icon: Icon(
+                            Icons.arrow_upward_outlined,
+                            color: siteColorConfig.seedIconColor.value,
+                            size: 16,
+                          ),
+                        ),
+                        Text(
+                          status.seed.toString(),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: siteColorConfig.seedNumColor.value,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: CustomCard(
+                    color: siteColorConfig.bonusIconColor.value.withOpacity(opacity),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                    child: Column(
+                      children: [
+                        CustomTextTag(
+                          backgroundColor: Colors.transparent,
+                          labelText: '魔力值',
+                          labelColor: siteColorConfig.bonusNumColor.value,
+                          fontSize: 12,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          icon: Icon(
+                            Icons.monetization_on_outlined,
+                            color: siteColorConfig.bonusIconColor.value,
+                            size: 14,
+                          ),
+                        ),
+                        Text(
+                          formatNumber(status.myBonus, fixed: 0),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: siteColorConfig.bonusNumColor.value,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: CustomCard(
+                    color: siteColorConfig.scoreIconColor.value.withOpacity(opacity),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                    child: Column(
+                      children: [
+                        CustomTextTag(
+                          backgroundColor: Colors.transparent,
+                          labelText: '积分',
+                          labelColor: siteColorConfig.scoreNumColor.value,
+                          fontSize: 12,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          icon: Icon(
+                            Icons.diamond_outlined,
+                            color: siteColorConfig.scoreIconColor.value,
+                            size: 14,
+                          ),
+                        ),
+                        Text(
+                          formatNumber(status.myScore, fixed: 0),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: siteColorConfig.scoreNumColor.value,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ]),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Expanded(
+                  child: CustomCard(
+                    color: siteColorConfig.publishedIconColor.value.withOpacity(opacity),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                    child: Column(
+                      children: [
+                        CustomTextTag(
+                          backgroundColor: Colors.transparent,
+                          labelText: '发种数',
+                          labelColor: siteColorConfig.publishedNumColor.value,
+                          fontSize: 12,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          icon: Icon(
+                            Icons.file_upload_outlined,
+                            color: siteColorConfig.publishedIconColor.value,
+                            size: 14,
+                          ),
+                        ),
+                        Text(
+                          formatNumber(status.published, fixed: 0),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: siteColorConfig.publishedNumColor.value,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: CustomCard(
+                    color: siteColorConfig.downloadIconColor.value.withOpacity(opacity),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                    child: Column(
+                      children: [
+                        CustomTextTag(
+                          backgroundColor: Colors.transparent,
+                          labelText: '下载中',
+                          labelColor: siteColorConfig.downloadNumColor.value,
+                          fontSize: 12,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          icon: Icon(
+                            Icons.arrow_downward_outlined,
+                            color: siteColorConfig.downloadIconColor.value,
+                            size: 14,
+                          ),
+                        ),
+                        Text(
+                          '${status.leech}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: siteColorConfig.downloadNumColor.value,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: CustomCard(
+                    color: siteColorConfig.ratioIconColor.value.withOpacity(opacity),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                    child: Column(
+                      children: [
+                        CustomTextTag(
+                          backgroundColor: Colors.transparent,
+                          labelText: '分享率',
+                          labelColor: siteColorConfig.ratioNumColor.value,
+                          fontSize: 12,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          icon: Icon(
+                            Icons.percent_outlined,
+                            color: siteColorConfig.ratioIconColor.value,
+                            size: 14,
+                          ),
+                        ),
+                        Text(
+                          formatNumber(status.ratio),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: siteColorConfig.ratioNumColor.value,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: CustomCard(
+                    color: siteColorConfig.perBonusIconColor.value.withOpacity(opacity),
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                    child: Column(
+                      children: [
+                        CustomTextTag(
+                          backgroundColor: Colors.transparent,
+                          labelText: '时魔',
+                          labelColor: siteColorConfig.perBonusNumColor.value,
+                          fontSize: 12,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          icon: Icon(
+                            Icons.hourglass_bottom_outlined,
+                            color: siteColorConfig.perBonusIconColor.value,
+                            size: 14,
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
                             Text(
-                              // formatNumber(status.bonusHour),
-                              '(${((status.bonusHour / website.spFull) * 100).toStringAsFixed((status.bonusHour / website.spFull) * 100 > 1 ? 0 : 2)}%)',
+                              formatNumber(status.bonusHour, fixed: 0),
+                              // '(${  status.siteSpFull != null && status.siteSpFull! > 0 ? ((status.statusBonusHour! / status.siteSpFull!) * 100).toStringAsFixed(2) : '0'}%)',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: siteColorConfig.perBonusNumColor.value,
                               ),
                             ),
-                        ],
-                      ),
-                    ],
+                            if (website.spFull > 0 && status.bonusHour > 0)
+                              Text(
+                                // formatNumber(status.bonusHour),
+                                '(${((status.bonusHour / website.spFull) * 100).toStringAsFixed((status.bonusHour / website.spFull) * 100 > 1 ? 0 : 2)}%)',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: siteColorConfig.perBonusNumColor.value,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ]),
+              ]),
+            ],
           ],
         ));
       }),
@@ -2134,7 +2136,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       return Obx(() {
         return CustomCard(
           key: Key("${mySite.id}-${mySite.site}"),
-          color: siteColorConfig.siteCardColor.value.withOpacity(opacity),
+          color: shadColorScheme.background.withOpacity(opacity),
           child: ListTile(
             dense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
@@ -2203,7 +2205,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         Obx(() {
           return CustomCard(
             key: Key("${mySite.id}-${mySite.site}"),
-            color: shadColorScheme.background,
+            color: shadColorScheme.background.withOpacity(opacity),
             child: Slidable(
               key: ValueKey('${mySite.id}_${mySite.nickname}'),
               startActionPane: ActionPane(
@@ -3699,18 +3701,19 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
   }
 
   void _showSignHistory(MySite mySite, RxBool showLoading) async {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     CommonResponse res = await getMySiteByIdApi(mySite.id);
     showLoading.value = false;
     if (!res.succeed) {
       Logger.instance.e('获取站点信息失败');
-      Get.snackbar('获取站点信息失败', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
+      Get.snackbar('获取站点信息失败', res.msg, colorText: shadColorScheme.destructive);
       return;
     }
     mySite = res.data;
     List<String> signKeys = mySite.signInInfo.keys.toList();
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     signKeys.sort((a, b) => b.compareTo(a));
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
+
     Get.bottomSheet(
         backgroundColor: shadColorScheme.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
@@ -4149,7 +4152,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       }
       if (commonResponse.succeed == true) {
         Logger.instance.i('上传成功，返回数据: ${commonResponse.data}');
-        controller.uploadMsg = List<String>.from(commonResponse.data) ?? [];
+        controller.uploadMsg = List<String>.from(commonResponse.data);
         controller.update(['selectedFiles']);
         Get.snackbar('配置文件上传请求成功', commonResponse.msg, colorText: shadColorScheme.foreground);
       } else {
