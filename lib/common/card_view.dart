@@ -79,7 +79,7 @@ class CustomCard extends StatelessWidget {
         width: width,
         padding: padding,
         radius: borderRadius,
-        backgroundColor: color ?? siteColorConfig.siteCardColor.value.withOpacity(opacity),
+        backgroundColor: color ?? shadColorScheme.background.withOpacity(opacity),
         title: title,
         footer: footer,
         leading: leading,
