@@ -91,7 +91,7 @@ class HomeView extends GetView<HomeController> {
         child: SafeArea(
           bottom: true,
           top: false,
-          left:  false,
+          left: false,
           right: false,
           child: RepaintBoundary(
             key: _captureKey,
@@ -102,7 +102,7 @@ class HomeView extends GetView<HomeController> {
                     controller.useBackground ? Colors.transparent : shadColorScheme.background.withOpacity(opacity),
                 extendBody: true,
                 appBar: AppBar(
-                  backgroundColor: shadColorScheme.background,
+                  backgroundColor: shadColorScheme.background.withOpacity(opacity),
                   iconTheme: IconThemeData(color: shadColorScheme.foreground),
                   toolbarHeight: 40,
                   elevation: 0,
