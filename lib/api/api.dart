@@ -132,7 +132,8 @@ class Api {
   static const String TMDB_EPISODE = "/tmdb/episode/{tv_id}/{season_id}/{episode_id}";
   static const String TMDB_ON_THE_AIR = "/tmdb/on_the_air/tvs";
   static const String TMDB_AIRING_TODAY = "/tmdb/airing_today/tvs";
-  static const String TMDB_UPCOMING = "/tmdb/upcoming/movies";
+  static const String TMDB_UPCOMING_MOVIES = "/tmdb/upcoming/movies";
+  static const String TMDB_PLAYING_MOVIES = "/tmdb//playing/movies";
   static const String TMDB_POPULAR_TVS = "/tmdb/popular/tvs";
   static const String TMDB_POPULAR_MOVIES = "/tmdb/popular/movies";
   static const String TMDB_TOP_TVS = "/tmdb/top_rated/tvs";

@@ -1,5 +1,6 @@
 import 'package:harvest/models/common_response.dart';
 
+import '../app/home/pages/agg_search/models.dart';
 import 'api.dart';
 import 'hooks.dart';
 
@@ -12,11 +13,20 @@ Future<CommonResponse> getTMDBPersonInfoApi(int query) async {
 }
 
 Future<CommonResponse> getTMDBMovieInfoApi(int query) async {
-  return await fetchBasicData('${Api.TMDB_MOVIE_INFO}/$query');
+  var res =  await fetchBasicData('${Api.TMDB_MOVIE_INFO}/$query');
+  if (!res.succeed) {
+    return res;
+  }
+  return CommonResponse.success(data: MovieDetail.fromJson(res.data as Map<String, dynamic>));
 }
 
 Future<CommonResponse> getTMDBTvInfoApi(int query) async {
-  return await fetchBasicData('${Api.TMDB_TV_INFO}/$query');
+  var res = await fetchBasicData('${Api.TMDB_TV_INFO}/$query');
+  if (!res.succeed) {
+    return res;
+  }
+  return CommonResponse.success(data: TvShowDetail.fromJson(res.data as Map<String, dynamic>));
+
 }
 
 Future<CommonResponse> getTMDBTvSeasonInfoApi(int tvId, int seasonId) async {
@@ -35,32 +45,36 @@ Future<CommonResponse> getTMDBLatestTvApi() async {
   return await fetchBasicData(Api.TMDB_LATEST_TV);
 }
 
-Future<CommonResponse<List<Map<String, dynamic>>>> getTMDBPopularMovieApi() async {
-  return await fetchDataList(Api.TMDB_POPULAR_MOVIES, (p0) => p0);
+Future<CommonResponse> getTMDBPopularMovieApi({int page = 1}) async {
+  return await fetchBasicData("${Api.TMDB_POPULAR_MOVIES}?page=$page");
 }
 
-Future<CommonResponse<List<Map<String, dynamic>>>> getTMDBPopularTvApi() async {
-  return await fetchDataList(Api.TMDB_POPULAR_TVS, (p0) => p0);
+Future<CommonResponse> getTMDBPopularTvApi({int page = 1}) async {
+  return await fetchBasicData("${Api.TMDB_POPULAR_TVS}?page=$page");
 }
 
-Future<CommonResponse<List<Map<String, dynamic>>>> getTMDBTopRateMovieApi() async {
-  return await fetchDataList(Api.TMDB_TOP_MOVIES, (p0) => p0);
+Future<CommonResponse> getTMDBTopRateMovieApi({int page = 1}) async {
+  return await fetchBasicData("${Api.TMDB_TOP_MOVIES}?page=$page");
 }
 
-Future<CommonResponse<List<Map<String, dynamic>>>> getTMDBTopRateTvApi() async {
-  return await fetchDataList(Api.TMDB_TOP_TVS, (p0) => p0);
+Future<CommonResponse> getTMDBTopRateTvApi({int page = 1}) async {
+  return await fetchBasicData("${Api.TMDB_TOP_TVS}?page=$page");
 }
 
-Future<CommonResponse<List<Map<String, dynamic>>>> getTMDBUpcomingMovieApi() async {
-  return await fetchDataList(Api.TMDB_UPCOMING, (p0) => p0);
+Future<CommonResponse> getTMDBUpcomingMovieApi({int page = 1}) async {
+  return await fetchBasicData("${Api.TMDB_UPCOMING_MOVIES}?page=$page");
 }
 
-Future<CommonResponse<List<Map<String, dynamic>>>> getTMDBAiringTvApi() async {
-  return await fetchDataList(Api.TMDB_AIRING_TODAY, (p0) => p0);
+Future<CommonResponse> getTMDBPlayingMovieApi({int page = 1}) async {
+  return await fetchBasicData("${Api.TMDB_PLAYING_MOVIES}?page=$page");
 }
 
-Future<CommonResponse<List<Map<String, dynamic>>>> getTMDBOnTheAirTvApi() async {
-  return await fetchDataList(Api.TMDB_ON_THE_AIR, (p0) => p0);
+Future<CommonResponse> getTMDBAiringTvApi({int page = 1}) async {
+  return await fetchBasicData("${Api.TMDB_AIRING_TODAY}?page=$page");
+}
+
+Future<CommonResponse> getTMDBOnTheAirTvApi({int page = 1}) async {
+  return await fetchBasicData("${Api.TMDB_ON_THE_AIR}?page=$page");
 }
 
 Future<CommonResponse<List<Map<String, dynamic>>>> getTMDBMatchMovieApi(String query) async {
