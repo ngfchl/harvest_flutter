@@ -234,6 +234,28 @@ class ThemeIconButton extends StatelessWidget {
                           return Row(
                             children: [
                               Text(
+                                'TMDB卡片宽度',
+                                style: TextStyle(color: shadColorScheme.foreground),
+                              ),
+                              Expanded(
+                                child: ShadSlider(
+                                    min: 120.0,
+                                    max: 200.0,
+                                    // divisions: 10,
+                                    label: controller.tmdbCardWidth.value.toString(),
+                                    initialValue: controller.tmdbCardWidth.value,
+                                    onChanged: (value) async {
+                                      controller.tmdbCardWidth.value = value;
+                                      controller.saveSettings();
+                                    }),
+                              ),
+                            ],
+                          );
+                        }),
+                        Obx(() {
+                          return Row(
+                            children: [
+                              Text(
                                 '卡片透明度',
                                 style: TextStyle(color: shadColorScheme.foreground),
                               ),

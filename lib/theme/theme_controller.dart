@@ -28,6 +28,7 @@ class ThemeController extends GetxController {
   var backgroundImage = ''.obs;
   var blur = 0.0.obs;
   var opacity = 0.7.obs;
+  var tmdbCardWidth = 120.0.obs;
   var useImageCache = true.obs;
 
   final Map<String, String> shadThemeColorNames = {
@@ -124,6 +125,7 @@ class ThemeController extends GetxController {
       "backgroundBlur": 0.0, // 默认背景模糊度为 0
       "cardOpacity": 0.7, // 默认透明度为 0.7
       "useImageCache": true, // 默认使用图片缓存
+      "tmdbCardWidth": 120.0,
     };
   }
 
@@ -140,6 +142,7 @@ class ThemeController extends GetxController {
       "backgroundBlur": blur.value,
       "cardOpacity": opacity.value,
       "useImageCache": useImageCache.value,
+      "tmdbCardWidth": tmdbCardWidth.value,
     };
   }
 
@@ -225,6 +228,7 @@ class ThemeController extends GetxController {
     blur.value = SPUtil.getDouble('backgroundBlur', defaultValue: 0);
     opacity.value = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     useImageCache.value = SPUtil.getBool('useImageCache', defaultValue: true);
+    tmdbCardWidth.value = SPUtil.getDouble('tmdb_media_item_width', defaultValue: 120.0);
     backgroundImage.value = SPUtil.getString(
       'backgroundImage',
       defaultValue: 'https://cci1.yiimii.com/uploads/2023/11/20231114005921427.jpg',
@@ -271,6 +275,9 @@ class ThemeController extends GetxController {
     if (configMap.containsKey('useImageCache')) {
       useImageCache.value = configMap['useImageCache'];
     }
+    if (configMap.containsKey('tmdb_media_item_width')) {
+      tmdbCardWidth.value = configMap['tmdb_media_item_width'];
+    }
 
     // 保存更改
     await saveSettings();
@@ -290,5 +297,6 @@ class ThemeController extends GetxController {
     await SPUtil.setString('backgroundImage', backgroundImage.value);
     await SPUtil.setDouble('cardOpacity', opacity.value);
     await SPUtil.setDouble('backgroundBlur', blur.value);
+    await SPUtil.setDouble('tmdb_media_item_width', tmdbCardWidth.value);
   }
 }
