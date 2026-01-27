@@ -102,21 +102,25 @@ class MediaItem {
 }
 
 class SearchResults {
+  final int? id;
+  final Map<String, dynamic>? dates;
   final int page;
   final int totalPages;
   final int totalResults;
-  final List<dynamic> results;
+  final List<MediaItem> results;
 
   SearchResults({
     required this.page,
     required this.totalPages,
     required this.totalResults,
-    required this.results,
+    this.results = const [],
+    this.id,
+    this.dates,
   });
 
   factory SearchResults.fromJson(Map<String, dynamic> json) {
     final List<dynamic> resultsList = json['results'] ?? [];
-    final List<dynamic> parsedResults = resultsList
+    final List<MediaItem> parsedResults = resultsList
         .map((item) {
           try {
             return MediaItem.fromJson(item);
@@ -124,17 +128,19 @@ class SearchResults {
             // 记录异常信息
             Logger.instance.e('Error parsing MediaItem: $e');
             Logger.instance.d('Error parsing MediaItem: $trace');
-            return null;
+            return [];
           }
         })
         .whereType<MediaItem>()
         .toList();
-
+    parsedResults.sort((a, b) => a.releaseDate.compareTo(b.releaseDate));
     return SearchResults(
       page: json['page'] ?? 0,
       totalPages: json['total_pages'] ?? 0,
       totalResults: json['total_results'] ?? 0,
       results: parsedResults,
+      id: json['id'],
+      dates: json['dates'] != null ? Map<String, dynamic>.from(json['dates']) : null,
     );
   }
 }

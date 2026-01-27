@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:harvest/app/home/pages/agg_search/models.dart';
+import 'package:harvest/app/home/pages/models/tmdb.dart';
 import 'package:harvest/models/common_response.dart';
 
 import '../../../../api/source.dart';

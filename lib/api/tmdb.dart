@@ -1,6 +1,6 @@
 import 'package:harvest/models/common_response.dart';
 
-import '../app/home/pages/agg_search/models.dart';
+import '../app/home/pages/models/tmdb.dart';
 import 'api.dart';
 import 'hooks.dart';
 

@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:harvest/api/tmdb.dart' as tmdb;
+import 'package:harvest/api/tmdb.dart';
 import 'package:harvest/app/home/pages/dou_ban/douban_api.dart';
 import 'package:harvest/app/home/pages/models/dou_ban_info.dart';
 import 'package:harvest/app/home/pages/models/douban.dart';
@@ -28,7 +28,7 @@ import '../models/my_site.dart';
 import '../models/option.dart';
 import '../my_site/controller.dart';
 import 'douban_search.dart';
-import 'models.dart';
+import '../models/tmdb.dart';
 
 class AggSearchController extends GetxController with GetSingleTickerProviderStateMixin {
   MySiteController mySiteController = Get.find();
@@ -134,7 +134,7 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     updateSearchHistory(searchKeyController.text);
     update();
     logger_helper.Logger.instance.d(searchKeyController.text);
-    CommonResponse response = await tmdb.getTMDBSearchApi(searchKeyController.text);
+    CommonResponse response = await getTMDBSearchApi(searchKeyController.text);
     if (response.succeed != true) {
       isLoading = false;
       update();
@@ -158,31 +158,13 @@ class AggSearchController extends GetxController with GetSingleTickerProviderSta
     return response;
   }
 
-  Future<CommonResponse> getTMDBMovieDetail(int id) async {
-    var res = await tmdb.getTMDBMovieInfoApi(id);
-    logger_helper.Logger.instance.d(res);
-    if (!res.succeed) {
-      return res;
-    }
-    return CommonResponse.success(data: MovieDetail.fromJson(res.data as Map<String, dynamic>));
-  }
-
-  Future<CommonResponse> getTMDBTVDetail(int id) async {
-    var res = await tmdb.getTMDBTvInfoApi(id);
-    logger_helper.Logger.instance.d(res);
-    if (!res.succeed) {
-      return res;
-    }
-    return CommonResponse.success(data: TvShowDetail.fromJson(res.data as Map<String, dynamic>));
-  }
-
   Future<CommonResponse> getTMDBDetail(info) async {
     isLoading = true;
     update();
     if (info.mediaType == 'movie') {
-      return await getTMDBMovieDetail(info.id);
+      return await getTMDBMovieInfoApi(info.id);
     } else {
-      return await getTMDBTVDetail(info.id);
+      return await getTMDBTvInfoApi(info.id);
     }
   }
 

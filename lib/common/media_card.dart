@@ -7,7 +7,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
-import '../app/home/pages/agg_search/models.dart';
+import '../app/home/pages/models/tmdb.dart';
 import 'card_view.dart';
 
 class MediaItemCard extends StatelessWidget {

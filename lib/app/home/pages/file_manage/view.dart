@@ -27,7 +27,7 @@ import '../../../../api/tmdb.dart';
 import '../../../../common/media_card.dart';
 import '../../../../common/video_player_page/video_page.dart';
 import '../../../../utils/logger_helper.dart';
-import '../agg_search/models.dart';
+import '../models/tmdb.dart';
 import '../models/source.dart';
 import 'controller.dart';
 
