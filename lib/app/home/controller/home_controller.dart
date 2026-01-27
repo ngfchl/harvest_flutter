@@ -68,17 +68,21 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
   List<Widget> pages = [
     const DashBoardPage(),
+    const DouBanPage(),
     const AggSearchPage(),
     const DownloadPage(),
     TaskPage(),
     const SubscribePage(),
     const SubscribeHistoryPage(),
-    const DouBanPage(),
   ];
   List<NavigationRailDestination> destinations = [
     const NavigationRailDestination(
       icon: Icon(Icons.home, size: 18),
       label: Text('仪表盘'),
+    ),
+    const NavigationRailDestination(
+      icon: Icon(Icons.theaters, size: 18),
+      label: Text('影视资讯'),
     ),
     const NavigationRailDestination(
       icon: Icon(Icons.search, size: 18),
@@ -95,10 +99,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     const NavigationRailDestination(
       icon: Icon(Icons.history, size: 18),
       label: Text('订阅历史'),
-    ),
-    const NavigationRailDestination(
-      icon: Icon(Icons.theaters, size: 18),
-      label: Text('豆瓣影视'),
     ),
   ];
 
@@ -233,6 +233,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     Logger.instance.d('初始化菜单');
     pages = [
       const DashBoardPage(),
+      const DouBanPage(),
       const AggSearchPage(),
       if (userinfo?.isStaff == true) ...[
         const MySitePage(),
@@ -246,7 +247,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       if (userinfo?.isStaff == true) const MyRssPage(),
       const SubscribeHistoryPage(),
       if (userinfo?.isStaff == true) const SubscribeTagPage(),
-      const DouBanPage(),
       if (userinfo?.isStaff == true) SshWidget(),
       if (authInfo?.username == 'ngfchl@126.com') AppPublishPage(),
     ];
@@ -254,6 +254,10 @@ class HomeController extends GetxController with WidgetsBindingObserver {
       const NavigationRailDestination(
         icon: Icon(Icons.home_outlined, size: 18),
         label: Text('仪表盘'),
+      ),
+      const NavigationRailDestination(
+        icon: Icon(Icons.theaters_outlined, size: 18),
+        label: Text('影视资讯'),
       ),
       const NavigationRailDestination(
         icon: Icon(Icons.search_outlined, size: 18),
@@ -306,10 +310,6 @@ class HomeController extends GetxController with WidgetsBindingObserver {
           icon: Icon(Icons.tag_outlined, size: 18),
           label: Text('订阅标签'),
         ),
-      const NavigationRailDestination(
-        icon: Icon(Icons.theaters_outlined, size: 18),
-        label: Text('豆瓣影视'),
-      ),
       if (userinfo?.isStaff == true)
         const NavigationRailDestination(
           icon: Icon(Icons.description, size: 18),
