@@ -1,17 +1,22 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_rating_bar/custom_rating_bar.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:harvest/app/home/pages/dou_ban/tmdb_item_view.dart';
 import 'package:harvest/app/home/pages/models/dou_ban_info.dart';
 import 'package:harvest/common/card_view.dart';
+import 'package:harvest/common/meta_item.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../utils/logger_helper.dart';
 import '../../../routes/app_pages.dart';
+import '../models/tmdb.dart';
 import 'controller.dart';
 
 class DouBanPage extends StatefulWidget {
@@ -27,395 +32,764 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    const List<Tab> tabs = [
-      Tab(text: '热门电影'),
-      Tab(text: '热门剧集'),
-      Tab(text: '热门榜单'),
-    ];
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<DouBanController>(builder: (controller) {
-      return DefaultTabController(
-        length: tabs.length,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          bottomNavigationBar: CustomCard(
-              padding: EdgeInsets.zero,
-              child: TabBar(
-                tabs: tabs,
-                dividerHeight: 0,
-                unselectedLabelColor: ShadTheme.of(context).colorScheme.foreground,
-                labelColor: ShadTheme.of(context).colorScheme.primary,
-              )),
-          body: TabBarView(
-            children: [
-              Column(children: [
-                CustomCard(
-                  child: Column(
-                    children: [
-                      ListTile(
-                        dense: true,
-                        title: Text(
-                          '豆瓣热门电影 ${controller.douBanMovieHot.length}',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: ShadTheme.of(context).colorScheme.foreground),
-                        ),
-                      ),
-                      SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Wrap(
-                            spacing: 8,
-                            alignment: WrapAlignment.spaceAround,
-                            children: controller.douBanMovieTags
-                                .map((e) => FilterChip(
-                                      labelPadding: EdgeInsets.zero,
-                                      label: Text(
-                                        e,
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
-                                      selected: controller.selectMovieTag == e,
-                                      onSelected: (bool value) {
-                                        if (value == true) {
-                                          controller.selectMovieTag = e;
-                                          controller.getDouBanMovieHot(controller.selectMovieTag);
-                                        }
-                                      },
-                                    ))
-                                .toList(),
-                          )),
-                    ],
-                  ),
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: LayoutBuilder(builder: (context, constraints) {
+          final contentHeight = constraints.maxHeight - 64; // 减去 tabBar 高度
+          return CustomCard(
+            width: constraints.maxWidth,
+            margin: EdgeInsets.symmetric(vertical: 3),
+            child: Center(
+              child: ShadTabs(
+                onChanged: (String value) => controller.tabsController.select(value),
+                controller: controller.tabsController,
+                tabBarConstraints: const BoxConstraints(maxHeight: 50),
+                contentConstraints: BoxConstraints(maxHeight: contentHeight),
+                decoration: ShadDecoration(
+                  color: Colors.transparent,
                 ),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      CustomCard(
-                        width: double.infinity,
-                        height: double.infinity,
-                        padding: const EdgeInsets.all(8),
-                        child: SingleChildScrollView(
-                          child: Center(
-                            child: Wrap(
-                              alignment: WrapAlignment.spaceAround,
-                              spacing: 12,
-                              runSpacing: 12,
-                              children: controller.douBanMovieHot
-                                  .map((e) => InkWell(
-                                        onTap: () async {
-                                          _buildOperateDialog(e);
-                                        },
-                                        onLongPress: () async {
-                                          // Logger.instance.i('WebView');
-                                          // Get.toNamed(Routes.WEBVIEW, arguments: {
-                                          //   'url': e.url,
-                                          // });
-                                          await controller.getVideoDetail(e.douBanUrl);
-                                        },
-                                        child: SizedBox(
-                                          width: 100,
-                                          child: Stack(
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                                child: CachedNetworkImage(
-                                                  imageUrl: '$cacheServer${e.poster}',
-                                                  placeholder: (context, url) => Center(
-                                                    child: SizedBox(
-                                                        height: 24,
-                                                        width: 24,
-                                                        child: CircularProgressIndicator(
-                                                          color: shadColorScheme.primary,
-                                                        )),
-                                                  ),
-                                                  errorWidget: (context, url, error) =>
-                                                      Image.asset('assets/images/avatar.png'),
-                                                  width: 100,
-                                                  height: 150,
-                                                  fit: BoxFit.fitWidth,
-                                                ),
-                                              ),
-                                              Positioned(
-                                                bottom: 2,
-                                                child: Container(
-                                                  color: Colors.black38,
-                                                  width: 100,
-                                                  child: Text(
-                                                    e.title.trim(),
-                                                    overflow: TextOverflow.ellipsis,
-                                                    textAlign: TextAlign.center,
-                                                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ))
-                                  .toList(),
-                            ),
-                          ),
-                        ),
+                tabs: [
+                  ShadTab(
+                    value: 'tmdb',
+                    content: buildTmdbView(controller, shadColorScheme, context),
+                    child: Text(
+                      'Tmdb',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                  ShadTab(
+                    value: 'douban',
+                    content: buildDouBanView(controller, shadColorScheme, context),
+                    child: Text(
+                      '豆瓣影视',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      );
+    });
+  }
+
+  Widget buildTmdbView(controller, ShadColorScheme shadColorScheme, context) {
+    const List<Tab> tabs = [
+      Tab(text: '电影'),
+      Tab(text: '剧集'),
+      // Tab(text: '热门榜单'),
+    ];
+    return DefaultTabController(
+      length: tabs.length,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        bottomNavigationBar: CustomCard(
+            padding: EdgeInsets.zero,
+            child: TabBar(
+              tabs: tabs,
+              dividerHeight: 0,
+              unselectedLabelColor: shadColorScheme.foreground,
+              labelColor: shadColorScheme.primary,
+            )),
+        body: TabBarView(
+          children: [
+            Column(children: [
+              CustomCard(
+                width: double.infinity,
+                child: Center(
+                  child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        spacing: 8,
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ...controller.tmdbMovieTagMap
+                              .map<Widget>(
+                                (e) => FilterChip(
+                                  labelPadding: EdgeInsets.zero,
+                                  label: Text(
+                                    e.name,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  selected: controller.selectTmdbMovieTag == e.value,
+                                  onSelected: (bool value) async {
+                                    if (value == true && controller.selectTmdbMovieTag != e.value) {
+                                      controller.showTmdbMovieList.clear();
+                                      controller.tmdbMoviePage = 1;
+                                      controller.update();
+                                      controller.selectTmdbMovieTag = e.value;
+                                      await controller.getTmdbMovies();
+                                    }
+                                  },
+                                ),
+                              )
+                              .toList(),
+                        ],
+                      )),
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    TmdbItemView(
+                      results: controller.showTmdbMovieList,
+                      onRefresh: () async {
+                        controller.tmdbMoviePage = 1;
+                        controller.showTmdbMovieList.clear();
+                        controller.update();
+                        await controller.getTmdbMovies();
+                      },
+                      onLoad: () async {
+                        Logger.instance
+                            .d('加载更多，当前页码：${controller.tmdbMoviePage}，总页数：${controller.tmdbMovies.totalPages}');
+                        if (controller.tmdbMoviePage < controller.tmdbMovies.totalPages) {
+                          controller.tmdbMoviePage++;
+                          await controller.getTmdbMovies();
+                        }
+                      },
+                      onTap: (item) => _showTMDBDetail(item),
+                      onLongPress: (item) {},
+                    ),
+                    if (controller.tmdbLoading == true)
+                      Center(
+                        child: SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: shadColorScheme.primary,
+                            )),
                       ),
-                      if (controller.isLoading == true)
-                        Center(
-                          child: SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
+                  ],
+                ),
+              ),
+            ]),
+            Column(children: [
+              CustomCard(
+                width: double.infinity,
+                child: Center(
+                  child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        spacing: 8,
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ...controller.tmdbTvTagMap
+                              .map((MetaDataItem e) => FilterChip(
+                                    labelPadding: EdgeInsets.zero,
+                                    label: Text(
+                                      e.name,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                    selected: controller.selectTmdbTvTag == e.value,
+                                    onSelected: (bool value) async {
+                                      if (value == true && controller.selectTmdbTvTag != e.value) {
+                                        controller.showTmdbTvList.clear();
+                                        controller.tmdbTvPage = 1;
+                                        controller.update();
+                                        controller.selectTmdbTvTag = e.value;
+                                        await controller.getTmdbTvs();
+                                      }
+                                    },
+                                  ))
+                              .toList(),
+                        ],
+                      )),
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    TmdbItemView(
+                      results: controller.showTmdbTvList,
+                      onRefresh: () async {
+                        controller.tmdbTvPage = 1;
+                        controller.showTmdbTvList.clear();
+                        await controller.getTmdbTvs();
+                      },
+                      onLoad: () async {
+                        Logger.instance.d('加载更多，当前页码：${controller.tmdbTvPage}，总页数：${controller.tmdbTvs.totalPages}');
+
+                        if (controller.tmdbTvPage < controller.tmdbTvs.totalPages) {
+                          controller.tmdbTvPage++;
+                          await controller.getTmdbTvs();
+                        }
+                      },
+                      onTap: (item) => _showTMDBDetail(item),
+                      onLongPress: (item) {},
+                    ),
+                    if (controller.tmdbLoading == true)
+                      Center(
+                        child: SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: shadColorScheme.primary,
+                            )),
+                      ),
+                  ],
+                ),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTMDBDetail(info) async {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    var res = await controller.getTMDBDetail(info);
+    if (!res.succeed) {
+      Get.snackbar('出错啦', res.msg, colorText: shadColorScheme.destructive);
+      return;
+    }
+    var mediaInfo = res.data;
+    String urlPrefix = 'https://media.themoviedb.org/t/p/w300_and_h450_bestv2';
+    String posterPath = '$urlPrefix${mediaInfo.posterPath}';
+    Logger.instance.d(mediaInfo);
+    // double width = MediaQuery.of(context).size.width;
+    // double height = MediaQuery.of(context).size.height * 0.5;
+
+    Get.bottomSheet(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(8),
+          topRight: Radius.circular(8),
+        ),
+      ),
+      backgroundColor: shadColorScheme.background,
+      enableDrag: true,
+      GetBuilder<DouBanController>(builder: (controller) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  children: [
+                    Row(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            Get.defaultDialog(
+                                title: '海报预览',
+                                radius: 8,
+                                backgroundColor: shadColorScheme.background,
+                                content: InkWell(
+                                  onTap: () => Navigator.of(context).pop(),
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxWidth: MediaQuery.of(context).size.width * 0.8,
+                                      maxHeight: MediaQuery.of(context).size.height * 0.8,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: CachedNetworkImage(
+                                        imageUrl: posterPath.replaceFirst('w300_and_h450', 'w600_and_h900'),
+                                        errorWidget: (context, url, error) =>
+                                            const Image(image: AssetImage('assets/images/background.png')),
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                                  ),
+                                ));
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: CachedNetworkImage(
+                              imageUrl: posterPath,
+                              placeholder: (context, url) => Center(
+                                  child: CircularProgressIndicator(
                                 color: shadColorScheme.primary,
                               )),
+                              errorWidget: (context, url, error) => Image.asset('assets/images/background.png'),
+                              width: 120,
+                              height: 180,
+                              fit: BoxFit.fitWidth,
+                            ),
+                          ),
                         ),
-                    ],
-                  ),
-                ),
-              ]),
-              Column(children: [
-                CustomCard(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      ListTile(
-                        dense: true,
-                        title: Text(
-                          '豆瓣热门电视剧 ${controller.douBanTvHot.length}',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 14, color: ShadTheme.of(context).colorScheme.foreground),
-                        ),
-                      ),
-                      SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Wrap(
+                        Expanded(
+                            child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
                             spacing: 8,
-                            alignment: WrapAlignment.spaceAround,
-                            children: controller.douBanTvTags
-                                .map((e) => FilterChip(
-                                      labelPadding: EdgeInsets.zero,
-                                      label: Text(
-                                        e,
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
-                                      selected: controller.selectTvTag == e,
-                                      onSelected: (bool value) {
-                                        if (value == true) {
-                                          controller.selectTvTag = e;
-                                          controller.getDouBanTvHot(controller.selectTvTag);
-                                        }
-                                      },
-                                    ))
-                                .toList(),
-                          )),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      CustomCard(
-                        width: double.infinity,
-                        height: double.infinity,
-                        padding: const EdgeInsets.all(8),
-                        child: SingleChildScrollView(
-                          child: Center(
-                            child: Wrap(
-                              alignment: WrapAlignment.spaceAround,
-                              spacing: 12,
-                              runSpacing: 12,
-                              children: controller.douBanTvHot
-                                  .map((e) => InkWell(
-                                        onTap: () async {
-                                          _buildOperateDialog(e);
-                                        },
-                                        onLongPress: () {
-                                          Logger.instance.i('WebView');
-                                          Get.toNamed(Routes.WEBVIEW, arguments: {
-                                            'url': e.douBanUrl,
-                                          });
-                                        },
-                                        child: SizedBox(
-                                          width: 100,
-                                          child: Stack(
-                                            children: [
-                                              ClipRRect(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                                child: CachedNetworkImage(
-                                                  imageUrl: '$cacheServer${e.poster}',
-                                                  placeholder: (context, url) => Center(
-                                                    child: SizedBox(
-                                                        height: 24,
-                                                        width: 24,
-                                                        child: CircularProgressIndicator(
-                                                          color: shadColorScheme.primary,
-                                                        )),
-                                                  ),
-                                                  errorWidget: (context, url, error) =>
-                                                      Image.asset('assets/images/avatar.png'),
-                                                  width: 100,
-                                                  height: 150,
-                                                  fit: BoxFit.fitWidth,
-                                                ),
-                                              ),
-                                              Positioned(
-                                                bottom: 2,
-                                                child: Container(
-                                                  color: Colors.black38,
-                                                  width: 100,
-                                                  child: Text(
-                                                    e.title.trim(),
-                                                    overflow: TextOverflow.ellipsis,
-                                                    textAlign: TextAlign.center,
-                                                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${mediaInfo.title}${mediaInfo.releaseDate}',
+                                style: TextStyle(
+                                    color: shadColorScheme.foreground, fontSize: 20, fontWeight: FontWeight.w700),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              // Text(
+                              //   '${mediaInfo.director.map((e) => e.name).join('/')}/${mediaInfo.genres}/${mediaInfo.releaseDate}/${mediaInfo.duration}',
+                              //   overflow: TextOverflow.ellipsis,
+                              //   maxLines: 2,
+                              // ),
+                              // Text(
+                              //   mediaInfo.writer.map((e) => e.name).join(' / '),
+                              //   overflow: TextOverflow.ellipsis,
+                              // ),
+                              if (mediaInfo.productionCountries.isNotEmpty)
+                                Text(mediaInfo.productionCountries.map((e) => e.name).join(' / '),
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                              if (mediaInfo.genres.isNotEmpty)
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Wrap(
+                                    spacing: 4,
+                                    children: [
+                                      ...mediaInfo.genres.map<CustomTextTag>((Genre item) => CustomTextTag(
+                                            labelText: item.name,
+                                          )),
+                                    ],
+                                  ),
+                                ),
+
+                              // Text(mediaInfo.region.toString()),
+                              // Text(mediaInfo.language.toString()),
+                              // Text(mediaInfo.season.toString()),
+                              // Text(mediaInfo.episode.toString()),
+                              mediaInfo.voteCount > 0
+                                  ? Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        RatingBar.readOnly(
+                                          initialRating: mediaInfo.voteAverage / 2,
+                                          filledIcon: Icons.star,
+                                          emptyIcon: Icons.star_border,
+                                          emptyColor: Colors.redAccent,
+                                          filledColor: shadColorScheme.foreground,
+                                          halfFilledColor: Colors.amberAccent,
+                                          halfFilledIcon: Icons.star_half,
+                                          maxRating: 5,
+                                          size: 14,
+                                        ),
+                                        Text(
+                                          '${mediaInfo.voteCount} 人评价',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.blue,
                                           ),
                                         ),
-                                      ))
-                                  .toList(),
-                            ),
+                                      ],
+                                    )
+                                  : Text('暂无评分', style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                              if (mediaInfo.imdbId != null)
+                                Text('iMdb: ${mediaInfo.imdbId}',
+                                    style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                            ],
                           ),
-                        ),
-                      ),
-                      if (controller.isLoading == true)
-                        Center(
-                          child: CircularProgressIndicator(
-                            color: shadColorScheme.primary,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ]),
-              Column(
-                children: [
-                  CustomCard(
-                    width: double.infinity,
-                    child: Column(
-                      children: [
-                        // Tooltip(
-                        //   message: '点击刷新TOP250',
-                        //   child: ListTile(
-                        //     dense: true,
-                        //     title: const Text(
-                        //       '豆瓣TOP250',
-                        //       textAlign: TextAlign.center,
-                        //     ),
-                        //     onTap: () => controller.getDouBanTop250(),
-                        //   ),
-                        // ),
-                        ListTile(
-                          dense: true,
-                          title: Text(
-                            '豆瓣 Top250 ${controller.rankMovieList.length}',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 14, color: ShadTheme.of(context).colorScheme.foreground),
-                          ),
-                        ),
-                        SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Wrap(
-                              spacing: 8,
-                              alignment: WrapAlignment.spaceAround,
-                              children: [
-                                // FilterChip(
-                                //   labelPadding: EdgeInsets.zero,
-                                //   label: const Text(
-                                //     'TOP250',
-                                //     style: TextStyle(fontSize: 12),
-                                //   ),
-                                //   selected:
-                                //       controller.selectTypeTag == 'TOP250',
-                                //   onSelected: (bool value) {
-                                //     if (value == true) {
-                                //       controller.selectTypeTag = 'TOP250';
-                                //       controller.getRankListByType(
-                                //           controller.selectTypeTag);
-                                //     }
-                                //   },
-                                // ),
-                                ...controller.typeMap.entries.map((e) => FilterChip(
-                                      labelPadding: EdgeInsets.zero,
-                                      label: Text(
-                                        e.key,
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
-                                      selected: controller.selectTypeTag == e.key,
-                                      onSelected: (bool value) {
-                                        if (value == true) {
-                                          controller.selectTypeTag = e.key;
-                                          controller.getRankListByType(controller.selectTypeTag);
-                                        }
-                                      },
-                                    ))
-                              ],
-                            )),
+                        ))
                       ],
                     ),
-                  ),
-                  Expanded(
-                    child: CustomCard(
-                      width: double.infinity,
-                      height: double.infinity,
-                      child: Stack(
-                        children: [
-                          EasyRefresh(
-                            header: ClassicHeader(
-                              dragText: '下拉刷新...',
-                              readyText: '松开刷新',
-                              processingText: '正在刷新...',
-                              processedText: '刷新完成',
-                              textStyle: TextStyle(
-                                fontSize: 16,
-                                color: shadColorScheme.foreground,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              messageStyle: TextStyle(
-                                fontSize: 12,
-                                color: shadColorScheme.foreground,
-                              ),
-                            ),
-                            onRefresh: () async {
-                              controller.initPage = 0;
-                              await controller.getRankListByType(controller.selectTypeTag);
-                            },
-                            onLoad: () async {
-                              if (controller.selectTypeTag == "TOP250") {
-                                await controller.getRankListByType(controller.selectTypeTag);
-                              }
-                            },
-                            child: SingleChildScrollView(
-                              child: Center(
-                                child: controller.selectTypeTag == "TOP250"
-                                    ? Wrap(
-                                        alignment: WrapAlignment.spaceAround,
-                                        children:
-                                            controller.douBanTop250.map((e) => buildTop250Item(e, context)).toList())
-                                    : Wrap(
-                                        alignment: WrapAlignment.spaceAround,
-                                        children:
-                                            controller.rankMovieList.map((e) => buildRankItem(e, context)).toList()),
-                              ),
-                            ),
-                          ),
-                          if (controller.isLoading == true)
-                            Center(
-                              child: SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    color: shadColorScheme.primary,
-                                  )),
-                            ),
-                        ],
-                      ),
+                    Text(mediaInfo.overview, style: TextStyle(color: shadColorScheme.foreground, fontSize: 12)),
+                  ],
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ShadButton.ghost(
+                    size: ShadButtonSize.sm,
+                    onPressed: () async {
+                      String url = 'https://www.themoviedb.org/movie/${mediaInfo.id}';
+                      if (kIsWeb) {
+                        Logger.instance.i('Explorer');
+                        if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
+                          Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.foreground);
+                        }
+                      } else {
+                        Logger.instance.i('WebView');
+                        Get.toNamed(Routes.WEBVIEW, arguments: {'url': url});
+                      }
+                    },
+                    leading: Icon(
+                      Icons.info_outline,
+                      size: 16,
                     ),
+                    child: const Text('详情'),
+                  ),
+                  ShadButton.destructive(
+                    size: ShadButtonSize.sm,
+                    onPressed: () async {
+                      Get.back();
+                      controller.tmdbGoSearchPage(mediaInfo);
+                    },
+                    leading: Icon(
+                      Icons.search,
+                      size: 16,
+                    ),
+                    child: const Text('搜索'),
                   ),
                 ],
               ),
             ],
           ),
+        );
+      }),
+    );
+  }
+
+  Widget buildDouBanView(DouBanController controller, ShadColorScheme shadColorScheme, BuildContext context) {
+    const List<Tab> tabs = [
+      Tab(text: '热门电影'),
+      Tab(text: '热门剧集'),
+      Tab(text: '热门榜单'),
+    ];
+    return DefaultTabController(
+      length: tabs.length,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        bottomNavigationBar: CustomCard(
+            padding: EdgeInsets.zero,
+            child: TabBar(
+              tabs: tabs,
+              dividerHeight: 0,
+              unselectedLabelColor: ShadTheme.of(context).colorScheme.foreground,
+              labelColor: ShadTheme.of(context).colorScheme.primary,
+            )),
+        body: TabBarView(
+          children: [
+            Column(children: [
+              CustomCard(
+                width: double.infinity,
+                child: Center(
+                  child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        spacing: 8,
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: controller.douBanMovieTags
+                            .map((e) => FilterChip(
+                                  labelPadding: EdgeInsets.zero,
+                                  label: Text(
+                                    e,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  selected: controller.selectMovieTag == e,
+                                  onSelected: (bool value) {
+                                    if (value == true) {
+                                      controller.selectMovieTag = e;
+                                      controller.getDouBanMovieHot(controller.selectMovieTag);
+                                    }
+                                  },
+                                ))
+                            .toList(),
+                      )),
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    CustomCard(
+                      width: double.infinity,
+                      height: double.infinity,
+                      padding: const EdgeInsets.all(8),
+                      child: SingleChildScrollView(
+                        child: Center(
+                          child: Wrap(
+                            alignment: WrapAlignment.spaceAround,
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: controller.douBanMovieHot
+                                .map((e) => InkWell(
+                                      onTap: () async {
+                                        _buildOperateDialog(e);
+                                      },
+                                      onLongPress: () async {
+                                        // Logger.instance.i('WebView');
+                                        // Get.toNamed(Routes.WEBVIEW, arguments: {
+                                        //   'url': e.url,
+                                        // });
+                                        await controller.getVideoDetail(e.douBanUrl);
+                                      },
+                                      child: SizedBox(
+                                        width: 100,
+                                        child: Stack(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(8.0),
+                                              child: CachedNetworkImage(
+                                                imageUrl: '$cacheServer${e.poster}',
+                                                placeholder: (context, url) => Center(
+                                                  child: SizedBox(
+                                                      height: 24,
+                                                      width: 24,
+                                                      child: CircularProgressIndicator(
+                                                        color: shadColorScheme.primary,
+                                                      )),
+                                                ),
+                                                errorWidget: (context, url, error) =>
+                                                    Image.asset('assets/images/avatar.png'),
+                                                width: 100,
+                                                height: 150,
+                                                fit: BoxFit.fitWidth,
+                                              ),
+                                            ),
+                                            Positioned(
+                                              bottom: 2,
+                                              child: Container(
+                                                color: Colors.black38,
+                                                width: 100,
+                                                child: Text(
+                                                  e.title.trim(),
+                                                  overflow: TextOverflow.ellipsis,
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (controller.isLoading == true)
+                      Center(
+                        child: SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: shadColorScheme.primary,
+                            )),
+                      ),
+                  ],
+                ),
+              ),
+            ]),
+            Column(children: [
+              CustomCard(
+                padding: const EdgeInsets.all(8.0),
+                width: double.infinity,
+                child: Center(
+                  child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        spacing: 8,
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: controller.douBanTvTags
+                            .map((e) => FilterChip(
+                                  labelPadding: EdgeInsets.zero,
+                                  label: Text(
+                                    e,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  selected: controller.selectTvTag == e,
+                                  onSelected: (bool value) {
+                                    if (value == true) {
+                                      controller.selectTvTag = e;
+                                      controller.getDouBanTvHot(controller.selectTvTag);
+                                    }
+                                  },
+                                ))
+                            .toList(),
+                      )),
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    CustomCard(
+                      width: double.infinity,
+                      height: double.infinity,
+                      padding: const EdgeInsets.all(8),
+                      child: SingleChildScrollView(
+                        child: Center(
+                          child: Wrap(
+                            alignment: WrapAlignment.spaceAround,
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: controller.douBanTvHot
+                                .map((e) => InkWell(
+                                      onTap: () async {
+                                        _buildOperateDialog(e);
+                                      },
+                                      onLongPress: () {
+                                        Logger.instance.i('WebView');
+                                        Get.toNamed(Routes.WEBVIEW, arguments: {
+                                          'url': e.douBanUrl,
+                                        });
+                                      },
+                                      child: SizedBox(
+                                        width: 100,
+                                        child: Stack(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(8.0),
+                                              child: CachedNetworkImage(
+                                                imageUrl: '$cacheServer${e.poster}',
+                                                placeholder: (context, url) => Center(
+                                                  child: SizedBox(
+                                                      height: 24,
+                                                      width: 24,
+                                                      child: CircularProgressIndicator(
+                                                        color: shadColorScheme.primary,
+                                                      )),
+                                                ),
+                                                errorWidget: (context, url, error) =>
+                                                    Image.asset('assets/images/avatar.png'),
+                                                width: 100,
+                                                height: 150,
+                                                fit: BoxFit.fitWidth,
+                                              ),
+                                            ),
+                                            Positioned(
+                                              bottom: 2,
+                                              child: Container(
+                                                color: Colors.black38,
+                                                width: 100,
+                                                child: Text(
+                                                  e.title.trim(),
+                                                  overflow: TextOverflow.ellipsis,
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (controller.isLoading == true)
+                      Center(
+                        child: CircularProgressIndicator(
+                          color: shadColorScheme.primary,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ]),
+            Column(
+              children: [
+                CustomCard(
+                  width: double.infinity,
+                  child: Center(
+                    child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          spacing: 8,
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // FilterChip(
+                            //   labelPadding: EdgeInsets.zero,
+                            //   label: const Text(
+                            //     'TOP250',
+                            //     style: TextStyle(fontSize: 12),
+                            //   ),
+                            //   selected:
+                            //       controller.selectTypeTag == 'TOP250',
+                            //   onSelected: (bool value) {
+                            //     if (value == true) {
+                            //       controller.selectTypeTag = 'TOP250';
+                            //       controller.getRankListByType(
+                            //           controller.selectTypeTag);
+                            //     }
+                            //   },
+                            // ),
+                            ...controller.typeMap.entries.map((e) => FilterChip(
+                                  labelPadding: EdgeInsets.zero,
+                                  label: Text(
+                                    e.key,
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  selected: controller.selectTypeTag == e.key,
+                                  onSelected: (bool value) {
+                                    if (value == true) {
+                                      controller.selectTypeTag = e.key;
+                                      controller.getRankListByType(controller.selectTypeTag);
+                                    }
+                                  },
+                                ))
+                          ],
+                        )),
+                  ),
+                ),
+                Expanded(
+                  child: CustomCard(
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: Stack(
+                      children: [
+                        EasyRefresh(
+                          header: ClassicHeader(
+                            dragText: '下拉刷新...',
+                            readyText: '松开刷新',
+                            processingText: '正在刷新...',
+                            processedText: '刷新完成',
+                            textStyle: TextStyle(
+                              fontSize: 16,
+                              color: shadColorScheme.foreground,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            messageStyle: TextStyle(
+                              fontSize: 12,
+                              color: shadColorScheme.foreground,
+                            ),
+                          ),
+                          onRefresh: () async {
+                            controller.initPage = 0;
+                            await controller.getRankListByType(controller.selectTypeTag);
+                          },
+                          onLoad: () async {
+                            if (controller.selectTypeTag == "TOP250") {
+                              await controller.getRankListByType(controller.selectTypeTag);
+                            }
+                          },
+                          child: SingleChildScrollView(
+                            child: Center(
+                              child: controller.selectTypeTag == "TOP250"
+                                  ? Wrap(
+                                      alignment: WrapAlignment.spaceAround,
+                                      children:
+                                          controller.douBanTop250.map((e) => buildTop250Item(e, context)).toList())
+                                  : Wrap(
+                                      alignment: WrapAlignment.spaceAround,
+                                      children:
+                                          controller.rankMovieList.map((e) => buildRankItem(e, context)).toList()),
+                            ),
+                          ),
+                        ),
+                        if (controller.isLoading == true)
+                          Center(
+                            child: SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: shadColorScheme.primary,
+                                )),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-      );
-    });
+      ),
+    );
   }
 
   InkWell buildRankItem(RankMovie e, BuildContext context) {

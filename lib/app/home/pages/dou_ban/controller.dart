@@ -2,17 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/controller/home_controller.dart';
 import 'package:harvest/app/home/pages/models/dou_ban_info.dart';
+import 'package:harvest/common/meta_item.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../api/douban.dart';
+import '../../../../api/tmdb.dart';
 import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
 import '../agg_search/controller.dart';
+import '../models/tmdb.dart';
 import 'douban_api.dart';
 
 class DouBanController extends GetxController {
   final searchController = Get.put(AggSearchController());
   final homeController = Get.put(HomeController());
   final PageController pageController = PageController(initialPage: 0);
+  ShadTabsController<String> tabsController = ShadTabsController<String>(value: 'tmdb');
 
   DouBanHelper douBanHelper = DouBanHelper();
   List<TopMovieInfo> douBanTop250 = [];
@@ -56,10 +61,33 @@ class DouBanController extends GetxController {
   };
 
   String selectMovieTag = '热门';
+
   String selectTvTag = '热门';
   String selectTypeTag = 'TOP250';
   int initPage = 0;
   bool isLoading = false;
+
+  bool tmdbLoading = false;
+  int selectTmdbMovieTag = 1;
+  int selectTmdbTvTag = 5;
+  int tmdbTvPage = 1;
+  int tmdbMoviePage = 1;
+  List<MetaDataItem> tmdbMovieTagMap = [
+    MetaDataItem(name: '热门', value: 1),
+    MetaDataItem(name: '正在上映', value: 2),
+    MetaDataItem(name: '即将上映', value: 3),
+    MetaDataItem(name: '高分', value: 4),
+  ];
+  List<MetaDataItem> tmdbTvTagMap = [
+    MetaDataItem(name: '热门', value: 5),
+    MetaDataItem(name: '今日播出', value: 6),
+    MetaDataItem(name: '正在播出', value: 7),
+    MetaDataItem(name: '高分', value: 8),
+  ];
+  SearchResults tmdbMovies = SearchResults(page: 1, totalPages: 1, totalResults: 0);
+  SearchResults tmdbTvs = SearchResults(page: 1, totalPages: 1, totalResults: 0);
+  List<MediaItem> showTmdbTvList = [];
+  List<MediaItem> showTmdbMovieList = [];
 
   @override
   void onInit() async {
@@ -68,14 +96,106 @@ class DouBanController extends GetxController {
   }
 
   Future<void> initData() async {
+    getTmdbMovies();
+    getTmdbTvs();
     await getRankListByType(selectTypeTag);
     await getDouBanMovieHot(selectMovieTag);
     await getDouBanTvHot(selectTvTag);
     update();
   }
 
+  Future<CommonResponse> getTmdbSourceInfo(int type, {int page = 1}) async {
+    tmdbLoading = true;
+    update();
+    CommonResponse response;
+    switch (type) {
+      case 1:
+        response = await getTMDBPopularMovieApi(page: page);
+        break;
+      case 2:
+        response = await getTMDBPlayingMovieApi(page: page);
+        break;
+      case 3:
+        response = await getTMDBUpcomingMovieApi(page: page);
+        break;
+      case 4:
+        response = await getTMDBTopRateMovieApi(page: page);
+        break;
+      case 5:
+        response = await getTMDBPopularTvApi(page: page);
+        break;
+      case 6:
+        response = await getTMDBAiringTvApi(page: page);
+        break;
+      case 7:
+        response = await getTMDBOnTheAirTvApi(page: page);
+        break;
+      case 8:
+        response = await getTMDBTopRateTvApi(page: page);
+        break;
+      default:
+        response = CommonResponse.error(msg: '未知的媒体类型！');
+        break;
+    }
+    tmdbLoading = false;
+    update();
+    return response;
+  }
+
+  Future<CommonResponse> getTmdbMovies() async {
+    CommonResponse response = await getTmdbSourceInfo(selectTmdbMovieTag, page: tmdbMoviePage);
+    if (response.succeed) {
+      // Logger.instance.i(response.data);
+      tmdbMovies = SearchResults.fromJson(response.data);
+      // 按 ID 去重后追加
+      final existingIds = showTmdbMovieList.map((item) => item.id).toSet();
+      Logger.instance.i('已存在 ${existingIds.length} 条数据，服务器共有${tmdbMovies.totalPages}页，${tmdbMovies.totalResults} 条数据');
+      final newItems = tmdbMovies.results.where((item) => !existingIds.contains(item.id)).toList();
+      Logger.instance.i('本次新增 ${newItems.length} 条数据');
+      if (newItems.isNotEmpty) {
+        showTmdbMovieList.addAll(newItems);
+        update();
+      }
+      Logger.instance.i('更新后共有 ${showTmdbMovieList.length} 条数据');
+    } else {
+      Logger.instance.e(response.msg);
+    }
+    return response;
+  }
+
+  Future<CommonResponse> getTmdbTvs() async {
+    CommonResponse response = await getTmdbSourceInfo(selectTmdbTvTag, page: tmdbTvPage);
+    if (response.succeed) {
+      // Logger.instance.i(response.data);
+      tmdbTvs = SearchResults.fromJson(response.data);
+      final existingIds = showTmdbTvList.map((item) => item.id).toSet();
+      Logger.instance.i('已存在 ${existingIds.length} 条数据，服务器共有${tmdbTvs.totalPages}页，${tmdbTvs.totalResults} 条数据');
+
+      final newItems = tmdbTvs.results.where((item) => !existingIds.contains(item.id)).toList();
+      Logger.instance.i('本次新增 ${newItems.length} 条数据');
+      if (newItems.isNotEmpty) {
+        showTmdbTvList.addAll(newItems);
+        update();
+      }
+      Logger.instance.i('更新后共有 ${showTmdbMovieList.length} 条数据');
+    } else {
+      Logger.instance.e(response.msg);
+    }
+    return response;
+  }
+
+  Future<CommonResponse> getTMDBDetail(info) async {
+    isLoading = true;
+    update();
+    if (info.mediaType == 'movie') {
+      return await getTMDBMovieInfoApi(info.id);
+    } else {
+      return await getTMDBTvInfoApi(info.id);
+    }
+  }
+
   Future<void> getDouBanMovieTags() async {
-    var response =  await getCategoryTagsApi(category: 'movie');
+    var response = await getCategoryTagsApi(category: 'movie');
     if (response.succeed) {
       douBanMovieTags = List<String>.from(response.data ?? []);
     }
@@ -178,6 +298,18 @@ class DouBanController extends GetxController {
     if (detail.imdb.isNotEmpty) {
       searchKey = "${detail.imdb}||$searchKey";
     }
+    await goSearch(searchKey);
+  }
+
+  Future<void> tmdbGoSearchPage(info) async {
+    String searchKey = info.title;
+    if (info.imdbId.isNotEmpty) {
+      searchKey = "${info.imdbId}||$searchKey";
+    }
+    await goSearch(searchKey);
+  }
+
+  Future<void> goSearch(String searchKey) async {
     searchController.searchKeyController.text = searchKey;
     await searchController.doWebsocketSearch();
     homeController.changePage(1);
