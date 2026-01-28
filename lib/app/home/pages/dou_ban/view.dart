@@ -15,9 +15,11 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../utils/logger_helper.dart';
+import '../../../../utils/storage.dart';
 import '../../../routes/app_pages.dart';
 import '../models/tmdb.dart';
 import 'controller.dart';
+import 'douban_item_view.dart';
 
 class DouBanPage extends StatefulWidget {
   const DouBanPage({super.key});
@@ -245,7 +247,12 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     var res = await controller.getTMDBDetail(info);
     if (!res.succeed) {
-      Get.snackbar('出错啦', res.msg, colorText: shadColorScheme.destructive);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text(res.msg),
+        ),
+      );
       return;
     }
     var mediaInfo = res.data;
@@ -405,7 +412,12 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                       if (kIsWeb) {
                         Logger.instance.i('Explorer');
                         if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
-                          Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.foreground);
+                          ShadToaster.of(context).show(
+                            ShadToast.destructive(
+                              title: const Text('打开网页出错'),
+                              description: Text('打开网页出错，不支持的客户端？'),
+                            ),
+                          );
                         }
                       } else {
                         Logger.instance.i('WebView');
@@ -445,6 +457,8 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
       Tab(text: '热门剧集'),
       Tab(text: '热门榜单'),
     ];
+    double itemWidth = SPUtil.getDouble('tmdb_media_item_width', defaultValue: 120);
+    double itemHeight = itemWidth * 1.5;
     return DefaultTabController(
       length: tabs.length,
       child: Scaffold(
@@ -491,72 +505,10 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
               Expanded(
                 child: Stack(
                   children: [
-                    CustomCard(
-                      width: double.infinity,
-                      height: double.infinity,
-                      padding: const EdgeInsets.all(8),
-                      child: SingleChildScrollView(
-                        child: Center(
-                          child: Wrap(
-                            alignment: WrapAlignment.spaceAround,
-                            spacing: 12,
-                            runSpacing: 12,
-                            children: controller.douBanMovieHot
-                                .map((e) => InkWell(
-                                      onTap: () async {
-                                        _buildOperateDialog(e);
-                                      },
-                                      onLongPress: () async {
-                                        // Logger.instance.i('WebView');
-                                        // Get.toNamed(Routes.WEBVIEW, arguments: {
-                                        //   'url': e.url,
-                                        // });
-                                        await controller.getVideoDetail(e.douBanUrl);
-                                      },
-                                      child: SizedBox(
-                                        width: 100,
-                                        child: Stack(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(8.0),
-                                              child: CachedNetworkImage(
-                                                imageUrl: '$cacheServer${e.poster}',
-                                                placeholder: (context, url) => Center(
-                                                  child: SizedBox(
-                                                      height: 24,
-                                                      width: 24,
-                                                      child: CircularProgressIndicator(
-                                                        color: shadColorScheme.primary,
-                                                      )),
-                                                ),
-                                                errorWidget: (context, url, error) =>
-                                                    Image.asset('assets/images/avatar.png'),
-                                                width: 100,
-                                                height: 150,
-                                                fit: BoxFit.fitWidth,
-                                              ),
-                                            ),
-                                            Positioned(
-                                              bottom: 2,
-                                              child: Container(
-                                                color: Colors.black38,
-                                                width: 100,
-                                                child: Text(
-                                                  e.title.trim(),
-                                                  overflow: TextOverflow.ellipsis,
-                                                  textAlign: TextAlign.center,
-                                                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ))
-                                .toList(),
-                          ),
-                        ),
-                      ),
+                    DoubanItemView(
+                      mediaItems: controller.douBanMovieHot,
+                      onTap: (item) => _buildOperateDialog(item),
+                      onLongPress: (item) => controller.getVideoDetail(item.douBanUrl),
                     ),
                     if (controller.isLoading == true)
                       Center(
@@ -604,71 +556,10 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
               Expanded(
                 child: Stack(
                   children: [
-                    CustomCard(
-                      width: double.infinity,
-                      height: double.infinity,
-                      padding: const EdgeInsets.all(8),
-                      child: SingleChildScrollView(
-                        child: Center(
-                          child: Wrap(
-                            alignment: WrapAlignment.spaceAround,
-                            spacing: 12,
-                            runSpacing: 12,
-                            children: controller.douBanTvHot
-                                .map((e) => InkWell(
-                                      onTap: () async {
-                                        _buildOperateDialog(e);
-                                      },
-                                      onLongPress: () {
-                                        Logger.instance.i('WebView');
-                                        Get.toNamed(Routes.WEBVIEW, arguments: {
-                                          'url': e.douBanUrl,
-                                        });
-                                      },
-                                      child: SizedBox(
-                                        width: 100,
-                                        child: Stack(
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(8.0),
-                                              child: CachedNetworkImage(
-                                                imageUrl: '$cacheServer${e.poster}',
-                                                placeholder: (context, url) => Center(
-                                                  child: SizedBox(
-                                                      height: 24,
-                                                      width: 24,
-                                                      child: CircularProgressIndicator(
-                                                        color: shadColorScheme.primary,
-                                                      )),
-                                                ),
-                                                errorWidget: (context, url, error) =>
-                                                    Image.asset('assets/images/avatar.png'),
-                                                width: 100,
-                                                height: 150,
-                                                fit: BoxFit.fitWidth,
-                                              ),
-                                            ),
-                                            Positioned(
-                                              bottom: 2,
-                                              child: Container(
-                                                color: Colors.black38,
-                                                width: 100,
-                                                child: Text(
-                                                  e.title.trim(),
-                                                  overflow: TextOverflow.ellipsis,
-                                                  textAlign: TextAlign.center,
-                                                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ))
-                                .toList(),
-                          ),
-                        ),
-                      ),
+                    DoubanItemView(
+                      mediaItems: controller.douBanTvHot,
+                      onTap: (item) => _buildOperateDialog(item),
+                      onLongPress: (item) => controller.getVideoDetail(item.douBanUrl),
                     ),
                     if (controller.isLoading == true)
                       Center(
@@ -813,6 +704,11 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                 ClipRRect(
                   borderRadius: BorderRadius.circular(15.0),
                   child: CachedNetworkImage(
+                    httpHeaders: {
+                      'Referer': 'https://movie.douban.com/',
+                      'User-Agent':
+                          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0',
+                    },
                     imageUrl: '$cacheServer${e.poster}',
                     placeholder: (context, url) => Center(
                       child: SizedBox(
@@ -822,7 +718,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                             color: shadColorScheme.primary,
                           )),
                     ),
-                    errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
+                    errorWidget: (context, url, error) => Image.asset('assets/images/douban.png'),
                     width: 80,
                     height: 120,
                     fit: BoxFit.fitWidth,
@@ -935,7 +831,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                             color: shadColorScheme.primary,
                           )),
                     ),
-                    errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
+                    errorWidget: (context, url, error) => Image.asset('assets/images/douban.png'),
                     width: 80,
                     height: 120,
                     fit: BoxFit.fitWidth,
@@ -1031,13 +927,19 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
 
   Future<dynamic> _buildOperateDialog(mediaInfo) async {
     CommonResponse detail = await controller.getVideoDetail(mediaInfo.douBanUrl);
-    if (!detail.succeed) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    if (!detail.succeed || detail.data == null) {
       Logger.instance.e(detail.msg);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('获取资源详情失败'),
+          description: Text(detail.succeed ? '触发豆瓣警报了，请稍后再试' : detail.msg),
+        ),
+      );
       return;
     }
     Logger.instance.e(detail.data);
     VideoDetail videoDetail = VideoDetail.fromJson(detail.data);
-    var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
@@ -1070,7 +972,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                   child: CachedNetworkImage(
                                     imageUrl: '$cacheServer${mediaInfo.poster}',
                                     errorWidget: (context, url, error) =>
-                                        const Image(image: AssetImage('assets/images/avatar.png')),
+                                        const Image(image: AssetImage('assets/images/douban.png')),
                                     fit: BoxFit.fitWidth,
                                   ),
                                 ),
@@ -1088,7 +990,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                     color: shadColorScheme.primary,
                                   )),
                             ),
-                            errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
+                            errorWidget: (context, url, error) => Image.asset('assets/images/douban.png'),
                             width: 100,
                             height: 150,
                             fit: BoxFit.fitWidth,
@@ -1380,7 +1282,12 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
     if (kIsWeb) {
       Logger.instance.i('Explorer');
       if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
-        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: ShadTheme.of(context).colorScheme.foreground);
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('打开网页出错'),
+            description: Text('打开网页出错，不支持的客户端？'),
+          ),
+        );
       }
     } else {
       Logger.instance.i('WebView');
