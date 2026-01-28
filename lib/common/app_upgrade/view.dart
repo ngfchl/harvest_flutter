@@ -115,7 +115,12 @@ class AppUpgradePage extends StatelessWidget {
                                 onPressed: () async {
                                   Uri uri = Uri.parse('https://repeat.ptools.fun');
                                   if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                                    Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.destructive);
+                                    ShadToaster.of(context).show(
+                                      ShadToast.destructive(
+                                        title: const Text('打开网页出错'),
+                                        description: Text('打开网页出错，不支持的客户端？'),
+                                      ),
+                                    );
                                   }
                                 },
                                 child: Text('打开APP下载页面', style: TextStyle(fontSize: 12)),
@@ -148,8 +153,12 @@ class AppUpgradePage extends StatelessWidget {
                                                           '${appUpgradeController.gitProxy ?? ''}${e.value}';
                                                       Uri uri = Uri.parse(downloadUrl);
                                                       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                                                        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？',
-                                                            colorText: shadColorScheme.destructive);
+                                                        ShadToaster.of(context).show(
+                                                          ShadToast.destructive(
+                                                            title: const Text('打开网页出错'),
+                                                            description: Text('打开网页出错，不支持的客户端？'),
+                                                          ),
+                                                        );
                                                       }
                                                     },
                                                     child: Text('浏览器打开'),
@@ -282,7 +291,19 @@ class AppUpgradePage extends StatelessWidget {
               onPressed: () async {
                 appUpgradeController = Get.put(AppUpgradeController());
                 if (appUpgradeController.updateInfo == null) {
-                  await appUpgradeController.getAppLatestVersionInfo();
+                  var response = await appUpgradeController.getAppLatestVersionInfo();
+                  if (!response.succeed) {
+                    var message = '获取更新日志失败！${response.msg}';
+                    Logger.instance.e(message);
+
+                    ShadToaster.of(context).show(
+                      ShadToast.destructive(
+                        title: const Text('出错啦'),
+                        description: Text(message),
+                      ),
+                    );
+                    return;
+                  }
                 }
                 // if (appUpgradeController.appVersions.isEmpty) {
                 //   await appUpgradeController.getAppVersionList();
@@ -390,7 +411,9 @@ class AppUpgradePage extends StatelessWidget {
               size: ShadButtonSize.sm,
               onPressed: () async {
                 Clipboard.setData(ClipboardData(text: command));
-                Get.snackbar('更新通知', '命令已复制到剪贴板', colorText: shadColorScheme.foreground);
+                ShadToaster.of(context).show(
+                  ShadToast(title: const Text('成功啦'), description: Text('命令已复制到剪贴板！')),
+                );
                 var r = await Process.run('open', ['/System/Applications/Utilities/Terminal.app']);
                 Logger.instance.i('✅ Opened Terminal === ${r.exitCode} === ${r.stderr}');
                 Logger.instance.i('✅ kDebugMode $kDebugMode ');
@@ -406,10 +429,17 @@ class AppUpgradePage extends StatelessWidget {
         if (cancelToken.isCancelled) return;
         String message = '打开安装包失败 ❌ $e';
         Logger.instance.e(message, stackTrace: stackTrace);
-        Get.snackbar('更新通知', message, colorText: shadColorScheme.destructiveForeground);
+        ShadToaster.of(context).show(
+          ShadToast(title: const Text('成功啦'), description: Text(message)),
+        );
       }
     } else {
-      Get.snackbar('更新通知', '不支持的系统平台', colorText: shadColorScheme.destructiveForeground);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('不支持的系统平台'),
+        ),
+      );
     }
   }
 

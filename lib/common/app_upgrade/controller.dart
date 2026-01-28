@@ -69,7 +69,7 @@ class AppUpgradeController extends GetxController {
     update();
   }
 
-  Future<void> getAppLatestVersionInfo() async {
+  Future<CommonResponse> getAppLatestVersionInfo() async {
     Logger.instance.d('getAppLatestVersionInfo');
     final response = await dio.get<Map<String, dynamic>>('https://repeat.ptools.fun/api/app/version/latest');
     CommonResponse res = CommonResponse.fromJson(
@@ -83,11 +83,8 @@ class AppUpgradeController extends GetxController {
       if (!notShowNewVersion && hasNewVersion) {
         popoverController.show();
       }
-    } else {
-      var message = '获取更新日志失败！${res.msg}';
-      Get.snackbar('更新日志', message, colorText: Colors.red);
-      Logger.instance.e(message);
     }
     update();
+    return res;
   }
 }

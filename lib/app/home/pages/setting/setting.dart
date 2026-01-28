@@ -237,13 +237,15 @@ class SettingPage extends StatelessWidget {
                         Logger.instance.d('自动匹配: ${option?.value.repeat}');
                         Logger.instance.d('自动匹配: ${option?.toJson()}');
                         final res = await controller.saveOption(option!);
-                        if (res.code == 0) {
-                          Get.snackbar('配置保存成功', '${controller.optionMap['auto_import_tags']} 配置：${res.msg}',
-                              colorText: shadColorScheme.foreground);
-                        } else {
-                          Get.snackbar('配置保存失败', '${controller.optionMap['auto_import_tags']} 配置出错啦：${res.msg}',
-                              colorText: shadColorScheme.destructive);
-                        }
+                        ShadToaster.of(context).show(
+                          res.succeed
+                              ? ShadToast(
+                                  title: const Text('成功啦'),
+                                  description: Text('${controller.optionMap['auto_import_tags']} 配置：${res.msg}'))
+                              : ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text('${controller.optionMap['auto_import_tags']} 配置出错啦：${res.msg}')),
+                        );
                       }),
                 ],
               ),
@@ -349,11 +351,11 @@ class SettingPage extends StatelessWidget {
                                 onPressed: () async {
                                   Get.back(result: true);
                                   CommonResponse res = await controller.removeOption(option);
-                                  if (res.code == 0) {
-                                    Get.snackbar('删除通知', res.msg.toString(), colorText: shadColorScheme.foreground);
-                                  } else {
-                                    Get.snackbar('删除通知', res.msg.toString(), colorText: shadColorScheme.destructive);
-                                  }
+                                  ShadToaster.of(context).show(
+                                    res.succeed
+                                        ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                        : ShadToast.destructive(title: const Text('出错啦'), description: Text(res.msg)),
+                                  );
                                   await controller.getOptionList();
                                 },
                                 child: const Text('确认'),
@@ -477,12 +479,19 @@ class SettingPage extends StatelessWidget {
                             final res = await controller.saveOption(option!);
                             if (res.code == 0) {
                               Get.back();
-                              Get.snackbar('配置保存成功', '${controller.optionMap['aggregation_search']} 配置：${res.msg}',
-                                  colorText: shadColorScheme.foreground);
+                              ShadToaster.of(context).show(
+                                ShadToast(
+                                    title: const Text('成功啦'),
+                                    description: Text('${controller.optionMap['aggregation_search']} 配置：${res.msg}')),
+                              );
                               isEdit.value = false;
                             } else {
-                              Get.snackbar('配置保存失败', '${controller.optionMap['aggregation_search']} 配置出错啦：${res.msg}',
-                                  colorText: shadColorScheme.destructive);
+                              ShadToaster.of(context).show(
+                                ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text('${controller.optionMap['aggregation_search']} 配置出错啦：${res.msg}'),
+                                ),
+                              );
                             }
                           }),
                     ],
@@ -579,12 +588,19 @@ class SettingPage extends StatelessWidget {
                             final res = await controller.saveOption(option!);
                             if (res.code == 0) {
                               Get.back();
-                              Get.snackbar('配置保存成功', '${controller.optionMap['tmdb_api_auth']} 配置：${res.msg}',
-                                  colorText: shadColorScheme.foreground);
+                              ShadToaster.of(context).show(
+                                ShadToast(
+                                    title: const Text('成功啦'),
+                                    description: Text('${controller.optionMap['tmdb_api_auth']} 配置：${res.msg}')),
+                              );
                               isEdit.value = false;
                             } else {
-                              Get.snackbar('配置保存失败', '${controller.optionMap['tmdb_api_auth']} 配置出错啦：${res.msg}',
-                                  colorText: shadColorScheme.destructive);
+                              ShadToaster.of(context).show(
+                                ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text('${controller.optionMap['tmdb_api_auth']} 配置出错啦：${res.msg}'),
+                                ),
+                              );
                             }
                           }),
                     ],
@@ -804,12 +820,19 @@ class SettingPage extends StatelessWidget {
                         final res = await controller.saveOption(option!);
                         if (res.code == 0) {
                           Get.back();
-                          Get.snackbar('配置保存成功', '${controller.optionMap['notice_category_enable']} 配置：${res.msg}',
-                              colorText: shadColorScheme.foreground);
+                          ShadToaster.of(context).show(
+                            ShadToast(
+                                title: const Text('成功啦'),
+                                description: Text('${controller.optionMap['notice_category_enable']} 配置：${res.msg}')),
+                          );
                           isEdit.value = false;
                         } else {
-                          Get.snackbar('配置保存失败', '${controller.optionMap['notice_category_enable']} 配置出错啦：${res.msg}',
-                              colorText: shadColorScheme.destructive);
+                          ShadToaster.of(context).show(
+                            ShadToast.destructive(
+                              title: const Text('出错啦'),
+                              description: Text('${controller.optionMap['notice_category_enable']} 配置出错啦：${res.msg}'),
+                            ),
+                          );
                         }
                       }),
                 ],
@@ -1010,13 +1033,21 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['notice_content_item']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description:
+                                          Text('${controller.optionMap['notice_content_item']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar(
-                                    '配置保存失败', '${controller.optionMap['notice_content_item']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description:
+                                        Text('${controller.optionMap['notice_content_item']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -1106,12 +1137,19 @@ class SettingPage extends StatelessWidget {
                             final res = await controller.saveOption(option!);
                             if (res.code == 0) {
                               Get.back();
-                              Get.snackbar('配置保存成功', '${controller.optionMap['monkey_token']} 配置：${res.msg}',
-                                  colorText: shadColorScheme.foreground);
+                              ShadToaster.of(context).show(
+                                ShadToast(
+                                    title: const Text('成功啦'),
+                                    description: Text('${controller.optionMap['monkey_token']} 配置：${res.msg}')),
+                              );
                               isEdit.value = false;
                             } else {
-                              Get.snackbar('配置保存失败', '${controller.optionMap['monkey_token']} 配置出错啦：${res.msg}',
-                                  colorText: shadColorScheme.destructive);
+                              ShadToaster.of(context).show(
+                                ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text('${controller.optionMap['monkey_token']} 配置出错啦：${res.msg}'),
+                                ),
+                              );
                             }
                           }),
                     ],
@@ -1216,12 +1254,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['wechat_work_push']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['wechat_work_push']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['wechat_work_push']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['wechat_work_push']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -1304,12 +1349,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['FileList']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['FileList']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['FileList']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['FileList']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -1378,12 +1430,17 @@ class SettingPage extends StatelessWidget {
                                 });
                                 if (res.code == 0) {
                                   Get.back();
-                                  Get.snackbar('测试消息内容发送成功', '测试消息内容发送成功：${res.msg}',
-                                      colorText: shadColorScheme.foreground);
+                                  ShadToaster.of(context).show(
+                                    ShadToast(title: const Text('成功啦'), description: Text('测试消息内容发送完成：${res.msg}')),
+                                  );
                                   isEdit.value = false;
                                 } else {
-                                  Get.snackbar('测试消息内容发送失败', '测试消息内容发送出错啦：${res.msg}',
-                                      colorText: shadColorScheme.destructive);
+                                  ShadToaster.of(context).show(
+                                    ShadToast.destructive(
+                                      title: const Text('出错啦'),
+                                      description: Text('测试消息内容发送出错啦：${res.msg}'),
+                                    ),
+                                  );
                                 }
                               }),
                         ),
@@ -1479,12 +1536,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['iyuu_push']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['iyuu_push']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['iyuu_push']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['iyuu_push']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -1572,12 +1636,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.succeed) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['meow_push']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['meow_push']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['meow_push']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['meow_push']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -1671,12 +1742,19 @@ class SettingPage extends StatelessWidget {
 
                               if (res.succeed) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['server_chan_push']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['server_chan_push']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['server_chan_push']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['server_chan_push']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -1760,12 +1838,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['pushdeer_push']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['pushdeer_push']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['pushdeer_push']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['pushdeer_push']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -1855,12 +1940,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['aliyun_drive']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['aliyun_drive']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['aliyun_drive']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['aliyun_drive']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -1950,12 +2042,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['ssdforum']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['ssdforum']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['ssdforum']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['ssdforum']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -2043,12 +2142,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['baidu_ocr']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['baidu_ocr']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['baidu_ocr']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['baidu_ocr']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -2132,12 +2238,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['bark_push']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['bark_push']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['bark_push']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['bark_push']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -2220,10 +2333,11 @@ class SettingPage extends StatelessWidget {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (url.isNotEmpty) {
       if (!url.startsWith('https://')) {
-        Get.snackbar(
-          'WebHook 地址验证失败！',
-          'WebHook 必须使用 https 协议且只能使用 80、443、88、8443端口！',
-          colorText: shadColorScheme.destructive,
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text('WebHook 地址验证失败，必须使用 https 协议且只能使用 80、443、88、8443端口！'),
+          ),
         );
         return;
       }
@@ -2232,16 +2346,15 @@ class SettingPage extends StatelessWidget {
         Get.back();
         SPUtil.setLocalStorage('TELEGRAM_WEBHOOK', url);
       }
-      Get.snackbar(
-        '保存成功',
-        response.msg,
-        colorText: response.succeed ? shadColorScheme.foreground : shadColorScheme.destructive,
+      ShadToaster.of(context).show(
+        ShadToast(title: const Text('成功啦'), description: Text(response.msg)),
       );
     } else {
-      Get.snackbar(
-        '保存失败',
-        'WebHook 地址不能为空！',
-        colorText: shadColorScheme.destructive,
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('WebHook 保存失败,地址不能为空！'),
+        ),
       );
     }
   }
@@ -2312,14 +2425,21 @@ class SettingPage extends StatelessWidget {
                                 );
                               }
                               final res = await controller.saveOption(option!);
-                              if (res.code == 0) {
+                              if (res.succeed) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['pushplus_push']} 保存成功：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['pushplus_push']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['pushplus_push']} 保存出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['pushplus_push']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -2407,12 +2527,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['wxpusher_push']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['wxpusher_push']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['wxpusher_push']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['wxpusher_push']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -2501,12 +2628,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['telegram_push']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['telegram_push']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['telegram_push']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['telegram_push']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),
@@ -2594,12 +2728,19 @@ class SettingPage extends StatelessWidget {
                               final res = await controller.saveOption(option!);
                               if (res.code == 0) {
                                 Get.back();
-                                Get.snackbar('配置保存成功', '${controller.optionMap['cookie_cloud']} 配置：${res.msg}',
-                                    colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text('${controller.optionMap['cookie_cloud']} 配置：${res.msg}')),
+                                );
                                 isEdit.value = false;
                               } else {
-                                Get.snackbar('配置保存失败', '${controller.optionMap['cookie_cloud']} 配置出错啦：${res.msg}',
-                                    colorText: shadColorScheme.destructive);
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text('${controller.optionMap['cookie_cloud']} 配置出错啦：${res.msg}'),
+                                  ),
+                                );
                               }
                             }),
                       ),

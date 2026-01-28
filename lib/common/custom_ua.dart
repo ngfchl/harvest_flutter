@@ -75,7 +75,7 @@ class CustomUAWidget extends StatelessWidget {
                   child: ShadButton.destructive(
                     size: ShadButtonSize.sm,
                     onPressed: () async {
-                      _saveToken(shadColorScheme, tokenController.text);
+                      _saveToken(context, tokenController.text);
                       if (proxyTokenController.text.isNotEmpty) {
                         await SPUtil.setString("ProxyToken", proxyTokenController.text.trim());
                       } else {
@@ -93,20 +93,19 @@ class CustomUAWidget extends StatelessWidget {
     );
   }
 
-  void _saveToken(shadColorScheme, String token) async {
+  void _saveToken(context, String token) async {
     if (token.isNotEmpty) {
       await SPUtil.setString("CustomUA", token);
       Get.back();
-      Get.snackbar(
-        '保存成功',
-        '自定义 APP 请求头设置成功！',
-        colorText: shadColorScheme.foreground,
+      ShadToaster.of(context).show(
+        ShadToast(title: const Text('成功啦'), description: Text('自定义 APP 请求头 UserAgent 设置成功！')),
       );
     } else {
-      Get.snackbar(
-        '保存失败',
-        'APP 请求头不能为空！',
-        colorText: shadColorScheme.destructive,
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('APP 请求头不能为空！'),
+        ),
       );
     }
   }

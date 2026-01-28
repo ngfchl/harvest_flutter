@@ -111,7 +111,12 @@ class UpgradeWidgetPage extends StatelessWidget {
                                   onPressed: () async {
                                     final res = await homeController.doDockerUpdate();
                                     Get.back();
-                                    Get.snackbar('更新通知', res.msg, colorText: shadColorScheme.foreground);
+                                    ShadToaster.of(context).show(
+                                      ShadToast(
+                                          title: const Text('成功啦'),
+                                          description: Text(res.msg)
+                                      ),
+                                    );
                                   },
                                   child: const Text('更新'),
                                 ),
@@ -175,7 +180,12 @@ class UpgradeWidgetPage extends StatelessWidget {
                                   onPressed: () async {
                                     final res = await homeController.doSitesUpdate();
                                     Get.back();
-                                    Get.snackbar('更新通知', res.msg, colorText: shadColorScheme.foreground);
+                                    ShadToaster.of(context).show(
+                                      ShadToast(
+                                          title: const Text('成功啦'),
+                                          description: Text(res.msg)
+                                      ),
+                                    );
                                   },
                                   child: const Text('更新'),
                                 ),
@@ -197,7 +207,12 @@ class UpgradeWidgetPage extends StatelessWidget {
                               onPressed: () async {
                                 final res = await homeController.doDockerUpdate();
                                 Get.back();
-                                Get.snackbar('更新通知', res.msg, colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text(res.msg)
+                                  ),
+                                );
                               },
                               child: const Text('更新主服务'),
                             ),
@@ -206,7 +221,12 @@ class UpgradeWidgetPage extends StatelessWidget {
                               onPressed: () async {
                                 final res = await homeController.doWebUIUpdate();
                                 Get.back();
-                                Get.snackbar('更新通知', res.msg, colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text(res.msg)
+                                  ),
+                                );
                               },
                               child: const Text('更新WebUI'),
                             ),
@@ -215,7 +235,12 @@ class UpgradeWidgetPage extends StatelessWidget {
                               onPressed: () async {
                                 final res = await homeController.doSitesUpdate();
                                 Get.back();
-                                Get.snackbar('更新通知', res.msg, colorText: shadColorScheme.foreground);
+                                ShadToaster.of(context).show(
+                                  ShadToast(
+                                      title: const Text('成功啦'),
+                                      description: Text(res.msg)
+                                  ),
+                                );
                               },
                               child: const Text('更新站点配置'),
                             ),

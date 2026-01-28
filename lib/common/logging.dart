@@ -154,14 +154,14 @@ class LoggingView extends StatelessWidget {
                                           onPressed: () async {
                                             Get.back();
                                             String url = '$server/api/flower/tasks';
-                                            await openUrl(url);
+                                            await openUrl(url, context);
                                           },
                                           child: const Text('任务列表')),
                                       ShadButton(
                                           onPressed: () async {
                                             Get.back();
                                             String url = '$server/supervisor';
-                                            await openUrl(url);
+                                            await openUrl(url, context);
                                           },
                                           child: const Text('服务日志')),
                                     ],
@@ -331,12 +331,14 @@ class LoggingView extends StatelessWidget {
     floating.open(context);
   }
 
-  Future<void> openUrl(String url) async {
+  Future<void> openUrl(String url, BuildContext context) async {
     Uri uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      Get.snackbar(
-        '打开网页出错',
-        '打开网页出错，不支持的客户端？',
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('打开网页出错'),
+          description: Text('打开网页出错，不支持的客户端？'),
+        ),
       );
     }
   }
