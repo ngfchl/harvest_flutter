@@ -234,17 +234,17 @@ class ThemeIconButton extends StatelessWidget {
                           return Row(
                             children: [
                               Text(
-                                'TMDB卡片宽度',
+                                '影视卡片宽度',
                                 style: TextStyle(color: shadColorScheme.foreground),
                               ),
                               Expanded(
                                 child: ShadSlider(
-                                    min: 120.0,
-                                    max: 200.0,
+                                    min: 60.0,
+                                    max: 240.0,
                                     // divisions: 10,
                                     label: controller.tmdbCardWidth.value.toString(),
                                     initialValue: controller.tmdbCardWidth.value,
-                                    onChanged: (value) async {
+                                    onChangeEnd: (value) async {
                                       controller.tmdbCardWidth.value = value;
                                       controller.saveSettings();
                                     }),
