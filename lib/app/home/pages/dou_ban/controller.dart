@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/controller/home_controller.dart';
@@ -9,6 +10,7 @@ import '../../../../api/douban.dart';
 import '../../../../api/tmdb.dart';
 import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
+import '../../../routes/app_pages.dart';
 import '../agg_search/controller.dart';
 import '../models/tmdb.dart';
 import 'douban_api.dart';
@@ -279,6 +281,13 @@ class DouBanController extends GetxController {
   }
 
   Future getVideoDetail(String url) async {
+    if (kIsWeb) {
+      Logger.instance.i('WebView');
+      Get.toNamed(Routes.WEBVIEW, arguments: {
+        'url': url,
+      });
+      return;
+    }
     isLoading = true;
     update();
     String id = extractDoubanId(url);
@@ -287,6 +296,7 @@ class DouBanController extends GetxController {
       return;
     }
     var res = await getSubjectInfoApi(id);
+    Logger.instance.i(res);
     isLoading = false;
     update();
     return res;

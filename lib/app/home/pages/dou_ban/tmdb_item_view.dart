@@ -29,8 +29,8 @@ class TmdbItemView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
-    double itemWith = SPUtil.getDouble('tmdb_media_item_width', defaultValue: 120);
-    double itemHeight = itemWith * 1.5;
+    double itemWidth = SPUtil.getDouble('tmdb_media_item_width', defaultValue: 120);
+    double itemHeight = itemWidth * 1.5;
     return CustomCard(
       width: double.infinity,
       height: double.infinity,
@@ -51,7 +51,7 @@ class TmdbItemView extends StatelessWidget {
                     onTap: () => onTap?.call(e),
                     onLongPress: () => onLongPress?.call(e),
                     child: SizedBox(
-                      width: itemWith,
+                      width: itemWidth,
                       child: Column(
                         children: [
                           Stack(
@@ -69,8 +69,8 @@ class TmdbItemView extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                  errorWidget: (context, url, error) => Image.asset('assets/images/avatar.png'),
-                                  width: itemWith,
+                                  errorWidget: (context, url, error) => Image.asset('assets/images/tmdb.png'),
+                                  width: itemWidth,
                                   height: itemHeight,
                                   fit: BoxFit.fitWidth,
                                 ),
@@ -79,7 +79,7 @@ class TmdbItemView extends StatelessWidget {
                                 bottom: 2,
                                 child: Container(
                                   color: Colors.black38,
-                                  width: itemWith,
+                                  width: itemWidth,
                                   child: Text(
                                     e.releaseDate.trim(),
                                     overflow: TextOverflow.ellipsis,
@@ -92,7 +92,7 @@ class TmdbItemView extends StatelessWidget {
                           ),
                           Container(
                             color: Colors.black38,
-                            width: itemWith,
+                            width: itemWidth,
                             child: Text(
                               e.title.trim(),
                               overflow: TextOverflow.ellipsis,
