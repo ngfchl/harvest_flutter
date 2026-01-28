@@ -117,13 +117,12 @@ class UserWidget extends StatelessWidget {
                                               controller.userList.remove(user);
                                               controller.update();
                                               CommonResponse res = await controller.removeUserModel(user);
-                                              if (res.code == 0) {
-                                                Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: shadColorScheme.foreground);
-                                              } else {
-                                                Get.snackbar('删除通知', res.msg.toString(),
-                                                    colorText: shadColorScheme.destructive);
-                                              }
+                                              ShadToaster.of(context).show(
+                                                res.succeed
+                                                    ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                                    : ShadToast.destructive(
+                                                        title: const Text('出错啦'), description: Text(res.msg)),
+                                              );
                                             },
                                             child: const Text('确认'),
                                           ),
@@ -306,18 +305,20 @@ class UserWidget extends StatelessWidget {
                   size: ShadButtonSize.sm,
                   onPressed: () async {
                     if (usernameController.text.isEmpty) {
-                      Get.snackbar(
-                        '用户名校验',
-                        '用户名不能为空！',
-                        colorText: shadColorScheme.destructive,
+                      ShadToaster.of(context).show(
+                        ShadToast.destructive(
+                          title: const Text('出错啦'),
+                          description: Text('用户名不能为空！'),
+                        ),
                       );
                       return;
                     }
                     if (passwordController.text != rePasswordController.text) {
-                      Get.snackbar(
-                        '密码校验错误',
-                        '两次输入的密码不一致！',
-                        colorText: shadColorScheme.destructive,
+                      ShadToaster.of(context).show(
+                        ShadToast.destructive(
+                          title: const Text('出错啦'),
+                          description: Text('两次输入的密码不一致！'),
+                        ),
                       );
                       return;
                     }
@@ -337,15 +338,12 @@ class UserWidget extends StatelessWidget {
                     }
                     Logger.instance.i(user?.toJson());
                     CommonResponse response = await controller.saveUserModel(user!);
-                    if (response.code == 0) {
+                    if (response.succeed) {
                       Get.back();
-                      Get.snackbar(
-                        '保存成功！',
-                        response.msg,
-                        snackPosition: SnackPosition.TOP,
-                        colorText: shadColorScheme.foreground,
-                        duration: const Duration(seconds: 3),
+                      ShadToaster.of(context).show(
+                        ShadToast(title: const Text('成功啦'), description: Text(response.msg)),
                       );
+
                       if (controller.userinfo?.user == user?.username) {
                         HomeController home = Get.find<HomeController>();
                         home.logout();
@@ -353,12 +351,11 @@ class UserWidget extends StatelessWidget {
                       await controller.getUserListFromServer();
                       controller.update();
                     } else {
-                      Get.snackbar(
-                        '保存出错啦！',
-                        response.msg,
-                        snackPosition: SnackPosition.TOP,
-                        colorText: shadColorScheme.destructive,
-                        duration: const Duration(seconds: 3),
+                      ShadToaster.of(context).show(
+                        ShadToast.destructive(
+                          title: const Text('出错啦'),
+                          description: Text(response.msg),
+                        ),
                       );
                     }
                   },

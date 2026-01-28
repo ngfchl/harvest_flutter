@@ -91,7 +91,12 @@ class SshWidget extends StatelessWidget {
               await controller.connect();
               try {
                 if (!controller.connected) {
-                  Get.snackbar('登录失败！', '登录失败啦，请检查用户名密码！');
+                  ShadToaster.of(context).show(
+                    ShadToast.destructive(
+                      title: const Text('出错啦'),
+                      description: Text('登录失败啦，请检查用户名密码！！'),
+                    ),
+                  );
                 }
               } catch (e, trace) {
                 Logger.instance.e(e);

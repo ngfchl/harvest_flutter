@@ -27,8 +27,8 @@ import '../../../../api/tmdb.dart';
 import '../../../../common/media_card.dart';
 import '../../../../common/video_player_page/video_page.dart';
 import '../../../../utils/logger_helper.dart';
-import '../models/tmdb.dart';
 import '../models/source.dart';
+import '../models/tmdb.dart';
 import 'controller.dart';
 
 class FileManagePage extends StatelessWidget {
@@ -231,10 +231,17 @@ class FileManagePage extends StatelessWidget {
                                 Get.back(result: true);
                                 CommonResponse res = await controller.edisSource(item.path, nameController.text);
                                 if (res.succeed) {
-                                  Get.snackbar('通知', res.msg.toString(), colorText: shadColorScheme.foreground);
+                                  ShadToaster.of(context).show(
+                                    ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+                                  );
                                   await controller.initSourceData(noCache: true);
                                 } else {
-                                  Get.snackbar('通知', res.msg.toString(), colorText: Get.theme.colorScheme.error);
+                                  ShadToaster.of(context).show(
+                                    ShadToast.destructive(
+                                      title: const Text('出错啦'),
+                                      description: Text(res.msg),
+                                    ),
+                                  );
                                 }
                               },
                               child: const Text('确认'),
@@ -279,13 +286,20 @@ class FileManagePage extends StatelessWidget {
                                 Get.back(result: true);
                                 CommonResponse res = await controller.removeSource(item.path);
                                 if (res.succeed) {
-                                  Get.snackbar('删除通知', res.msg.toString(), colorText: shadColorScheme.foreground);
+                                  ShadToaster.of(context).show(
+                                    ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+                                  );
                                   var r = controller.items.remove(item);
                                   Logger.instance.d(r);
                                   controller.update(["file_manage"]);
                                   await controller.initSourceData(noCache: true);
                                 } else {
-                                  Get.snackbar('删除通知', res.msg.toString(), colorText: Get.theme.colorScheme.error);
+                                  ShadToaster.of(context).show(
+                                    ShadToast.destructive(
+                                      title: const Text('出错啦'),
+                                      description: Text(res.msg),
+                                    ),
+                                  );
                                 }
                               },
                               child: const Text('确认'),
@@ -356,10 +370,8 @@ class FileManagePage extends StatelessWidget {
                                 Get.back();
                                 CommonResponse res = await controller.hardLinkSource(item.path);
 
-                                Get.snackbar(
-                                  '硬链接通知',
-                                  res.msg.toString(),
-                                  colorText: res.succeed ? shadColorScheme.foreground : shadColorScheme.destructive,
+                                ShadToaster.of(context).show(
+                                  ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
                                 );
                               },
                               leading: Icon(
@@ -378,20 +390,20 @@ class FileManagePage extends StatelessWidget {
                                 controller.isLoading = false;
                                 controller.update(['file_manage']);
                                 if (!response.succeed) {
-                                  Get.snackbar(
-                                    "出错啦！",
-                                    response.msg,
-                                    colorText: shadColorScheme.foreground,
-                                    backgroundColor: shadColorScheme.background,
+                                  ShadToaster.of(context).show(
+                                    ShadToast.destructive(
+                                      title: const Text('出错啦'),
+                                      description: Text(response.msg),
+                                    ),
                                   );
                                   return;
                                 }
                                 if (response.data != null && response.data!.isEmpty) {
-                                  Get.snackbar(
-                                    "出错啦！",
-                                    "未查询到相关影视信息",
-                                    colorText: shadColorScheme.foreground,
-                                    backgroundColor: shadColorScheme.background,
+                                  ShadToaster.of(context).show(
+                                    ShadToast.destructive(
+                                      title: const Text('出错啦'),
+                                      description: Text('未查询到相关影视信息！'),
+                                    ),
                                   );
                                   return;
                                 }
@@ -427,18 +439,16 @@ class FileManagePage extends StatelessWidget {
                                                     var response =
                                                         await controller.writeScrapeInfoApi(item.path, media);
                                                     if (!response.succeed) {
-                                                      Get.snackbar(
-                                                        "出错啦！",
-                                                        response.msg,
-                                                        colorText: shadColorScheme.foreground,
-                                                        backgroundColor: shadColorScheme.background,
+                                                      ShadToaster.of(context).show(
+                                                        ShadToast.destructive(
+                                                          title: const Text('出错啦'),
+                                                          description: Text(response.msg),
+                                                        ),
                                                       );
                                                     } else {
-                                                      Get.snackbar(
-                                                        "成功！",
-                                                        response.msg,
-                                                        colorText: shadColorScheme.foreground,
-                                                        backgroundColor: shadColorScheme.background,
+                                                      ShadToaster.of(context).show(
+                                                        ShadToast(
+                                                            title: const Text('成功啦'), description: Text(response.msg)),
                                                       );
                                                     }
                                                   },
@@ -473,11 +483,21 @@ class FileManagePage extends StatelessWidget {
                                 controller.isLoading = false;
                                 controller.update(['file_manage']);
                                 if (!response.succeed) {
-                                  Get.snackbar("出错啦！", response.msg);
+                                  ShadToaster.of(context).show(
+                                    ShadToast.destructive(
+                                      title: const Text('出错啦'),
+                                      description: Text(response.msg),
+                                    ),
+                                  );
                                   return;
                                 }
                                 if (response.data!.isEmpty) {
-                                  Get.snackbar("出错啦！", "未查询到相关影视信息");
+                                  ShadToaster.of(context).show(
+                                    ShadToast.destructive(
+                                      title: const Text('出错啦'),
+                                      description: Text('未查询到相关影视信息！'),
+                                    ),
+                                  );
                                   return;
                                 }
                                 Logger.instance.d(response.data);
@@ -506,18 +526,17 @@ class FileManagePage extends StatelessWidget {
                                                       var response =
                                                           await controller.writeScrapeInfoApi(item.path, media);
                                                       if (!response.succeed) {
-                                                        Get.snackbar(
-                                                          "出错啦！",
-                                                          response.msg,
-                                                          colorText: shadColorScheme.foreground,
-                                                          backgroundColor: shadColorScheme.background,
+                                                        ShadToaster.of(context).show(
+                                                          ShadToast.destructive(
+                                                            title: const Text('出错啦'),
+                                                            description: Text(response.msg),
+                                                          ),
                                                         );
                                                       } else {
-                                                        Get.snackbar(
-                                                          "成功！",
-                                                          response.msg,
-                                                          colorText: shadColorScheme.foreground,
-                                                          backgroundColor: shadColorScheme.background,
+                                                        ShadToaster.of(context).show(
+                                                          ShadToast(
+                                                              title: const Text('成功啦'),
+                                                              description: Text(response.msg)),
                                                         );
                                                       }
                                                     },
@@ -552,7 +571,7 @@ class FileManagePage extends StatelessWidget {
                             onPressed: () async {
                               CommonResponse res = await controller.getFileSourceUrl(item.path);
                               if (res.succeed) {
-                                await pickAndDownload(res.data);
+                                await pickAndDownload(res.data, context);
                               }
                             },
                             leading: Icon(
@@ -579,11 +598,11 @@ class FileManagePage extends StatelessWidget {
                                 if (res.succeed) {
                                   Clipboard.setData(ClipboardData(text: res.data));
                                   if (item.mimeType?.startsWith('image') == true) {
-                                    showImage(res.data, shadColorScheme);
+                                    showImage(res.data, context);
                                   } else if (item.mimeType?.startsWith('video') == true) {
-                                    showPlayer(res.data, shadColorScheme);
+                                    showPlayer(res.data, context);
                                   } else if (item.mimeType?.startsWith('audio') == true) {
-                                    showPlayer(res.data, shadColorScheme);
+                                    showPlayer(res.data, context);
                                   } else {
                                     Get.defaultDialog(
                                       title: '文件操作',
@@ -595,7 +614,7 @@ class FileManagePage extends StatelessWidget {
                                         children: [
                                           ShadButton.ghost(
                                             onPressed: () async {
-                                              await pickAndDownload(res.data);
+                                              await pickAndDownload(res.data, context);
                                             },
                                             leading: Icon(Icons.download_outlined,
                                                 size: 16, color: shadColorScheme.foreground),
@@ -609,10 +628,11 @@ class FileManagePage extends StatelessWidget {
                                     );
                                   }
                                 } else {
-                                  Get.snackbar(
-                                    '提示',
-                                    res.msg,
-                                    colorText: Get.theme.colorScheme.error,
+                                  ShadToaster.of(context).show(
+                                    ShadToast.destructive(
+                                      title: const Text('提示'),
+                                      description: Text(res.msg),
+                                    ),
                                   );
                                 }
                               },
@@ -643,7 +663,7 @@ class FileManagePage extends StatelessWidget {
                       if (res.succeed) {
                         Clipboard.setData(ClipboardData(text: res.data));
                         if (item.mimeType?.startsWith('image') == true) {
-                          showImage(res.data, shadColorScheme);
+                          showImage(res.data, context);
                         } else if (item.mimeType?.startsWith('video') == true ||
                             item.mimeType?.startsWith('audio') == true) {
                           Get.dialog(CustomCard(
@@ -667,7 +687,7 @@ class FileManagePage extends StatelessWidget {
                                 ShadButton.ghost(
                                   size: ShadButtonSize.sm,
                                   onPressed: () async {
-                                    await pickAndDownload(res.data);
+                                    await pickAndDownload(res.data, context);
                                   },
                                   leading: Icon(
                                     Icons.download_outlined,
@@ -681,10 +701,8 @@ class FileManagePage extends StatelessWidget {
                           );
                         }
                       } else {
-                        Get.snackbar(
-                          '提示',
-                          res.msg,
-                          colorText: Get.theme.colorScheme.error,
+                        ShadToaster.of(context).show(
+                          ShadToast(title: const Text('提示'), description: Text(res.msg)),
                         );
                       }
                     }
@@ -906,7 +924,8 @@ class FileManagePage extends StatelessWidget {
     }
   }
 
-  void showPlayer(String url, ShadColorScheme shadColorScheme) async {
+  void showPlayer(String url, BuildContext context) async {
+    final shadColorScheme = ShadTheme.of(context).colorScheme;
     final schemes = buildSchemes(url);
     Get.defaultDialog(
       title: '打开方式',
@@ -997,7 +1016,7 @@ class FileManagePage extends StatelessWidget {
           ShadButton.ghost(
             size: ShadButtonSize.sm,
             onPressed: () async {
-              await pickAndDownload(url);
+              await pickAndDownload(url, context);
             },
             child: Text(
               "下载",
@@ -1012,7 +1031,7 @@ class FileManagePage extends StatelessWidget {
     );
   }
 
-  Future<void> pickAndDownload(String url) async {
+  Future<void> pickAndDownload(String url, BuildContext context) async {
     RxDouble progress = 0.0.obs; // 0 ~ 100
     RxBool downloading = false.obs;
     // 1. 权限
@@ -1020,7 +1039,12 @@ class FileManagePage extends StatelessWidget {
     if (GetPlatform.isMobile &&
         await Permission.storage.request().isDenied &&
         await Permission.photos.request().isDenied) {
-      Get.snackbar('权限失败', '需要存储权限');
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('需要存储权限！'),
+        ),
+      );
       return;
     }
 
@@ -1056,17 +1080,25 @@ class FileManagePage extends StatelessWidget {
       );
       // 4. 成功
       Get.back(); // 关闭加载圈
-      Get.snackbar('完成', '文件已保存到 $savePath');
+      ShadToaster.of(context).show(
+        ShadToast(title: const Text('成功啦'), description: Text('文件已保存到 $savePath')),
+      );
     } catch (e) {
       Get.back();
-      Get.snackbar('失败', e.toString());
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text(e.toString()),
+        ),
+      );
     } finally {
       downloading.value = false;
       progress.value = 0;
     }
   }
 
-  void showImage(String url, shadColorScheme) {
+  void showImage(String url, BuildContext context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
     var uri = Uri.parse(url);
     var expire = int.tryParse(uri.queryParameters['expire'] ?? '0');
     var duration = expire != null ? expire * 1000 - DateTime.now().millisecondsSinceEpoch : 60 * 60 * 1000;
@@ -1122,19 +1154,29 @@ class FileManagePage extends StatelessWidget {
                     ShadIconButton.ghost(
                       onPressed: () async {
                         if (GetPlatform.isDesktop || GetPlatform.isWeb) {
-                          await pickAndDownload(url);
+                          await pickAndDownload(url, context);
                         } else {
                           if (GetPlatform.isAndroid) {
                             if (!await Permission.storage.request().isGranted ||
                                 !await Permission.photos.request().isGranted) {
-                              Get.snackbar('权限失败', '需要存储权限以保存图片');
+                              ShadToaster.of(context).show(
+                                ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text('需要存储权限以保存图片！'),
+                                ),
+                              );
                               return;
                             }
                           } else if (GetPlatform.isIOS) {
                             final status = await Permission.photosAddOnly.status;
                             Logger.instance.d('photosAddOnly status: $status');
                             if (!status.isGranted) {
-                              Get.snackbar('权限失败', '需要相册写入权限');
+                              ShadToaster.of(context).show(
+                                ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text('需要相册写入权限！'),
+                                ),
+                              );
                               return;
                             }
                           }
@@ -1158,15 +1200,27 @@ class FileManagePage extends StatelessWidget {
                             Get.back(); // 关闭加载圈
 
                             if (result['isSuccess'] == true) {
-                              Get.snackbar('✅ 已保存', '图片已存入系统相册');
+                              ShadToaster.of(context).show(
+                                ShadToast(title: const Text('成功啦'), description: Text('图片已存入系统相册！')),
+                              );
                             } else {
                               Logger.instance.e(result['errorMessage']);
-                              Get.snackbar('❌ 保存失败', '保存失败!!!!!');
+                              ShadToaster.of(context).show(
+                                ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text('❌ 保存失败！'),
+                                ),
+                              );
                             }
                           } catch (e) {
                             Get.back();
                             Logger.instance.e(e);
-                            Get.snackbar('❌ 下载失败', '❌ 下载失败');
+                            ShadToaster.of(context).show(
+                              ShadToast.destructive(
+                                title: const Text('出错啦'),
+                                description: Text('❌ 下载失败！'),
+                              ),
+                            );
                           }
                         }
                       },

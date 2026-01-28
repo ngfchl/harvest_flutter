@@ -56,23 +56,11 @@ class _LoginPageState extends State<LoginPage> {
             barrierDismissible: false,
             onConfirm: () async {
               CommonResponse response = await controller.deleteServer(server);
-              if (response.code == 0) {
-                Get.snackbar(
-                  '删除',
-                  '服务器已成功删除',
-                  snackPosition: SnackPosition.BOTTOM,
-                  colorText: themeData.colorScheme.foreground,
-                  duration: const Duration(seconds: 3),
-                );
-              } else {
-                Get.snackbar(
-                  '删除',
-                  '删除服务器失败',
-                  snackPosition: SnackPosition.BOTTOM,
-                  colorText: themeData.colorScheme.destructiveForeground,
-                  duration: const Duration(seconds: 3),
-                );
-              }
+              ShadToaster.of(context).show(
+                response.succeed
+                    ? ShadToast(title: const Text('成功啦'), description: Text('服务器已成功删除！'))
+                    : ShadToast.destructive(title: const Text('出错啦'), description: Text('服务器已删除失败！')),
+              );
               Navigator.pop(context);
             },
             onCancel: () {
@@ -566,21 +554,27 @@ class _LoginPageState extends State<LoginPage> {
                                 await controller.testServerConnection(server, cancelToken: cancelToken);
                             if (flag.succeed) {
                               CommonResponse result = await controller.saveServer(server);
-                              Get.snackbar(server.id == 0 ? '保存结果' : '更新结果', "服务器连接成功：${result.msg}",
-                                  // snackPosition: SnackPosition.BOTTOM,
-                                  duration: const Duration(seconds: 3),
-                                  colorText: server.id == 0
-                                      ? shadColorScheme.foreground
-                                      : shadColorScheme.destructiveForeground);
+                              ShadToaster.of(context).show(
+                                ShadToast(title: const Text('成功啦'), description: Text("服务器连接成功：${result.msg}")),
+                              );
                               Navigator.pop(context);
                             } else {
-                              Get.snackbar('测试失败', flag.msg, colorText: shadColorScheme.destructiveForeground);
+                              ShadToaster.of(context).show(
+                                ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text(flag.msg),
+                                ),
+                              );
                               controller.isLoading = false;
                               controller.update();
                             }
                           } else {
-                            Get.snackbar('出错啦', '服务器信息校验失败！',
-                                duration: const Duration(seconds: 3), colorText: shadColorScheme.destructiveForeground);
+                            ShadToaster.of(context).show(
+                              ShadToast.destructive(
+                                title: const Text('出错啦'),
+                                description: Text('服务器信息校验失败！'),
+                              ),
+                            );
                           }
                           controller.isLoading = false;
                           controller.update();
@@ -628,13 +622,11 @@ class _LoginPageState extends State<LoginPage> {
         controller.selectedServer?.id == 0 ||
         controller.selectedServer!.username.isEmpty ||
         controller.selectedServer!.password.isEmpty) {
-      // 判断是否为新添加的服务器
-      Get.snackbar(
-        '服务器信息设置有误',
-        '无法连接到服务器，请检查用户名和密码',
-        snackPosition: SnackPosition.BOTTOM,
-        colorText: ShadTheme.of(context).colorScheme.destructiveForeground,
-        duration: const Duration(seconds: 3),
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('无法连接到服务器，请检查用户名和密码！'),
+        ),
       );
       return;
     }
@@ -657,25 +649,27 @@ class _LoginPageState extends State<LoginPage> {
       if (res.data['code'] == 0) {
         SPUtil.setMap('userinfo', res.data["data"]);
         SPUtil.setBool('isLogin', true);
-        Get.snackbar(
-          '登录成功！',
-          "欢迎 ${loginUser.username} 回来",
-          colorText: shadColorScheme.foreground,
+        ShadToaster.of(context).show(
+          ShadToast(
+              title: const Text('登录成功啦'),
+              description: Text(
+                "欢迎 ${loginUser.username} 回来",
+              )),
         );
         Get.offNamed(Routes.HOME);
         return true;
       }
-      Get.snackbar(
-        '登录失败',
-        res.data['msg'],
-        colorText: shadColorScheme.destructiveForeground,
+
+      ShadToaster.of(context).show(
+        ShadToast.destructive(title: const Text('出登录失败错啦'), description: Text(res.data['msg'])),
       );
     } catch (e, stackTrace) {
       Logger.instance.e(stackTrace.toString());
-      Get.snackbar(
-        '登录失败',
-        e.toString(),
-        colorText: shadColorScheme.destructiveForeground,
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('登录出错啦'),
+          description: Text(e.toString()),
+        ),
       );
     }
     SPUtil.setBool('isLogin', false);

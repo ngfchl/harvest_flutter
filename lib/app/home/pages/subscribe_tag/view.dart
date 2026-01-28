@@ -36,19 +36,11 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
             ShadIconButton.ghost(
                 onPressed: () async {
                   CommonResponse res = await importBaseSubTag();
-                  if (res.code == 0) {
-                    Get.snackbar(
-                      '执行成功',
-                      res.msg.toString(),
-                      colorText: ShadTheme.of(context).colorScheme.foreground,
-                    );
-                  } else {
-                    Get.snackbar(
-                      '执行失败',
-                      res.msg.toString(),
-                      colorText: ShadTheme.of(context).colorScheme.foreground,
-                    );
-                  }
+                  ShadToaster.of(context).show(
+                    res.succeed
+                        ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                        : ShadToast.destructive(title: const Text('出错啦'), description: Text(res.msg)),
+                  );
                 },
                 icon: Icon(
                   Icons.save_alt_outlined,
@@ -158,12 +150,11 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                       onPressed: () async {
                         Get.back(result: true);
                         CommonResponse res = await controller.removeSubTag(tag);
-                        var shadColorScheme = ShadTheme.of(context).colorScheme;
-                        if (res.code == 0) {
-                          Get.snackbar('删除通知', res.msg.toString(), colorText: shadColorScheme.foreground);
-                        } else {
-                          Get.snackbar('删除通知', res.msg.toString(), colorText: shadColorScheme.destructive);
-                        }
+                        ShadToaster.of(context).show(
+                          res.succeed
+                              ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                              : ShadToast.destructive(title: const Text('出错啦'), description: Text(res.msg)),
+                        );
                       },
                       child: const Text('确认'),
                     ),
@@ -356,9 +347,16 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('标签保存成功！', res.msg, colorText: ShadTheme.of(context).colorScheme.foreground);
+        ShadToaster.of(context).show(
+          ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+        );
       } else {
-        Get.snackbar('标签保存失败！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text(res.msg),
+          ),
+        );
       }
     } finally {}
   }

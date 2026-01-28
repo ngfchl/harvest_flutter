@@ -363,10 +363,20 @@ class ThemeIconButton extends StatelessWidget {
                                           final ok = await controller.importFromClipboard();
                                           Get.back();
                                           if (ok.succeed) {
-                                            Get.snackbar('成功', '主题已导入');
+                                            ShadToaster.of(context).show(
+                                              ShadToast(
+                                                title: const Text('主题导入'),
+                                                description: Text('主题导入成功！'),
+                                              ),
+                                            );
                                             Get.forceAppUpdate();
                                           } else {
-                                            Get.snackbar('失败', ok.msg, colorText: shadColorScheme.destructive);
+                                            ShadToaster.of(context).show(
+                                              ShadToast.destructive(
+                                                title: const Text('主题导入'),
+                                                description: Text(ok.msg),
+                                              ),
+                                            );
                                           }
                                         },
                                         child: const Text('导入'),
@@ -405,10 +415,11 @@ class ThemeIconButton extends StatelessWidget {
                                           String data = await controller.exportToClipboard(false);
                                           Get.back();
                                           Logger.instance.i('当前主题配置信息: $data');
-                                          Get.snackbar(
-                                            '已导出',
-                                            '主题配置已复制到剪贴板',
-                                            snackPosition: SnackPosition.BOTTOM,
+                                          ShadToaster.of(context).show(
+                                            ShadToast(
+                                              title: const Text('主题导出'),
+                                              description: Text('主题配置已复制到剪贴板！'),
+                                            ),
                                           );
                                         },
                                         child: const Text('配色方案'),
@@ -419,7 +430,12 @@ class ThemeIconButton extends StatelessWidget {
                                           String data = await controller.exportToClipboard(true);
                                           Get.back();
                                           Logger.instance.i('当前主题配置信息: $data');
-                                          Get.snackbar('已导出', '主题配置已复制到剪贴板');
+                                          ShadToaster.of(context).show(
+                                            ShadToast(
+                                              title: const Text('主题导出'),
+                                              description: Text('主题配置已复制到剪贴板！'),
+                                            ),
+                                          );
                                         },
                                         child: const Text('主题配色'),
                                       )
@@ -509,10 +525,11 @@ class ThemeIconButton extends StatelessWidget {
                           if (urlController.text.isNotEmpty) {
                             if (controller.useLocalBackground.value &&
                                 controller.backgroundImage.value.startsWith('http')) {
-                              Get.snackbar(
-                                '出错啦',
-                                "请选择正确的背景图片！",
-                                colorText: shadColorScheme.destructive,
+                              ShadToaster.of(context).show(
+                                ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text('请选择正确的背景图片！'),
+                                ),
                               );
                               return;
                             }
@@ -522,10 +539,11 @@ class ThemeIconButton extends StatelessWidget {
                             Get.forceAppUpdate();
                             Get.back();
                           } else {
-                            Get.snackbar(
-                              '出错啦',
-                              "请选择或输入正确的图片地址！",
-                              colorText: shadColorScheme.destructive,
+                            ShadToaster.of(context).show(
+                              ShadToast.destructive(
+                                title: const Text('出错啦'),
+                                description: Text('请选择正确的背景图片！'),
+                              ),
                             );
                           }
                         },

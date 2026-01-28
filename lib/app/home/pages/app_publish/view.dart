@@ -149,12 +149,22 @@ class AppPublishPage extends StatelessWidget {
                                           controller.getAdminUserList();
                                           Get.back();
                                         } else {
-                                          Get.snackbar('错误', result.msg, colorText: shadColorScheme.destructive);
+                                          ShadToaster.of(context).show(
+                                            ShadToast.destructive(
+                                              title: const Text('出错啦'),
+                                              description: Text(result.msg),
+                                            ),
+                                          );
                                         }
                                       } catch (e, trace) {
                                         Logger.instance.e(e);
                                         Logger.instance.e(trace);
-                                        Get.snackbar('错误', e.toString(), colorText: shadColorScheme.destructive);
+                                        ShadToaster.of(context).show(
+                                          ShadToast.destructive(
+                                            title: const Text('出错啦'),
+                                            description: Text(e.toString()),
+                                          ),
+                                        );
                                       } finally {
                                         controller.loading = false;
                                         controller.update();
@@ -227,8 +237,12 @@ class AppPublishPage extends StatelessWidget {
                                                   Get.back();
                                                   controller.getAdminUserList();
                                                 } else {
-                                                  Get.snackbar('错误', result.msg,
-                                                      colorText: shadColorScheme.destructive);
+                                                  ShadToaster.of(context).show(
+                                                    ShadToast.destructive(
+                                                      title: const Text('出错啦'),
+                                                      description: Text(result.msg),
+                                                    ),
+                                                  );
                                                 }
                                               },
                                             ),
@@ -283,7 +297,7 @@ class AppPublishPage extends StatelessWidget {
                                               color: shadColorScheme.foreground,
                                             ),
                                             child: Text(style: TextStyle(fontSize: 12), '重置授权'),
-                                            onPressed: () => resetAuth(shadColorScheme, user),
+                                            onPressed: () => resetAuth(context, user),
                                           ),
                                           ShadContextMenuItem(
                                             leading: Icon(
@@ -292,7 +306,7 @@ class AppPublishPage extends StatelessWidget {
                                               color: shadColorScheme.foreground,
                                             ),
                                             child: Text(style: TextStyle(fontSize: 12), '发送邮件'),
-                                            onPressed: () => sendMail(shadColorScheme, user),
+                                            onPressed: () => sendMail(context, user),
                                           ),
                                           ShadContextMenuItem(
                                             leading: Icon(
@@ -301,7 +315,7 @@ class AppPublishPage extends StatelessWidget {
                                               color: shadColorScheme.foreground,
                                             ),
                                             child: Text(style: TextStyle(fontSize: 12), '编辑信息'),
-                                            onPressed: () => editUser(shadColorScheme, user),
+                                            onPressed: () => editUser(context, user),
                                           ),
                                           ShadContextMenuItem(
                                             leading: Icon(
@@ -310,7 +324,7 @@ class AppPublishPage extends StatelessWidget {
                                               color: shadColorScheme.foreground,
                                             ),
                                             child: Text(style: TextStyle(fontSize: 12), '删除用户'),
-                                            onPressed: () => removeAdminUser(user, shadColorScheme),
+                                            onPressed: () => removeAdminUser(user, context),
                                           ),
                                         ],
                                         child: Slidable(
@@ -322,7 +336,7 @@ class AppPublishPage extends StatelessWidget {
                                               SlidableAction(
                                                 borderRadius: const BorderRadius.only(
                                                     topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
-                                                onPressed: (context) => resetAuth(shadColorScheme, user),
+                                                onPressed: (context) => resetAuth(context, user),
                                                 flex: 1,
                                                 backgroundColor: Colors.green,
                                                 foregroundColor: Colors.white,
@@ -332,7 +346,7 @@ class AppPublishPage extends StatelessWidget {
                                               SlidableAction(
                                                 borderRadius: const BorderRadius.only(
                                                     topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
-                                                onPressed: (context) => sendMail(shadColorScheme, user),
+                                                onPressed: (context) => sendMail(context, user),
                                                 flex: 1,
                                                 backgroundColor: Colors.teal,
                                                 foregroundColor: Colors.white,
@@ -348,7 +362,7 @@ class AppPublishPage extends StatelessWidget {
                                               SlidableAction(
                                                 borderRadius: const BorderRadius.only(
                                                     topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
-                                                onPressed: (context) => editUser(shadColorScheme, user),
+                                                onPressed: (context) => editUser(context, user),
                                                 flex: 1,
                                                 backgroundColor: Colors.orange,
                                                 foregroundColor: Colors.white,
@@ -358,7 +372,7 @@ class AppPublishPage extends StatelessWidget {
                                               SlidableAction(
                                                 borderRadius: const BorderRadius.only(
                                                     topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
-                                                onPressed: (context) => removeAdminUser(user, shadColorScheme),
+                                                onPressed: (context) => removeAdminUser(user, context),
                                                 flex: 1,
                                                 backgroundColor: Colors.red,
                                                 foregroundColor: Colors.white,
@@ -451,7 +465,7 @@ class AppPublishPage extends StatelessWidget {
     });
   }
 
-  void editUser(ShadColorScheme shadColorScheme, AdminUser user) async {
+  void editUser(BuildContext context, AdminUser user) async {
     if (controller.loading == true) {
       return;
     }
@@ -461,10 +475,11 @@ class AppPublishPage extends StatelessWidget {
     Logger.instance.i(res?.toJson() ?? 'null');
     controller.loading = false;
     controller.update();
-    await showAdminUserEdit(user, shadColorScheme);
+    await showAdminUserEdit(user, context);
   }
 
-  void sendMail(ShadColorScheme shadColorScheme, AdminUser user) {
+  void sendMail(BuildContext context, AdminUser user) {
+    final shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.defaultDialog(
       title: '发送邮件',
       radius: 5,
@@ -505,7 +520,12 @@ class AppPublishPage extends StatelessWidget {
               if (result.succeed) {
                 Get.back();
               } else {
-                Get.snackbar('错误', result.msg, colorText: shadColorScheme.destructive);
+                ShadToaster.of(context).show(
+                  ShadToast.destructive(
+                    title: const Text('出错啦'),
+                    description: Text(result.msg),
+                  ),
+                );
               }
               controller.loading = false;
               controller.update();
@@ -517,9 +537,10 @@ class AppPublishPage extends StatelessWidget {
     );
   }
 
-  void resetAuth(ShadColorScheme shadColorScheme, AdminUser user) {
+  void resetAuth(BuildContext context, AdminUser user) {
     TextEditingController payController = TextEditingController(text: '168');
     TextEditingController expireController = TextEditingController(text: '36600');
+    final shadColorScheme = ShadTheme.of(context).colorScheme;
     RxBool tryUser = false.obs;
     Get.defaultDialog(
       title: '重置授权',
@@ -662,12 +683,22 @@ class AppPublishPage extends StatelessWidget {
                   controller.getAdminUserList();
                   Get.back();
                 } else {
-                  Get.snackbar('错误', result.msg, colorText: shadColorScheme.destructive);
+                  ShadToaster.of(context).show(
+                    ShadToast.destructive(
+                      title: const Text('出错啦'),
+                      description: Text(result.msg),
+                    ),
+                  );
                 }
               } catch (e, trace) {
                 Logger.instance.e(e);
                 Logger.instance.e(trace);
-                Get.snackbar('错误', e.toString(), colorText: shadColorScheme.destructive);
+                ShadToaster.of(context).show(
+                  ShadToast.destructive(
+                    title: const Text('出错啦'),
+                    description: Text(e.toString()),
+                  ),
+                );
               } finally {
                 controller.loading = false;
                 controller.update();
@@ -680,7 +711,8 @@ class AppPublishPage extends StatelessWidget {
     );
   }
 
-  Future<void> removeAdminUser(AdminUser user, ShadColorScheme shadColorScheme) async {
+  Future<void> removeAdminUser(AdminUser user, BuildContext context) async {
+    final shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.defaultDialog(
       title: '删除用户',
       backgroundColor: shadColorScheme.background,
@@ -724,7 +756,12 @@ class AppPublishPage extends StatelessWidget {
                 Get.back();
                 await controller.getAdminUserList();
               } else {
-                Get.snackbar('错误', result.msg, colorText: shadColorScheme.destructive);
+                ShadToaster.of(context).show(
+                  ShadToast.destructive(
+                    title: const Text('出错啦'),
+                    description: Text(result.msg),
+                  ),
+                );
               }
               controller.loading = false;
               controller.update();
@@ -736,12 +773,12 @@ class AppPublishPage extends StatelessWidget {
     );
   }
 
-  Future<void> showAdminUserEdit(AdminUser? user, shadColorScheme) async {
+  Future<void> showAdminUserEdit(AdminUser? user, BuildContext context) async {
     TextEditingController usernameController = TextEditingController(text: user?.username ?? '');
     TextEditingController payController = TextEditingController(text: user?.pay.toString() ?? '168');
     TextEditingController inviteController = TextEditingController(text: user?.invite.toString() ?? '3');
     TextEditingController markedController = TextEditingController(text: user?.marked ?? '');
-
+    final shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
       Padding(
         padding: const EdgeInsets.all(16.0),
@@ -813,7 +850,12 @@ class AppPublishPage extends StatelessWidget {
                     Get.back();
                     await controller.getAdminUserList();
                   } else {
-                    Get.snackbar('错误', result.msg, colorText: shadColorScheme.destructive);
+                    ShadToaster.of(context).show(
+                      ShadToast.destructive(
+                        title: const Text('出错啦'),
+                        description: Text(result.msg),
+                      ),
+                    );
                   }
                 },
               ),

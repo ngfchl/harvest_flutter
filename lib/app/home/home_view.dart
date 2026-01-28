@@ -600,7 +600,7 @@ class HomeView extends GetView<HomeController> {
                             color: shadColorScheme.foreground,
                           ),
                         ),
-                        onTap: () async => pickAndUpload(),
+                        onTap: () async => pickAndUpload(context),
                       ),
                       PopupMenuItem<String>(
                         child: Text(
@@ -624,9 +624,16 @@ class HomeView extends GetView<HomeController> {
                           CommonResponse res = await speedTestApi();
                           if (res.code == 0) {
                             Get.back();
-                            Get.snackbar('测速任务发送成功', res.msg, colorText: shadColorScheme.foreground);
+                            ShadToaster.of(context).show(
+                              ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+                            );
                           } else {
-                            Get.snackbar('测速任务发送失败', '测速任务执行出错啦：${res.msg}', colorText: shadColorScheme.destructive);
+                            ShadToaster.of(context).show(
+                              ShadToast.destructive(
+                                title: const Text('出错啦'),
+                                description: Text(res.msg),
+                              ),
+                            );
                           }
                         },
                       ),
@@ -669,7 +676,7 @@ class HomeView extends GetView<HomeController> {
     });
   }
 
-  void pickAndUpload() async {
+  void pickAndUpload(BuildContext context) async {
     Get.defaultDialog(
       title: "选择 PTPP 备份文件",
       content: Center(
@@ -683,32 +690,27 @@ class HomeView extends GetView<HomeController> {
               Logger.instance.d(file);
               Logger.instance.d(file.path);
               if (!kIsWeb && file.path?.contains('PT-Plugin-Plus-Backup') != true) {
-                Get.snackbar(
-                  '错误',
-                  '请选择正确的PTPP备份文件【“PT-Plugin-Plus-Backup”开头的 ZIP 文件】！',
-                  colorText: Colors.deepOrange,
-                  duration: const Duration(seconds: 3),
+                ShadToaster.of(context).show(
+                  ShadToast(
+                      title: const Text('成功啦'),
+                      description: Text('请选择正确的PTPP备份文件【“PT-Plugin-Plus-Backup”开头的 ZIP 文件】！')),
                 );
                 return;
               }
               // return;
               CommonResponse res = await importFromPTPPApi(file);
               Get.back();
-              if (res.succeed) {
-                Get.snackbar(
-                  'PTPP导入任务',
-                  'PTPP导入任务信息：${res.msg}',
-                );
-              } else {
-                Get.snackbar(
-                  'PTPP导入任务失败',
-                  'PTPP导入任务执行出错啦：${res.msg}',
-                );
-              }
+              ShadToaster.of(context).show(
+                res.succeed
+                    ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                    : ShadToast.destructive(title: const Text('出错啦'), description: Text(res.msg)),
+              );
             } else {
-              Get.snackbar(
-                'PTPP导入任务失败',
-                'PTPP导入任务执行出错啦：未发现你所选择的文件！',
+              ShadToaster.of(context).show(
+                ShadToast.destructive(
+                  title: const Text('出错啦'),
+                  description: Text('PTPP导入任务执行出错啦：未发现你所选择的文件！！'),
+                ),
               );
             }
           },

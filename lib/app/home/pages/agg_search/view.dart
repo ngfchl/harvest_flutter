@@ -1114,8 +1114,12 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
           logger_helper.Logger.instance.d('外置浏览器打开');
           Uri uri = Uri.parse(url);
           if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-            Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.destructive);
-          }
+            ShadToaster.of(context).show(
+              ShadToast.destructive(
+                title: const Text('打开网页出错'),
+                description: Text('打开网页出错，不支持的客户端？'),
+              ),
+            );          }
         } else {
           logger_helper.Logger.instance.d('内置浏览器打开');
           Get.toNamed(Routes.WEBVIEW, arguments: {'url': url, 'info': info, 'mySite': mySite, 'website': website});
@@ -1858,8 +1862,12 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
     if (!Platform.isIOS && !Platform.isAndroid) {
       Logger.instance.i('Explorer');
       if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
-        Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.foreground);
-      }
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('打开网页出错'),
+            description: Text('打开网页出错，不支持的客户端？'),
+          ),
+        );      }
     } else {
       Logger.instance.i('WebView');
       Get.toNamed(Routes.WEBVIEW, arguments: {'url': url});
@@ -2035,7 +2043,12 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     var res = await controller.getTMDBDetail(info);
     if (!res.succeed) {
-      Get.snackbar('出错啦', res.msg, colorText: shadColorScheme.destructive);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text(res.msg),
+        ),
+      );
       return;
     }
     var mediaInfo = res.data;
@@ -2196,8 +2209,12 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
                       if (kIsWeb) {
                         Logger.instance.i('Explorer');
                         if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
-                          Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.foreground);
-                        }
+                          ShadToaster.of(context).show(
+                            ShadToast.destructive(
+                              title: const Text('打开网页出错'),
+                              description: Text('打开网页出错，不支持的客户端？'),
+                            ),
+                          );                        }
                       } else {
                         Logger.instance.i('WebView');
                         Get.toNamed(Routes.WEBVIEW, arguments: {'url': url});
@@ -2232,16 +2249,22 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
 
   Future<void> _doTmdbSearch() async {
     if (controller.searchKeyController.text.isEmpty) {
-      Get.snackbar("提示", "搜索关键字不能为空！");
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('提示'),
+          description: Text('搜索关键字不能为空！'),
+        ),
+      );
       return;
     }
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     CommonResponse response = await controller.searchTMDB();
     if (response.succeed != true) {
-      Get.snackbar(
-        '警告',
-        '${response.msg}，从豆瓣获取信息...',
-        colorText: shadColorScheme.destructive,
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('警告'),
+          description: Text('${response.msg}，从豆瓣获取信息...'),
+        ),
       );
       await controller.doDouBanSearch();
     }

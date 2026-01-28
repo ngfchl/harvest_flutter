@@ -219,13 +219,14 @@ class TaskPage extends StatelessWidget {
                                               onPressed: () async {
                                                 Get.back(result: true);
                                                 var res = await controller.abortTask(item);
-                                                if (res.code == 0) {
-                                                  Get.snackbar('删除通知', res.msg.toString(),
-                                                      colorText: shadColorScheme.foreground);
-                                                } else {
-                                                  Get.snackbar('删除通知', res.msg.toString(),
-                                                      colorText: shadColorScheme.destructive);
-                                                }
+                                                ShadToaster.of(context).show(
+                                                  res.succeed
+                                                      ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                                      : ShadToast.destructive(
+                                                      title: const Text('出错啦'),
+                                                      description: Text(res.msg)
+                                                  ),
+                                                );
                                               },
                                               child: const Text('确认'),
                                             ),
@@ -258,13 +259,14 @@ class TaskPage extends StatelessWidget {
                                               onPressed: () async {
                                                 Get.back(result: true);
                                                 var res = await controller.revokeTask(item);
-                                                if (res.code == 0) {
-                                                  Get.snackbar('删除通知', res.msg.toString(),
-                                                      colorText: shadColorScheme.foreground);
-                                                } else {
-                                                  Get.snackbar('删除通知', res.msg.toString(),
-                                                      colorText: shadColorScheme.destructive);
-                                                }
+                                                ShadToaster.of(context).show(
+                                                  res.succeed
+                                                      ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                                      : ShadToast.destructive(
+                                                      title: const Text('出错啦'),
+                                                      description: Text(res.msg)
+                                                  ),
+                                                );
                                               },
                                               child: const Text('确认'),
                                             ),
@@ -402,11 +404,14 @@ class TaskPage extends StatelessWidget {
                           Get.back(result: true);
                           CommonResponse res = await controller.removeTask(item);
 
-                          if (res.code == 0) {
-                            Get.snackbar('任务删除通知', res.msg.toString(), colorText: shadColorScheme.foreground);
-                          } else {
-                            Get.snackbar('任务删除通知', res.msg.toString(), colorText: shadColorScheme.destructive);
-                          }
+                          ShadToaster.of(context).show(
+                            res.succeed
+                                ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                : ShadToast.destructive(
+                                title: const Text('出错啦'),
+                                description: Text(res.msg)
+                            ),
+                          );
                         },
                         child: const Text('确认'),
                       ),
@@ -454,11 +459,14 @@ class TaskPage extends StatelessWidget {
               onTap: () async {
                 CommonResponse res = await controller.changeScheduleState(item);
                 String title = item.enabled == true ? '任务启用通知' : '任务禁用通知';
-                if (res.code == 0) {
-                  Get.snackbar(title, res.msg.toString(), colorText: shadColorScheme.foreground);
-                } else {
-                  Get.snackbar(title, res.msg.toString(), colorText: shadColorScheme.destructive);
-                }
+                ShadToaster.of(context).show(
+                  res.succeed
+                      ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                      : ShadToast.destructive(
+                      title: const Text('出错啦'),
+                      description: Text(res.msg)
+                  ),
+                );
                 controller.update();
               },
               child: item.enabled == true
@@ -472,11 +480,14 @@ class TaskPage extends StatelessWidget {
                         isRunning.value = true;
                         // await Future.delayed(Duration(seconds: 2));
                         CommonResponse res = await controller.execTask(item);
-                        if (res.code == 0) {
-                          Get.snackbar('任务执行通知', res.msg.toString(), colorText: shadColorScheme.foreground);
-                        } else {
-                          Get.snackbar('任务执行通知', res.msg.toString(), colorText: shadColorScheme.destructive);
-                        }
+                        ShadToaster.of(context).show(
+                          res.succeed
+                              ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                              : ShadToast.destructive(
+                              title: const Text('出错啦'),
+                              description: Text(res.msg)
+                          ),
+                        );
                         isRunning.value = false;
                         controller.update();
                       },

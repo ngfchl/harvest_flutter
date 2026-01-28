@@ -144,19 +144,11 @@ class _SubscribePageState extends State<SubscribePage> {
                           onPressed: () async {
                             Get.back(result: true);
                             CommonResponse res = await controller.removeSubscribe(sub);
-                            if (res.code == 0) {
-                              Get.snackbar(
-                                '删除通知',
-                                res.msg.toString(),
-                                colorText: shadColorScheme.foreground,
-                              );
-                            } else {
-                              Get.snackbar(
-                                '删除通知',
-                                res.msg.toString(),
-                                colorText: shadColorScheme.destructive,
-                              );
-                            }
+                            ShadToaster.of(context).show(
+                              res.succeed
+                                  ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                  : ShadToast.destructive(title: const Text('出错啦'), description: Text(res.msg)),
+                            );
                           },
                           child: const Text('确认'),
                         ),
@@ -271,7 +263,12 @@ class _SubscribePageState extends State<SubscribePage> {
     if (controller.downloadController.dataList.isEmpty) {
       await controller.getDownloaderListFromServer();
       if (controller.downloadController.dataList.isEmpty) {
-        Get.snackbar('无下载器可用', '请先到下载管理添加下载器后重试！');
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text('请先到下载管理添加下载器后重试！'),
+          ),
+        );
         return;
       }
     }
@@ -284,12 +281,22 @@ class _SubscribePageState extends State<SubscribePage> {
     if (selectedDownloader != null) {
       CommonResponse res = await editDialogController.subController.getDownloaderCategoryList(selectedDownloader!);
       if (!res.succeed) {
-        Get.snackbar('出错啦！', res.msg, colorText: shadColorScheme.destructive);
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text(res.msg),
+          ),
+        );
       } else {
         editDialogController.categories.value = res.data;
       }
       if (sub != null || editDialogController.categories.isEmpty) {
-        Get.snackbar('出错啦！', '请先给QB下载器添加分类！', colorText: shadColorScheme.destructive);
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text('请先给QB下载器添加分类！'),
+          ),
+        );
         return;
       }
     }
@@ -353,11 +360,16 @@ class _SubscribePageState extends State<SubscribePage> {
                                   controller.subController.isDownloaderLoading = false;
                                   controller.update();
                                   if (!res.succeed) {
-                                    Get.snackbar('出错啦！', res.msg, colorText: shadColorScheme.destructive);
+                                    ShadToaster.of(context).show(
+                                      ShadToast.destructive(title: const Text('出错啦'), description: Text(res.msg)),
+                                    );
                                     return;
                                   }
                                   if (res.data.isEmpty) {
-                                    Get.snackbar('出错啦！', '请先给QB下载器添加分类！', colorText: shadColorScheme.destructive);
+                                    ShadToaster.of(context).show(
+                                      ShadToast.destructive(
+                                          title: const Text('出错啦'), description: Text('请先给QB下载器添加分类！')),
+                                    );
                                     return;
                                   }
                                   controller.categories.value = res.data;
@@ -413,7 +425,12 @@ class _SubscribePageState extends State<SubscribePage> {
                                         controller.subController.downloadController.dataList.firstWhere((element) =>
                                             element.id == int.parse(controller.downloaderController.text)));
                                     if (!res.succeed) {
-                                      Get.snackbar('出错啦！', res.msg, colorText: shadColorScheme.destructive);
+                                      ShadToaster.of(context).show(
+                                        ShadToast.destructive(
+                                          title: const Text('出错啦'),
+                                          description: Text(res.msg),
+                                        ),
+                                      );
                                       return;
                                     }
                                     controller.categories.value = res.data;
@@ -618,9 +635,16 @@ class _SubscribePageState extends State<SubscribePage> {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('保存成功！', res.msg, colorText: ShadTheme.of(context).colorScheme.foreground);
+        ShadToaster.of(context).show(
+          ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+        );
       } else {
-        Get.snackbar('保存失败！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text(res.msg),
+          ),
+        );
       }
     } finally {}
   }
@@ -745,9 +769,16 @@ class EditDialogController extends GetxController {
       Logger.instance.i(res.msg);
       if (res.code == 0) {
         Get.back();
-        Get.snackbar('保存成功！', res.msg, colorText: ShadTheme.of(context).colorScheme.foreground);
+        ShadToaster.of(context).show(
+          ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+        );
       } else {
-        Get.snackbar('保存失败！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text(res.msg),
+          ),
+        );
       }
     } finally {}
   }

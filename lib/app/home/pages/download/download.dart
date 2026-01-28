@@ -601,10 +601,20 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
               onPressed: (context) async {
                 CommonResponse res = await controller.reseedDownloader(downloader.id!);
-                if (res.code == 0) {
-                  Get.snackbar('辅种通知', res.msg.toString(), colorText: shadColorScheme.foreground);
+                if (res.succeed) {
+                  ShadToaster.of(context).show(
+                    ShadToast(
+                      title: const Text('辅种通知'),
+                      description: Text(res.msg),
+                    ),
+                  );
                 } else {
-                  Get.snackbar('辅种通知', res.msg.toString(), colorText: shadColorScheme.destructive);
+                  ShadToaster.of(context).show(
+                    ShadToast.destructive(
+                      title: const Text('辅种通知'),
+                      description: Text(res.msg),
+                    ),
+                  );
                 }
               },
               backgroundColor: const Color(0xFF0A9D96),
@@ -651,10 +661,20 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       onPressed: () async {
                         Get.back(result: true);
                         CommonResponse res = await controller.removeDownloader(downloader);
-                        if (res.code == 0) {
-                          Get.snackbar('删除通知', res.msg.toString(), colorText: shadColorScheme.foreground);
+                        if (res.succeed) {
+                          ShadToaster.of(context).show(
+                            ShadToast(
+                              title: const Text('删除通知'),
+                              description: Text(res.msg),
+                            ),
+                          );
                         } else {
-                          Get.snackbar('删除通知', res.msg.toString(), colorText: shadColorScheme.destructive);
+                          ShadToaster.of(context).show(
+                            ShadToast.destructive(
+                              title: const Text('删除通知'),
+                              description: Text(res.msg),
+                            ),
+                          );
                         }
                         await controller.getDownloaderListFromServer(withStatus: true);
                       },
@@ -685,7 +705,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     await launchUrl(uri, mode: LaunchMode.externalApplication);
                   }
                   if (downloader.externalHost.isEmpty) {
-                    Get.snackbar('提示', '请先配置下载外部访问地址！', colorText: shadColorScheme.destructive);
+                    ShadToaster.of(context).show(
+                      ShadToast.destructive(
+                        title: const Text('出错啦'),
+                        description: Text('请先配置下载外部访问地址！'),
+                      ),
+                    );
                     return;
                   }
                   if (downloader.category == 'Qb') {
@@ -732,10 +757,11 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                         onPressed: () async {
                           CommonResponse res = await controller.testConnect(downloader);
                           if (!res.succeed) {
-                            Get.snackbar(
-                              '下载器连接失败',
-                              '下载器 ${res.msg}',
-                              colorText: shadColorScheme.destructive,
+                            ShadToaster.of(context).show(
+                              ShadToast.destructive(
+                                title: const Text('出错啦'),
+                                description: Text('下载器 ${res.msg}'),
+                              ),
                             );
                           } else {
                             await controller.getDownloaderListFromServer(withStatus: true);
@@ -816,7 +842,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                 size: ShadButtonSize.sm,
                                 onPressed: () {
                                   if (downloader.prefs == null) {
-                                    Get.snackbar('出错咯', '下载器连接失败！');
+                                    ShadToaster.of(context).show(
+                                      ShadToast.destructive(
+                                        title: const Text('出错啦'),
+                                        description: Text('下载器连接失败！'),
+                                      ),
+                                    );
                                     return;
                                   }
                                   String savePath = downloader.prefs?.savePath ?? '/downloads/';
@@ -883,7 +914,9 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                 size: ShadButtonSize.sm,
                                 onPressed: () {
                                   if (downloader.prefs == null) {
-                                    Get.snackbar('出错咯', '下载器连接失败！');
+                                    ShadToaster.of(context).show(
+                                      ShadToast.destructive(title: const Text('出错啦'), description: Text('下载器连接失败！')),
+                                    );
                                     return;
                                   }
                                   TextEditingController nameController = TextEditingController();
@@ -1162,12 +1195,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       ];
       controller.update();
     } else {
-      Get.snackbar(
-        '获取种子文件夹出错啦！',
-        response.msg,
-        snackPosition: SnackPosition.TOP,
-        colorText: shadColorScheme.destructive,
-        duration: const Duration(seconds: 3),
+      ShadToaster.of(context).show(
+        ShadToast.destructive(title: const Text('出错啦'), description: Text('获取种子文件夹出错啦！')),
       );
     }
 
@@ -1390,24 +1419,20 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       CommonResponse response = await controller.saveDownloaderToServer(downloader!);
                       if (response.code == 0) {
                         Navigator.of(context).pop();
-                        Get.snackbar(
-                          '保存成功！',
-                          response.msg,
-                          snackPosition: SnackPosition.TOP,
-                          colorText: shadColorScheme.foreground,
-                          duration: const Duration(seconds: 3),
+
+                        ShadToaster.of(context).show(
+                          ShadToast(title: const Text('成功啦'), description: Text(response.msg)),
                         );
                         await controller.getDownloaderListFromServer();
                         controller.update();
                         await controller.getDownloaderListFromServer(withStatus: true);
                         controller.update();
                       } else {
-                        Get.snackbar(
-                          '保存出错啦！',
-                          response.msg,
-                          snackPosition: SnackPosition.TOP,
-                          colorText: shadColorScheme.destructive,
-                          duration: const Duration(seconds: 3),
+                        ShadToaster.of(context).show(
+                          ShadToast.destructive(
+                            title: const Text('出错啦'),
+                            description: Text(response.msg),
+                          ),
                         );
                       }
                     },
@@ -1889,11 +1914,11 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     try {
       var res = await controller.testConnect(downloader);
       if (!res.succeed) {
-        Get.snackbar(
-          '提示',
-          '下载器连接失败啦，请检查配置信息！',
-          snackPosition: SnackPosition.TOP,
-          colorText: shadColorScheme.destructive,
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text('下载器连接失败啦，请检查配置信息！'),
+          ),
         );
         return;
       }
@@ -2267,10 +2292,11 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       var message = '查看种子列表失败！$e';
       logger_helper.Logger.instance.e(message);
       logger_helper.Logger.instance.e(trace);
-      Get.snackbar(
-        '出错啦！',
-        message,
-        colorText: shadColorScheme.foreground,
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text(message),
+        ),
       );
       await controller.stopFetchTorrents();
     }
@@ -2279,7 +2305,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
   void _openAddTorrentDialog(Downloader downloader) async {
     try {
       if (downloader.prefs == null || controller.addTorrentLoading == true) {
-        Get.snackbar('出错咯', '下载器连接失败！');
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text('下载器连接失败！'),
+          ),
+        );
         return;
       }
       controller.addTorrentLoading = true;
@@ -2322,7 +2353,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     } catch (e, trace) {
       logger_helper.Logger.instance.e(e);
       logger_helper.Logger.instance.e(trace);
-      Get.snackbar('出错啦！', e.toString());
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text(e.toString()),
+        ),
+      );
     } finally {
       controller.addTorrentLoading = false;
       controller.isCategoryLoading = false;
@@ -2391,8 +2427,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       List<String> torrentHashes = controller.trackers[keyController.text] ?? [];
                       logger_helper.Logger.instance.d(torrentHashes);
                       if (torrentHashes.isEmpty) {
-                        Get.snackbar('Tracker替换ing', '本下载器没有 ${keyController.text} 站点的种子！',
-                            colorText: shadColorScheme.destructive);
+                        ShadToaster.of(context).show(
+                          ShadToast.destructive(
+                            title: const Text('出错啦'),
+                            description: Text('本下载器没有 ${keyController.text} 站点的种子！'),
+                          ),
+                        );
                         return;
                       }
                       Get.defaultDialog(
@@ -2421,8 +2461,11 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                               if (res.succeed) {
                                 Get.back();
                               }
-                              Get.snackbar('Tracker通知', res.msg,
-                                  colorText: res.succeed ? shadColorScheme.primary : shadColorScheme.destructive);
+                              ShadToaster.of(context).show(
+                                res.succeed
+                                    ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                    : ShadToast.destructive(title: const Text('出错啦'), description: Text(res.msg)),
+                              );
                               controller.update();
                             },
                             child: const Text('确认'),
@@ -3254,7 +3297,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     var response = await controller.getPrefs(downloader);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (!response.succeed) {
-      Get.snackbar('出错啦！', '获取下载器设置失败', colorText: shadColorScheme.destructive);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('获取下载器设置失败！'),
+        ),
+      );
       return;
     }
     controller.currentPrefs = QbittorrentPreferences.fromJson(response.data);
@@ -5579,8 +5627,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
 
                 CommonResponse response = await controller.setPrefs(downloader, prefs);
                 if (!response.succeed) {
-                  Get.snackbar('修改配置失败', response.msg);
-                } else {
+                  ShadToaster.of(context).show(
+                    ShadToast.destructive(
+                      title: const Text('出错啦'),
+                      description: Text(response.msg),
+                    ),
+                  );                } else {
                   controller.getDownloaderListFromServer();
                 }
                 Get.back();
@@ -5607,7 +5659,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     var response = await controller.getPrefs(downloader);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (!response.succeed) {
-      Get.snackbar('出错啦！', '获取下载器设置失败', colorText: shadColorScheme.destructive);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('获取下载器设置失败'),
+        ),
+      );
       return;
     }
     controller.currentPrefs = TransmissionConfig.fromJson(response.data);
@@ -6159,7 +6216,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                 );
                 CommonResponse response = await controller.setPrefs(downloader, prefs);
                 if (!response.succeed) {
-                  Get.snackbar('修改配置失败', response.msg);
+                  ShadToaster.of(context).show(
+                    ShadToast.destructive(
+                      title: const Text('出错啦'),
+                      description: Text(response.msg),
+                    ),
+                  );
                 } else {
                   controller.getDownloaderListFromServer();
                 }
@@ -6197,7 +6259,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       logger_helper.Logger.instance.i(toRemoveTorrentList.length);
       var shadColorScheme = ShadTheme.of(context).colorScheme;
       if (toRemoveTorrentList.isEmpty) {
-        Get.snackbar('清理红种', '没有需要清理的种子！', colorText: shadColorScheme.foreground);
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text('没有需要清理的种子!'),
+          ),
+        );
         return;
       }
 
@@ -6223,7 +6290,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
               if (res.succeed) {
                 controller.showTorrents.removeWhere((element) => toRemoveTorrentList.contains(element.hash));
                 String msg = '清理出错种子成功，本次共清理${toRemoveTorrentList.length}个种子！';
-                Get.snackbar('删除通知', msg, colorText: shadColorScheme.foreground);
+                ShadToaster.of(context).show(
+                  ShadToast.destructive(
+                    title: const Text('出错啦'),
+                    description: Text(msg),
+                  ),
+                );
                 controller.update();
               }
             },
@@ -6251,7 +6323,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       logger_helper.Logger.instance.i(toRemoveTorrentList.length);
       var shadColorScheme = ShadTheme.of(context).colorScheme;
       if (toRemoveTorrentList.isEmpty) {
-        Get.snackbar('清理红种', '没有需要清理的种子！', colorText: shadColorScheme.foreground);
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text('没有需要清理的种子！'),
+          ),
+        );
         return;
       }
       Get.defaultDialog(
@@ -6276,7 +6353,12 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
               if (res.succeed) {
                 controller.showTorrents.removeWhere((element) => toRemoveTorrentList.contains(element.hashString));
                 String msg = '清理出错种子成功，本次共清理${toRemoveTorrentList.length}个种子！';
-                Get.snackbar('删除通知', msg, colorText: shadColorScheme.foreground);
+                ShadToaster.of(context).show(
+                  ShadToast.destructive(
+                    title: const Text('出错啦'),
+                    description: Text(msg),
+                  ),
+                );
                 controller.update();
               }
             },
@@ -6525,7 +6607,12 @@ class ShowTorrentWidget extends StatelessWidget {
                           child: Text('名称'),
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: torrentInfo.name));
-                            Get.snackbar('复制种子名称', '种子名称复制成功！', colorText: shadColorScheme.foreground);
+                            ShadToaster.of(context).show(
+                              ShadToast(
+                                  title: const Text('成功啦'),
+                                  description: Text('种子名称复制成功！')
+                              ),
+                            );
                           },
                         ),
                         ShadContextMenuItem(
@@ -6537,7 +6624,12 @@ class ShowTorrentWidget extends StatelessWidget {
                           child: Text('复制哈希'),
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: torrentInfo.infohashV1));
-                            Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
+                            ShadToaster.of(context).show(
+                              ShadToast(
+                                  title: const Text('成功啦'),
+                                  description: Text('种子HASH复制成功！')
+                              ),
+                            );
                           },
                         ),
                         ShadContextMenuItem(
@@ -6549,7 +6641,12 @@ class ShowTorrentWidget extends StatelessWidget {
                           child: Text('磁力链接'),
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: torrentInfo.magnetUri));
-                            Get.snackbar('复制种子磁力链接', '种子磁力链接复制成功！', colorText: shadColorScheme.foreground);
+                            ShadToaster.of(context).show(
+                              ShadToast(
+                                  title: const Text('成功啦'),
+                                  description: Text('种子磁力链接复制成功！')
+                              ),
+                            );
                           },
                         ),
                         // ShadContextMenuItem(
@@ -6565,7 +6662,12 @@ class ShowTorrentWidget extends StatelessWidget {
                           child: Text('Tracker 地址'),
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: torrentInfo.tracker));
-                            Get.snackbar('复制种子Tracker', '种子Tracker复制成功！', colorText: shadColorScheme.foreground);
+                            ShadToaster.of(context).show(
+                              ShadToast(
+                                  title: const Text('成功啦'),
+                                  description: Text('种子Tracker复制成功！')
+                              ),
+                            );
                           },
                         ),
                         ShadContextMenuItem(
@@ -6577,7 +6679,12 @@ class ShowTorrentWidget extends StatelessWidget {
                           child: Text('注释'),
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: torrentInfo.comment));
-                            Get.snackbar('复制种子Tracker', '种子Tracker复制成功！', colorText: shadColorScheme.foreground);
+                            ShadToaster.of(context).show(
+                              ShadToast(
+                                  title: const Text('成功啦'),
+                                  description: Text('种子Tracker复制成功！')
+                              ),
+                            );
                           },
                         ),
                       ],
@@ -6705,7 +6812,12 @@ class ShowTorrentWidget extends StatelessWidget {
                             CommonResponse response = await controller.getDownloaderTorrentDetailInfo(
                                 downloader, torrentInfo.infohashV1, true);
                             if (!response.succeed) {
-                              Get.snackbar('获取种子详情失败', response.msg);
+                              ShadToaster.of(context).show(
+                                ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text(response.msg),
+                                ),
+                              );
                               return;
                             }
 
@@ -6972,7 +7084,12 @@ class ShowTorrentWidget extends StatelessWidget {
                                                       .removeWhere((element) => element.hash == e.value.hash);
                                                   controller.update();
                                                 } else {
-                                                  Get.snackbar('删除通知', res.msg);
+                                                  ShadToaster.of(context).show(
+                                                    ShadToast.destructive(
+                                                      title: const Text('出错啦'),
+                                                      description: Text(res.msg),
+                                                    ),
+                                                  );
                                                 }
                                               },
                                               child: const Text('删除'),
@@ -7627,7 +7744,12 @@ class ShowTorrentWidget extends StatelessWidget {
                     child: Text(style: TextStyle(fontSize: 12), '复制名称'),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.name));
-                      Get.snackbar('复制种子名称', '种子名称复制成功！', colorText: shadColorScheme.foreground);
+                      ShadToaster.of(context).show(
+                        ShadToast(
+                            title: const Text('成功啦'),
+                            description: Text('种子名称复制成功！')
+                        ),
+                      );
                     },
                   ),
                   ShadContextMenuItem(
@@ -7639,7 +7761,12 @@ class ShowTorrentWidget extends StatelessWidget {
                     child: Text(style: TextStyle(fontSize: 12), '复制哈希'),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.hashString));
-                      Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
+                      ShadToaster.of(context).show(
+                        ShadToast(
+                            title: const Text('成功啦'),
+                            description: Text('种子HASH复制成功！')
+                        ),
+                      );
                     },
                   ),
                   ShadContextMenuItem(
@@ -7651,7 +7778,12 @@ class ShowTorrentWidget extends StatelessWidget {
                     child: Text(style: TextStyle(fontSize: 12), '复制路径'),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: '${torrentInfo.downloadDir}/${torrentInfo.name}'));
-                      Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
+                      ShadToaster.of(context).show(
+                        ShadToast(
+                            title: const Text('成功啦'),
+                            description: Text('种子HASH复制成功！')
+                        ),
+                      );
                     },
                   ),
                   ShadContextMenuItem(
@@ -7663,7 +7795,12 @@ class ShowTorrentWidget extends StatelessWidget {
                     child: Text(style: TextStyle(fontSize: 12), '复制磁力'),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.magnetLink));
-                      Get.snackbar('复制磁力链接', '磁力链接复制成功！', colorText: shadColorScheme.foreground);
+                      ShadToaster.of(context).show(
+                        ShadToast(
+                            title: const Text('成功啦'),
+                            description: Text('磁力链接复制成功！')
+                        ),
+                      );
                     },
                   ),
                 ],
@@ -8008,7 +8145,12 @@ class ShowTorrentWidget extends StatelessWidget {
     CommonResponse response =
         await controller.getDownloaderTorrentDetailInfo(downloader, torrentInfo.hashString, false);
     if (!response.succeed) {
-      Get.snackbar('获取种子详情失败', response.msg);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text(response.msg)
+        ),
+      );
       return;
     }
     var shadColorScheme = ShadTheme.of(context).colorScheme;
@@ -8258,7 +8400,12 @@ class ShowTorrentWidget extends StatelessWidget {
                                   size: ShadButtonSize.sm,
                                   onPressed: () async {
                                     Clipboard.setData(ClipboardData(text: controller.selectedTorrent.hashString));
-                                    Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
+                                    ShadToaster.of(context).show(
+                                      ShadToast(
+                                          title: const Text('成功啦'),
+                                          description: Text( '种子HASH复制成功！')
+                                      ),
+                                    );
                                   },
                                   leading: const Icon(
                                     Icons.copy,

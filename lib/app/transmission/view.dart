@@ -817,7 +817,12 @@ class TrPage extends StatelessWidget {
                             logger_helper.Logger.instance.i(toRemoveTorrentList);
                             logger_helper.Logger.instance.i(toRemoveTorrentList.length);
                             if (toRemoveTorrentList.isEmpty) {
-                              Get.snackbar('没有需要清理的种子', '');
+                              ShadToaster.of(context).show(
+                                ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text('没有需要清理的种子！'),
+                                ),
+                              );
                               return;
                             }
                             Get.defaultDialog(
@@ -842,10 +847,17 @@ class TrPage extends StatelessWidget {
                                     doing.value = false;
                                     if (res.succeed) {
                                       Get.back();
-                                      Get.snackbar('清理红种', res.msg, colorText: shadColorScheme.foreground);
+                                      ShadToaster.of(context).show(
+                                        ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+                                      );
                                       await controller.getAllTorrents();
                                     } else {
-                                      Get.snackbar('清理红种', res.msg, colorText: shadColorScheme.destructive);
+                                      ShadToaster.of(context).show(
+                                        ShadToast.destructive(
+                                          title: const Text('出错啦'),
+                                          description: Text(res.msg),
+                                        ),
+                                      );
                                     }
                                   },
                                   leading: Obx(() => doing.value
@@ -869,11 +881,11 @@ class TrPage extends StatelessWidget {
                           ),
                           onTap: () async {
                             CommonResponse res = await controller.toggleSpeedLimit();
-                            if (res.code == 0) {
-                              Get.snackbar('限速切换成功', res.msg, colorText: shadColorScheme.primary);
-                            } else {
-                              Get.snackbar('限速切换失败', res.msg, colorText: shadColorScheme.destructive);
-                            }
+                            ShadToaster.of(context).show(
+                              res.succeed
+                                  ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                  : ShadToast.destructive(title: const Text('出错啦'), description: Text(res.msg)),
+                            );
                           },
                         ),
                         PopupMenuItem<String>(
@@ -946,10 +958,12 @@ class TrPage extends StatelessWidget {
                                             if (res.succeed) {
                                               Get.back(result: true);
                                             }
-                                            Get.snackbar('Tracker替换ing', res.msg,
-                                                colorText: res.succeed
-                                                    ? shadColorScheme.primary
-                                                    : shadColorScheme.destructive);
+                                            ShadToaster.of(context).show(
+                                              res.succeed
+                                                  ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                                  : ShadToast.destructive(
+                                                      title: const Text('出错啦'), description: Text(res.msg)),
+                                            );
                                           },
                                           leading: controller.trackerLoading
                                               ? SizedBox(
@@ -1373,7 +1387,9 @@ class TrPage extends StatelessWidget {
                     child: Text(style: TextStyle(fontSize: 12), '复制名称'),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.name));
-                      Get.snackbar('复制种子名称', '种子名称复制成功！', colorText: shadColorScheme.foreground);
+                      ShadToaster.of(context).show(
+                        ShadToast(title: const Text('成功啦'), description: Text('种子名称复制成功！')),
+                      );
                     },
                   ),
                   ShadContextMenuItem(
@@ -1385,7 +1401,9 @@ class TrPage extends StatelessWidget {
                     child: Text(style: TextStyle(fontSize: 12), '复制哈希'),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.hashString));
-                      Get.snackbar('复制种子HASH', '种子HASH复制成功！', colorText: shadColorScheme.foreground);
+                      ShadToaster.of(context).show(
+                        ShadToast(title: const Text('成功啦'), description: Text('种子HASH复制成功！')),
+                      );
                     },
                   ),
                   ShadContextMenuItem(
@@ -1399,7 +1417,9 @@ class TrPage extends StatelessWidget {
                       Clipboard.setData(ClipboardData(
                           text:
                               '${torrentInfo.downloadDir.endsWith('/') ? torrentInfo.downloadDir : '${torrentInfo.downloadDir}/'}${torrentInfo.name}'));
-                      Get.snackbar('复制路径', '种子路径复制成功！', colorText: shadColorScheme.foreground);
+                      ShadToaster.of(context).show(
+                        ShadToast(title: const Text('成功啦'), description: Text('种子路径复制成功！')),
+                      );
                     },
                   ),
                   ShadContextMenuItem(
@@ -1411,7 +1431,9 @@ class TrPage extends StatelessWidget {
                     child: Text(style: TextStyle(fontSize: 12), '复制磁力'),
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.magnetLink));
-                      Get.snackbar('复制磁力链接', '磁力链接复制成功！', colorText: shadColorScheme.foreground);
+                      ShadToaster.of(context).show(
+                        ShadToast(title: const Text('成功啦'), description: Text('种子磁力链接复制成功！')),
+                      );
                     },
                   ),
                 ],
@@ -2515,9 +2537,16 @@ class TrPage extends StatelessWidget {
                   controller.selectedTorrents.clear();
                   controller.getAllTorrents();
                   controller.update();
-                  Get.snackbar('删除成功', '种子已删除');
+                  ShadToaster.of(context).show(
+                    ShadToast(title: const Text('成功啦'), description: Text('种子已删除！')),
+                  );
                 } else {
-                  Get.snackbar('删除失败', '种子删除失败，${response['message']}');
+                  ShadToaster.of(context).show(
+                    ShadToast.destructive(
+                      title: const Text('出错啦'),
+                      description: Text('种子删除失败，${response['message']}'),
+                    ),
+                  );
                 }
                 deleteLoading.value = false;
               },

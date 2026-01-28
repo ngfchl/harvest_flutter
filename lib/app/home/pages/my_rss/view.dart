@@ -135,11 +135,14 @@ class _MyRssPageState extends State<MyRssPage> {
                     onPressed: () async {
                       Get.back(result: true);
                       CommonResponse res = await controller.removeMyRss(rss);
-                      if (res.code == 0) {
-                        Get.snackbar('删除通知', res.msg.toString(), colorText: colorScheme.foreground);
-                      } else {
-                        Get.snackbar('删除通知', res.msg.toString(), colorText: colorScheme.destructive);
-                      }
+                      ShadToaster.of(context).show(
+                        res.succeed
+                            ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                            : ShadToast.destructive(
+                                title: const Text('出错啦'),
+                                description: Text(res.msg),
+                              ),
+                      );
                     },
                     child: const Text('确认'),
                   ),
@@ -372,12 +375,14 @@ class _MyRssPageState extends State<MyRssPage> {
       CommonResponse res = await controller.saveMyRss(rss);
 
       Logger.instance.i(res.msg);
-      if (res.code == 0) {
+      if (res.succeed) {
         Get.back();
-        Get.snackbar('标签保存成功！', res.msg, colorText: ShadTheme.of(context).colorScheme.foreground);
-      } else {
-        Get.snackbar('标签保存失败！', res.msg, colorText: ShadTheme.of(context).colorScheme.destructive);
       }
+      ShadToaster.of(context).show(
+        res.succeed
+            ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+            : ShadToast.destructive(title: const Text('出错啦'), description: Text(res.msg)),
+      );
     } finally {}
   }
 

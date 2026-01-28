@@ -717,7 +717,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     Logger.instance.d('使用外部浏览器打开');
     Uri uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.foreground);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('打开网页出错'),
+          description: Text('打开网页出错，不支持的客户端？'),
+        ),
+      );
     }
   }
 
@@ -972,7 +977,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         child: Text(style: TextStyle(fontSize: 12), '当前域名'),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: mySite.mirror!));
-                          Get.snackbar('复制当前域名', '当前域名复制成功！', colorText: shadColorScheme.foreground);
+                          ShadToaster.of(context).show(
+                            ShadToast(title: const Text('成功啦'), description: Text('当前域名复制成功！')),
+                          );
                         },
                       ),
                       ShadContextMenuItem(
@@ -984,11 +991,15 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         child: Text(style: TextStyle(fontSize: 12), '用户ID'),
                         onPressed: () {
                           if (mySite.userId == null || mySite.userId!.isEmpty) {
-                            Get.snackbar('复制用户ID', '用户ID为空！', colorText: shadColorScheme.foreground);
+                            ShadToaster.of(context).show(
+                              ShadToast.destructive(title: const Text('出错啦'), description: Text('用户ID为空！')),
+                            );
                             return;
                           }
                           Clipboard.setData(ClipboardData(text: mySite.userId!));
-                          Get.snackbar('复制用户ID', '用户ID复制成功！', colorText: shadColorScheme.foreground);
+                          ShadToaster.of(context).show(
+                            ShadToast(title: const Text('成功啦'), description: Text('用户ID复制成功！')),
+                          );
                         },
                       ),
                       ShadContextMenuItem(
@@ -1000,11 +1011,18 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         child: Text(style: TextStyle(fontSize: 12), '站点Cookie'),
                         onPressed: () {
                           if (mySite.cookie == null || mySite.cookie!.isEmpty) {
-                            Get.snackbar('复制站点Cookie', '站点Cookie为空！', colorText: shadColorScheme.foreground);
+                            ShadToaster.of(context).show(
+                              ShadToast.destructive(
+                                title: const Text('出错啦'),
+                                description: Text('站点Cookie为空！'),
+                              ),
+                            );
                             return;
                           }
                           Clipboard.setData(ClipboardData(text: mySite.userId!));
-                          Get.snackbar('复制站点Cookie', '站点Cookie复制成功！', colorText: shadColorScheme.foreground);
+                          ShadToaster.of(context).show(
+                            ShadToast(title: const Text('成功啦'), description: Text('站点Cookie复制成功！')),
+                          );
                         },
                       ),
                       ShadContextMenuItem(
@@ -1017,7 +1035,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         onPressed: () {
                           String data = '${mySite.mirror}${website.pageUser.replaceFirst('{}', mySite.userId!)}';
                           Clipboard.setData(ClipboardData(text: data));
-                          Get.snackbar('复制个人主页地址', '个人主页地址复制成功！', colorText: shadColorScheme.foreground);
+                          ShadToaster.of(context).show(
+                            ShadToast(
+                              title: const Text('成功啦'),
+                              description: Text('个人主页地址复制成功！'),
+                            ),
+                          );
                         },
                       ),
 
@@ -2929,18 +2952,20 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
   Future<void> repeatSite(MySite mySite, ShadColorScheme shadColorScheme) async {
     CommonResponse res = await repeatSiteApi(mySite.id);
 
-    if (res.succeed) {
-      Get.snackbar('辅种任务发送成功', '${mySite.nickname} ${res.msg}', colorText: shadColorScheme.foreground);
-    } else {
-      Get.snackbar('辅种任务发送失败', '${mySite.nickname} 辅种出错啦：${res.msg}', colorText: shadColorScheme.destructive);
-    }
+    ShadToaster.of(context).show(
+      res.succeed
+          ? ShadToast(title: const Text('成功啦'), description: Text('${mySite.nickname} ${res.msg}'))
+          : ShadToast.destructive(title: const Text('出错啦'), description: Text('${mySite.nickname} 辅种出错啦：${res.msg}')),
+    );
   }
 
   Future<void> signSite(RxBool siteRefreshing, MySite mySite, ShadColorScheme shadColorScheme) async {
     siteRefreshing.value = true;
     CommonResponse res = await signIn(mySite.id);
     if (res.succeed) {
-      Get.snackbar('签到成功', '${mySite.nickname} 签到信息：${res.msg}', colorText: shadColorScheme.foreground);
+      ShadToaster.of(context).show(
+        ShadToast(title: const Text('成功啦'), description: Text('${mySite.nickname} 签到信息：${res.msg}')),
+      );
       SignInInfo? info = SignInInfo(updatedAt: getTodayString(), info: res.msg);
       Map<String, SignInInfo>? signInInfo = mySite.signInInfo;
       signInInfo.assign(getTodayString(), info);
@@ -2955,7 +2980,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       // controller.filterByKey();
       controller.update();
     } else {
-      Get.snackbar('签到失败', '${mySite.nickname} 签到任务执行出错啦：${res.msg}', colorText: shadColorScheme.destructive);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text(res.msg),
+        ),
+      );
     }
     siteRefreshing.value = false;
   }
@@ -2964,7 +2994,9 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     siteRefreshing.value = true;
     CommonResponse res = await getNewestStatus(mySite.id);
     if (res.succeed) {
-      Get.snackbar('站点数据刷新成功', '${mySite.nickname} 数据刷新：${res.msg}', colorText: shadColorScheme.foreground);
+      ShadToaster.of(context).show(
+        ShadToast(title: const Text('成功啦'), description: Text('${mySite.nickname}：${res.msg}')),
+      );
       StatusInfo? status = StatusInfo.fromJson(res.data);
       Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
       statusInfo.assign(getTodayString(), status);
@@ -2986,7 +3018,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         dController.update();
       });
     } else {
-      Get.snackbar('站点数据刷新失败', '${mySite.nickname} 数据刷新出错啦：${res.msg}', colorText: shadColorScheme.destructive);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('${mySite.nickname} ：${res.msg}'),
+        ),
+      );
     }
     siteRefreshing.value = false;
   }
@@ -3025,7 +3062,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       showLoading?.value = false;
       controller.update(["SingleSite-${mySite.id}"]);
       if (!res.succeed) {
-        Get.snackbar('获取站点信息失败', "获取站点信息失败，请更新站点列表后重试！${res.msg}", colorText: shadColorScheme.destructive);
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text("请更新站点列表后重试！${res.msg}"),
+          ),
+        );
         return;
       }
       mySite = res.data;
@@ -3639,12 +3681,18 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           dController.initChartData();
                           dController.update();
                         });
-                        Get.snackbar('保存成功！', response.msg, snackPosition: SnackPosition.TOP);
+                        ShadToaster.of(context).show(
+                          ShadToast(title: const Text('成功啦'), description: Text(response.msg)),
+                        );
                         controller.update();
                         Future.microtask(() => controller.getSiteStatusFromServer());
                       } else {
-                        Get.snackbar('保存出错啦！', response.msg,
-                            snackPosition: SnackPosition.TOP, colorText: shadColorScheme.destructive);
+                        ShadToaster.of(context).show(
+                          ShadToast.destructive(
+                            title: const Text('出错啦'),
+                            description: Text(response.msg),
+                          ),
+                        );
                       }
                       doSaveLoading.value = false;
                     },
@@ -3680,20 +3728,22 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
             var res = await controller.removeSiteFromServer(mySite!);
             if (res.succeed) {
               Get.back(result: true);
-              Get.snackbar(
-                '删除站点',
-                res.msg.toString(),
-                colorText: shadColorScheme.foreground,
+              ShadToaster.of(context).show(
+                ShadToast(
+                    title: const Text('成功啦'),
+                    description: Text(res.msg)
+                ),
               );
               controller.showStatusList.removeWhere((item) => mySite.id == item.id);
               controller.update();
               await controller.getSiteStatusFromServer();
             } else {
               Logger.instance.e(res.msg);
-              Get.snackbar(
-                '删除站点',
-                res.msg.toString(),
-                colorText: shadColorScheme.destructive,
+              ShadToaster.of(context).show(
+                ShadToast.destructive(
+                  title: const Text('出错啦'),
+                  description: Text(res.msg),
+                ),
               );
             }
           },
@@ -3709,7 +3759,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     showLoading.value = false;
     if (!res.succeed) {
       Logger.instance.e('获取站点信息失败');
-      Get.snackbar('获取站点信息失败', res.msg, colorText: shadColorScheme.destructive);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text(res.msg),
+        ),
+      );
       return;
     }
     mySite = res.data;
@@ -3762,7 +3817,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (!res.succeed) {
       Logger.instance.e('获取站点信息失败');
-      Get.snackbar('获取站点信息失败', res.msg, colorText: shadColorScheme.destructive);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text(res.msg),
+        ),
+      );
       return;
     }
     mySite = res.data;
@@ -4157,14 +4217,29 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         Logger.instance.i('上传成功，返回数据: ${commonResponse.data}');
         controller.uploadMsg = List<String>.from(commonResponse.data);
         controller.update(['selectedFiles']);
-        Get.snackbar('配置文件上传请求成功', commonResponse.msg, colorText: shadColorScheme.foreground);
+        ShadToaster.of(context).show(
+          ShadToast(
+            title: const Text('成功啦'),
+            description: Text(commonResponse.msg),
+          ),
+        );
       } else {
         Logger.instance.e('配置文件上传失败: ${commonResponse.msg}');
-        Get.snackbar('配置文件上传失败', commonResponse.msg, colorText: shadColorScheme.destructive);
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text(commonResponse.msg),
+          ),
+        );
       }
     } catch (e, stack) {
       Logger.instance.e('上传异常: $e', error: e, stackTrace: stack);
-      Get.snackbar('配置文件上传失败', '上传异常: $e', colorText: shadColorScheme.destructive);
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('上传异常: $e'),
+        ),
+      );
     }
   }
 }

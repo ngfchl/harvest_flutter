@@ -144,12 +144,19 @@ class _WebViewPageState extends State<WebViewPage> {
                           }
                           // 复制到剪切板
                           Clipboard.setData(ClipboardData(text: cookies));
-                          Get.snackbar('获取 UID和 Cookie 成功',
-                              '你的 UID 是：${regex.firstMatch(result.attr!.trim())?.group(0)}，Cookie已复制到剪切板',
-                              colorText: ShadTheme.of(context).colorScheme.foreground);
+                          ShadToaster.of(context).show(
+                            ShadToast(
+                                title: const Text('成功啦'),
+                                description:
+                                    Text('你的 UID 是：${regex.firstMatch(result.attr!.trim())?.group(0)}，Cookie已复制到剪切板')),
+                          );
                         } catch (e) {
-                          Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
-                              colorText: ShadTheme.of(context).colorScheme.destructive);
+                          ShadToaster.of(context).show(
+                            ShadToast.destructive(
+                              title: const Text('出错啦'),
+                              description: Text('请手动填写站点 UID！'),
+                            ),
+                          );
                           controller.mySite = controller.mySite?.copyWith(userId: '');
                         }
                       },
@@ -162,8 +169,9 @@ class _WebViewPageState extends State<WebViewPage> {
                       ),
                       onPressed: () async {
                         Clipboard.setData(ClipboardData(text: controller.info!.magnetUrl));
-                        Get.snackbar('复制下载链接', '种子下载链接已复制到剪切板！',
-                            colorText: ShadTheme.of(context).colorScheme.destructive);
+                        ShadToaster.of(context).show(
+                          ShadToast(title: const Text('成功啦'), description: Text('种子下载链接已复制到剪切板！')),
+                        );
                       },
                     ),
                   if (controller.info != null && controller.isTorrentPath)
@@ -204,8 +212,12 @@ class _WebViewPageState extends State<WebViewPage> {
                               userId: regex.firstMatch(result.attr!.trim())?.group(0),
                             );
                           } catch (e) {
-                            Get.snackbar('获取 UID 失败', '请手动填写站点 UID',
-                                colorText: ShadTheme.of(context).colorScheme.destructive);
+                            ShadToaster.of(context).show(
+                              ShadToast.destructive(
+                                title: const Text('出错啦'),
+                                description: Text('获取 UID 失败，请手动填写站点 UID'),
+                              ),
+                            );
                           }
                         }
                         if (controller.mySite?.passkey == null || controller.mySite?.passkey == '') {
@@ -217,23 +229,11 @@ class _WebViewPageState extends State<WebViewPage> {
                         }
                         final response = await editMySite(controller.mySite!);
 
-                        if (response.code == 0) {
-                          Get.snackbar(
-                            '保存成功！',
-                            response.msg,
-                            snackPosition: SnackPosition.TOP,
-                            colorText: ShadTheme.of(context).colorScheme.foreground,
-                            duration: const Duration(seconds: 3),
-                          );
-                        } else {
-                          Get.snackbar(
-                            '保存出错啦！',
-                            response.msg,
-                            snackPosition: SnackPosition.TOP,
-                            colorText: ShadTheme.of(context).colorScheme.destructive,
-                            duration: const Duration(seconds: 3),
-                          );
-                        }
+                        ShadToaster.of(context).show(
+                          response.succeed
+                              ? ShadToast(title: const Text('成功啦'), description: Text(response.msg))
+                              : ShadToast.destructive(title: const Text('出错啦'), description: Text(response.msg)),
+                        );
                       },
                     )
                 ],
@@ -247,7 +247,12 @@ class _WebViewPageState extends State<WebViewPage> {
               onPressed: () async {
                 Uri uri = Uri.parse(controller.url);
                 if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                  Get.snackbar('打开网页出错', '打开网页出错，不支持的客户端？', colorText: shadColorScheme.destructive);
+                  ShadToaster.of(context).show(
+                    ShadToast.destructive(
+                      title: const Text('打开网页出错'),
+                      description: Text('打开网页出错，不支持的客户端？'),
+                    ),
+                  );
                 }
               },
             ),

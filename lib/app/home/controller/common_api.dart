@@ -14,6 +14,7 @@ Future<void> signAllSiteButton() async {
       colorText: Colors.white,
       backgroundColor: Colors.green.withOpacity(0.7),
     );
+
   } else {
     Get.snackbar(
       '签到失败',

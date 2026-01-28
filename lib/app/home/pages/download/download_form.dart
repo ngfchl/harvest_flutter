@@ -846,16 +846,16 @@ class DownloadForm extends StatelessWidget {
       Logger.instance.i(res.msg);
       if (res.succeed) {
         Get.back();
-        Get.snackbar(
-          '种子推送成功！',
-          res.msg,
-          colorText: ShadTheme.of(context).colorScheme.foreground,
+
+        ShadToaster.of(context).show(
+          ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
         );
       } else {
-        Get.snackbar(
-          '种子推送失败！',
-          res.msg,
-          colorText: ShadTheme.of(context).colorScheme.destructive,
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('出错啦'),
+            description: Text(res.msg),
+          ),
         );
       }
     } finally {}
@@ -881,7 +881,12 @@ Future<void> openDownloaderListSheet(
   if (downloadController.dataList.isEmpty) {
     await downloadController.getDownloaderListFromServer();
     if (downloadController.dataList.isEmpty) {
-      Get.snackbar('无下载器可用', '请先到下载管理添加下载器后重试！');
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('请先到下载管理添加下载器后重试！'),
+        ),
+      );
       return;
     }
   }
@@ -957,10 +962,13 @@ Future<void> openDownloaderListSheet(
                               downloadController.update();
                               CommonResponse response = await controller.getDownloaderCategoryList(downloader);
                               if (!response.succeed) {
-                                Get.snackbar(
-                                  '警告',
-                                  response.msg,
-                                  colorText: shadColorScheme.destructive,
+                                ShadToaster.of(context).show(
+                                  ShadToast.destructive(
+                                    title: const Text('出错啦'),
+                                    description: Text(
+                                      response.msg,
+                                    ),
+                                  ),
                                 );
                                 downloadController.isCategoryLoading = false;
                                 downloadController.update(["${downloader.host}:${downloader.port}-categories"]);

@@ -92,13 +92,18 @@ class _SubscribeHistoryPageState extends State<SubscribeHistoryPage> {
                     onPressed: () async {
                       CommonResponse res = await controller.removeHistory(history);
                       if (res.succeed) {
-                        Get.snackbar('删除通知', res.msg.toString(),
-                            colorText: ShadTheme.of(context).colorScheme.foreground);
+                        ShadToaster.of(context).show(
+                          ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+                        );
                         controller.subHistory.remove(history);
                         await controller.initData();
                       } else {
-                        Get.snackbar('删除通知', res.msg.toString(),
-                            colorText: ShadTheme.of(context).colorScheme.destructive);
+                        ShadToaster.of(context).show(
+                          ShadToast.destructive(
+                            title: const Text('出错啦'),
+                            description: Text(res.msg),
+                          ),
+                        );
                       }
                       Get.back(result: true);
                     },
