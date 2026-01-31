@@ -15,6 +15,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../models/common_response.dart';
 import '../../utils/logger_helper.dart';
 import 'controller.dart';
 
@@ -90,7 +91,7 @@ class AppUpgradePage extends StatelessWidget {
                               id: 'progressValue',
                               builder: (controller) {
                                 if (controller.progressValue != 0 && controller.progressValue < 1) {
-                                  if (controller.progressValue <= 0.01) {
+                                  if (controller.progressValue <= 0.01 && controller.useProxy) {
                                     return Text('测速中，请稍等...',
                                         style: TextStyle(fontSize: 12, color: shadColorScheme.foreground));
                                   }
@@ -334,7 +335,8 @@ class AppUpgradePage extends StatelessWidget {
   }
 
   /// 根据当前设备平台，从 downloadLinks 中返回最匹配的下载 URL
-  Future getDownloadUrlForCurrentPlatform(BuildContext context, GlobalKey buttonKey, CancelToken cancelToken) async {
+  Future<CommonResponse?> getDownloadUrlForCurrentPlatform(
+      BuildContext context, GlobalKey buttonKey, CancelToken cancelToken) async {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     final String prefix = 'harvest_${appUpgradeController.updateInfo?.version}';
     Map<String, String> downloadLinks = appUpgradeController.updateInfo?.downloadLinks ?? {};
@@ -344,12 +346,16 @@ class AppUpgradePage extends StatelessWidget {
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       final abis = androidInfo.supportedAbis;
-      if (abis.any((abi) => abi.contains('armeabi-v7a'))) {
-        appUpgradeController.newVersion = '${prefix}_arm32-android.apk';
+      if (abis.any((abi) => abi.contains('arm64-v8a'))) {
+        appUpgradeController.newVersion = '${prefix}_arm64-android.apk';
       } else if (abis.any((abi) => abi.contains('x86_64'))) {
         appUpgradeController.newVersion = '${prefix}_x86_64-android.apk';
       } else {
-        appUpgradeController.newVersion = '${prefix}_arm64-android.apk';
+        Logger.instance.d('abis: $abis');
+        // appUpgradeController.newVersion = '${prefix}_arm32-android.apk';
+        String msg = '不支持的 CPU 架构！';
+        Logger.instance.e(msg);
+        return CommonResponse.error(msg: msg);
       }
       appDocDir = await getExternalStorageDirectory();
       String savePath = "${appDocDir?.path}/${appUpgradeController.newVersion}";
@@ -389,7 +395,7 @@ class AppUpgradePage extends StatelessWidget {
           Future.delayed(Duration(seconds: 1), () async {
             await Process.run('open', [savedPath]);
           });
-          return;
+          return null;
         }
         String command = 'xattr -d com.apple.quarantine $savedPath && open $savedPath';
         Get.defaultDialog(
@@ -426,7 +432,7 @@ class AppUpgradePage extends StatelessWidget {
           ],
         );
       } catch (e, stackTrace) {
-        if (cancelToken.isCancelled) return;
+        if (cancelToken.isCancelled) return null;
         String message = '打开安装包失败 ❌ $e';
         Logger.instance.e(message, stackTrace: stackTrace);
         ShadToaster.of(context).show(
@@ -441,6 +447,7 @@ class AppUpgradePage extends StatelessWidget {
         ),
       );
     }
+    return null;
   }
 
   Future<void> _downloadInstallationPackage(String savePath, String fileUrl, CancelToken cancelToken) async {
