@@ -3011,12 +3011,13 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       // controller.filterByKey();
       controller.update();
 
-      Future.delayed(Duration(microseconds: 500), () async {
-        controller.getSiteStatusFromServer();
-        DashBoardController dController = Get.find();
-        dController.initChartData();
-        dController.update();
-      });
+      Logger.instance.d('等待 20 秒后刷新首页数据');
+      await Future.delayed(const Duration(seconds: 20));
+
+      // controller.getSiteStatusFromServer();
+      DashBoardController dController = Get.find();
+      dController.initChartData();
+      dController.update();
     } else {
       ShadToaster.of(context).show(
         ShadToast.destructive(
@@ -3729,10 +3730,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
             if (res.succeed) {
               Get.back(result: true);
               ShadToaster.of(context).show(
-                ShadToast(
-                    title: const Text('成功啦'),
-                    description: Text(res.msg)
-                ),
+                ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
               );
               controller.showStatusList.removeWhere((item) => mySite.id == item.id);
               controller.update();
