@@ -55,6 +55,11 @@ class _WebViewPageState extends State<WebViewPage> {
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
+        /// 可以返回上一页时拦截返回操作
+        if (controller.canGoBack) {
+          webController?.goBack();
+          return;
+        }
         Get.defaultDialog(
           backgroundColor: shadColorScheme.background,
           title: "退出",
