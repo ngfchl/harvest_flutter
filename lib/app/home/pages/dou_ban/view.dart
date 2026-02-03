@@ -30,7 +30,8 @@ class DouBanPage extends StatefulWidget {
 
 class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateMixin {
   final controller = Get.put(DouBanController());
-  String cacheServer = 'https://images.weserv.nl/?url=';
+
+  // String cacheServer = 'https://images.weserv.nl/?url=';
 
   @override
   Widget build(BuildContext context) {
@@ -508,7 +509,9 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                     DoubanItemView(
                       mediaItems: controller.douBanMovieHot,
                       onTap: (item) => _buildOperateDialog(item),
-                      onLongPress: (item) => controller.getVideoDetail(item.douBanUrl),
+                      onDoubleTap: (item) => controller.getVideoDetail(item, toSearch: true),
+                      onLongPress: (item) =>
+                          Get.toNamed(Routes.WEBVIEW, arguments: {'url': item.douBanUrl, 'cookie': item.cookie}),
                     ),
                     if (controller.isLoading == true)
                       Center(
@@ -559,7 +562,9 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                     DoubanItemView(
                       mediaItems: controller.douBanTvHot,
                       onTap: (item) => _buildOperateDialog(item),
-                      onLongPress: (item) => controller.getVideoDetail(item.douBanUrl),
+                      onDoubleTap: (item) => controller.getVideoDetail(item, toSearch: true),
+                      onLongPress: (item) =>
+                          Get.toNamed(Routes.WEBVIEW, arguments: {'url': item.douBanUrl, 'cookie': item.cookie}),
                     ),
                     if (controller.isLoading == true)
                       Center(
@@ -709,7 +714,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                       'User-Agent':
                           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0',
                     },
-                    imageUrl: '$cacheServer${e.poster}',
+                    imageUrl: e.poster,
                     placeholder: (context, url) => Center(
                       child: SizedBox(
                           height: 24,
@@ -822,7 +827,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                 ClipRRect(
                   borderRadius: BorderRadius.circular(15.0),
                   child: CachedNetworkImage(
-                    imageUrl: '$cacheServer${e.poster}',
+                    imageUrl: e.poster,
                     placeholder: (context, url) => Center(
                       child: SizedBox(
                           height: 24,
@@ -925,8 +930,8 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
     );
   }
 
-  Future<dynamic> _buildOperateDialog(mediaInfo) async {
-    CommonResponse detail = await controller.getVideoDetail(mediaInfo.douBanUrl);
+  Future<dynamic> _buildOperateDialog(dynamic mediaInfo) async {
+    CommonResponse detail = await controller.getVideoDetail(mediaInfo, toSearch: false);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     if (!detail.succeed || detail.data == null) {
       Logger.instance.e(detail.msg);
@@ -939,7 +944,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
       return;
     }
     Logger.instance.e(detail.data);
-    VideoDetail videoDetail = VideoDetail.fromJson(detail.data);
+    VideoDetail videoDetail = detail.data;
     Get.bottomSheet(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
@@ -970,7 +975,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                     maxHeight: MediaQuery.of(context).size.height * 0.8,
                                   ),
                                   child: CachedNetworkImage(
-                                    imageUrl: '$cacheServer${mediaInfo.poster}',
+                                    imageUrl: '${mediaInfo.poster}',
                                     errorWidget: (context, url, error) =>
                                         const Image(image: AssetImage('assets/images/douban.png')),
                                     fit: BoxFit.fitWidth,
@@ -981,7 +986,13 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8.0),
                           child: CachedNetworkImage(
-                            imageUrl: '$cacheServer${mediaInfo.poster}',
+                            imageUrl: '${mediaInfo.poster}',
+                            httpHeaders: {
+                              'Referer': 'https://movie.douban.com/',
+                              'User-Agent':
+                                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+                              'cookie': mediaInfo.cookie ?? ''
+                            },
                             placeholder: (context, url) => Center(
                               child: SizedBox(
                                   height: 24,
@@ -1105,9 +1116,15 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                           content: InkWell(
                                         onTap: () => Navigator.of(context).pop(),
                                         child: CachedNetworkImage(
-                                          imageUrl: '$cacheServer$imgUrl',
+                                          imageUrl: imgUrl,
+                                          httpHeaders: {
+                                            'Referer': 'https://movie.douban.com/',
+                                            'User-Agent':
+                                                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+                                            'cookie': mediaInfo.cookie ?? ''
+                                          },
                                           errorWidget: (context, url, error) =>
-                                              const Image(image: AssetImage('assets/images/avatar.png')),
+                                              const Image(image: AssetImage('assets/images/douban.png')),
                                           fit: BoxFit.fitWidth,
                                         ),
                                       ));
@@ -1115,7 +1132,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(8.0),
                                       child: CachedNetworkImage(
-                                        imageUrl: '$cacheServer$imgUrl',
+                                        imageUrl: imgUrl,
                                         placeholder: (context, url) => Center(
                                           child: SizedBox(
                                               height: 24,
@@ -1157,9 +1174,9 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                                     maxHeight: MediaQuery.of(context).size.height * 0.8,
                                                   ),
                                                   child: CachedNetworkImage(
-                                                    imageUrl: '$cacheServer${worker.imgUrl}',
+                                                    imageUrl: '${worker.imgUrl}',
                                                     errorWidget: (context, url, error) =>
-                                                        const Image(image: AssetImage('assets/images/avatar.png')),
+                                                        const Image(image: AssetImage('assets/images/douban.png')),
                                                     fit: BoxFit.fitWidth,
                                                   ),
                                                 ),
@@ -1168,7 +1185,13 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(8.0),
                                           child: CachedNetworkImage(
-                                            imageUrl: '$cacheServer${worker.imgUrl}',
+                                            imageUrl: '${worker.imgUrl}',
+                                            httpHeaders: {
+                                              'Referer': 'https://movie.douban.com/',
+                                              'User-Agent':
+                                                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+                                              'cookie': mediaInfo.cookie ?? ''
+                                            },
                                             placeholder: (context, url) => Center(
                                               child: SizedBox(
                                                   height: 24,
@@ -1270,18 +1293,11 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
     }));
   }
 
-  Future<void> _openMediaInfoDetail(mediaInfo) async {
+  Future<void> _openMediaInfoDetail(dynamic mediaInfo) async {
     Get.back();
-    String url;
-    try {
-      url = mediaInfo.douBanUrl;
-    } catch (err) {
-      url = mediaInfo.douBanUrl;
-    }
-    await controller.getVideoDetail(url);
     if (kIsWeb) {
       Logger.instance.i('Explorer');
-      if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
+      if (!await launchUrl(Uri.parse(mediaInfo.douBanUrl), mode: LaunchMode.externalApplication)) {
         ShadToaster.of(context).show(
           ShadToast.destructive(
             title: const Text('打开网页出错'),
@@ -1291,7 +1307,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
       }
     } else {
       Logger.instance.i('WebView');
-      Get.toNamed(Routes.WEBVIEW, arguments: {'url': url});
+      Get.toNamed(Routes.WEBVIEW, arguments: {'url': mediaInfo.douBanUrl, 'cookie': mediaInfo.cookie ?? ''});
     }
   }
 }

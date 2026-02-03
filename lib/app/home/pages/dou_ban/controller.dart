@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:harvest/app/home/controller/home_controller.dart';
@@ -10,7 +9,6 @@ import '../../../../api/douban.dart';
 import '../../../../api/tmdb.dart';
 import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
-import '../../../routes/app_pages.dart';
 import '../agg_search/controller.dart';
 import '../models/tmdb.dart';
 import 'douban_api.dart';
@@ -280,29 +278,35 @@ class DouBanController extends GetxController {
     return '';
   }
 
-  Future getVideoDetail(String url) async {
-    if (kIsWeb) {
-      Logger.instance.i('WebView');
-      Get.toNamed(Routes.WEBVIEW, arguments: {
-        'url': url,
-      });
-      return;
-    }
+  Future getVideoDetail(dynamic item, {bool toSearch = false}) async {
+    // if (!kIsWeb) {
+    //   Logger.instance.i('WebView');
+    //   Get.toNamed(Routes.WEBVIEW, arguments: {
+    //     'url': item.douBanUrl,
+    //     'cookie': item.cookie,
+    //   });
+    //   return;
+    // }
     isLoading = true;
     update();
-    String id = extractDoubanId(url);
+    String id = extractDoubanId(item.douBanUrl);
     if (id.isEmpty) {
-      Logger.instance.e('影视信息 Id 解析失败： URL：$url');
+      Logger.instance.e('影视信息 Id 解析失败： URL：${item.douBanUrl}');
       return;
     }
     var res = await getSubjectInfoApi(id);
     Logger.instance.i(res);
+    VideoDetail videoDetail = VideoDetail.fromJson(res.data);
+    if (toSearch) {
+      goSearchPage(videoDetail);
+    }
+    res.data = videoDetail;
     isLoading = false;
     update();
     return res;
   }
 
-  Future<void> goSearchPage(VideoDetail detail) async {
+  Future<void> goSearchPage(dynamic detail) async {
     Get.back();
     String searchKey = detail.title;
     if (detail.imdb.isNotEmpty) {
@@ -320,11 +324,11 @@ class DouBanController extends GetxController {
   }
 
   Future<void> goSearch(String searchKey) async {
+    homeController.changePage(2);
+    homeController.update();
     searchController.searchKeyController.text = searchKey;
     await searchController.doWebsocketSearch();
-    homeController.changePage(1);
     searchController.update();
-    homeController.update();
     Logger.instance.i(homeController.initPage);
     Logger.instance.i(homeController.pageController.page);
   }

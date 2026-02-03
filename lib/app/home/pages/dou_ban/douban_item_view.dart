@@ -6,16 +6,18 @@ import '../../../../utils/storage.dart';
 
 class DoubanItemView extends StatelessWidget {
   final List<dynamic> mediaItems;
-  final void Function(dynamic) onTap;
-  final void Function(dynamic) onLongPress;
+  final void Function(dynamic)? onTap;
+  final void Function(dynamic)? onLongPress;
+  final void Function(dynamic)? onDoubleTap;
 
   final String cacheServer = 'https://images.weserv.nl/?url=';
 
   const DoubanItemView({
     super.key,
     required this.mediaItems,
-    required this.onTap,
-    required this.onLongPress,
+    this.onTap,
+    this.onLongPress,
+    this.onDoubleTap,
   });
 
   @override
@@ -34,8 +36,9 @@ class DoubanItemView extends StatelessWidget {
             runSpacing: 12,
             children: mediaItems
                 .map((e) => InkWell(
-                      onTap: () => onTap(e),
-                      onLongPress: () => onLongPress(e),
+                      onTap: () => onTap?.call(e),
+                      onLongPress: () => onLongPress?.call(e),
+                      onDoubleTap: () => onDoubleTap?.call(e),
                       child: SizedBox(
                         width: itemWidth,
                         child: Stack(

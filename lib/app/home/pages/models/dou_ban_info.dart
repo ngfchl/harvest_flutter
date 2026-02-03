@@ -9,6 +9,7 @@ class TopMovieInfo {
   String ratingNum;
   String evaluateNum;
   String quote;
+  String cookie;
 
   TopMovieInfo({
     required this.rank,
@@ -21,6 +22,7 @@ class TopMovieInfo {
     required this.ratingNum,
     required this.evaluateNum,
     required this.quote,
+    required this.cookie,
   });
 
   factory TopMovieInfo.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,7 @@ class TopMovieInfo {
       ratingNum: json['rating_num'],
       evaluateNum: json['evaluate_num'],
       quote: json['quote'],
+      cookie: json['cookie'],
     );
   }
 
@@ -50,6 +53,7 @@ class TopMovieInfo {
       'rating_num': ratingNum,
       'evaluate_num': evaluateNum,
       'quote': quote,
+      'cookie': cookie,
     };
   }
 }
