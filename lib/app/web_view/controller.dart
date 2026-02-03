@@ -9,6 +9,7 @@ import '../home/pages/models/website.dart';
 
 class WebViewPageController extends GetxController {
   late String url;
+  String? cookie;
   late SearchTorrentInfo? info;
   late MySite? mySite;
   late WebSite? website;
@@ -27,6 +28,7 @@ class WebViewPageController extends GetxController {
     Logger.instance.d(Get.arguments);
     url = Get.arguments['url'];
     info = Get.arguments['info'];
+    cookie = Get.arguments['cookie'];
     mySite = Get.arguments['mySite'];
     website = Get.arguments['website'];
     isTorrentPath = checkTorrentPath(url);

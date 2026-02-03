@@ -44,9 +44,10 @@ class _WebViewPageState extends State<WebViewPage> {
           }).toList()
         : [];
     Map<String, String> headers = {
-      "Cookie": controller.mySite != null ? controller.mySite!.cookie! : '',
+      "Cookie": controller.mySite != null ? controller.mySite!.cookie! : controller.cookie ?? '',
       "User-Agent": controller.mySite != null ? controller.mySite!.userAgent! : 'Harvest App',
     };
+    Logger.instance.d(headers);
     if (controller.mySite != null && controller.mySite!.mirror!.contains('m-team')) {
       headers['Authorization'] = controller.mySite!.cookie!;
     }
@@ -55,6 +56,7 @@ class _WebViewPageState extends State<WebViewPage> {
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
+
         /// 可以返回上一页时拦截返回操作
         if (controller.canGoBack) {
           webController?.goBack();
