@@ -71,6 +71,8 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
   Widget _buildBottomButtonBarFloat() {
     List<MetaDataItem> cacheList = [
       {"name": "豆瓣缓存数据", "value": "*douban*"},
+      {"name": "TMDB缓存数据", "value": "*tmdb_*"},
+      {"name": "影视Token数据", "value": "tmdb_api_auth"},
       {"name": "RSS缓存数据", "value": "rss_data_list"},
       {"name": "单下载器缓存", "value": "repeat_info_hash_cache:*-*"},
       {"name": "站点删种缓存", "value": "repeat_404_cache:*-*"},
