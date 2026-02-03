@@ -65,6 +65,7 @@ class HotMediaInfo {
   int coverY;
   bool isNew;
   String episodesInfo;
+  String cookie;
 
   HotMediaInfo({
     required this.title,
@@ -77,6 +78,7 @@ class HotMediaInfo {
     required this.coverY,
     required this.isNew,
     required this.episodesInfo,
+    required this.cookie,
   });
 
   factory HotMediaInfo.fromJson(Map<String, dynamic> json) {
@@ -91,6 +93,7 @@ class HotMediaInfo {
       coverY: json['cover_y'],
       isNew: json['is_new'],
       episodesInfo: json['episodes_info'],
+      cookie: json['cookie'],
     );
   }
 
@@ -106,6 +109,7 @@ class HotMediaInfo {
       'cover_y': coverY,
       'is_new': isNew,
       'episodes_info': episodesInfo,
+      'cookie': cookie,
     };
   }
 }
@@ -186,12 +190,10 @@ class VideoDetail {
     return VideoDetail(
       title: json['title'],
       year: json['year'],
-      director:
-          (json['director'] as List).map((e) => Worker.fromJson(e)).toList(),
+      director: (json['director'] as List).map((e) => Worker.fromJson(e)).toList(),
       writer: (json['writer'] as List).map((e) => Worker.fromJson(e)).toList(),
       actors: (json['actors'] as List).map((e) => Worker.fromJson(e)).toList(),
-      celebrities:
-          (json['celebrities'] as List).map((e) => Worker.fromJson(e)).toList(),
+      celebrities: (json['celebrities'] as List).map((e) => Worker.fromJson(e)).toList(),
       genres: List<String>.from(json['genres']),
       officialSite: json['official_site'],
       region: List<String>.from(json['region']),
