@@ -92,7 +92,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                                   children: controller.dataList
                                       .map((downloader) => FractionallySizedBox(
                                             widthFactor: getWidthFactor(context),
-                                            child: buildDownloaderCard(downloader),
+                                            child: buildDownloaderCard(downloader, context),
                                           ))
                                       .toList(),
                                 ),
@@ -582,7 +582,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     }
   }
 
-  Widget buildDownloaderCard(Downloader downloader) {
+  Widget buildDownloaderCard(Downloader downloader, BuildContext context) {
     bool isQb = downloader.category == 'Qb';
 
     ChartSeriesController? chartSeriesController;
@@ -599,7 +599,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             SlidableAction(
               flex: 1,
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
-              onPressed: (context) async {
+              onPressed: (c) async {
                 CommonResponse res = await controller.reseedDownloader(downloader.id!);
                 if (res.succeed) {
                   ShadToaster.of(context).show(
@@ -625,7 +625,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             SlidableAction(
               flex: 1,
               borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
-              onPressed: (context) async {
+              onPressed: (c) async {
                 _showEditBottomSheet(downloader: downloader);
               },
               backgroundColor: const Color(0xFF0392CF),
@@ -642,7 +642,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
             SlidableAction(
               flex: 1,
               borderRadius: const BorderRadius.all(Radius.circular(8)),
-              onPressed: (context) async {
+              onPressed: (c) async {
                 Get.defaultDialog(
                   title: '确认',
                   radius: 5,
@@ -5632,7 +5632,8 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                       title: const Text('出错啦'),
                       description: Text(response.msg),
                     ),
-                  );                } else {
+                  );
+                } else {
                   controller.getDownloaderListFromServer();
                 }
                 Get.back();
@@ -6321,7 +6322,6 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
 
       logger_helper.Logger.instance.i(toRemoveTorrentList);
       logger_helper.Logger.instance.i(toRemoveTorrentList.length);
-      var shadColorScheme = ShadTheme.of(context).colorScheme;
       if (toRemoveTorrentList.isEmpty) {
         ShadToaster.of(context).show(
           ShadToast.destructive(
@@ -6394,7 +6394,6 @@ class ShowTorrentWidget extends StatelessWidget {
 
   GetBuilder<DownloadController> _showQbTorrent(Downloader downloader, QbittorrentTorrentInfo torrentInfo, context) {
     RxBool paused = torrentInfo.state.toString().contains('pause').obs;
-    RxBool autoTmm = torrentInfo.autoTmm.obs;
 
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return GetBuilder<DownloadController>(
@@ -6410,7 +6409,7 @@ class ShowTorrentWidget extends StatelessWidget {
                   extentRatio: 0.5,
                   children: [
                     SlidableAction(
-                      onPressed: (context) async {
+                      onPressed: (c) async {
                         RxBool deleteFiles = false.obs;
                         Get.defaultDialog(
                           title: '确认',
@@ -6457,7 +6456,7 @@ class ShowTorrentWidget extends StatelessWidget {
                       label: '删除',
                     ),
                     SlidableAction(
-                      onPressed: (context) async {
+                      onPressed: (c) async {
                         await controller.controlQbTorrents(
                           command: paused.value ? 'resume' : 'pause',
                           hashes: [torrentInfo.infohashV1],
@@ -6608,10 +6607,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: torrentInfo.name));
                             ShadToaster.of(context).show(
-                              ShadToast(
-                                  title: const Text('成功啦'),
-                                  description: Text('种子名称复制成功！')
-                              ),
+                              ShadToast(title: const Text('成功啦'), description: Text('种子名称复制成功！')),
                             );
                           },
                         ),
@@ -6625,10 +6621,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: torrentInfo.infohashV1));
                             ShadToaster.of(context).show(
-                              ShadToast(
-                                  title: const Text('成功啦'),
-                                  description: Text('种子HASH复制成功！')
-                              ),
+                              ShadToast(title: const Text('成功啦'), description: Text('种子HASH复制成功！')),
                             );
                           },
                         ),
@@ -6642,10 +6635,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: torrentInfo.magnetUri));
                             ShadToaster.of(context).show(
-                              ShadToast(
-                                  title: const Text('成功啦'),
-                                  description: Text('种子磁力链接复制成功！')
-                              ),
+                              ShadToast(title: const Text('成功啦'), description: Text('种子磁力链接复制成功！')),
                             );
                           },
                         ),
@@ -6663,10 +6653,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: torrentInfo.tracker));
                             ShadToaster.of(context).show(
-                              ShadToast(
-                                  title: const Text('成功啦'),
-                                  description: Text('种子Tracker复制成功！')
-                              ),
+                              ShadToast(title: const Text('成功啦'), description: Text('种子Tracker复制成功！')),
                             );
                           },
                         ),
@@ -6680,10 +6667,7 @@ class ShowTorrentWidget extends StatelessWidget {
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: torrentInfo.comment));
                             ShadToaster.of(context).show(
-                              ShadToast(
-                                  title: const Text('成功啦'),
-                                  description: Text('种子Tracker复制成功！')
-                              ),
+                              ShadToast(title: const Text('成功啦'), description: Text('种子Tracker复制成功！')),
                             );
                           },
                         ),
@@ -7354,7 +7338,7 @@ class ShowTorrentWidget extends StatelessWidget {
             motion: const ScrollMotion(),
             children: [
               SlidableAction(
-                onPressed: (context) async {
+                onPressed: (c) async {
                   RxBool deleteFiles = false.obs;
                   Get.defaultDialog(
                     title: '确认',
@@ -7404,7 +7388,7 @@ class ShowTorrentWidget extends StatelessWidget {
               SlidableAction(
                 // An action can be bigger than the others.
                 flex: 2,
-                onPressed: (context) async {
+                onPressed: (c) async {
                   Get.defaultDialog(
                     title: '确认',
                     middleText: '您确定要执行这个操作吗？',
@@ -7442,7 +7426,7 @@ class ShowTorrentWidget extends StatelessWidget {
             children: [
               SlidableAction(
                 // An action can be bigger than the others.
-                onPressed: (context) async {
+                onPressed: (c) async {
                   Get.defaultDialog(
                     title: '确认',
                     backgroundColor: Colors.white54,
@@ -7479,7 +7463,7 @@ class ShowTorrentWidget extends StatelessWidget {
                 label: '校验',
               ),
               SlidableAction(
-                onPressed: (context) async {
+                onPressed: (c) async {
                   Get.defaultDialog(
                     title: '确认',
                     middleText: '您确定要执行这个操作吗？',
@@ -7745,10 +7729,7 @@ class ShowTorrentWidget extends StatelessWidget {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.name));
                       ShadToaster.of(context).show(
-                        ShadToast(
-                            title: const Text('成功啦'),
-                            description: Text('种子名称复制成功！')
-                        ),
+                        ShadToast(title: const Text('成功啦'), description: Text('种子名称复制成功！')),
                       );
                     },
                   ),
@@ -7762,10 +7743,7 @@ class ShowTorrentWidget extends StatelessWidget {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.hashString));
                       ShadToaster.of(context).show(
-                        ShadToast(
-                            title: const Text('成功啦'),
-                            description: Text('种子HASH复制成功！')
-                        ),
+                        ShadToast(title: const Text('成功啦'), description: Text('种子HASH复制成功！')),
                       );
                     },
                   ),
@@ -7779,10 +7757,7 @@ class ShowTorrentWidget extends StatelessWidget {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: '${torrentInfo.downloadDir}/${torrentInfo.name}'));
                       ShadToaster.of(context).show(
-                        ShadToast(
-                            title: const Text('成功啦'),
-                            description: Text('种子HASH复制成功！')
-                        ),
+                        ShadToast(title: const Text('成功啦'), description: Text('种子HASH复制成功！')),
                       );
                     },
                   ),
@@ -7796,10 +7771,7 @@ class ShowTorrentWidget extends StatelessWidget {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.magnetLink));
                       ShadToaster.of(context).show(
-                        ShadToast(
-                            title: const Text('成功啦'),
-                            description: Text('磁力链接复制成功！')
-                        ),
+                        ShadToast(title: const Text('成功啦'), description: Text('磁力链接复制成功！')),
                       );
                     },
                   ),
@@ -8146,10 +8118,7 @@ class ShowTorrentWidget extends StatelessWidget {
         await controller.getDownloaderTorrentDetailInfo(downloader, torrentInfo.hashString, false);
     if (!response.succeed) {
       ShadToaster.of(context).show(
-        ShadToast.destructive(
-            title: const Text('出错啦'),
-            description: Text(response.msg)
-        ),
+        ShadToast.destructive(title: const Text('出错啦'), description: Text(response.msg)),
       );
       return;
     }
@@ -8401,10 +8370,7 @@ class ShowTorrentWidget extends StatelessWidget {
                                   onPressed: () async {
                                     Clipboard.setData(ClipboardData(text: controller.selectedTorrent.hashString));
                                     ShadToaster.of(context).show(
-                                      ShadToast(
-                                          title: const Text('成功啦'),
-                                          description: Text( '种子HASH复制成功！')
-                                      ),
+                                      ShadToast(title: const Text('成功啦'), description: Text('种子HASH复制成功！')),
                                     );
                                   },
                                   leading: const Icon(
