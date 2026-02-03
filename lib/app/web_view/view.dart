@@ -62,34 +62,7 @@ class _WebViewPageState extends State<WebViewPage> {
           webController?.goBack();
           return;
         }
-        Get.defaultDialog(
-          backgroundColor: shadColorScheme.background,
-          title: "退出",
-          content: Text(
-            '确定要退出内置浏览器？',
-            style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-          ),
-          middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-          titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
-          radius: 10,
-          cancel: ShadButton.ghost(
-            size: ShadButtonSize.sm,
-            onPressed: () async {
-              Navigator.of(context).pop(true);
-            },
-            child: const Text('取消'),
-          ),
-          confirm: ShadButton.destructive(
-            size: ShadButtonSize.sm,
-            onPressed: () async {
-              Navigator.of(context).pop(false);
-              Get.back();
-            },
-            child: const Text('确定'),
-          ),
-          textCancel: '退出',
-          textConfirm: '取消',
-        );
+        exit(shadColorScheme, context);
       },
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -100,6 +73,14 @@ class _WebViewPageState extends State<WebViewPage> {
           title: Text(
             controller.pageTitle.value,
             style: const TextStyle(fontSize: 14),
+          ),
+          leading: ShadIconButton.ghost(
+            icon: Icon(
+              Icons.keyboard_arrow_left_outlined,
+              color: shadColorScheme.foreground,
+              size: 28,
+            ),
+            onPressed: () => exit(shadColorScheme, context),
           ),
           toolbarHeight: 40,
           actions: [
@@ -381,6 +362,37 @@ class _WebViewPageState extends State<WebViewPage> {
           );
         }),
       ),
+    );
+  }
+
+  void exit(ShadColorScheme shadColorScheme, BuildContext context) {
+    Get.defaultDialog(
+      backgroundColor: shadColorScheme.background,
+      title: "退出",
+      content: Text(
+        '确定要退出内置浏览器？',
+        style: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+      ),
+      middleTextStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+      titleStyle: TextStyle(fontSize: 14, color: shadColorScheme.foreground),
+      radius: 10,
+      cancel: ShadButton.ghost(
+        size: ShadButtonSize.sm,
+        onPressed: () async {
+          Navigator.of(context).pop(true);
+        },
+        child: const Text('取消'),
+      ),
+      confirm: ShadButton.destructive(
+        size: ShadButtonSize.sm,
+        onPressed: () async {
+          Navigator.of(context).pop(false);
+          Get.back();
+        },
+        child: const Text('确定'),
+      ),
+      textCancel: '退出',
+      textConfirm: '取消',
     );
   }
 
