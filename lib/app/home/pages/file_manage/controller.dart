@@ -78,7 +78,7 @@ class FileManageController extends GetxController {
     return await saveTMDBMatchApi(path, mediaItem.toJson());
   }
 
-  Future<CommonResponse> hardLinkSource(String path) async {
-    return await hardLinkSourceApi(path);
+  Future<CommonResponse> hardLinkSource(String path, {bool unlinkExisting = false}) async {
+    return await hardLinkSourceApi(path, unlinkExisting: unlinkExisting);
   }
 }

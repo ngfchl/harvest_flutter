@@ -368,10 +368,35 @@ class FileManagePage extends StatelessWidget {
                             ShadButton.ghost(
                               onPressed: () async {
                                 Get.back();
-                                CommonResponse res = await controller.hardLinkSource(item.path);
+                                RxBool unlinkExisting = false.obs;
+                                Get.defaultDialog(
+                                  title: '硬链接',
+                                  content: SwitchTile(
+                                      title: '重建',
+                                      value: unlinkExisting.value,
+                                      onChanged: (v) => unlinkExisting.value = v),
+                                  actions: [
+                                    ShadButton.ghost(
+                                      onPressed: () {
+                                        Get.back();
+                                      },
+                                      child: const Text('取消'),
+                                    ),
+                                    ShadButton.outline(
+                                      onPressed: () async {
+                                        Get.back();
+                                        CommonResponse res = await controller.hardLinkSource(item.path,
+                                            unlinkExisting: unlinkExisting.value);
 
-                                ShadToaster.of(context).show(
-                                  ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+                                        ShadToaster.of(context).show(
+                                          res.succeed
+                                              ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                              : ShadToast.destructive(
+                                                  title: const Text('出错啦'), description: Text(res.msg)),
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 );
                               },
                               leading: Icon(

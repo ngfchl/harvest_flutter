@@ -23,9 +23,9 @@ Future<CommonResponse> editSourceApi(String path, String newName) async {
 }
 
 /// 硬链接资源
-Future<CommonResponse> hardLinkSourceApi(String path) async {
+Future<CommonResponse> hardLinkSourceApi(String path, {bool unlinkExisting = false}) async {
   String apiUrl = Api.SOURCE_HARD_LINK;
-  return await fetchBasicData(apiUrl, queryParameters: {"path": path});
+  return await fetchBasicData(apiUrl, queryParameters: {"path": path, "unlink_existing": unlinkExisting});
 }
 
 // ///  修改用户信息
