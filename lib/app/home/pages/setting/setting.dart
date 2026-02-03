@@ -517,7 +517,7 @@ class SettingPage extends StatelessWidget {
         children: [
           ListTile(
               title: Text(
-                'TMDB配置',
+                '影视Token配置',
                 style: TextStyle(color: shadColorScheme.foreground),
               ),
               dense: true,
@@ -549,13 +549,13 @@ class SettingPage extends StatelessWidget {
                   CustomTextField(
                     autofocus: true,
                     controller: apiKeyController,
-                    labelText: 'API密钥',
+                    labelText: 'TMDB密钥',
                   ),
-                  CustomTextField(controller: secretController, labelText: '访问令牌'),
+                  CustomTextField(controller: secretController, labelText: '豆瓣Cookie'),
                   CustomTextField(controller: proxyController, labelText: '代理地址'),
                   SwitchTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                      title: 'TMDB开关',
+                      title: '开启',
                       value: isActive.value,
                       onChanged: (value) {
                         isActive.value = value;
