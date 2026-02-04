@@ -41,12 +41,12 @@ class FileManageController extends GetxController {
     return await getSourceUrlApi(path: path);
   }
 
-  Future<CommonResponse> removeSource(String path) async {
-    return await removeSourceApi(path);
+  Future<CommonResponse> removeSource(String path, {bool deleteSource = false}) async {
+    return await removeSourceApi(path, deleteSource: deleteSource);
   }
 
-  Future<CommonResponse> edisSource(String path, String newName) async {
-    return await editSourceApi(path, newName);
+  Future<CommonResponse> editSource(String path, String newName, {bool renameSource = false}) async {
+    return await editSourceApi(path, newName, renameSource: renameSource);
   }
 
   Future<bool> onBackPressed() async {

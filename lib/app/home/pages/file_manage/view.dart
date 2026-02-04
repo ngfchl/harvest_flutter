@@ -191,7 +191,7 @@ class FileManagePage extends StatelessWidget {
         });
   }
 
-  Widget buildCustomCard(SourceItemView item, ShadColorScheme shadColorScheme, BuildContext context) {
+  Widget buildCustomCard(SourceItemView item, ShadColorScheme shadColorScheme, BuildContext buildContext) {
     return GetBuilder<FileManageController>(
         id: 'file_manage_${item.path}',
         builder: (controller) {
@@ -211,6 +211,7 @@ class FileManagePage extends StatelessWidget {
                           const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
                       onPressed: (context) async {
                         TextEditingController nameController = TextEditingController(text: item.name);
+                        RxBool renameSource = false.obs;
                         Get.defaultDialog(
                           title: '重命名',
                           radius: 5,
@@ -218,7 +219,17 @@ class FileManagePage extends StatelessWidget {
                               const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
                           middleText: '确定要重新命名吗？',
                           backgroundColor: shadColorScheme.background,
-                          content: CustomTextField(controller: nameController, labelText: "重命名为"),
+                          content: Column(
+                            children: [
+                              CustomTextField(controller: nameController, labelText: "重命名为"),
+                              Obx(() {
+                                return SwitchTile(
+                                    title: '重命名源文件',
+                                    value: renameSource.value,
+                                    onChanged: (v) => renameSource.value = v);
+                              }),
+                            ],
+                          ),
                           actions: [
                             ShadButton.outline(
                               onPressed: () {
@@ -228,15 +239,16 @@ class FileManagePage extends StatelessWidget {
                             ),
                             ShadButton.destructive(
                               onPressed: () async {
-                                Get.back(result: true);
-                                CommonResponse res = await controller.edisSource(item.path, nameController.text);
+                                CommonResponse res = await controller.editSource(item.path, nameController.text,
+                                    renameSource: renameSource.value);
                                 if (res.succeed) {
-                                  ShadToaster.of(context).show(
+                                  ShadToaster.of(buildContext).show(
                                     ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
                                   );
+                                  Get.back(result: true);
                                   await controller.initSourceData(noCache: true);
                                 } else {
-                                  ShadToaster.of(context).show(
+                                  ShadToaster.of(buildContext).show(
                                     ShadToast.destructive(
                                       title: const Text('出错啦'),
                                       description: Text(res.msg),
@@ -265,12 +277,17 @@ class FileManagePage extends StatelessWidget {
                       borderRadius:
                           const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
                       onPressed: (context) async {
+                        RxBool deleteSource = false.obs;
+
                         Get.defaultDialog(
                           title: '确认',
                           radius: 5,
                           titleStyle:
                               const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
-                          middleText: '确定要删除文件吗？',
+                          content: Obx(() {
+                            return SwitchTile(
+                                title: '删除源文件', value: deleteSource.value, onChanged: (v) => deleteSource.value = v);
+                          }),
                           actions: [
                             ShadButton.outline(
                               onPressed: () {
@@ -284,7 +301,8 @@ class FileManagePage extends StatelessWidget {
                             ShadButton.destructive(
                               onPressed: () async {
                                 Get.back(result: true);
-                                CommonResponse res = await controller.removeSource(item.path);
+                                CommonResponse res =
+                                    await controller.removeSource(item.path, deleteSource: deleteSource.value);
                                 if (res.succeed) {
                                   ShadToaster.of(context).show(
                                     ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
@@ -371,10 +389,14 @@ class FileManagePage extends StatelessWidget {
                                 RxBool unlinkExisting = false.obs;
                                 Get.defaultDialog(
                                   title: '硬链接',
-                                  content: SwitchTile(
-                                      title: '重建',
-                                      value: unlinkExisting.value,
-                                      onChanged: (v) => unlinkExisting.value = v),
+                                  backgroundColor: shadColorScheme.background,
+                                  radius: 10,
+                                  content: Obx(() {
+                                    return SwitchTile(
+                                        title: '重建',
+                                        value: unlinkExisting.value,
+                                        onChanged: (v) => unlinkExisting.value = v);
+                                  }),
                                   actions: [
                                     ShadButton.ghost(
                                       onPressed: () {
@@ -382,19 +404,22 @@ class FileManagePage extends StatelessWidget {
                                       },
                                       child: const Text('取消'),
                                     ),
-                                    ShadButton.outline(
+                                    ShadButton.destructive(
                                       onPressed: () async {
                                         Get.back();
                                         CommonResponse res = await controller.hardLinkSource(item.path,
                                             unlinkExisting: unlinkExisting.value);
 
-                                        ShadToaster.of(context).show(
+                                        ShadToaster.of(buildContext).show(
                                           res.succeed
                                               ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
                                               : ShadToast.destructive(
                                                   title: const Text('出错啦'), description: Text(res.msg)),
                                         );
                                       },
+                                      child: Obx(() {
+                                        return Text(unlinkExisting.value ? '重建' : '确认');
+                                      }),
                                     ),
                                   ],
                                 );
@@ -415,7 +440,7 @@ class FileManagePage extends StatelessWidget {
                                 controller.isLoading = false;
                                 controller.update(['file_manage']);
                                 if (!response.succeed) {
-                                  ShadToaster.of(context).show(
+                                  ShadToaster.of(buildContext).show(
                                     ShadToast.destructive(
                                       title: const Text('出错啦'),
                                       description: Text(response.msg),
@@ -424,7 +449,7 @@ class FileManagePage extends StatelessWidget {
                                   return;
                                 }
                                 if (response.data != null && response.data!.isEmpty) {
-                                  ShadToaster.of(context).show(
+                                  ShadToaster.of(buildContext).show(
                                     ShadToast.destructive(
                                       title: const Text('出错啦'),
                                       description: Text('未查询到相关影视信息！'),
@@ -464,14 +489,14 @@ class FileManagePage extends StatelessWidget {
                                                     var response =
                                                         await controller.writeScrapeInfoApi(item.path, media);
                                                     if (!response.succeed) {
-                                                      ShadToaster.of(context).show(
+                                                      ShadToaster.of(buildContext).show(
                                                         ShadToast.destructive(
                                                           title: const Text('出错啦'),
                                                           description: Text(response.msg),
                                                         ),
                                                       );
                                                     } else {
-                                                      ShadToaster.of(context).show(
+                                                      ShadToaster.of(buildContext).show(
                                                         ShadToast(
                                                             title: const Text('成功啦'), description: Text(response.msg)),
                                                       );
@@ -508,7 +533,7 @@ class FileManagePage extends StatelessWidget {
                                 controller.isLoading = false;
                                 controller.update(['file_manage']);
                                 if (!response.succeed) {
-                                  ShadToaster.of(context).show(
+                                  ShadToaster.of(buildContext).show(
                                     ShadToast.destructive(
                                       title: const Text('出错啦'),
                                       description: Text(response.msg),
@@ -517,7 +542,7 @@ class FileManagePage extends StatelessWidget {
                                   return;
                                 }
                                 if (response.data!.isEmpty) {
-                                  ShadToaster.of(context).show(
+                                  ShadToaster.of(buildContext).show(
                                     ShadToast.destructive(
                                       title: const Text('出错啦'),
                                       description: Text('未查询到相关影视信息！'),
@@ -551,14 +576,14 @@ class FileManagePage extends StatelessWidget {
                                                       var response =
                                                           await controller.writeScrapeInfoApi(item.path, media);
                                                       if (!response.succeed) {
-                                                        ShadToaster.of(context).show(
+                                                        ShadToaster.of(buildContext).show(
                                                           ShadToast.destructive(
                                                             title: const Text('出错啦'),
                                                             description: Text(response.msg),
                                                           ),
                                                         );
                                                       } else {
-                                                        ShadToaster.of(context).show(
+                                                        ShadToaster.of(buildContext).show(
                                                           ShadToast(
                                                               title: const Text('成功啦'),
                                                               description: Text(response.msg)),
@@ -596,7 +621,7 @@ class FileManagePage extends StatelessWidget {
                             onPressed: () async {
                               CommonResponse res = await controller.getFileSourceUrl(item.path);
                               if (res.succeed) {
-                                await pickAndDownload(res.data, context);
+                                await pickAndDownload(res.data, buildContext);
                               }
                             },
                             leading: Icon(
@@ -623,11 +648,11 @@ class FileManagePage extends StatelessWidget {
                                 if (res.succeed) {
                                   Clipboard.setData(ClipboardData(text: res.data));
                                   if (item.mimeType?.startsWith('image') == true) {
-                                    showImage(res.data, context);
+                                    showImage(res.data, buildContext);
                                   } else if (item.mimeType?.startsWith('video') == true) {
-                                    showPlayer(res.data, context);
+                                    showPlayer(res.data, buildContext);
                                   } else if (item.mimeType?.startsWith('audio') == true) {
-                                    showPlayer(res.data, context);
+                                    showPlayer(res.data, buildContext);
                                   } else {
                                     Get.defaultDialog(
                                       title: '文件操作',
@@ -639,7 +664,7 @@ class FileManagePage extends StatelessWidget {
                                         children: [
                                           ShadButton.ghost(
                                             onPressed: () async {
-                                              await pickAndDownload(res.data, context);
+                                              await pickAndDownload(res.data, buildContext);
                                             },
                                             leading: Icon(Icons.download_outlined,
                                                 size: 16, color: shadColorScheme.foreground),
@@ -653,7 +678,7 @@ class FileManagePage extends StatelessWidget {
                                     );
                                   }
                                 } else {
-                                  ShadToaster.of(context).show(
+                                  ShadToaster.of(buildContext).show(
                                     ShadToast.destructive(
                                       title: const Text('提示'),
                                       description: Text(res.msg),
@@ -679,7 +704,7 @@ class FileManagePage extends StatelessWidget {
                       controller.currentPath = item.path;
                       CommonResponse response = await controller.initSourceData();
                       if (!response.succeed) {
-                        ShadToaster.of(context).show(ShadToast(description: Text(response.msg)));
+                        ShadToaster.of(buildContext).show(ShadToast(description: Text(response.msg)));
                       }
                     } else {
                       Logger.instance.d('文件后缀名：${item.ext}，文件类型：${item.mimeType}');
@@ -688,7 +713,7 @@ class FileManagePage extends StatelessWidget {
                       if (res.succeed) {
                         Clipboard.setData(ClipboardData(text: res.data));
                         if (item.mimeType?.startsWith('image') == true) {
-                          showImage(res.data, context);
+                          showImage(res.data, buildContext);
                         } else if (item.mimeType?.startsWith('video') == true ||
                             item.mimeType?.startsWith('audio') == true) {
                           Get.dialog(CustomCard(
@@ -712,7 +737,7 @@ class FileManagePage extends StatelessWidget {
                                 ShadButton.ghost(
                                   size: ShadButtonSize.sm,
                                   onPressed: () async {
-                                    await pickAndDownload(res.data, context);
+                                    await pickAndDownload(res.data, buildContext);
                                   },
                                   leading: Icon(
                                     Icons.download_outlined,
@@ -726,7 +751,7 @@ class FileManagePage extends StatelessWidget {
                           );
                         }
                       } else {
-                        ShadToaster.of(context).show(
+                        ShadToaster.of(buildContext).show(
                           ShadToast(title: const Text('提示'), description: Text(res.msg)),
                         );
                       }

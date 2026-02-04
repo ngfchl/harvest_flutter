@@ -13,13 +13,14 @@ Future<CommonResponse> getSourceUrlApi({required String path}) async {
 }
 
 ///  删除资源
-Future<CommonResponse> removeSourceApi(String path) async {
-  return await removeData(Api.SOURCE_OPERATE, queryParameters: {"file_path": path});
+Future<CommonResponse> removeSourceApi(String path, {bool deleteSource = false}) async {
+  return await removeData(Api.SOURCE_OPERATE, queryParameters: {"file_path": path, "delete_source": deleteSource});
 }
 
 ///  重命名资源
-Future<CommonResponse> editSourceApi(String path, String newName) async {
-  return await editData(Api.SOURCE_OPERATE, {}, queryParameters: {"file_path": path, "new_name": newName});
+Future<CommonResponse> editSourceApi(String path, String newName, {bool renameSource = false}) async {
+  return await editData(Api.SOURCE_OPERATE, {},
+      queryParameters: {"file_path": path, "new_name": newName, "rename_source": renameSource});
 }
 
 /// 硬链接资源
