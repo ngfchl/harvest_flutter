@@ -64,8 +64,9 @@ class DouBanController extends GetxController {
 
   String selectTvTag = '热门';
   String selectTypeTag = 'TOP250';
-  int initPage = 0;
+  int pageLimit = 100;
   bool isLoading = false;
+  bool hasMoreRankData = false;
 
   bool tmdbLoading = false;
   int selectTmdbMovieTag = 1;
@@ -224,15 +225,20 @@ class DouBanController extends GetxController {
     }
     isLoading = true;
     update();
-    CommonResponse res = await getDouBanRankApi(typeId);
+
+    CommonResponse res = await getDouBanRankApi(typeId, start: rankMovieList.length,limit: pageLimit);
     if (res.succeed) {
-      rankMovieList = res.data;
+      if (res.data.isEmpty) {
+        hasMoreRankData = false;
+      } else {
+        hasMoreRankData = res.data.length == pageLimit;
+        rankMovieList.addAll(res.data);
+      }
     }
-    Logger.instance.d(douBanTop250);
+    Logger.instance.d(rankMovieList);
     update();
     isLoading = false;
     update();
-    Logger.instance.d(rankMovieList);
   }
 
   // getDouBanTop250Api() async {

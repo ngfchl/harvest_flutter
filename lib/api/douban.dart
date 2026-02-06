@@ -27,8 +27,9 @@ Future<CommonResponse<List<HotMediaInfo>>> getDouBanHotTvApi(String tag, int pag
       queryParameters: {'category': 'tv', 'tag': tag, 'page_limit': pageLimit});
 }
 
-Future<CommonResponse<List<RankMovie>>> getDouBanRankApi(int typeId) async {
-  return await fetchDataList(Api.DOUBAN_RANK, (p0) => RankMovie.fromJson(p0), queryParameters: {'type_id': typeId});
+Future<CommonResponse<List<RankMovie>>> getDouBanRankApi(int typeId, {int start = 0, int limit = 100}) async {
+  return await fetchDataList(Api.DOUBAN_RANK, (p0) => RankMovie.fromJson(p0),
+      queryParameters: {'type_id': typeId, 'start': start, 'limit': limit});
 }
 
 Future<CommonResponse<List<TopMovieInfo>>> getDouBanTop250Api() async {

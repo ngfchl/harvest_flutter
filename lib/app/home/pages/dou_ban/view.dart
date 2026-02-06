@@ -614,6 +614,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                   onSelected: (bool value) {
                                     if (value == true) {
                                       controller.selectTypeTag = e.key;
+                                      controller.rankMovieList.clear();
                                       controller.getRankListByType(controller.selectTypeTag);
                                     }
                                   },
@@ -634,6 +635,8 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                             readyText: '松开刷新',
                             processingText: '正在刷新...',
                             processedText: '刷新完成',
+                            noMoreText: '没有更多了',
+                            armedText: '加载中...',
                             textStyle: TextStyle(
                               fontSize: 16,
                               color: shadColorScheme.foreground,
@@ -645,25 +648,22 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                             ),
                           ),
                           onRefresh: () async {
-                            controller.initPage = 0;
                             await controller.getRankListByType(controller.selectTypeTag);
                           },
                           onLoad: () async {
-                            if (controller.selectTypeTag == "TOP250") {
+                            if (controller.selectTypeTag != "TOP250" && controller.hasMoreRankData) {
+                              //   await controller.getRankListByType(controller.selectTypeTag);
+                              // } else {
                               await controller.getRankListByType(controller.selectTypeTag);
                             }
                           },
                           child: SingleChildScrollView(
                             child: Center(
-                              child: controller.selectTypeTag == "TOP250"
-                                  ? Wrap(
-                                      alignment: WrapAlignment.spaceAround,
-                                      children:
-                                          controller.douBanTop250.map((e) => buildTop250Item(e, context)).toList())
-                                  : Wrap(
-                                      alignment: WrapAlignment.spaceAround,
-                                      children:
-                                          controller.rankMovieList.map((e) => buildRankItem(e, context)).toList()),
+                              child: Wrap(
+                                  alignment: WrapAlignment.spaceAround,
+                                  children: controller.selectTypeTag == "TOP250"
+                                      ? controller.douBanTop250.map((e) => buildTop250Item(e, context)).toList()
+                                      : controller.rankMovieList.map((e) => buildRankItem(e, context)).toList()),
                             ),
                           ),
                         ),
@@ -1276,7 +1276,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                   ),
                   child: const Text('详情'),
                 ),
-                ShadButton.outline(
+                ShadButton.destructive(
                   size: ShadButtonSize.sm,
                   onPressed: () => controller.goSearchPage(videoDetail),
                   leading: Icon(
