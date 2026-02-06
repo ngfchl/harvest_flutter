@@ -495,6 +495,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                   onSelected: (bool value) {
                                     if (value == true) {
                                       controller.selectMovieTag = e;
+                                      controller.douBanMovieHot.clear();
                                       controller.getDouBanMovieHot(controller.selectMovieTag);
                                     }
                                   },
@@ -509,6 +510,11 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                     DoubanItemView(
                       mediaItems: controller.douBanMovieHot,
                       onTap: (item) => _buildOperateDialog(item),
+                      onRefresh: () {
+                        controller.douBanMovieHot.clear();
+                        controller.getDouBanMovieHot(controller.selectMovieTag);
+                      },
+                      onLoad: () => controller.getDouBanMovieHot(controller.selectMovieTag),
                       onDoubleTap: (item) => controller.getVideoDetail(item, toSearch: true),
                       onLongPress: (item) =>
                           Get.toNamed(Routes.WEBVIEW, arguments: {'url': item.douBanUrl, 'cookie': item.cookie}),
@@ -548,6 +554,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                                   onSelected: (bool value) {
                                     if (value == true) {
                                       controller.selectTvTag = e;
+                                      controller.douBanTvHot.clear();
                                       controller.getDouBanTvHot(controller.selectTvTag);
                                     }
                                   },
@@ -561,6 +568,11 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                   children: [
                     DoubanItemView(
                       mediaItems: controller.douBanTvHot,
+                      onRefresh: () {
+                        controller.douBanTvHot.clear();
+                        controller.getDouBanTvHot(controller.selectTvTag);
+                      },
+                      onLoad: () => controller.getDouBanTvHot(controller.selectTvTag),
                       onTap: (item) => _buildOperateDialog(item),
                       onDoubleTap: (item) => controller.getVideoDetail(item, toSearch: true),
                       onLongPress: (item) =>

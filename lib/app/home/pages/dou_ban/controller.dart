@@ -226,7 +226,7 @@ class DouBanController extends GetxController {
     isLoading = true;
     update();
 
-    CommonResponse res = await getDouBanRankApi(typeId, start: rankMovieList.length,limit: pageLimit);
+    CommonResponse res = await getDouBanRankApi(typeId, start: rankMovieList.length, limit: pageLimit);
     if (res.succeed) {
       if (res.data.isEmpty) {
         hasMoreRankData = false;
@@ -254,10 +254,9 @@ class DouBanController extends GetxController {
   Future<void> getDouBanMovieHot(String tag) async {
     isLoading = true;
     update();
-    CommonResponse res = await getDouBanHotMovieApi(tag, 60);
+    CommonResponse res = await getDouBanHotMovieApi(tag, douBanMovieHot.length, pageLimit);
     if (res.succeed) {
-      douBanMovieHot.clear();
-      douBanMovieHot = res.data;
+      douBanMovieHot.addAll(res.data);
     }
     isLoading = false;
     update();
@@ -266,10 +265,9 @@ class DouBanController extends GetxController {
   Future<void> getDouBanTvHot(String tag) async {
     isLoading = true;
     update();
-    CommonResponse res = await getDouBanHotTvApi(tag, 60);
+    CommonResponse res = await getDouBanHotTvApi(tag, douBanTvHot.length, pageLimit);
     if (res.succeed) {
-      douBanTvHot.clear();
-      douBanTvHot = res.data;
+      douBanTvHot.addAll(res.data);
     }
     isLoading = false;
     update();

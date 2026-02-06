@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/card_view.dart';
 import '../../../../utils/storage.dart';
@@ -9,6 +11,8 @@ class DoubanItemView extends StatelessWidget {
   final void Function(dynamic)? onTap;
   final void Function(dynamic)? onLongPress;
   final void Function(dynamic)? onDoubleTap;
+  final void Function()? onRefresh;
+  final void Function()? onLoad;
 
   final String cacheServer = 'https://images.weserv.nl/?url=';
 
@@ -18,73 +22,98 @@ class DoubanItemView extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.onDoubleTap,
+    this.onRefresh,
+    this.onLoad,
   });
 
   @override
   Widget build(BuildContext context) {
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+
     double itemWidth = SPUtil.getDouble('tmdb_media_item_width', defaultValue: 120);
     double itemHeight = itemWidth * 1.5;
     return CustomCard(
       width: double.infinity,
       height: double.infinity,
       padding: const EdgeInsets.all(8),
-      child: SingleChildScrollView(
-        child: Center(
-          child: Wrap(
-            alignment: WrapAlignment.spaceAround,
-            spacing: 12,
-            runSpacing: 12,
-            children: mediaItems
-                .map((e) => InkWell(
-                      onTap: () => onTap?.call(e),
-                      onLongPress: () => onLongPress?.call(e),
-                      onDoubleTap: () => onDoubleTap?.call(e),
-                      child: SizedBox(
-                        width: itemWidth,
-                        child: Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: CachedNetworkImage(
-                                httpHeaders: {
-                                  'Referer': 'https://movie.douban.com/',
-                                  'User-Agent':
-                                      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0',
-                                },
-                                imageUrl: '${e.poster}',
-                                placeholder: (context, url) => Center(
-                                  child: SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: CircularProgressIndicator(
-                                      color: Theme.of(context).primaryColor,
+      child: EasyRefresh(
+        header: ClassicHeader(
+          dragText: '下拉刷新...',
+          readyText: '松开刷新',
+          processingText: '正在刷新...',
+          processedText: '刷新完成',
+          noMoreText: '没有更多了',
+          armedText: '加载中...',
+          textStyle: TextStyle(
+            fontSize: 16,
+            color: shadColorScheme.foreground,
+            fontWeight: FontWeight.bold,
+          ),
+          messageStyle: TextStyle(
+            fontSize: 12,
+            color: shadColorScheme.foreground,
+          ),
+        ),
+        onRefresh: onRefresh,
+        onLoad: onLoad,
+        child: SingleChildScrollView(
+          child: Center(
+            child: Wrap(
+              alignment: WrapAlignment.spaceAround,
+              spacing: 12,
+              runSpacing: 12,
+              children: mediaItems
+                  .map((e) => InkWell(
+                        onTap: () => onTap?.call(e),
+                        onLongPress: () => onLongPress?.call(e),
+                        onDoubleTap: () => onDoubleTap?.call(e),
+                        child: SizedBox(
+                          width: itemWidth,
+                          child: Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: CachedNetworkImage(
+                                  httpHeaders: {
+                                    'Referer': 'https://movie.douban.com/',
+                                    'User-Agent':
+                                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0',
+                                  },
+                                  imageUrl: '${e.poster}',
+                                  placeholder: (context, url) => Center(
+                                    child: SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        color: Theme.of(context).primaryColor,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                errorWidget: (context, url, error) => Image.asset('assets/images/douban.png'),
-                                width: itemWidth,
-                                height: itemHeight,
-                                fit: BoxFit.fitWidth,
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 2,
-                              child: Container(
-                                color: Colors.black38,
-                                width: itemWidth,
-                                child: Text(
-                                  e.title.trim(),
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                                  errorWidget: (context, url, error) => Image.asset('assets/images/douban.png'),
+                                  width: itemWidth,
+                                  height: itemHeight,
+                                  fit: BoxFit.fitWidth,
                                 ),
                               ),
-                            ),
-                          ],
+                              Positioned(
+                                bottom: 2,
+                                child: Container(
+                                  color: Colors.black38,
+                                  width: itemWidth,
+                                  child: Text(
+                                    e.title.trim(),
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ))
-                .toList(),
+                      ))
+                  .toList(),
+            ),
           ),
         ),
       ),

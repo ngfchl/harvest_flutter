@@ -17,14 +17,14 @@ Future<CommonResponse> getSubjectInfoApi(String subjectId) async {
   return await fetchBasicData(Api.DOUBAN_SUBJECT + subjectId);
 }
 
-Future<CommonResponse<List<HotMediaInfo>>> getDouBanHotMovieApi(String tag, int pageLimit) async {
+Future<CommonResponse<List<HotMediaInfo>>> getDouBanHotMovieApi(String tag, int pageStart, int pageLimit) async {
   return await fetchDataList(Api.DOUBAN_HOT, (p0) => HotMediaInfo.fromJson(p0),
-      queryParameters: {'category': 'movie', 'tag': tag, 'page_limit': pageLimit});
+      queryParameters: {'category': 'movie', 'tag': tag, 'page_start': pageStart, 'page_limit': pageLimit});
 }
 
-Future<CommonResponse<List<HotMediaInfo>>> getDouBanHotTvApi(String tag, int pageLimit) async {
+Future<CommonResponse<List<HotMediaInfo>>> getDouBanHotTvApi(String tag, int pageStart, int pageLimit) async {
   return await fetchDataList(Api.DOUBAN_HOT, (p0) => HotMediaInfo.fromJson(p0),
-      queryParameters: {'category': 'tv', 'tag': tag, 'page_limit': pageLimit});
+      queryParameters: {'category': 'tv', 'tag': tag, 'page_start': pageStart, 'page_limit': pageLimit});
 }
 
 Future<CommonResponse<List<RankMovie>>> getDouBanRankApi(int typeId, {int start = 0, int limit = 100}) async {
