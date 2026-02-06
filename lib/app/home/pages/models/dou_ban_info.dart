@@ -233,6 +233,7 @@ class RankMovie {
   final int actorCount;
   final int voteCount;
   final String score;
+  final String? cookie;
   final bool isWatched;
 
   RankMovie({
@@ -249,6 +250,7 @@ class RankMovie {
     required this.actorCount,
     required this.voteCount,
     required this.score,
+    required this.cookie,
     required this.actors,
     required this.isWatched,
   });
@@ -269,6 +271,7 @@ class RankMovie {
       actorCount: json['actor_count'],
       voteCount: json['vote_count'],
       score: json['score'],
+      cookie: json['cookie'],
       actors: List<String>.from(json['actors'] ?? []),
       isWatched: json['is_watched'],
     );
@@ -290,6 +293,7 @@ class RankMovie {
       'actor_count': actorCount,
       'vote_count': voteCount,
       'score': score,
+      'cookie': cookie,
       'actors': actors,
       'is_watched': isWatched,
     };
