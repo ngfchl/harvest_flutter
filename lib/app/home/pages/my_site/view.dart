@@ -735,45 +735,43 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     StatusInfo? status;
     WebSite? website = controller.webSiteList[mySite.site];
     RxBool showLoading = false.obs;
-    // Logger.instance.d('${mySite.nickname} - ${website?.name}');
+    Logger.instance.d('${mySite.nickname} - ${website?.name}');
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     SiteColorConfig siteColorConfig = SiteColorConfig.load(shadColorScheme);
     if (website == null) {
-      return Obx(() {
-        return CustomCard(
-          key: Key("${mySite.id}-${mySite.site}"),
-          color: shadColorScheme.background.withOpacity(opacity),
-          child: ListTile(
-            // dense: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-            leading: const Image(
-              image: AssetImage('assets/images/avatar.png'),
-              width: 32,
-              height: 32,
-            ),
-            title: Text(
-              mySite.nickname,
-              style: TextStyle(
-                fontSize: 13,
-                color: shadColorScheme.foreground,
-              ),
-            ),
-            subtitle: Text(
-              '没有找到这个站点的配置文件，请清理站点配置缓存后重新加载数据！',
-              style: TextStyle(
-                color: shadColorScheme.destructive,
-                fontSize: 10,
-              ),
-            ),
-            trailing: ShadIconButton.ghost(
-                onPressed: () => removeMySite(mySite, shadColorScheme),
-                icon: Icon(
-                  Icons.clear_outlined,
-                  color: shadColorScheme.destructive,
-                )),
+      return CustomCard(
+        key: Key("${mySite.id}-${mySite.site}"),
+        color: shadColorScheme.background.withOpacity(opacity),
+        child: ListTile(
+          // dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+          leading: const Image(
+            image: AssetImage('assets/images/avatar.png'),
+            width: 32,
+            height: 32,
           ),
-        );
-      });
+          title: Text(
+            mySite.nickname,
+            style: TextStyle(
+              fontSize: 13,
+              color: shadColorScheme.foreground,
+            ),
+          ),
+          subtitle: Text(
+            '没有找到这个站点的配置文件，请清理站点配置缓存后重新加载数据！',
+            style: TextStyle(
+              color: shadColorScheme.destructive,
+              fontSize: 10,
+            ),
+          ),
+          trailing: ShadIconButton.ghost(
+              onPressed: () => removeMySite(mySite, shadColorScheme),
+              icon: Icon(
+                Icons.clear_outlined,
+                color: shadColorScheme.destructive,
+              )),
+        ),
+      );
     }
     if (mySite.statusInfo.isNotEmpty) {
       status = mySite.latestStatusInfo;
@@ -2159,41 +2157,39 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     SiteColorConfig siteColorConfig = SiteColorConfig.load(shadColorScheme);
     if (website == null) {
-      return Obx(() {
-        return CustomCard(
-          key: Key("${mySite.id}-${mySite.site}"),
-          color: shadColorScheme.background.withOpacity(opacity),
-          child: ListTile(
-            dense: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-            leading: const Image(
-              image: AssetImage('assets/images/avatar.png'),
-              width: 32,
-              height: 32,
-            ),
-            title: Text(
-              mySite.nickname,
-              style: TextStyle(
-                fontSize: 13,
-                color: shadColorScheme.foreground,
-              ),
-            ),
-            subtitle: Text(
-              '没有找到这个站点的配置文件，请清理站点配置缓存后重新加载数据！',
-              style: TextStyle(
-                color: shadColorScheme.destructive,
-                fontSize: 10,
-              ),
-            ),
-            trailing: ShadIconButton.ghost(
-                onPressed: () => removeMySite(mySite, shadColorScheme),
-                icon: Icon(
-                  Icons.clear_outlined,
-                  color: shadColorScheme.destructive,
-                )),
+      return CustomCard(
+        key: Key("${mySite.id}-${mySite.site}"),
+        color: shadColorScheme.background.withOpacity(opacity),
+        child: ListTile(
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+          leading: const Image(
+            image: AssetImage('assets/images/avatar.png'),
+            width: 32,
+            height: 32,
           ),
-        );
-      });
+          title: Text(
+            mySite.nickname,
+            style: TextStyle(
+              fontSize: 13,
+              color: shadColorScheme.foreground,
+            ),
+          ),
+          subtitle: Text(
+            '没有找到这个站点的配置文件，请清理站点配置缓存后重新加载数据！',
+            style: TextStyle(
+              color: shadColorScheme.destructive,
+              fontSize: 10,
+            ),
+          ),
+          trailing: ShadIconButton.ghost(
+              onPressed: () => removeMySite(mySite, shadColorScheme),
+              icon: Icon(
+                Icons.clear_outlined,
+                color: shadColorScheme.destructive,
+              )),
+        ),
+      );
     }
     if (mySite.statusInfo.isNotEmpty) {
       status = mySite.latestStatusInfo;
