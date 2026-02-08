@@ -546,7 +546,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                               controller.subTorrentList();
                             },
                           ),
-                          ...controller.trackers.keys.map((item) => PopupMenuItem<String>(
+                          ...controller.trackers.keys.sorted().map((item) => PopupMenuItem<String>(
                                 height: 32,
                                 child: Text(
                                   '$item[${controller.trackers[item]?.length ?? 0}]',
@@ -1025,10 +1025,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                             ShadToaster.of(context).show(
                               res.succeed
                                   ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
-                                  : ShadToast.destructive(
-                                  title: const Text('出错啦'),
-                                  description: Text(res.msg)
-                              ),
+                                  : ShadToast.destructive(title: const Text('出错啦'), description: Text(res.msg)),
                             );
                             controller.subTorrentList();
                             controller.update();
@@ -1131,9 +1128,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                                               res.succeed
                                                   ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
                                                   : ShadToast.destructive(
-                                                  title: const Text('出错啦'),
-                                                  description: Text(res.msg)
-                                              ),
+                                                      title: const Text('出错啦'), description: Text(res.msg)),
                                             );
                                           },
                                           leading: controller.trackerLoading
@@ -1509,11 +1504,9 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.name!));
                       ShadToaster.of(context).show(
-                        ShadToast(
-                            title: const Text('成功啦'),
-                            description: Text('种子名称复制成功！')
-                        ),
-                      );                    },
+                        ShadToast(title: const Text('成功啦'), description: Text('种子名称复制成功！')),
+                      );
+                    },
                   ),
                   ShadContextMenuItem(
                     leading: Icon(
@@ -1525,11 +1518,9 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.infohashV1!));
                       ShadToaster.of(context).show(
-                        ShadToast(
-                            title: const Text('成功啦'),
-                            description: Text('种子HASH复制成功！')
-                        ),
-                      );                    },
+                        ShadToast(title: const Text('成功啦'), description: Text('种子HASH复制成功！')),
+                      );
+                    },
                   ),
                   ShadContextMenuItem(
                     leading: Icon(
@@ -1541,11 +1532,9 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.magnetUri!));
                       ShadToaster.of(context).show(
-                        ShadToast(
-                            title: const Text('成功啦'),
-                            description: Text('种子磁力链接复制成功！')
-                        ),
-                      );                    },
+                        ShadToast(title: const Text('成功啦'), description: Text('种子磁力链接复制成功！')),
+                      );
+                    },
                   ),
                   // ShadContextMenuItem(
                   //   child: Text(style: TextStyle(fontSize: 12),'Torrent ID'),
@@ -1561,11 +1550,9 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: torrentInfo.tracker!));
                       ShadToaster.of(context).show(
-                        ShadToast(
-                            title: const Text('成功啦'),
-                            description: Text('种子Tracker复制成功！')
-                        ),
-                      );                    },
+                        ShadToast(title: const Text('成功啦'), description: Text('种子Tracker复制成功！')),
+                      );
+                    },
                   ),
                   // ShadContextMenuItem(
                   //   leading: Icon(
