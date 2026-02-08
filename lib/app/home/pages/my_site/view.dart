@@ -1706,12 +1706,12 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                                     ),
                                 ],
                               ),
-                        if (status?.myHr != '' && status?.myHr != "0")
+                        if (status != null && status.myHr != '' && status.myHr != "0")
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Text(
-                                'HR: ${status!.myHr.replaceAll('区', '').replaceAll('专', '').replaceAll('H&R', '').trim()}',
+                                'HR: ${status.myHr.replaceAll('区', '').replaceAll('专', '').replaceAll('H&R', '').trim()}',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   color: siteColorConfig.hrColor.value,
