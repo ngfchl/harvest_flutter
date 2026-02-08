@@ -1436,6 +1436,27 @@ class TrPage extends StatelessWidget {
                       );
                     },
                   ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.content_copy_outlined,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '复制Tracker'),
+                    onPressed: () {
+                      if (torrentInfo.trackerList != null && torrentInfo.trackerList?.isNotEmpty == true) {
+                        Clipboard.setData(ClipboardData(text: torrentInfo.trackerList!));
+                        ShadToaster.of(context).show(
+                          ShadToast(title: const Text('成功啦'), description: Text('种子Tracker链接复制成功！')),
+                        );
+                      } else {
+                        ShadToaster.of(context).show(
+                          ShadToast(
+                              title: const Text('失败啦'), description: Text('种子Tracker链接为空！${torrentInfo.trackerList}')),
+                        );
+                      }
+                    },
+                  ),
                 ],
                 child: Text(style: TextStyle(fontSize: 12), '复制'),
               ),
