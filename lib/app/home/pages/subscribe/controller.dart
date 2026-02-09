@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:qbittorrent_api/qbittorrent_api.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../api/downloader.dart';
 import '../../../../api/sub.dart';
@@ -19,7 +20,11 @@ class SubscribeController extends GetxController {
   DownloadController downloadController = Get.find();
 
   List<Subscribe> subList = [];
+  List<SubPlan> planList = [];
   List<MetaDataItem> tagCategoryList = [];
+
+  ShadTabsController<String> tabsController = ShadTabsController<String>(value: 'subscribe');
+
   List<SubTag> tags = [];
   bool isDownloaderLoading = false;
   bool isAddFormLoading = false;
@@ -40,6 +45,7 @@ class SubscribeController extends GetxController {
     tags = subTagController.tags.where((e) => e.available == true).toList();
     Logger.instance.i(tagCategoryList);
     await getSubscribeFromServer();
+    await getSubPlanFromServer();
     loading = false;
     update();
   }
@@ -67,6 +73,16 @@ class SubscribeController extends GetxController {
     update();
   }
 
+  Future<void> getSubPlanFromServer() async {
+    CommonResponse response = await getSubPlanListApi();
+    if (response.succeed) {
+      planList = response.data;
+    } else {
+      Get.snackbar('订阅信息获取失败', response.msg.toString());
+    }
+    update();
+  }
+
   @override
   void onReady() {
     // TODO: implement onReady
@@ -87,7 +103,7 @@ class SubscribeController extends GetxController {
     } else {
       res = await editSubscribeApi(sub);
     }
-    if (res.code == 0) {
+    if (res.succeed) {
       await getSubscribeFromServer();
     }
     return res;
@@ -95,7 +111,7 @@ class SubscribeController extends GetxController {
 
   Future<CommonResponse> removeSubscribe(Subscribe sub) async {
     CommonResponse res = await removeSubscribeApi(sub);
-    if (res.code == 0) {
+    if (res.succeed) {
       await getSubscribeFromServer();
     }
     return res;
@@ -117,5 +133,27 @@ class SubscribeController extends GetxController {
       Logger.instance.e(trace);
       return CommonResponse.error(msg: '获取分类出错啦：$e');
     }
+  }
+
+  Future<CommonResponse> removeSubPlan(SubPlan plan) async {
+    CommonResponse res = await removeSubPlanApi(plan);
+    if (res.succeed) {
+      await getSubPlanFromServer();
+    }
+    return res;
+  }
+
+  Future<CommonResponse> saveSubPlan(SubPlan plan) async {
+    CommonResponse res;
+    Logger.instance.i(plan.toJson());
+    if (plan.id == 0) {
+      res = await addSubPlanApi(plan);
+    } else {
+      res = await editSubPlanApi(plan);
+    }
+    if (res.succeed) {
+      await getSubPlanFromServer();
+    }
+    return res;
   }
 }
