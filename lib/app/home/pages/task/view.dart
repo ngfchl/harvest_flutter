@@ -607,6 +607,7 @@ class TaskPage extends StatelessWidget {
   }
 
   void editTask(Schedule? task, context) {
+    Logger.instance.d(task?.task);
     Crontab? cron = controller.crontabList[task?.crontab];
     final taskController = TextEditingController(text: task != null ? task.task : controller.taskList.first);
     final nameController = TextEditingController(text: task != null ? task.name : '');
@@ -664,7 +665,7 @@ class TaskPage extends StatelessWidget {
                       padding: const EdgeInsets.all(8.0),
                       child: ShadSelect<String>(
                           placeholder: const Text('选择任务'),
-                          initialValue: controller.taskList.first,
+                          initialValue: taskController.text,
                           options: controller.taskList
                               .where((task) => !task.contains('种子迁移'))
                               .map((key) => ShadOption(value: key, child: Text(key)))
