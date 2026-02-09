@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:harvest/models/common_response.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../api/task.dart';
 import '../../../../models/flower.dart';
@@ -13,6 +14,8 @@ class TaskController extends GetxController {
   Map<int, Crontab> crontabList = <int, Crontab>{};
   List<String> taskList = [];
   List<TaskItem> taskItemList = [];
+  List<NoticeHistory> noticeList = [];
+  ShadTabsController<String> tabsController = ShadTabsController<String>(value: 'TaskList');
 
   @override
   void onInit() {
@@ -50,11 +53,10 @@ class TaskController extends GetxController {
       final taskItemListRes = await getTaskItemList();
       // Logger.instance.d(taskItemListRes);
       if (taskItemListRes.succeed) {
-        taskItemList = taskItemListRes.data.values
-            .map<TaskItem>((e) => TaskItem.fromJson(e))
-            .toList();
+        taskItemList = taskItemListRes.data.values.map<TaskItem>((e) => TaskItem.fromJson(e)).toList();
         update();
       }
+      await getNoticeHistoryList();
     } catch (e, stack) {
       Logger.instance.e(e);
       Logger.instance.e(stack);
@@ -95,6 +97,22 @@ class TaskController extends GetxController {
     }
     update();
     return res;
+  }
+
+  Future getNoticeHistoryList() async {
+    final res = await getNoticeHistoryListApi();
+    if (res.succeed) {
+      noticeList = res.data!;
+    }
+    update();
+  }
+
+  Future<CommonResponse> removeSingleNotice(NoticeHistory notice) async {
+    return await removeNoticeHistoryApi(notice);
+  }
+
+  Future<CommonResponse> clearNoticeHistory() async {
+    return await removeNoticeHistoryListApi();
   }
 
   Future getTaskItemInfo(TaskItem item) async {

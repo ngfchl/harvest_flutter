@@ -8,15 +8,7 @@ class Schedule {
   String? args;
   String? kwargs;
 
-  Schedule(
-      {this.id,
-      this.name,
-      this.task,
-      this.crontab,
-      this.enabled,
-      this.description,
-      this.args,
-      this.kwargs});
+  Schedule({this.id, this.name, this.task, this.crontab, this.enabled, this.description, this.args, this.kwargs});
 
   @override
   String toString() {
@@ -81,14 +73,7 @@ class Crontab {
   String? monthOfYear;
   String? express;
 
-  Crontab(
-      {this.id,
-      this.minute,
-      this.hour,
-      this.dayOfWeek,
-      this.dayOfMonth,
-      this.monthOfYear,
-      this.express});
+  Crontab({this.id, this.minute, this.hour, this.dayOfWeek, this.dayOfMonth, this.monthOfYear, this.express});
 
   Crontab.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -115,5 +100,50 @@ class Crontab {
   @override
   String toString() {
     return 'Cron 表达式：$express';
+  }
+}
+
+class NoticeHistory {
+  final int id;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String title;
+  final String content;
+  final String? url;
+
+  NoticeHistory({
+    required this.id,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.title,
+    required this.content,
+    this.url,
+  });
+
+  factory NoticeHistory.fromJson(Map<String, dynamic> json) {
+    return NoticeHistory(
+      id: json['id'] as int,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+      title: json['title'] as String,
+      content: json['content'] as String,
+      url: json['url'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+      'title': title,
+      'content': content,
+      'url': url,
+    };
+  }
+
+  @override
+  String toString() {
+    return 'NoticeHistory(id: $id, title: "$title")';
   }
 }

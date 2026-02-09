@@ -11,6 +11,10 @@ Future<CommonResponse> getScheduleList() async {
   return await fetchDataList(Api.TASK_OPERATE, (p0) => Schedule.fromJson(p0));
 }
 
+Future<CommonResponse> getNoticeHistoryListApi() async {
+  return await fetchDataList(Api.NOTICE_HISTORY, (p0) => NoticeHistory.fromJson(p0));
+}
+
 Future<CommonResponse> getTaskList() async {
   final response = await DioUtil().get(Api.TASK_RESULTS);
   if (response.statusCode == 200) {
@@ -54,8 +58,7 @@ Future<CommonResponse> getCrontabList() async {
 }
 
 Future<CommonResponse> execRemoteTask(Schedule schedule) async {
-  final response = await DioUtil()
-      .get(Api.TASK_EXEC_URL, queryParameters: {"task_id": schedule.id});
+  final response = await DioUtil().get(Api.TASK_EXEC_URL, queryParameters: {"task_id": schedule.id});
   if (response.statusCode == 200) {
     Logger.instance.w(response.data);
     return CommonResponse.fromJson(response.data, (p0) => null);
@@ -88,13 +91,21 @@ Future<CommonResponse> removeRemoteTask(Schedule schedule) async {
   return await removeData(apiUrl);
 }
 
+Future<CommonResponse> removeNoticeHistoryListApi() async {
+  return await removeData(Api.NOTICE_HISTORY);
+}
+
+Future<CommonResponse> removeNoticeHistoryApi(NoticeHistory notice) async {
+  String apiUrl = '${Api.NOTICE_HISTORY}/${notice.id}';
+  return await removeData(apiUrl);
+}
+
 Future<CommonResponse> getTaskItemList() async {
   String apiUrl = Api.FLOWER_TASKS;
   try {
     var response = await DioUtil().get(apiUrl);
     if (response.statusCode == 200) {
-      return CommonResponse.success(
-          data: response.data as Map<String, dynamic>);
+      return CommonResponse.success(data: response.data as Map<String, dynamic>);
     } else {
       String msg = '获取数据列表失败: ${response.statusCode}';
       // GFToast.showToast(msg, context);
