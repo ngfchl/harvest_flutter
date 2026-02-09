@@ -4,20 +4,20 @@ import 'package:qbittorrent_api/qbittorrent_api.dart';
 import 'qbittorrent.dart';
 
 class Downloader {
-  int? id;
-  String name;
-  String username;
-  String password;
-  String protocol; // 请注意：使用String来模拟'http'或'https'
-  String host;
-  String externalHost;
-  int port;
-  String category;
-  String torrentPath;
-  bool isActive;
-  bool brush;
-  int sortId;
-  List<dynamic> status;
+  final int? id;
+  final String name;
+  final String username;
+  final String password;
+  final String protocol;
+  final String host;
+  final String externalHost;
+  final int port;
+  final String category;
+  final String torrentPath;
+  final bool isActive;
+  final bool brush;
+  final int sortId;
+  final List<dynamic> status;
   dynamic prefs;
 
   Downloader({
@@ -35,7 +35,7 @@ class Downloader {
     required this.brush,
     required this.sortId,
     required this.status,
-    this.prefs = null,
+    this.prefs,
   });
 
   factory Downloader.fromJson(Map<String, dynamic> json) {
@@ -84,6 +84,43 @@ class Downloader {
       'sort_id': sortId,
       'brush': brush,
     };
+  }
+
+  // ✅ 新增：copyWith 方法
+  Downloader copyWith({
+    int? id,
+    String? name,
+    String? username,
+    String? password,
+    String? protocol,
+    String? host,
+    String? externalHost,
+    int? port,
+    String? category,
+    String? torrentPath,
+    bool? isActive,
+    bool? brush,
+    int? sortId,
+    List<dynamic>? status,
+    // dynamic prefs,
+  }) {
+    return Downloader(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      username: username ?? this.username,
+      password: password ?? this.password,
+      protocol: protocol ?? this.protocol,
+      host: host ?? this.host,
+      externalHost: externalHost ?? this.externalHost,
+      port: port ?? this.port,
+      category: category ?? this.category,
+      torrentPath: torrentPath ?? this.torrentPath,
+      isActive: isActive ?? this.isActive,
+      brush: brush ?? this.brush,
+      sortId: sortId ?? this.sortId,
+      status: status ?? this.status,
+      // prefs: prefs ?? this.prefs,
+    );
   }
 }
 
