@@ -34,8 +34,8 @@ class AppUpgradeController extends GetxController {
       useProxy = SPUtil.getBool('useProxy', defaultValue: false);
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
       currentVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
-      // getAppVersionList();
       getAppLatestVersionInfo();
+      getAppVersionList();
     } catch (e, trace) {
       Logger.instance.e('检测 APP 更新失败');
       Logger.instance.e(trace);

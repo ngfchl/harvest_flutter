@@ -30,10 +30,15 @@ class AppUpgradePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final shadColorScheme = ShadTheme.of(context).colorScheme;
     final buttonKey = GlobalKey();
+    final opacity = SPUtil.getDouble('opacity', defaultValue: 0.7);
+    var backgroundColor = shadColorScheme.background.withOpacity(opacity);
 
     return GetBuilder<AppUpgradeController>(builder: (appUpgradeController) {
       CancelToken cancelToken = CancelToken();
       return ShadPopover(
+        decoration: ShadDecoration(
+          color: backgroundColor,
+        ),
         controller: appUpgradeController.popoverController,
         closeOnTapOutside: false,
         popover: (context) => ShadTabs<String>(
@@ -107,9 +112,11 @@ class AppUpgradePage extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              ...?appUpgradeController.updateInfo?.changelog.split('\n').map(
-                                  (e) => Text(e, style: TextStyle(fontSize: 12, color: shadColorScheme.foreground))),
+                              ...?appUpgradeController.updateInfo?.changelog.split('\n').map((e) => Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(e, style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)))),
                               ShadButton.link(
                                 // key: buttonKey,
                                 padding: EdgeInsets.zero,
@@ -274,6 +281,143 @@ class AppUpgradePage extends StatelessWidget {
               ),
               child: Text(
                 'APP更新',
+                style: TextStyle(
+                    color:
+                        appUpgradeController.hasNewVersion ? shadColorScheme.destructive : shadColorScheme.foreground),
+              ),
+            ),
+            ShadTab(
+              value: 'VersionList',
+              content: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.max,
+                    spacing: 12,
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            spacing: 8,
+                            children: [
+                              ...appUpgradeController.appVersions.map((version) {
+                                return ShadCard(
+                                    title: Text(version.version),
+                                    backgroundColor: backgroundColor,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ...version.changelog.split('\n').map((e) => Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(e,
+                                                textAlign: TextAlign.left,
+                                                style: TextStyle(fontSize: 12, color: shadColorScheme.foreground)))),
+                                        ...version.downloadLinks.entries.map((e) => Builder(builder: (context) {
+                                              final buttonKey = GlobalKey();
+                                              return ShadButton.link(
+                                                  key: buttonKey,
+                                                  padding: EdgeInsets.zero,
+                                                  onPressed: () async {
+                                                    Get.defaultDialog(
+                                                      title: '安装',
+                                                      middleText: '安装/下载 ${e.key}？',
+                                                      backgroundColor: shadColorScheme.background,
+                                                      radius: 10,
+                                                      actions: [
+                                                        ShadButton.ghost(
+                                                          size: ShadButtonSize.sm,
+                                                          onPressed: () {
+                                                            Get.back(result: false);
+                                                          },
+                                                          child: Text('取消'),
+                                                        ),
+                                                        ShadButton.outline(
+                                                          size: ShadButtonSize.sm,
+                                                          onPressed: () async {
+                                                            await appUpgradeController.fetchGitProxy();
+                                                            String downloadUrl =
+                                                                '${appUpgradeController.gitProxy ?? ''}${e.value}';
+                                                            Uri uri = Uri.parse(downloadUrl);
+                                                            if (!await launchUrl(uri,
+                                                                mode: LaunchMode.externalApplication)) {
+                                                              ShadToaster.of(context).show(
+                                                                ShadToast.destructive(
+                                                                  title: const Text('打开网页出错'),
+                                                                  description: Text('打开网页出错，不支持的客户端？'),
+                                                                ),
+                                                              );
+                                                            }
+                                                          },
+                                                          child: Text('浏览器打开'),
+                                                        ),
+                                                        ShadButton(
+                                                          size: ShadButtonSize.sm,
+                                                          onPressed: () async {
+                                                            cancelToken = CancelToken();
+                                                            await doInstallationPackage(
+                                                                context, e, buttonKey, cancelToken);
+                                                          },
+                                                          child: Text('安装'),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                  child: Text(e.key, style: TextStyle(fontSize: 12)));
+                                            }))
+                                      ],
+                                    ));
+                              })
+                            ],
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            runAlignment: WrapAlignment.center,
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              ShadButton.ghost(
+                                size: ShadButtonSize.sm,
+                                onPressed: () {
+                                  if (appUpgradeController.hasNewVersion) {
+                                    appUpgradeController.notShowNewVersion = true;
+                                    SPUtil.setBool('notShowNewVersion', true);
+                                  }
+                                  appUpgradeController.popoverController.hide();
+                                },
+                                leading: Icon(
+                                  Icons.close_outlined,
+                                  size: 16,
+                                ),
+                                child: Text('关闭'),
+                              ),
+                              ShadButton.secondary(
+                                size: ShadButtonSize.sm,
+                                leading: Icon(
+                                  Icons.downloading_outlined,
+                                  size: 16,
+                                ),
+                                onPressed: () => appUpgradeController.getAppVersionList(),
+                                child: Text('检查'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ]),
+              ),
+              child: Text(
+                '更新日志',
                 style: TextStyle(
                     color:
                         appUpgradeController.hasNewVersion ? shadColorScheme.destructive : shadColorScheme.foreground),
