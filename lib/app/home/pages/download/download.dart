@@ -589,400 +589,406 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
     var pathDownloader = '${downloader.protocol}://${downloader.host}:${downloader.port}';
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     ShadPopoverController popoverController = ShadPopoverController();
-
+    var limitSpeed = (downloader.status.isNotEmpty &&
+        (isQb ? downloader.status.last?.useAltSpeedLimits == true : downloader.prefs.altSpeedEnabled == true));
     return CustomCard(
-      child: Slidable(
-        key: ValueKey('${downloader.id}_${downloader.name}'),
-        startActionPane: ActionPane(
-          motion: const ScrollMotion(),
-          children: [
-            SlidableAction(
-              flex: 1,
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
-              onPressed: (c) async {
-                CommonResponse res = await controller.reseedDownloader(downloader.id!);
-                if (res.succeed) {
-                  ShadToaster.of(context).show(
-                    ShadToast(
-                      title: const Text('辅种通知'),
-                      description: Text(res.msg),
-                    ),
-                  );
-                } else {
-                  ShadToaster.of(context).show(
-                    ShadToast.destructive(
-                      title: const Text('辅种通知'),
-                      description: Text(res.msg),
-                    ),
-                  );
-                }
-              },
-              backgroundColor: const Color(0xFF0A9D96),
-              foregroundColor: Colors.white,
-              icon: Icons.copy_sharp,
-              label: '辅种',
-            ),
-            SlidableAction(
-              flex: 1,
-              borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
-              onPressed: (c) async {
-                _showEditBottomSheet(downloader: downloader);
-              },
-              backgroundColor: const Color(0xFF0392CF),
-              foregroundColor: Colors.white,
-              // icon: Icons.edit,
-              label: '编辑',
-            ),
-          ],
+      child: ShadContextMenuRegion(
+        decoration: ShadDecoration(
+          labelStyle: TextStyle(),
+          descriptionStyle: TextStyle(),
         ),
-        endActionPane: ActionPane(
-          motion: const ScrollMotion(),
-          extentRatio: 0.25,
-          children: [
-            SlidableAction(
-              flex: 1,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-              onPressed: (c) async {
-                Get.defaultDialog(
-                  title: '确认',
-                  radius: 5,
-                  titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
-                  middleText: '确定要删除任务吗？',
-                  actions: [
-                    ShadButton.outline(
-                      size: ShadButtonSize.sm,
-                      onPressed: () {
-                        Get.back(result: false);
-                      },
-                      child: const Text('取消'),
-                    ),
-                    ShadButton.destructive(
-                      size: ShadButtonSize.sm,
-                      onPressed: () async {
-                        Get.back(result: true);
-                        CommonResponse res = await controller.removeDownloader(downloader);
-                        if (res.succeed) {
-                          ShadToaster.of(context).show(
-                            ShadToast(
-                              title: const Text('删除通知'),
-                              description: Text(res.msg),
-                            ),
-                          );
-                        } else {
-                          ShadToaster.of(context).show(
-                            ShadToast.destructive(
-                              title: const Text('删除通知'),
-                              description: Text(res.msg),
-                            ),
-                          );
-                        }
-                        await controller.getDownloaderListFromServer(withStatus: true);
-                      },
-                      child: const Text('确认'),
-                    ),
-                  ],
-                );
-              },
-              backgroundColor: shadColorScheme.destructive,
-              foregroundColor: Colors.white,
-              // icon: Icons.delete,
-              label: '删除',
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 100),
+        items: [
+          ShadContextMenuItem(
+            leading: Icon(
+              size: 14,
+              Icons.edit_outlined,
+              color: shadColorScheme.foreground,
             ),
-          ],
-        ),
-
-        // The end action pane is the one at the right or the bottom side.
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 0),
-          child: Column(
-            children: [
-              ListTile(
-                onTap: () async {
-                  // _showTorrents(downloader);
-                  controller.cancelPeriodicTimer();
-                  if (kIsWeb) {
-                    Uri uri = Uri.parse(pathDownloader);
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  }
-                  if (downloader.externalHost.isEmpty) {
-                    ShadToaster.of(context).show(
-                      ShadToast.destructive(
-                        title: const Text('出错啦'),
-                        description: Text('请先配置下载外部访问地址！'),
-                      ),
-                    );
-                    return;
-                  }
-                  if (downloader.category == 'Qb') {
-                    Get.toNamed(Routes.QB, arguments: downloader);
-                  }
-                  if (downloader.category == 'Tr') {
-                    Get.toNamed(Routes.TR, arguments: downloader);
-                    // Get.toNamed(Routes.TORRENT, arguments: downloader);
-                  }
-                },
-                onLongPress: () async {
-                  _showEditBottomSheet(downloader: downloader);
-                },
-                leading: ShadAvatar(
-                  'assets/images/${downloader.category.toLowerCase()}.png',
-                  size: Size(28, 28.0),
-                ),
-                title: Text(
-                  downloader.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: shadColorScheme.foreground,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  pathDownloader,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: shadColorScheme.foreground,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: downloader.status.isNotEmpty
-                    ? ShadBadge(
-                        shape: RoundedRectangleBorder(
-                          // 0.27+ 官方形状
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text('${downloader.prefs.version.split('(')?.first ?? ''}'),
-                      )
-                    : ShadIconButton.ghost(
-                        onPressed: () async {
-                          CommonResponse res = await controller.testConnect(downloader);
-                          if (!res.succeed) {
-                            ShadToaster.of(context).show(
-                              ShadToast.destructive(
-                                title: const Text('出错啦'),
-                                description: Text('下载器 ${res.msg}'),
-                              ),
-                            );
-                          } else {
-                            await controller.getDownloaderListFromServer(withStatus: true);
-                          }
-                        },
-                        icon: Icon(
-                          Icons.offline_bolt_outlined,
-                          color: shadColorScheme.destructive,
-                          size: 12,
-                        ),
-                      ),
+            child: Text(style: TextStyle(fontSize: 12), '编辑'),
+            onPressed: () => _showEditBottomSheet(downloader: downloader),
+          ),
+          ShadContextMenuItem(
+            leading: Icon(
+              size: 14,
+              Icons.delete_outline,
+              color: shadColorScheme.foreground,
+            ),
+            child: Text(style: TextStyle(fontSize: 12), '删除'),
+            onPressed: () => removeDownloader(downloader),
+          ),
+          ShadContextMenuItem(
+            leading: Icon(
+              size: 14,
+              downloader.isActive == true ? Icons.close_outlined : Icons.play_arrow_outlined,
+              color: shadColorScheme.foreground,
+            ),
+            child: Text(style: TextStyle(fontSize: 12), downloader.isActive == true ? '停用' : '启用'),
+            onPressed: () => switchDownloaderActive(downloader),
+          ),
+          const Divider(height: 5),
+          ShadContextMenuItem(
+            leading: Icon(
+              size: 14,
+              Icons.link_outlined,
+              color: shadColorScheme.foreground,
+            ),
+            child: Text(style: TextStyle(fontSize: 12), '添加种子'),
+            onPressed: () => _openAddTorrentDialog(downloader),
+          ),
+          if (isQb) ...[
+            ShadContextMenuItem(
+              leading: Icon(
+                size: 14,
+                Icons.category_outlined,
+                color: shadColorScheme.foreground,
               ),
-              GetBuilder<DownloadController>(builder: (controller) {
-                return controller.isLoading
-                    ? _buildLiveLineChart(downloader, chartSeriesController)
-                    : const SizedBox.shrink();
-              }),
-              Padding(
-                padding: const EdgeInsets.only(top: 3.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    ShadIconButton.ghost(
-                        onPressed: () {
-                          _showTorrents(downloader);
-                        },
-                        icon: Icon(
-                          Icons.list_alt_outlined,
-                          size: 18,
-                          color: shadColorScheme.foreground,
-                        )),
-                    ShadIconButton.ghost(
-                        onPressed: () => isQb ? _showQbPrefs(downloader, context) : _showTrPrefs(downloader, context),
-                        icon: Icon(
-                          Icons.settings_outlined,
-                          size: 18,
-                          color: shadColorScheme.foreground,
-                        )),
-                    (downloader.status.isNotEmpty &&
-                            (isQb
-                                ? downloader.status.last?.useAltSpeedLimits == true
-                                : downloader.prefs.altSpeedEnabled == true))
-                        ? ShadIconButton.ghost(
-                            onPressed: () => controller.toggleSpeedLimit(downloader, false),
-                            icon: Icon(
-                              Icons.nordic_walking_sharp,
-                              size: 18,
-                              color: shadColorScheme.destructive,
-                            ))
-                        : ShadIconButton.ghost(
-                            onPressed: () => controller.toggleSpeedLimit(downloader, true),
-                            icon: Icon(
-                              Icons.electric_bolt_outlined,
-                              size: 18,
-                              color: shadColorScheme.foreground,
-                            )),
-                    // ShadIconButton.ghost(
-                    //     onPressed: () {},
-                    //     icon: Icon(
-                    //       Icons.speed_outlined,
-                    //       size: 18,
-                    //       color: ShadTheme.of(context).colorScheme.foreground,
-                    //     )),
-                    ShadPopover(
-                      controller: popoverController,
-                      popover: (BuildContext context) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          spacing: 8,
-                          children: [
-                            ShadButton.outline(
-                              size: ShadButtonSize.sm,
-                              onPressed: () => _openAddTorrentDialog(downloader),
-                              child: Text('添加种子'),
-                            ),
-                            if (isQb) ...[
-                              ShadButton.outline(
-                                size: ShadButtonSize.sm,
-                                onPressed: () {
-                                  if (downloader.prefs == null) {
-                                    ShadToaster.of(context).show(
-                                      ShadToast.destructive(
-                                        title: const Text('出错啦'),
-                                        description: Text('下载器连接失败！'),
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  String savePath = downloader.prefs?.savePath ?? '/downloads/';
-                                  logger_helper.Logger.instance.i(savePath);
-                                  TextEditingController nameController = TextEditingController();
-                                  TextEditingController pathController = TextEditingController(text: savePath);
-                                  Get.defaultDialog(
-                                      radius: 5,
-                                      title: '添加分类',
-                                      titleStyle: TextStyle(fontSize: 14),
-                                      backgroundColor: shadColorScheme.background,
-                                      content: Column(children: [
-                                        CustomTextField(
-                                          controller: nameController,
-                                          labelText: '分类名称',
-                                        ),
-                                        CustomTextField(
-                                          controller: pathController,
-                                          labelText: '保存路径',
-                                          helperText: '保存路径可以为空',
-                                        )
-                                      ]),
-                                      actions: [
-                                        ShadButton.outline(
-                                          size: ShadButtonSize.sm,
-                                          leading: const Icon(Icons.cancel_outlined),
-                                          onPressed: () {
-                                            Get.back();
-                                          },
-                                          child: Text('取消'),
-                                        ),
-                                        ShadButton.destructive(
-                                          size: ShadButtonSize.sm,
-                                          leading: const Icon(Icons.add_outlined),
-                                          onPressed: () async {
-                                            if (nameController.text.trim().isEmpty) {
-                                              return;
-                                            }
-                                            CommonResponse res;
-                                            if (pathController.text.trim().isNotEmpty) {
-                                              res = await controller.controlQbTorrents(
-                                                  downloader: downloader,
-                                                  command: 'create_category',
-                                                  category: nameController.text,
-                                                  newPath: pathController.text);
-                                            } else {
-                                              res = await controller.controlQbTorrents(
-                                                downloader: downloader,
-                                                command: 'create_category',
-                                                category: nameController.text,
-                                              );
-                                            }
-                                            if (res.succeed) {
-                                              Get.back();
-                                            }
-                                          },
-                                          child: Text('添加'),
-                                        ),
-                                      ]);
-                                },
-                                child: Text('添加分类'),
-                              ),
-                              ShadButton.outline(
-                                size: ShadButtonSize.sm,
-                                onPressed: () {
-                                  if (downloader.prefs == null) {
-                                    ShadToaster.of(context).show(
-                                      ShadToast.destructive(title: const Text('出错啦'), description: Text('下载器连接失败！')),
-                                    );
-                                    return;
-                                  }
-                                  TextEditingController nameController = TextEditingController();
-                                  Get.defaultDialog(
-                                      radius: 5,
-                                      title: '添加标签',
-                                      titleStyle: TextStyle(fontSize: 14),
-                                      backgroundColor: shadColorScheme.background,
-                                      content: Column(children: [
-                                        CustomTextField(
-                                          controller: nameController,
-                                          labelText: '标签',
-                                        ),
-                                      ]),
-                                      actions: [
-                                        ShadButton.outline(
-                                          size: ShadButtonSize.sm,
-                                          leading: const Icon(Icons.cancel_outlined),
-                                          onPressed: () {
-                                            Get.back();
-                                          },
-                                          child: Text('取消'),
-                                        ),
-                                        ShadButton.destructive(
-                                          size: ShadButtonSize.sm,
-                                          leading: const Icon(Icons.add_outlined),
-                                          onPressed: () async {
-                                            if (nameController.text.trim().isEmpty) {
-                                              return;
-                                            }
+              child: Text(style: TextStyle(fontSize: 12), '添加分类'),
+              onPressed: () => addQbCategory(downloader),
+            ),
+            ShadContextMenuItem(
+              leading: Icon(
+                size: 14,
+                Icons.tag_outlined,
+                color: shadColorScheme.foreground,
+              ),
+              child: Text(style: TextStyle(fontSize: 12), '添加标签'),
+              onPressed: () => addQbTag(downloader),
+            ),
+          ],
+          const Divider(height: 5),
+          ShadContextMenuItem(
+            leading: Icon(
+              size: 14,
+              Icons.list_alt_outlined,
+              color: shadColorScheme.foreground,
+            ),
+            child: Text(style: TextStyle(fontSize: 12), '种子列表'),
+            onPressed: () => _showTorrents(downloader),
+          ),
+          ShadContextMenuItem(
+            leading: Icon(
+              size: 14,
+              Icons.settings_outlined,
+              color: shadColorScheme.foreground,
+            ),
+            child: Text(style: TextStyle(fontSize: 12), '系统设置'),
+            onPressed: () => isQb ? _showQbPrefs(downloader, context) : _showTrPrefs(downloader, context),
+          ),
+          ShadContextMenuItem(
+            leading: Icon(
+              size: 14,
+              limitSpeed ? Icons.nordic_walking_sharp : Icons.electric_bolt_outlined,
+              color: shadColorScheme.foreground,
+            ),
+            child: Text(style: TextStyle(fontSize: 12), '限速设置'),
+            onPressed: () => controller.toggleSpeedLimit(downloader, !limitSpeed),
+          ),
+          const Divider(height: 5),
+          ShadContextMenuItem(
+            leading: Icon(
+              size: 14,
+              downloader.brush == true ? Icons.close_outlined : Icons.play_arrow_outlined,
+              color: shadColorScheme.foreground,
+            ),
+            child: Text(style: TextStyle(fontSize: 12), downloader.brush == true ? '关闭辅种' : '开启辅种'),
+            onPressed: () => switchDownloaderBrush(downloader),
+          ),
+          ShadContextMenuItem(
+            leading: Icon(
+              size: 14,
+              Icons.copy_outlined,
+              color: shadColorScheme.foreground,
+            ),
+            child: Text(style: TextStyle(fontSize: 12), '辅种任务'),
+            onPressed: () => reseedDownloader(downloader),
+          ),
+        ],
+        child: Slidable(
+          key: ValueKey('${downloader.id}_${downloader.name}'),
+          startActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            children: [
+              SlidableAction(
+                flex: 1,
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                onPressed: (c) => reseedDownloader(downloader),
+                backgroundColor: const Color(0xFF0A9D96),
+                foregroundColor: Colors.white,
+                icon: Icons.copy_sharp,
+                label: '辅种',
+              ),
+              SlidableAction(
+                flex: 1,
+                borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                onPressed: (c) => _showEditBottomSheet(downloader: downloader),
+                backgroundColor: const Color(0xFF0392CF),
+                foregroundColor: Colors.white,
+                // icon: Icons.edit,
+                label: '编辑',
+              ),
+            ],
+          ),
+          endActionPane: ActionPane(
+            motion: const ScrollMotion(),
+            extentRatio: 0.25,
+            children: [
+              SlidableAction(
+                flex: 1,
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
+                onPressed: (c) => removeDownloader(downloader),
+                backgroundColor: shadColorScheme.destructive,
+                foregroundColor: Colors.white,
+                // icon: Icons.delete,
+                label: '删除',
+              ),
+            ],
+          ),
 
-                                            var res = await controller.controlQbTorrents(
-                                              downloader: downloader,
-                                              command: 'create_tags',
-                                              tag: nameController.text,
-                                            );
-                                            if (res.succeed) {
-                                              Get.back();
-                                            }
-                                          },
-                                          child: Text('添加'),
-                                        ),
-                                      ]);
-                                },
-                                child: Text('添加标签'),
-                              )
-                            ]
-                          ],
-                        );
-                      },
-                      child: ShadIconButton.ghost(
-                          onPressed: () => popoverController.toggle(),
+          // The end action pane is the one at the right or the bottom side.
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 0),
+            child: Column(
+              children: [
+                ListTile(
+                  onTap: () async {
+                    // _showTorrents(downloader);
+                    controller.cancelPeriodicTimer();
+                    if (kIsWeb) {
+                      Uri uri = Uri.parse(pathDownloader);
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                    if (downloader.externalHost.isEmpty) {
+                      ShadToaster.of(context).show(
+                        ShadToast.destructive(
+                          title: const Text('出错啦'),
+                          description: Text('请先配置下载外部访问地址！'),
+                        ),
+                      );
+                      return;
+                    }
+                    if (downloader.category == 'Qb') {
+                      Get.toNamed(Routes.QB, arguments: downloader);
+                    }
+                    if (downloader.category == 'Tr') {
+                      Get.toNamed(Routes.TR, arguments: downloader);
+                      // Get.toNamed(Routes.TORRENT, arguments: downloader);
+                    }
+                  },
+                  onLongPress: () async {
+                    _showEditBottomSheet(downloader: downloader);
+                  },
+                  leading: ShadAvatar(
+                    'assets/images/${downloader.category.toLowerCase()}.png',
+                    size: Size(28, 28.0),
+                  ),
+                  title: Text(
+                    downloader.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: shadColorScheme.foreground,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(
+                    pathDownloader,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: shadColorScheme.foreground,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: downloader.status.isNotEmpty
+                      ? ShadBadge(
+                          shape: RoundedRectangleBorder(
+                            // 0.27+ 官方形状
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text('${downloader.prefs.version.split('(')?.first ?? ''}'),
+                        )
+                      : ShadIconButton.ghost(
+                          onPressed: () async {
+                            CommonResponse res = await controller.testConnect(downloader);
+                            if (!res.succeed) {
+                              ShadToaster.of(context).show(
+                                ShadToast.destructive(
+                                  title: const Text('出错啦'),
+                                  description: Text('下载器 ${res.msg}'),
+                                ),
+                              );
+                            } else {
+                              await controller.getDownloaderListFromServer(withStatus: true);
+                            }
+                          },
                           icon: Icon(
-                            Icons.add_outlined,
+                            Icons.offline_bolt_outlined,
+                            color: shadColorScheme.destructive,
+                            size: 12,
+                          ),
+                        ),
+                ),
+                GetBuilder<DownloadController>(builder: (controller) {
+                  return controller.isLoading
+                      ? _buildLiveLineChart(downloader, chartSeriesController)
+                      : const SizedBox.shrink();
+                }),
+                Padding(
+                  padding: const EdgeInsets.only(top: 3.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ShadIconButton.ghost(
+                          onPressed: () {
+                            _showTorrents(downloader);
+                          },
+                          icon: Icon(
+                            Icons.list_alt_outlined,
                             size: 18,
                             color: shadColorScheme.foreground,
                           )),
-                    ),
-                  ],
+                      ShadIconButton.ghost(
+                          onPressed: () => isQb ? _showQbPrefs(downloader, context) : _showTrPrefs(downloader, context),
+                          icon: Icon(
+                            Icons.settings_outlined,
+                            size: 18,
+                            color: downloader.prefs != null ? shadColorScheme.foreground : shadColorScheme.destructive,
+                          )),
+                      ShadIconButton.ghost(
+                          onPressed: () => controller.toggleSpeedLimit(downloader, !limitSpeed),
+                          icon: limitSpeed
+                              ? Icon(
+                                  Icons.nordic_walking_sharp,
+                                  size: 18,
+                                  color: shadColorScheme.destructive,
+                                )
+                              : Icon(
+                                  Icons.electric_bolt_outlined,
+                                  size: 18,
+                                  color: shadColorScheme.foreground,
+                                )),
+                      // ShadIconButton.ghost(
+                      //     onPressed: () {},
+                      //     icon: Icon(
+                      //       Icons.speed_outlined,
+                      //       size: 18,
+                      //       color: ShadTheme.of(context).colorScheme.foreground,
+                      //     )),
+                      ShadPopover(
+                        controller: popoverController,
+                        popover: (BuildContext context) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            spacing: 8,
+                            children: [
+                              ShadButton.outline(
+                                size: ShadButtonSize.sm,
+                                onPressed: () => _openAddTorrentDialog(downloader),
+                                child: Text('添加种子'),
+                              ),
+                              if (isQb) ...[
+                                ShadButton.outline(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () => addQbCategory(downloader),
+                                  child: Text('添加分类'),
+                                ),
+                                ShadButton.outline(
+                                  size: ShadButtonSize.sm,
+                                  onPressed: () => addQbTag(downloader),
+                                  child: Text('添加标签'),
+                                )
+                              ]
+                            ],
+                          );
+                        },
+                        child: ShadIconButton.ghost(
+                            onPressed: () => popoverController.toggle(),
+                            icon: Icon(
+                              Icons.add_outlined,
+                              size: 18,
+                              color: shadColorScheme.foreground,
+                            )),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void removeDownloader(Downloader downloader) {
+    Get.defaultDialog(
+      title: '确认',
+      radius: 5,
+      titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
+      middleText: '确定要删除任务吗？',
+      actions: [
+        ShadButton.outline(
+          size: ShadButtonSize.sm,
+          onPressed: () {
+            Get.back(result: false);
+          },
+          child: const Text('取消'),
+        ),
+        ShadButton.destructive(
+          size: ShadButtonSize.sm,
+          onPressed: () async {
+            Get.back(result: true);
+            CommonResponse res = await controller.removeDownloader(downloader);
+            if (res.succeed) {
+              ShadToaster.of(context).show(
+                ShadToast(
+                  title: const Text('删除通知'),
+                  description: Text(res.msg),
+                ),
+              );
+            } else {
+              ShadToaster.of(context).show(
+                ShadToast.destructive(
+                  title: const Text('删除通知'),
+                  description: Text(res.msg),
+                ),
+              );
+            }
+            await controller.getDownloaderListFromServer(withStatus: true);
+          },
+          child: const Text('确认'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> reseedDownloader(Downloader downloader) async {
+    if (downloader.brush) {
+      ShadToaster.of(context).show(
+        ShadToast(
+          title: const Text('辅种通知'),
+          description: Text("请先开启本下载器辅种功能！"),
+        ),
+      );
+      return;
+    }
+    CommonResponse res = await controller.reseedDownloader(downloader.id!);
+    if (res.succeed) {
+      ShadToaster.of(context).show(
+        ShadToast(
+          title: const Text('辅种通知'),
+          description: Text(res.msg),
+        ),
+      );
+    } else {
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('辅种通知'),
+          description: Text(res.msg),
+        ),
+      );
+    }
   }
 
   Widget getSpeedInfo(Downloader downloader) {
@@ -1384,18 +1390,20 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                     onPressed: () async {
                       if (downloader != null) {
                         // 如果 downloader 不为空，表示是修改操作
-                        downloader?.name = nameController.text;
-                        downloader?.category = categoryController.text;
-                        downloader?.username = usernameController.text;
-                        downloader?.password = passwordController.text;
-                        downloader?.protocol = protocolController.text;
-                        downloader?.host = hostController.text;
-                        downloader?.externalHost = externalHostController.text;
-                        downloader?.port = int.tryParse(portController.text) ?? 8999;
-                        downloader?.sortId = int.tryParse(sortIdController.text) ?? 0;
-                        downloader?.torrentPath = torrentPathController.text;
-                        downloader?.isActive = isActive.value;
-                        downloader?.brush = brush.value;
+                        downloader = downloader?.copyWith(
+                          name: nameController.text,
+                          category: categoryController.text,
+                          username: usernameController.text,
+                          password: passwordController.text,
+                          protocol: protocolController.text,
+                          sortId: int.tryParse(sortIdController.text) ?? 0,
+                          host: hostController.text,
+                          externalHost: externalHostController.text,
+                          port: int.tryParse(portController.text) ?? 8999,
+                          torrentPath: torrentPathController.text,
+                          isActive: isActive.value,
+                          brush: brush.value,
+                        );
                       } else {
                         // 如果 downloader 为空，表示是添加操作
                         downloader = Downloader(
@@ -1416,25 +1424,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
                         );
                       }
                       logger_helper.Logger.instance.i(downloader?.toJson());
-                      CommonResponse response = await controller.saveDownloaderToServer(downloader!);
-                      if (response.code == 0) {
-                        Navigator.of(context).pop();
-
-                        ShadToaster.of(context).show(
-                          ShadToast(title: const Text('成功啦'), description: Text(response.msg)),
-                        );
-                        await controller.getDownloaderListFromServer();
-                        controller.update();
-                        await controller.getDownloaderListFromServer(withStatus: true);
-                        controller.update();
-                      } else {
-                        ShadToaster.of(context).show(
-                          ShadToast.destructive(
-                            title: const Text('出错啦'),
-                            description: Text(response.msg),
-                          ),
-                        );
-                      }
+                      await saveDownloader(downloader!);
                     },
                   ),
                 ],
@@ -1444,6 +1434,28 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
         );
       }),
     );
+  }
+
+  Future<void> saveDownloader(Downloader downloader) async {
+    CommonResponse res = await controller.saveDownloaderToServer(downloader);
+    if (res.succeed) {
+      Get.back();
+
+      ShadToaster.of(context).show(
+        ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+      );
+      await controller.getDownloaderListFromServer();
+      controller.update();
+      await controller.getDownloaderListFromServer(withStatus: true);
+      controller.update();
+    } else {
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text(res.msg),
+        ),
+      );
+    }
   }
 
   @override
@@ -6370,6 +6382,141 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
       logger_helper.Logger.instance.e('出错啦！${e.toString()}');
       return CommonResponse.error(msg: '清理出错种子失败！${e.toString()}');
     }
+  }
+
+  void addQbCategory(Downloader downloader) {
+    if (downloader.prefs == null) {
+      ShadToaster.of(context).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('下载器连接失败！'),
+        ),
+      );
+      return;
+    }
+    String savePath = downloader.prefs?.savePath ?? '/downloads/';
+    logger_helper.Logger.instance.i(savePath);
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    TextEditingController nameController = TextEditingController();
+    TextEditingController pathController = TextEditingController(text: savePath);
+    Get.defaultDialog(
+        radius: 5,
+        title: '添加分类',
+        titleStyle: TextStyle(fontSize: 14),
+        backgroundColor: shadColorScheme.background,
+        content: Column(children: [
+          CustomTextField(
+            controller: nameController,
+            labelText: '分类名称',
+          ),
+          CustomTextField(
+            controller: pathController,
+            labelText: '保存路径',
+            helperText: '保存路径可以为空',
+          )
+        ]),
+        actions: [
+          ShadButton.outline(
+            size: ShadButtonSize.sm,
+            leading: const Icon(Icons.cancel_outlined),
+            onPressed: () {
+              Get.back();
+            },
+            child: Text('取消'),
+          ),
+          ShadButton.destructive(
+            size: ShadButtonSize.sm,
+            leading: const Icon(Icons.add_outlined),
+            onPressed: () async {
+              if (nameController.text.trim().isEmpty) {
+                return;
+              }
+              CommonResponse res;
+              if (pathController.text.trim().isNotEmpty) {
+                res = await controller.controlQbTorrents(
+                    downloader: downloader,
+                    command: 'create_category',
+                    category: nameController.text,
+                    newPath: pathController.text);
+              } else {
+                res = await controller.controlQbTorrents(
+                  downloader: downloader,
+                  command: 'create_category',
+                  category: nameController.text,
+                );
+              }
+              if (res.succeed) {
+                Get.back();
+              }
+            },
+            child: Text('添加'),
+          ),
+        ]);
+  }
+
+  void addQbTag(Downloader downloader) {
+    if (downloader.prefs == null) {
+      ShadToaster.of(context).show(
+        ShadToast.destructive(title: const Text('出错啦'), description: Text('下载器连接失败！')),
+      );
+      return;
+    }
+    TextEditingController nameController = TextEditingController();
+    var shadColorScheme = ShadTheme.of(context).colorScheme;
+    Get.defaultDialog(
+        radius: 5,
+        title: '添加标签',
+        titleStyle: TextStyle(fontSize: 14),
+        backgroundColor: shadColorScheme.background,
+        content: Column(children: [
+          CustomTextField(
+            controller: nameController,
+            labelText: '标签',
+          ),
+        ]),
+        actions: [
+          ShadButton.outline(
+            size: ShadButtonSize.sm,
+            leading: const Icon(Icons.cancel_outlined),
+            onPressed: () {
+              Get.back();
+            },
+            child: Text('取消'),
+          ),
+          ShadButton.destructive(
+            size: ShadButtonSize.sm,
+            leading: const Icon(Icons.add_outlined),
+            onPressed: () async {
+              if (nameController.text.trim().isEmpty) {
+                return;
+              }
+
+              var res = await controller.controlQbTorrents(
+                downloader: downloader,
+                command: 'create_tags',
+                tag: nameController.text,
+              );
+              if (res.succeed) {
+                Get.back();
+              }
+            },
+            child: Text('添加'),
+          ),
+        ]);
+  }
+
+  void switchDownloaderActive(Downloader downloader) async {
+    Downloader newDownloader = downloader.copyWith(
+      isActive: !downloader.isActive,
+    );
+    await saveDownloader(newDownloader);
+  }
+
+  void switchDownloaderBrush(Downloader downloader) async {
+    Downloader newDownloader = downloader.copyWith(
+      brush: !downloader.brush,
+    );
+    await saveDownloader(newDownloader);
   }
 }
 
