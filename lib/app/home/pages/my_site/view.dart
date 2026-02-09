@@ -2995,7 +2995,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       );
       StatusInfo? status = StatusInfo.fromJson(res.data);
       Map<String, StatusInfo>? statusInfo = mySite.statusInfo;
-      statusInfo.assign(getTodayString(), status);
+      statusInfo[getTodayString()] = status;
       Logger.instance.d(statusInfo);
       MySite newSite = mySite.copyWith(statusInfo: statusInfo);
       controller.mySiteList = controller.mySiteList.map<MySite>((item) {
@@ -3010,10 +3010,10 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
       Logger.instance.d('等待 20 秒后刷新首页数据');
       await Future.delayed(const Duration(seconds: 20));
 
-      // controller.getSiteStatusFromServer();
       DashBoardController dController = Get.find();
       dController.initChartData();
       dController.update();
+      // controller.getSiteStatusFromServer();
     } else {
       ShadToaster.of(context).show(
         ShadToast.destructive(
