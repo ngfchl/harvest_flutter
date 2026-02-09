@@ -111,9 +111,13 @@ class Api {
   /// 订阅相关
   static const String SUB_RSS = "option/rss";
   static const String SUB_SUB = "option/sub";
+  static const String SUB_PLAN = "option/plan";
   static const String SUB_TAG = "option/tags";
   static const String IMPORT_SUB_TAG = "option/import/tags";
   static const String SUB_HISTORY = "option/sub_history";
+
+  /// 消息记录
+  static const String NOTICE_HISTORY = "option/notice";
 
   /// 豆瓣 API
   static const String DOUBAN_TOP250 = "option/douban/top250";
