@@ -58,9 +58,20 @@ Future<CommonResponse> getSubscribeListApi() async {
   return await fetchDataList(Api.SUB_SUB, (p0) => Subscribe.fromJson(p0));
 }
 
+/// 获取
+Future<CommonResponse> getSubPlanListApi() async {
+  return await fetchDataList(Api.SUB_PLAN, (p0) => SubPlan.fromJson(p0));
+}
+
 ///  修改信息
 Future<CommonResponse> editSubscribeApi(Subscribe sub) async {
   String apiUrl = '${Api.SUB_SUB}/${sub.id}';
+  return await editData(apiUrl, sub.toJson());
+}
+
+///  修改信息
+Future<CommonResponse> editSubPlanApi(SubPlan sub) async {
+  String apiUrl = '${Api.SUB_PLAN}/${sub.id}';
   return await editData(apiUrl, sub.toJson());
 }
 
@@ -70,9 +81,21 @@ Future<CommonResponse> addSubscribeApi(Subscribe sub) async {
   return await addData(apiUrl, sub.toJson());
 }
 
+/// 保存信息
+Future<CommonResponse> addSubPlanApi(SubPlan sub) async {
+  String apiUrl = Api.SUB_PLAN;
+  return await addData(apiUrl, sub.toJson());
+}
+
 ///  删除信息
 Future<CommonResponse> removeSubscribeApi(Subscribe sub) async {
   String apiUrl = '${Api.SUB_SUB}/${sub.id}';
+  return await removeData(apiUrl);
+}
+
+///  删除信息
+Future<CommonResponse> removeSubPlanApi(SubPlan sub) async {
+  String apiUrl = '${Api.SUB_PLAN}/${sub.id}';
   return await removeData(apiUrl);
 }
 
