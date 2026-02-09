@@ -535,7 +535,14 @@ jobs:
         run: flutter pub get  # 下载项目依赖
 
       - name: 打包 Web 发行版
-        run: flutter build web --release  # 构建 Web 版本的发布包
+        run: flutter build web --release --no-tree-shake-icons # 构建 Web 版本的发布包
+
+      - name: Deploy to web branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.TOKEN_GITHUB }}
+          publish_dir: ./build/web
+          publish_branch: web-dist
 
       - name: 生成 Web 发行版文件名
         id: build_web  # 定义一个步骤 ID，用于后续引用
