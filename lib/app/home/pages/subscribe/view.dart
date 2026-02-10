@@ -268,7 +268,7 @@ class _SubscribePageState extends State<SubscribePage> {
                 dense: true,
                 title: Text(plan.name, style: TextStyle(fontSize: 14, color: shadColorScheme.foreground)),
                 subtitle: Text(
-                  "${controller.downloadController.dataList.firstWhereOrNull((item) => item.id == plan.downloaderId)?.name ?? '未知下载器'} == ${plan.downloaderCategory ?? plan.downloaderSavePath}",
+                  "下载器：${controller.downloadController.dataList.firstWhereOrNull((item) => item.id == plan.downloaderId)?.name ?? '未知下载器'}  【分类/路径】：${plan.downloaderCategory ?? plan.downloaderSavePath}",
                   style: TextStyle(fontSize: 10, color: shadColorScheme.foreground.withValues(alpha: opacity * 255)),
                 ),
                 onTap: () async {
@@ -287,6 +287,20 @@ class _SubscribePageState extends State<SubscribePage> {
                           color: Colors.red,
                         ),
                   onPressed: () => switchSubPlan(plan),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Wrap(
+                  spacing: 5,
+                  runSpacing: 5,
+                  alignment: WrapAlignment.spaceEvenly,
+                  children: plan.rssList
+                      .map((item) => CustomTextTag(
+                            labelText: item.siteId!,
+                            backgroundColor: shadColorScheme.primary,
+                          ))
+                      .toList(),
                 ),
               ),
               Padding(
