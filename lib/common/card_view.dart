@@ -21,6 +21,7 @@ class CustomCard extends StatelessWidget {
   final double? maxHeight;
   final double? width;
   final List<BoxShadow>? shadows;
+  final Decoration? decoration;
 
   const CustomCard({
     super.key,
@@ -40,6 +41,7 @@ class CustomCard extends StatelessWidget {
     ),
     this.height,
     this.width,
+    this.decoration,
     this.padding = const EdgeInsets.all(4.0),
     this.margin = const EdgeInsets.all(4.0),
     this.shadows = const [
@@ -71,9 +73,9 @@ class CustomCard extends StatelessWidget {
   Widget build(BuildContext context) {
     double opacity = SPUtil.getDouble('cardOpacity', defaultValue: 0.7);
     var shadColorScheme = ShadTheme.of(context).colorScheme;
-    SiteColorConfig siteColorConfig = SiteColorConfig.load(shadColorScheme);
     return Container(
       margin: margin,
+      decoration: decoration,
       child: ShadCard(
         height: height,
         width: width,
