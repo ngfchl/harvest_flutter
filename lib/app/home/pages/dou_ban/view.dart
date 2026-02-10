@@ -429,7 +429,8 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                   ShadButton.outline(
                     size: ShadButtonSize.sm,
                     onPressed: () async {
-                      if (controller.subController.planList.isEmpty) {
+                      var planList = controller.subController.planList.where((plan) => plan.available).toList();
+                      if (planList.isEmpty) {
                         String msg = "没有可用的订阅方案，请先添加！";
                         ShadToaster.of(context).show(
                           ShadToast.destructive(title: const Text('出错啦'), description: Text(msg)),
@@ -444,23 +445,33 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                             height: 300,
                             child: SingleChildScrollView(
                               child: Column(
+                                spacing: 8,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  ...controller.subController.planList.map((e) => ListTile(
-                                        title: Text(e.name),
-                                        dense: true,
-                                        onTap: () async {
-                                          var res = await controller.goTmdbSubscribePage(mediaInfo, e);
-                                          if (res.succeed) {
-                                            Get.back();
-                                          }
-                                          ShadToaster.of(context).show(
-                                            res.succeed
-                                                ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
-                                                : ShadToast.destructive(
-                                                    title: const Text('出错啦'), description: Text(res.msg)),
-                                          );
-                                        },
+                                  ...planList.map((e) => CustomCard(
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: shadColorScheme.foreground,
+                                            width: 1,
+                                          ),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: ListTile(
+                                          title: Text(e.name),
+                                          dense: true,
+                                          onTap: () async {
+                                            var res = await controller.goTmdbSubscribePage(mediaInfo, e);
+                                            if (res.succeed) {
+                                              Get.back();
+                                            }
+                                            ShadToaster.of(context).show(
+                                              res.succeed
+                                                  ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                                  : ShadToast.destructive(
+                                                      title: const Text('出错啦'), description: Text(res.msg)),
+                                            );
+                                          },
+                                        ),
                                       )),
                                 ],
                               ),
@@ -1331,7 +1342,9 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                 ShadButton.outline(
                   size: ShadButtonSize.sm,
                   onPressed: () {
-                    if (controller.subController.planList.isEmpty) {
+                    var planList = controller.subController.planList.where((plan) => plan.available).toList();
+
+                    if (planList.isEmpty) {
                       String msg = "没有可用的订阅方案，请先添加！";
                       ShadToaster.of(context).show(
                         ShadToast.destructive(title: const Text('出错啦'), description: Text(msg)),
@@ -1346,23 +1359,34 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                           height: 300,
                           child: SingleChildScrollView(
                             child: Column(
+                              spacing: 8,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                ...controller.subController.planList.map((e) => ListTile(
-                                      title: Text(e.name),
-                                      dense: true,
-                                      onTap: () async {
-                                        var res = await controller.goSubscribePage(videoDetail, e);
-                                        if (res.succeed) {
-                                          Get.back();
-                                        }
-                                        ShadToaster.of(context).show(
-                                          res.succeed
-                                              ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
-                                              : ShadToast.destructive(
-                                                  title: const Text('出错啦'), description: Text(res.msg)),
-                                        );
-                                      },
+                                ...planList.map((e) => CustomCard(
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: shadColorScheme.foreground,
+                                          width: 0.5,
+                                        ),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      color: shadColorScheme.background,
+                                      child: ListTile(
+                                        title: Text(e.name),
+                                        dense: true,
+                                        onTap: () async {
+                                          var res = await controller.goSubscribePage(videoDetail, e);
+                                          if (res.succeed) {
+                                            Get.back();
+                                          }
+                                          ShadToaster.of(context).show(
+                                            res.succeed
+                                                ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                                : ShadToast.destructive(
+                                                    title: const Text('出错啦'), description: Text(res.msg)),
+                                          );
+                                        },
+                                      ),
                                     )),
                               ],
                             ),
