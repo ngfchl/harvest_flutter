@@ -218,6 +218,12 @@ class TvShowDetail {
     required this.voteCount,
   });
 
+  /// 获取 seasonNumber 最大的 Season（排除 seasonNumber <= 0 的特殊季，可选）
+  Season? get latestSeason {
+    if (seasons.isEmpty) return null;
+    return seasons.reduce((a, b) => a.seasonNumber > b.seasonNumber ? a : b);
+  }
+
   factory TvShowDetail.fromJson(Map<String, dynamic> json) {
     return TvShowDetail(
       adult: json['adult'],

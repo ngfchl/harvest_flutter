@@ -157,6 +157,7 @@ class VideoDetail {
   List<String>? alias;
   List<String>? pictures;
   String imdb;
+  String? douban;
   String? rate;
   String evaluate;
   List<String> summary;
@@ -181,6 +182,7 @@ class VideoDetail {
     this.alias,
     this.pictures,
     required this.imdb,
+    this.douban,
     this.rate,
     required this.evaluate,
     required this.summary,
@@ -206,6 +208,7 @@ class VideoDetail {
       releaseDate: List<String>.from(json['release_date']),
       alias: List<String>.from(json['alias']),
       imdb: json['imdb'],
+      douban: json['douban'],
       rate: json['rate'],
       evaluate: json['evaluate'],
       summary: List<String>.from(json['summary'] ?? []),
