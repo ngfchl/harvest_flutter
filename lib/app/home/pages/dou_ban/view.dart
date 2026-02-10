@@ -15,7 +15,6 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../utils/logger_helper.dart';
-import '../../../../utils/storage.dart';
 import '../../../routes/app_pages.dart';
 import '../models/tmdb.dart';
 import 'controller.dart';
@@ -56,7 +55,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                 tabs: [
                   ShadTab(
                     value: 'tmdb',
-                    content: buildTmdbView(controller, shadColorScheme, context),
+                    content: buildTmdbView(shadColorScheme, context),
                     child: Text(
                       'Tmdb',
                       style: const TextStyle(fontSize: 13),
@@ -79,7 +78,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
     });
   }
 
-  Widget buildTmdbView(controller, ShadColorScheme shadColorScheme, context) {
+  Widget buildTmdbView(ShadColorScheme shadColorScheme, context) {
     const List<Tab> tabs = [
       Tab(text: '电影'),
       Tab(text: '剧集'),
@@ -110,27 +109,25 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ...controller.tmdbMovieTagMap
-                              .map<Widget>(
-                                (e) => FilterChip(
-                                  labelPadding: EdgeInsets.zero,
-                                  label: Text(
-                                    e.name,
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
-                                  selected: controller.selectTmdbMovieTag == e.value,
-                                  onSelected: (bool value) async {
-                                    if (value == true && controller.selectTmdbMovieTag != e.value) {
-                                      controller.showTmdbMovieList.clear();
-                                      controller.tmdbMoviePage = 1;
-                                      controller.update();
-                                      controller.selectTmdbMovieTag = e.value;
-                                      await controller.getTmdbMovies();
-                                    }
-                                  },
-                                ),
-                              )
-                              .toList(),
+                          ...controller.tmdbMovieTagMap.map<Widget>(
+                            (e) => FilterChip(
+                              labelPadding: EdgeInsets.zero,
+                              label: Text(
+                                e.name,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              selected: controller.selectTmdbMovieTag == e.value,
+                              onSelected: (bool value) async {
+                                if (value == true && controller.selectTmdbMovieTag != e.value) {
+                                  controller.showTmdbMovieList.clear();
+                                  controller.tmdbMoviePage = 1;
+                                  controller.update();
+                                  controller.selectTmdbMovieTag = e.value;
+                                  await controller.getTmdbMovies();
+                                }
+                              },
+                            ),
+                          ),
                         ],
                       )),
                 ),
@@ -181,25 +178,23 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ...controller.tmdbTvTagMap
-                              .map((MetaDataItem e) => FilterChip(
-                                    labelPadding: EdgeInsets.zero,
-                                    label: Text(
-                                      e.name,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                    selected: controller.selectTmdbTvTag == e.value,
-                                    onSelected: (bool value) async {
-                                      if (value == true && controller.selectTmdbTvTag != e.value) {
-                                        controller.showTmdbTvList.clear();
-                                        controller.tmdbTvPage = 1;
-                                        controller.update();
-                                        controller.selectTmdbTvTag = e.value;
-                                        await controller.getTmdbTvs();
-                                      }
-                                    },
-                                  ))
-                              .toList(),
+                          ...controller.tmdbTvTagMap.map((MetaDataItem e) => FilterChip(
+                                labelPadding: EdgeInsets.zero,
+                                label: Text(
+                                  e.name,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                selected: controller.selectTmdbTvTag == e.value,
+                                onSelected: (bool value) async {
+                                  if (value == true && controller.selectTmdbTvTag != e.value) {
+                                    controller.showTmdbTvList.clear();
+                                    controller.tmdbTvPage = 1;
+                                    controller.update();
+                                    controller.selectTmdbTvTag = e.value;
+                                    await controller.getTmdbTvs();
+                                  }
+                                },
+                              )),
                         ],
                       )),
                 ),
@@ -244,7 +239,7 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
     );
   }
 
-  void _showTMDBDetail(info) async {
+  void _showTMDBDetail(dynamic info) async {
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     var res = await controller.getTMDBDetail(info);
     if (!res.succeed) {
@@ -431,6 +426,53 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                     ),
                     child: const Text('详情'),
                   ),
+                  ShadButton.outline(
+                    size: ShadButtonSize.sm,
+                    onPressed: () async {
+                      if (controller.subController.planList.isEmpty) {
+                        String msg = "没有可用的订阅方案，请先添加！";
+                        ShadToaster.of(context).show(
+                          ShadToast.destructive(title: const Text('出错啦'), description: Text(msg)),
+                        );
+                        return;
+                      }
+                      Get.defaultDialog(
+                          title: "选择订阅方案",
+                          radius: 10,
+                          backgroundColor: shadColorScheme.background,
+                          content: SizedBox(
+                            height: 300,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ...controller.subController.planList.map((e) => ListTile(
+                                        title: Text(e.name),
+                                        dense: true,
+                                        onTap: () async {
+                                          var res = await controller.goTmdbSubscribePage(mediaInfo, e);
+                                          if (res.succeed) {
+                                            Get.back();
+                                          }
+                                          ShadToaster.of(context).show(
+                                            res.succeed
+                                                ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                                : ShadToast.destructive(
+                                                    title: const Text('出错啦'), description: Text(res.msg)),
+                                          );
+                                        },
+                                      )),
+                                ],
+                              ),
+                            ),
+                          ));
+                    },
+                    leading: Icon(
+                      Icons.cloud_download_outlined,
+                      size: 16,
+                    ),
+                    child: const Text('订阅'),
+                  ),
                   ShadButton.destructive(
                     size: ShadButtonSize.sm,
                     onPressed: () async {
@@ -458,8 +500,6 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
       Tab(text: '热门剧集'),
       Tab(text: '热门榜单'),
     ];
-    double itemWidth = SPUtil.getDouble('tmdb_media_item_width', defaultValue: 120);
-    double itemHeight = itemWidth * 1.5;
     return DefaultTabController(
       length: tabs.length,
       child: Scaffold(
@@ -1287,6 +1327,53 @@ class _DouBanPageState extends State<DouBanPage> with SingleTickerProviderStateM
                     size: 16,
                   ),
                   child: const Text('详情'),
+                ),
+                ShadButton.outline(
+                  size: ShadButtonSize.sm,
+                  onPressed: () {
+                    if (controller.subController.planList.isEmpty) {
+                      String msg = "没有可用的订阅方案，请先添加！";
+                      ShadToaster.of(context).show(
+                        ShadToast.destructive(title: const Text('出错啦'), description: Text(msg)),
+                      );
+                      return;
+                    }
+                    Get.defaultDialog(
+                        title: "选择订阅方案",
+                        radius: 10,
+                        backgroundColor: shadColorScheme.background,
+                        content: SizedBox(
+                          height: 300,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ...controller.subController.planList.map((e) => ListTile(
+                                      title: Text(e.name),
+                                      dense: true,
+                                      onTap: () async {
+                                        var res = await controller.goSubscribePage(videoDetail, e);
+                                        if (res.succeed) {
+                                          Get.back();
+                                        }
+                                        ShadToaster.of(context).show(
+                                          res.succeed
+                                              ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                                              : ShadToast.destructive(
+                                                  title: const Text('出错啦'), description: Text(res.msg)),
+                                        );
+                                      },
+                                    )),
+                              ],
+                            ),
+                          ),
+                        ));
+                  },
+                  leading: Icon(
+                    Icons.cloud_download_outlined,
+                    size: 16,
+                  ),
+                  child: const Text('订阅'),
                 ),
                 ShadButton.destructive(
                   size: ShadButtonSize.sm,

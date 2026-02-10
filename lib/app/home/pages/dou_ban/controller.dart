@@ -10,12 +10,15 @@ import '../../../../api/tmdb.dart';
 import '../../../../models/common_response.dart';
 import '../../../../utils/logger_helper.dart';
 import '../agg_search/controller.dart';
+import '../models/Subscribe.dart';
 import '../models/tmdb.dart';
+import '../subscribe/controller.dart';
 import 'douban_api.dart';
 
 class DouBanController extends GetxController {
   final searchController = Get.put(AggSearchController());
   final homeController = Get.put(HomeController());
+  final subController = Get.put(SubscribeController());
   final PageController pageController = PageController(initialPage: 0);
   ShadTabsController<String> tabsController = ShadTabsController<String>(value: 'tmdb');
 
@@ -300,7 +303,7 @@ class DouBanController extends GetxController {
     }
     var res = await getSubjectInfoApi(id);
     Logger.instance.i(res);
-    VideoDetail videoDetail = VideoDetail.fromJson(res.data);
+    VideoDetail videoDetail = VideoDetail.fromJson({...res.data, 'douban': id});
     if (toSearch) {
       goSearchPage(videoDetail);
     }
@@ -341,5 +344,68 @@ class DouBanController extends GetxController {
   void onClose() {
     // TODO: implement onClose
     super.onClose();
+  }
+
+  Future<CommonResponse> goSubscribePage(dynamic videoDetail, SubPlan plan) async {
+    try {
+      // 参数校验
+      if (videoDetail == null || plan == null) {
+        throw ArgumentError('Invalid input parameters');
+      }
+      // 处理 season 字段
+      final season = _formatSeason(videoDetail.season);
+      Subscribe subscribe = Subscribe(
+        id: 0,
+        name: videoDetail.title,
+        keyword: videoDetail.title,
+        publishYear: [videoDetail.year.replaceAll('(', '').replaceAll(')', '')],
+        imdb: videoDetail.imdb,
+        douban: videoDetail.douban,
+        planId: plan.id,
+        season: season,
+      );
+      var res = await subController.saveSubscribe(subscribe);
+      return res;
+    } catch (e, trace) {
+      String msg = '添加订阅失败,请检查网络';
+      Logger.instance.e(msg);
+      Logger.instance.e(trace);
+      return CommonResponse.error(msg: msg);
+    }
+  }
+
+  Future<CommonResponse> goTmdbSubscribePage(dynamic videoDetail, SubPlan plan) async {
+    try {
+      String seasonNumber = videoDetail.runtimeType == MovieDetail ? '' : videoDetail.latestSeason?.seasonNumber ?? '';
+      List<String> season = _formatSeason(seasonNumber);
+      List<String> years = videoDetail.releaseDate.length > 4 ? [videoDetail.releaseDate.substring(0, 4)] : [];
+      Subscribe subscribe = Subscribe(
+        id: 0,
+        name: videoDetail.title,
+        keyword: videoDetail.title,
+        publishYear: years,
+        imdb: videoDetail.imdbId,
+        tmdb: videoDetail.id.toString(),
+        planId: plan.id,
+        season: season,
+      );
+      var res = await subController.saveSubscribe(subscribe);
+      return res;
+    } catch (e, trace) {
+      String msg = '添加订阅失败,请检查网络';
+      Logger.instance.e(msg);
+      Logger.instance.e(trace);
+      return CommonResponse.error(msg: msg);
+    }
+  }
+
+  // 提取公共逻辑：处理 season 字段
+  List<String> _formatSeason(String? seasonInput) {
+    if (seasonInput == null || seasonInput.trim().isEmpty) {
+      return [];
+    }
+    final trimmedSeason = seasonInput.trim();
+    final season = trimmedSeason.length == 1 ? 'S0$trimmedSeason' : 'S$trimmedSeason';
+    return [season];
   }
 }
