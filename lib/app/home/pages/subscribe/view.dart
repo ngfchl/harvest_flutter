@@ -291,8 +291,10 @@ class _SubscribePageState extends State<SubscribePage> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                child: Wrap(
+                  spacing: 5,
+                  runSpacing: 5,
+                  alignment: WrapAlignment.spaceEvenly,
                   children: _buildSubTags(plan),
                 ),
               )
@@ -505,14 +507,17 @@ class _SubscribePageState extends State<SubscribePage> {
 
   List<Widget> _buildSubTags(SubPlan sub) {
     List<Widget> tags = [];
+    if (sub.exclude?.isNotEmpty == true) {
+      tags.addAll(sub.exclude!.map((e) => CustomTextTag(
+            labelText: e,
+            backgroundColor: ShadTheme.of(context).colorScheme.destructive,
+          )));
+    }
     tags.add(CustomTextTag(
       labelText: '${sub.minSize} GB -> ${sub.maxSize} GB',
       backgroundColor: Colors.brown,
     ));
-    // tags.addAll(sub.publishYear.map((e) => CustomTextTag(
-    //       labelText: e,
-    //       backgroundColor: Colors.black54,
-    //     )));
+
     tags.addAll(sub.discount.map((e) => CustomTextTag(
           labelText: e,
           backgroundColor: Colors.green,

@@ -18,9 +18,9 @@ class SubscribeTagController extends GetxController {
     {'name': '视频编码', 'value': 'video_codec'},
     {'name': '音频编码', 'value': 'audio_codec'},
     {'name': '发行方', 'value': 'publisher'},
-    {'name': '种子标签', 'value': 'tags'},
     {'name': '资源来源', 'value': 'source'},
     {'name': '资源分类', 'value': 'category'},
+    {'name': '其他标签', 'value': 'tags'},
   ].map((e) => MetaDataItem.fromJson(e)).toList();
 
   Future<void> initData() async {

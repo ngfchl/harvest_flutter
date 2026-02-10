@@ -8,7 +8,6 @@ import 'package:harvest/models/common_response.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../../common/form_widgets.dart';
-import '../../../../common/meta_item.dart';
 import '../../../../utils/logger_helper.dart';
 import '../models/SubTag.dart';
 import 'controller.dart';
@@ -174,13 +173,13 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
         child: ListTile(
           dense: true,
           title: Text(
-            tag.name!,
+            tag.name,
             style: TextStyle(
               color: ShadTheme.of(context).colorScheme.foreground,
             ),
           ),
           subtitle: Text(
-            tag.category!,
+            tag.category,
             style: TextStyle(
               fontSize: 10,
               color: ShadTheme.of(context).colorScheme.foreground.withOpacity(0.8),
@@ -200,7 +199,7 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                     color: Colors.red,
                   ),
             onPressed: () async {
-              SubTag newTag = tag.copyWith(available: !tag.available!);
+              SubTag newTag = tag.copyWith(available: !tag.available);
               submitForm(newTag);
             },
           ),
@@ -217,8 +216,8 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
     RxBool available = true.obs;
     final isLoading = false.obs;
 
-    available.value = tag != null ? tag.available! : true;
-    String title = tag != null ? '编辑标签：${tag.name!}' : '添加标签';
+    available.value = tag != null ? tag.available : true;
+    String title = tag != null ? '编辑标签：${tag.name}' : '添加标签';
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     Get.bottomSheet(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
@@ -238,38 +237,20 @@ class _SubscribeTagPageState extends State<SubscribeTagPage> {
                       controller: nameController,
                       labelText: '名称',
                     ),
-                    DropdownButtonFormField<String>(
-                      isDense: true,
-                      value: categoryController.text,
-                      style: TextStyle(
-                        color: shadColorScheme.foreground,
-                      ),
-                      onChanged: (String? newValue) {
-                        categoryController.text = newValue!;
-                      },
-                      decoration: InputDecoration(
-                        labelText: '标签类别',
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
-                        labelStyle: TextStyle(
-                          color: shadColorScheme.foreground.withOpacity(0.5),
-                        ),
-                        enabledBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.transparent),
-                        ),
-                      ),
-                      dropdownColor: shadColorScheme.background,
-                      items: controller.tagCategoryList
-                          .map<DropdownMenuItem<String>>((MetaDataItem item) => DropdownMenuItem<String>(
-                                value: item.value,
-                                child: Text(
-                                  item.name,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: shadColorScheme.foreground,
-                                  ),
-                                ),
-                              ))
-                          .toList(),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ShadSelect<String>(
+                          placeholder: const Text('选择任务'),
+                          initialValue: categoryController.text,
+                          options: controller.tagCategoryList
+                              .map((key) => ShadOption(value: key.value, child: Text(key.name)))
+                              .toList(),
+                          selectedOptionBuilder: (context, value) {
+                            return Text(controller.tagCategoryList.firstWhere((element) => element.value == value).name);
+                          },
+                          onChanged: (String? value) {
+                            categoryController.text = value!;
+                          }),
                     ),
                     Obx(() {
                       return SwitchTile(
