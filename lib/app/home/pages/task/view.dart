@@ -440,6 +440,35 @@ class TaskPage extends StatelessWidget {
                               ),
                               child: ListTile(
                                 dense: true,
+                                onTap: () {
+                                  Get.bottomSheet(
+                                    backgroundColor: shadColorScheme.background,
+                                    isScrollControlled: true,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+                                    CustomCard(
+                                      height: 500,
+                                      child: Column(
+                                        children: [
+                                          Text('消息详情：${item.title}'),
+                                          Text(
+                                            item.createdAt.toIso8601String(),
+                                            style: TextStyle(fontSize: 12),
+                                          ),
+                                          Expanded(child: Markdown(data: item.content)),
+                                          OverflowBar(
+                                            children: [
+                                              ShadButton.ghost(
+                                                size: ShadButtonSize.sm,
+                                                onPressed: () => Get.back(),
+                                                child: Text('关闭'),
+                                              ),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                                 title: Text(item.title),
                                 subtitle: Text(item.createdAt.toIso8601String()),
                               ),
