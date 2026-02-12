@@ -803,6 +803,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     bool signed = mySite.getSignMaxKey() == today || mySite.signIn == false;
     RxBool siteRefreshing = false.obs;
+    RxBool siteSigning = false.obs;
     return Stack(children: [
       Obx(() {
         return CustomCard(
@@ -1722,70 +1723,84 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                           ),
                       ],
                     ),
-                    trailing: Obx(() {
-                      return siteRefreshing.value
-                          ? SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: Center(
-                                  child: CircularProgressIndicator(
-                                color: siteColorConfig.loadingColor.value,
-                                strokeWidth: 2,
-                              )))
-                          : Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ConstrainedBox(
-                                  constraints: BoxConstraints(maxHeight: 24),
-                                  child: ShadButton.outline(
-                                    size: ShadButtonSize.sm,
-                                    padding: EdgeInsets.symmetric(horizontal: 4),
-                                    onPressed: (website.signIn == true && mySite.signIn)
-                                        ? () async {
-                                            showLoading.value = true;
-                                            if (!signed) {
-                                              await signSite(siteRefreshing, mySite, shadColorScheme);
-                                              showLoading.value = false;
-                                            }
-                                            if (mySite.getSignMaxKey() == today) {
-                                              _showSignHistory(mySite, showLoading);
-                                            }
-                                          }
-                                        : null,
-                                    child: Text(
-                                      mySite.signIn == false
-                                          ? '无签到'
-                                          : mySite.getSignMaxKey() == today
-                                              ? '已签到'
-                                              : '未签到',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                      ),
-                                    ),
+                    trailing: SizedBox(
+                      width: 80,
+                      child: Obx(() {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxHeight: 24, maxWidth: 80),
+                              child: ShadButton.outline(
+                                size: ShadButtonSize.sm,
+                                padding: EdgeInsets.symmetric(horizontal: 4),
+                                leading: siteSigning.value
+                                    ? SizedBox(
+                                        width: 13,
+                                        height: 13,
+                                        child: Center(
+                                            child: CircularProgressIndicator(
+                                          color: siteColorConfig.loadingColor.value,
+                                          strokeWidth: 1.5,
+                                        )))
+                                    : null,
+                                onPressed: (website.signIn == true && mySite.signIn)
+                                    ? () async {
+                                        showLoading.value = true;
+                                        if (!signed) {
+                                          await signSite(siteSigning, mySite, shadColorScheme);
+                                          showLoading.value = false;
+                                        }
+                                        if (mySite.getSignMaxKey() == today) {
+                                          _showSignHistory(mySite, showLoading);
+                                        }
+                                      }
+                                    : null,
+                                child: Text(
+                                  mySite.signIn == false
+                                      ? '无签到'
+                                      : mySite.getSignMaxKey() == today
+                                          ? '已签到'
+                                          : '未签到',
+                                  style: TextStyle(
+                                    fontSize: 12,
                                   ),
                                 ),
-                                ConstrainedBox(
-                                  constraints: BoxConstraints(maxHeight: 24),
-                                  child: ShadButton.ghost(
-                                    size: ShadButtonSize.sm,
-                                    padding: EdgeInsets.symmetric(horizontal: 4),
-                                    onPressed: () async {
-                                      showLoading.value = true;
-                                      await refreshSiteData(siteRefreshing, mySite, shadColorScheme);
-                                      showLoading.value = false;
-                                    },
-                                    child: Text(
-                                      calculateTimeElapsed(status!.updatedAt.toString()),
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: siteColorConfig.updatedAtColor.value,
-                                      ),
-                                    ),
+                              ),
+                            ),
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxHeight: 24, maxWidth: 80),
+                              child: ShadButton.ghost(
+                                size: ShadButtonSize.sm,
+                                leading: siteRefreshing.value
+                                    ? SizedBox(
+                                        width: 13,
+                                        height: 13,
+                                        child: Center(
+                                            child: CircularProgressIndicator(
+                                          color: siteColorConfig.loadingColor.value,
+                                          strokeWidth: 1.5,
+                                        )))
+                                    : null,
+                                padding: EdgeInsets.symmetric(horizontal: 4),
+                                onPressed: () async {
+                                  showLoading.value = true;
+                                  await refreshSiteData(siteRefreshing, mySite, shadColorScheme);
+                                  showLoading.value = false;
+                                },
+                                child: Text(
+                                  status != null ? calculateTimeElapsed(status.updatedAt.toString()) : "无数据",
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: siteColorConfig.updatedAtColor.value,
                                   ),
-                                )
-                              ],
-                            );
-                    }),
+                                ),
+                              ),
+                            )
+                          ],
+                        );
+                      }),
+                    ),
                   ),
                 ),
               ),
@@ -2955,8 +2970,8 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     );
   }
 
-  Future<void> signSite(RxBool siteRefreshing, MySite mySite, ShadColorScheme shadColorScheme) async {
-    siteRefreshing.value = true;
+  Future<void> signSite(RxBool siteSigning, MySite mySite, ShadColorScheme shadColorScheme) async {
+    siteSigning.value = true;
     CommonResponse res = await signIn(mySite.id);
     if (res.succeed) {
       ShadToaster.of(context).show(
@@ -2983,7 +2998,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
         ),
       );
     }
-    siteRefreshing.value = false;
+    siteSigning.value = false;
   }
 
   Future<void> refreshSiteData(RxBool siteRefreshing, MySite mySite, ShadColorScheme shadColorScheme) async {
