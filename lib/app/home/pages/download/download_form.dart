@@ -79,6 +79,8 @@ class DownloadForm extends StatelessWidget {
     RxBool addToTopOfQueue = false.obs;
     RxBool isSequentialDownload = false.obs;
     RxBool forced = false.obs;
+    RxBool genTorrentUrl =
+        (info?.magnetUrl.contains('passkey') == false && info?.magnetUrl.contains('sign') == false).obs; // 生成种子链接
     RxList<String> tags = SPUtil.getStringList("custom_torrent_tags",
         defaultValue: ['harvest-app', '电影', '电视剧', '动漫', '综艺', '纪录片', '体育', '音乐', '动画', '游戏']).obs;
     if (tags.isEmpty) {
@@ -96,12 +98,21 @@ class DownloadForm extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
+          spacing: 8,
           children: [
             Expanded(
               child: ListView(children: [
                 CustomTextField(
                   controller: urlController,
                   labelText: '链接',
+                  scrollPhysics: ScrollPhysics(),
+                ),
+                SwitchTile(
+                  title: '自动生成下载链接',
+                  fontSize: 12,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  value: genTorrentUrl.value,
+                  onChanged: (value) => genTorrentUrl.value = value,
                 ),
                 // if (downloader.category.toLowerCase() == 'qb')
                 categories.isNotEmpty
@@ -482,7 +493,7 @@ class DownloadForm extends StatelessWidget {
                         ...selectedTags
                       }.where((element) => element.isNotEmpty).toList();
                       await submitForm({
-                        'site_id': info?.siteId,
+                        'site_id': genTorrentUrl.value ? info?.siteId : '',
                         'tid': info?.tid,
                         'urls': urlController.text,
                         'save_path': savePathController.text,
@@ -545,16 +556,27 @@ class DownloadForm extends StatelessWidget {
       'harvest-app',
     ].obs;
     tags.sort();
+    RxBool genTorrentUrl =
+        (info?.magnetUrl.contains('passkey') == false && info?.magnetUrl.contains('sign') == false).obs; // 生成种子链接
+
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     return Form(
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.center,
+      spacing: 8,
       children: [
         Expanded(
           child: ListView(children: [
             CustomTextField(
               controller: urlController,
               labelText: '链接',
+            ),
+            SwitchTile(
+              title: '自动生成下载链接',
+              fontSize: 12,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              value: genTorrentUrl.value,
+              onChanged: (value) => genTorrentUrl.value = value,
             ),
             // if (downloader.category.toLowerCase() == 'qb')
             categories.isNotEmpty
@@ -801,7 +823,7 @@ class DownloadForm extends StatelessWidget {
                     ...selectedTags
                   }.where((element) => element.isNotEmpty).toList();
                   await submitForm({
-                    'site_id': info?.siteId,
+                    'site_id': genTorrentUrl.value ? info?.siteId : '',
                     'tid': info?.tid,
                     'urls': urlController.text,
                     'save_path': savePathController.text,
@@ -900,10 +922,12 @@ Future<void> openDownloaderListSheet(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
       ), GetBuilder<DownloadController>(builder: (controller) {
-    return Padding(
+    return Container(
+      height: 500,
       padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        spacing: 8,
         children: [
           Text(
             '请选择下载器',

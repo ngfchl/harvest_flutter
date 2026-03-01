@@ -2336,7 +2336,7 @@ class _DownloadPageState extends State<DownloadPage> with WidgetsBindingObserver
         enableDrag: true,
         GetBuilder<DownloadController>(builder: (controller) {
           return SizedBox(
-            height: 400,
+            height: 500,
             child: Column(children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
