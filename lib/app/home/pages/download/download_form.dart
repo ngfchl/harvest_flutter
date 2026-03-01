@@ -877,6 +877,7 @@ class DownloadForm extends StatelessWidget {
 
 Future<void> openDownloaderListSheet(
     BuildContext context, SearchTorrentInfo info, WebSite? website, MySite? mySite) async {
+  Logger.instance.d('Torrent Info: ${info.toJson()}');
   DownloadController downloadController = Get.find();
   if (downloadController.dataList.isEmpty) {
     await downloadController.getDownloaderListFromServer();

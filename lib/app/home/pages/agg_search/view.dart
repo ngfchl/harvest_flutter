@@ -1103,7 +1103,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
         : website.logo.startsWith("http")
             ? website.logo
             : '${mySite.mirror}${website.logo}';
-
+    info.siteId = mySite.id.toString();
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     String iconUrl = '${controller.baseUrl}/local/icons/${website.name}.png';
     return InkWell(
@@ -1141,7 +1141,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
           //     return;
           //   }
           // }
-          info.siteId = mySite.id.toString();
+          // info.siteId = mySite.id.toString();
           info.tags.addAll([
             mySite.nickname.isNotEmpty ? mySite.nickname : mySite.site,
             'harvest-app',
