@@ -1164,7 +1164,7 @@ class QBittorrentPage extends GetView<QBittorrentController> {
                     backgroundColor: shadColorScheme.background,
                     enableDrag: true,
                     CustomCard(
-                      height: 400,
+                      height: 500,
                       padding: const EdgeInsets.all(12),
                       child: Column(children: [
                         Padding(

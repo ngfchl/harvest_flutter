@@ -593,7 +593,7 @@ class TorrentView extends GetView<TorrentController> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
                 enableDrag: true,
                 CustomCard(
-                  height: 400,
+                  height: 500,
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     children: [
