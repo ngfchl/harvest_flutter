@@ -449,12 +449,25 @@ class TaskPage extends StatelessWidget {
                                       height: 500,
                                       child: Column(
                                         children: [
-                                          Text('消息详情：${item.title}'),
+                                          Text(
+                                            '消息详情：${item.title}',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: shadColorScheme.foreground,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                           Text(
                                             item.createdAt.toIso8601String(),
-                                            style: TextStyle(fontSize: 12),
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: shadColorScheme.foreground,
+                                            ),
                                           ),
-                                          Expanded(child: Markdown(data: item.content)),
+                                          Expanded(
+                                              child: Markdown(
+                                                  data: item.content,
+                                                  styleSheet: buildShadMarkdownStyleSheet(ShadTheme.of(context)))),
                                           OverflowBar(
                                             children: [
                                               ShadButton.ghost(
@@ -469,8 +482,21 @@ class TaskPage extends StatelessWidget {
                                     ),
                                   );
                                 },
-                                title: Text(item.title),
-                                subtitle: Text(item.createdAt.toIso8601String()),
+                                title: Text(
+                                  item.title,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: shadColorScheme.foreground,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  item.createdAt.toIso8601String(),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: shadColorScheme.foreground,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -1223,4 +1249,104 @@ class TaskPage extends StatelessWidget {
       ],
     );
   }
+}
+
+MarkdownStyleSheet buildShadMarkdownStyleSheet(ShadThemeData shadTheme) {
+  final colors = shadTheme.colorScheme;
+  final typography = shadTheme.textTheme;
+
+  // 辅助函数：安全获取字体大小
+  double fs(TextStyle style) => style.fontSize ?? 13.0;
+  String? ff(TextStyle style) => style.fontFamily;
+
+  // 基础正文样式 (对应 <p>)
+  // 使用 typography.p 作为基础，如果没有则 fallback 到 muted 或默认
+  final baseStyle = typography.p.copyWith(color: colors.foreground, height: 1.6, fontSize: 13.0);
+
+  return MarkdownStyleSheet(
+    // --- 标题 (Headings) ---
+    // 使用 ShadTextTheme 中定义的 h1, h2, h3, h4
+    h1: (typography.h1).copyWith(color: colors.foreground, height: 1.2),
+    h2: typography.h2.copyWith(color: colors.foreground, height: 1.3),
+    h3: typography.h3.copyWith(color: colors.foreground, height: 1.4),
+    h4: typography.h4.copyWith(color: colors.foreground, height: 1.4),
+    // h5, h6 如果 ShadTheme 没定义，就基于 baseStyle 缩小
+    h5: baseStyle.copyWith(fontSize: fs(baseStyle) * 0.9, fontWeight: FontWeight.w600, height: 1.4),
+    h6: baseStyle.copyWith(fontSize: fs(baseStyle) * 0.85, fontWeight: FontWeight.w600, height: 1.4),
+
+    // --- 正文与强调 ---
+    p: baseStyle,
+    em: const TextStyle(fontStyle: FontStyle.italic),
+    strong: const TextStyle(fontWeight: FontWeight.bold),
+    del: const TextStyle(decoration: TextDecoration.lineThrough),
+
+    // --- 链接 ---
+    a: TextStyle(
+      color: colors.primary,
+      decoration: TextDecoration.underline,
+      decorationColor: colors.primary,
+      fontWeight: FontWeight.w500,
+    ),
+
+    // --- 行内代码 (Inline Code) ---
+    // 注意：TextStyle 不支持 padding/borderRadius，这里只设置背景和字体
+    // 如果需要完美的圆角和内边距，必须使用 Markdown 的 builders 参数自定义 Widget
+    code: TextStyle(
+      fontFamily: ff(typography.small) ?? 'monospace',
+      fontSize: fs(typography.small) * 0.95,
+      color: colors.foreground,
+      backgroundColor: colors.muted,
+    ),
+
+    // --- 代码块 (Code Block) ---
+    // 设置背景和边框
+    codeblockDecoration: BoxDecoration(
+      color: colors.muted,
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: colors.border, width: 1),
+    ),
+    // 设置代码块的内边距
+    codeblockPadding: const EdgeInsets.all(16),
+    // 注意：flutter_markdown 没有 codeblockTextStyle 属性。
+    // 代码块内的文字样式通常继承自 p 或 code，或者需要通过 customWidgetBuilder 完全自定义。
+    // 这里我们依赖默认的继承行为，通常已经足够，因为 codeblockDecoration 已经应用了背景。
+    // 如果必须强制代码块内为等宽字体，请使用 builders 参数。
+
+    // --- 列表 ---
+    listBullet: TextStyle(
+      color: colors.mutedForeground,
+      fontSize: fs(baseStyle),
+    ),
+
+    // --- 引用块 (Blockquote) ---
+    blockquote: (typography.blockquote).copyWith(
+      color: colors.mutedForeground,
+      fontStyle: FontStyle.italic,
+    ),
+    blockquoteDecoration: BoxDecoration(
+      border: Border(
+        left: BorderSide(
+          color: colors.border,
+          width: 4,
+        ),
+      ),
+      color: colors.muted.withOpacity(0.2),
+    ),
+    blockquotePadding: const EdgeInsets.only(left: 16, top: 4, bottom: 4),
+
+    // --- 表格 ---
+    tableBody: baseStyle,
+    tableHead: baseStyle.copyWith(fontWeight: FontWeight.bold),
+    tableCellsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    tableBorder: TableBorder(
+      bottom: BorderSide(color: colors.border),
+      horizontalInside: BorderSide(color: colors.border),
+      verticalInside: BorderSide(color: colors.border),
+    ),
+
+    // --- 其他 ---
+    horizontalRuleDecoration: BoxDecoration(
+      border: Border(bottom: BorderSide(color: colors.border)),
+    ),
+  );
 }

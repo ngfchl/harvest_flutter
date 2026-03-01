@@ -123,8 +123,8 @@ class NoticeHistory {
   factory NoticeHistory.fromJson(Map<String, dynamic> json) {
     return NoticeHistory(
       id: json['id'] as int,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+      updatedAt: DateTime.parse(json['updated_at'] as String).toLocal(),
       title: json['title'] as String,
       content: json['content'] as String,
       url: json['url'] as String?,
