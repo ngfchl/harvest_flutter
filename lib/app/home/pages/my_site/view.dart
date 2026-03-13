@@ -3358,6 +3358,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         CustomTextField(
                           controller: nicknameController,
                           labelText: '站点昵称',
+                          maxLength: 64,
                         ),
 
                         CustomTextField(
@@ -3386,8 +3387,10 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
                         ),
                         CustomTextField(
                           controller: apiKeyController,
-                          maxLength: 128,
+                          maxLength: 512,
+                          maxLines: 5,
                           labelText: 'AuthKey',
+                          scrollPhysics: const BouncingScrollPhysics(),
                         ),
                         CustomTextField(
                           controller: userAgentController,
