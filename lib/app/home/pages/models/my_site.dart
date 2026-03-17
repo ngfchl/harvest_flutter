@@ -212,10 +212,10 @@ class MySite {
         .map((key, value) => MapEntry(key, SignInInfo.fromJson(value as Map<String, dynamic>)));
 
     Map<String, StatusInfo> statusInfo = (json['status'] as Map<String, dynamic>? ?? {}).map((key, value) {
-      if (value['updated_at'] == null || value['updated_at'].isEmpty) {
+      if (value['updated_at'] == null || value['updated_at'].toString().isEmpty) {
         value['updated_at'] = DateTime.parse(key).toString();
       }
-      if (value['created_at'] == null || value['created_at'].isEmpty) {
+      if (value['created_at'] == null || value['created_at'].toString().isEmpty) {
         value['created_at'] = DateTime.parse(key).toString();
       }
       return MapEntry(key, StatusInfo.fromJson(value as Map<String, dynamic>));
