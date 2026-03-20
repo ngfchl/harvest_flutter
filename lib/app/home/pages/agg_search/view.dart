@@ -1103,7 +1103,7 @@ class _AggSearchPageState extends State<AggSearchPage> with AutomaticKeepAliveCl
         : website.logo.startsWith("http")
             ? website.logo
             : '${mySite.mirror}${website.logo}';
-    info.siteId = mySite.id.toString();
+    info.siteId = mySite.site.toString();
     var shadColorScheme = ShadTheme.of(context).colorScheme;
     String iconUrl = '${controller.baseUrl}/local/icons/${website.name}.png';
     return InkWell(
