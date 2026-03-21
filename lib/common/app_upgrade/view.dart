@@ -520,9 +520,9 @@ class AppUpgradePage extends StatelessWidget {
         final result = await Process.run('uname', ['-m']);
         final arch = result.stdout.toString().trim();
         if (arch == 'arm64') {
-          appUpgradeController.newVersion = '${prefix}_arm64-macos.dmg';
+          appUpgradeController.newVersion = '${prefix}_arm64-macos.pkg';
         } else {
-          appUpgradeController.newVersion = '${prefix}_x86_64-macos.dmg';
+          appUpgradeController.newVersion = '${prefix}_x86_64-macos.pkg';
         }
         // String? savedPath = await FilePicker.platform.saveFile(
         //   dialogTitle: '保存安装包',
