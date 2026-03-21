@@ -532,49 +532,11 @@ class AppUpgradePage extends StatelessWidget {
         // );
         String savedPath = "${appDocDir.path}/${appUpgradeController.newVersion}";
         await _downloadInstallationPackage(savedPath, appUpgradeController.newVersion, cancelToken);
-        var res = await Process.run('xattr', ['-d', 'com.apple.quarantine', savedPath]);
-        Logger.instance.i('✅ Removed quarantine from $savedPath  === ${res.stdout} === ${res.stderr}');
-
-        if (res.exitCode == 0) {
-          Future.delayed(Duration(seconds: 1), () async {
-            await Process.run('open', [savedPath]);
-          });
-          return null;
-        }
-        String command = 'xattr -d com.apple.quarantine $savedPath && open $savedPath';
-        Get.defaultDialog(
-          title: '更新提示',
-          backgroundColor: shadColorScheme.background,
-          radius: 8,
-          titleStyle: TextStyle(color: shadColorScheme.foreground, fontSize: 16),
-          content: Text('去除苹果系统安全限制失败，\n请点击复制命令并在终端中执行',
-              style: TextStyle(
-                color: shadColorScheme.foreground,
-                fontSize: 14,
-              )),
-          actions: [
-            ShadButton.ghost(
-              onPressed: () => Get.back(),
-              child: Text('关闭'),
-            ),
-            ShadButton.destructive(
-              size: ShadButtonSize.sm,
-              onPressed: () async {
-                Clipboard.setData(ClipboardData(text: command));
-                ShadToaster.of(context).show(
-                  ShadToast(title: const Text('成功啦'), description: Text('命令已复制到剪贴板！')),
-                );
-                var r = await Process.run('open', ['/System/Applications/Utilities/Terminal.app']);
-                Logger.instance.i('✅ Opened Terminal === ${r.exitCode} === ${r.stderr}');
-                Logger.instance.i('✅ kDebugMode $kDebugMode ');
-                if (!kDebugMode) {
-                  exit(0);
-                }
-              },
-              child: Text('复制'),
-            ),
-          ],
-        );
+        Future.delayed(Duration(seconds: 1), () async {
+          var res = await Process.run('open', [savedPath]);
+          Logger.instance.i('✅ Removed quarantine from $savedPath  === ${res.stdout} === ${res.stderr}');
+        });
+        return null;
       } catch (e, stackTrace) {
         if (cancelToken.isCancelled) return null;
         String message = '打开安装包失败 ❌ $e';
