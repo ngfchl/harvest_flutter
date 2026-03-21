@@ -197,571 +197,667 @@ class FileManagePage extends StatelessWidget {
         builder: (controller) {
           return RepaintBoundary(
             child: CustomCard(
-              child: Slidable(
-                key: ValueKey(item.path),
-                startActionPane: ActionPane(
-                  motion: const ScrollMotion(),
-                  extentRatio: 0.25,
-                  children: [
-                    SlidableAction(
-                      flex: 1,
-                      // padding: EdgeInsets.all(8),
-                      icon: Icons.delete_outline,
-                      borderRadius:
-                          const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
-                      onPressed: (context) async {
-                        TextEditingController nameController = TextEditingController(text: item.name);
-                        RxBool renameSource = false.obs;
-                        Get.defaultDialog(
-                          title: '重命名',
-                          radius: 5,
-                          titleStyle:
-                              const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
-                          middleText: '确定要重新命名吗？',
-                          backgroundColor: shadColorScheme.background,
-                          content: Column(
-                            children: [
-                              CustomTextField(controller: nameController, labelText: "重命名为"),
-                              Obx(() {
-                                return SwitchTile(
-                                    title: '重命名源文件',
-                                    value: renameSource.value,
-                                    onChanged: (v) => renameSource.value = v);
-                              }),
-                            ],
-                          ),
-                          actions: [
-                            ShadButton.outline(
-                              onPressed: () {
-                                Get.back(result: false);
-                              },
-                              child: const Text('取消'),
-                            ),
-                            ShadButton.destructive(
-                              onPressed: () async {
-                                CommonResponse res = await controller.editSource(item.path, nameController.text,
-                                    renameSource: renameSource.value);
-                                if (res.succeed) {
-                                  ShadToaster.of(buildContext).show(
-                                    ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
-                                  );
-                                  Get.back(result: true);
-                                  await controller.initSourceData(noCache: true);
-                                } else {
-                                  ShadToaster.of(buildContext).show(
-                                    ShadToast.destructive(
-                                      title: const Text('出错啦'),
-                                      description: Text(res.msg),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: const Text('确认'),
-                            ),
-                          ],
-                        );
-                      },
-                      backgroundColor: const Color(0xFF0A9D96),
-                      foregroundColor: Colors.white,
-                      label: '重命名',
-                    ),
-                  ],
+              child: ShadContextMenuRegion(
+                decoration: ShadDecoration(
+                  labelStyle: TextStyle(),
+                  descriptionStyle: TextStyle(),
                 ),
-                endActionPane: ActionPane(
-                  motion: const ScrollMotion(),
-                  extentRatio: 0.25,
-                  children: [
-                    SlidableAction(
-                      flex: 1,
-                      icon: Icons.delete_outline,
-                      borderRadius:
-                          const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
-                      onPressed: (context) async {
-                        RxBool deleteSource = false.obs;
-
-                        Get.defaultDialog(
-                          title: '确认',
-                          radius: 5,
-                          titleStyle:
-                              const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
-                          content: Obx(() {
-                            return SwitchTile(
-                                title: '删除源文件', value: deleteSource.value, onChanged: (v) => deleteSource.value = v);
-                          }),
-                          actions: [
-                            ShadButton.outline(
-                              onPressed: () {
-                                Get.back(result: false);
-                              },
-                              child: Text(
-                                '取消',
-                                style: TextStyle(color: shadColorScheme.destructiveForeground),
-                              ),
-                            ),
-                            ShadButton.destructive(
-                              onPressed: () async {
-                                Get.back(result: true);
-                                CommonResponse res =
-                                    await controller.removeSource(item.path, deleteSource: deleteSource.value);
-                                if (res.succeed) {
-                                  ShadToaster.of(context).show(
-                                    ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
-                                  );
-                                  var r = controller.items.remove(item);
-                                  Logger.instance.d(r);
-                                  controller.update(["file_manage"]);
-                                  await controller.initSourceData(noCache: true);
-                                } else {
-                                  ShadToaster.of(context).show(
-                                    ShadToast.destructive(
-                                      title: const Text('出错啦'),
-                                      description: Text(res.msg),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: const Text('确认'),
-                            ),
-                          ],
-                        );
-                      },
-                      backgroundColor: const Color(0xFFFE4A49),
-                      foregroundColor: Colors.white,
-                      // icon: Icons.delete,
-                      label: '删除',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 100),
+                items: [
+                  if (item.isDir) ...[
+                    ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.hardware_outlined,
+                        color: shadColorScheme.foreground,
+                      ),
+                      child: Text(style: TextStyle(fontSize: 12), '硬链接'),
+                      onPressed: () => doHardlink(shadColorScheme, item, buildContext),
                     ),
+                    ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.edit_outlined,
+                        color: shadColorScheme.foreground,
+                      ),
+                      child: Text(style: TextStyle(fontSize: 12), '做种查询'),
+                      onPressed: () => doFileAction(item.path, 'search_seed'),
+                    ),
+                    ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.live_tv_outlined,
+                        color: shadColorScheme.foreground,
+                      ),
+                      child: Text(style: TextStyle(fontSize: 12), '剧集刮削'),
+                      onPressed: () => tvScraper(shadColorScheme, item, buildContext),
+                    ),
+                    ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.movie_creation_outlined,
+                        color: shadColorScheme.foreground,
+                      ),
+                      child: Text(style: TextStyle(fontSize: 12), '电影刮削'),
+                      onPressed: () => movieScraper(shadColorScheme, item, buildContext),
+                    ),
+                    const Divider(height: 5),
                   ],
-                ),
-                child: ListTile(
-                  title: EllipsisText(
-                    text: item.name,
-                    ellipsis: '...',
-                    maxLines: 2,
-                    style: TextStyle(
-                      fontSize: 12,
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.drive_file_rename_outline_outlined,
                       color: shadColorScheme.foreground,
                     ),
+                    child: Text(style: TextStyle(fontSize: 12), '重命名'),
+                    onPressed: () => renameSource(item, shadColorScheme, buildContext),
                   ),
-                  subtitle: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        item.modified,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: shadColorScheme.foreground,
-                        ),
+                  ShadContextMenuItem(
+                    leading: Icon(
+                      size: 14,
+                      Icons.delete_outline,
+                      color: shadColorScheme.foreground,
+                    ),
+                    child: Text(style: TextStyle(fontSize: 12), '删除'),
+                    onPressed: () => removeSource(shadColorScheme, item, buildContext),
+                  ),
+                  if (!item.isDir) ...[
+                    const Divider(height: 5),
+                    ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.download_outlined,
+                        color: shadColorScheme.foreground,
                       ),
-                      if (!item.isDir)
+                      child: Text(style: TextStyle(fontSize: 12), '下载'),
+                      onPressed: () => downloadSource(item, buildContext),
+                    ),
+                    ShadContextMenuItem(
+                      leading: Icon(
+                        size: 14,
+                        Icons.open_in_browser_outlined,
+                        color: shadColorScheme.foreground,
+                      ),
+                      child: Text(style: TextStyle(fontSize: 12), '打开'),
+                      onPressed: () => openSource(item, buildContext, shadColorScheme),
+                    ),
+                  ],
+                ],
+                child: Slidable(
+                  key: ValueKey(item.path),
+                  startActionPane: ActionPane(
+                    motion: const ScrollMotion(),
+                    extentRatio: 0.25,
+                    children: [
+                      SlidableAction(
+                        flex: 1,
+                        // padding: EdgeInsets.all(8),
+                        icon: Icons.delete_outline,
+                        borderRadius:
+                            const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                        onPressed: (context) => renameSource(item, shadColorScheme, buildContext),
+                        backgroundColor: const Color(0xFF0A9D96),
+                        foregroundColor: Colors.white,
+                        label: '重命名',
+                      ),
+                    ],
+                  ),
+                  endActionPane: ActionPane(
+                    motion: const ScrollMotion(),
+                    extentRatio: 0.25,
+                    children: [
+                      SlidableAction(
+                        flex: 1,
+                        icon: Icons.delete_outline,
+                        borderRadius:
+                            const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                        onPressed: (context) => removeSource(shadColorScheme, item, context),
+                        backgroundColor: const Color(0xFFFE4A49),
+                        foregroundColor: Colors.white,
+                        // icon: Icons.delete,
+                        label: '删除',
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    title: EllipsisText(
+                      text: item.name,
+                      ellipsis: '...',
+                      maxLines: 2,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: shadColorScheme.foreground,
+                      ),
+                    ),
+                    subtitle: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
                         Text(
-                          FileSizeConvert.parseToFileSize(item.size),
+                          item.modified,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             color: shadColorScheme.foreground,
                           ),
                         ),
-                    ],
-                  ),
-                  trailing: CircleAvatar(
-                    backgroundColor: Colors.transparent,
-                    child: buildItemWidget(item, shadColorScheme),
-                  ),
-                  onLongPress: () {
-                    Get.defaultDialog(
-                      title: '常用操作',
-                      titleStyle: TextStyle(color: shadColorScheme.foreground),
-                      backgroundColor: shadColorScheme.background,
-                      content: Wrap(
-                        alignment: WrapAlignment.spaceAround,
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: [
-                          //  ShadButton.ghost(
-                          //   onPressed: () async {},
-                          //   icon: Icon(Icons.open_in_new, color: shadColorScheme.foreground,
-                          //                     size: 16,),
-                          //   label: Text("打开目录"),
-                          // ),
-                          if (item.isDir) ...[
-                            ShadButton.ghost(
-                              onPressed: () async {
-                                Get.back();
-                                RxBool unlinkExisting = false.obs;
-                                Get.defaultDialog(
-                                  title: '硬链接',
-                                  backgroundColor: shadColorScheme.background,
-                                  radius: 10,
-                                  content: Obx(() {
-                                    return SwitchTile(
-                                        title: '重建',
-                                        value: unlinkExisting.value,
-                                        onChanged: (v) => unlinkExisting.value = v);
-                                  }),
-                                  actions: [
-                                    ShadButton.ghost(
-                                      onPressed: () {
-                                        Get.back();
-                                      },
-                                      child: const Text('取消'),
-                                    ),
-                                    ShadButton.destructive(
-                                      onPressed: () async {
-                                        Get.back();
-                                        CommonResponse res = await controller.hardLinkSource(item.path,
-                                            unlinkExisting: unlinkExisting.value);
-
-                                        ShadToaster.of(buildContext).show(
-                                          res.succeed
-                                              ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
-                                              : ShadToast.destructive(
-                                                  title: const Text('出错啦'), description: Text(res.msg)),
-                                        );
-                                      },
-                                      child: Obx(() {
-                                        return Text(unlinkExisting.value ? '重建' : '确认');
-                                      }),
-                                    ),
-                                  ],
-                                );
-                              },
-                              leading: Icon(
-                                Icons.movie_filter_outlined,
-                                color: shadColorScheme.foreground,
-                                size: 16,
-                              ),
-                              child: Tooltip(message: item.path, child: Text("硬链接")),
-                            ),
-                            ShadButton.ghost(
-                              onPressed: () async {
-                                Get.back();
-                                controller.isLoading = true;
-                                controller.update(['file_manage']);
-                                var response = await getTMDBMatchMovieApi(item.name);
-                                controller.isLoading = false;
-                                controller.update(['file_manage']);
-                                if (!response.succeed) {
-                                  ShadToaster.of(buildContext).show(
-                                    ShadToast.destructive(
-                                      title: const Text('出错啦'),
-                                      description: Text(response.msg),
-                                    ),
-                                  );
-                                  return;
-                                }
-                                if (response.data != null && response.data!.isEmpty) {
-                                  ShadToaster.of(buildContext).show(
-                                    ShadToast.destructive(
-                                      title: const Text('出错啦'),
-                                      description: Text('未查询到相关影视信息！'),
-                                    ),
-                                  );
-                                  return;
-                                }
-                                Logger.instance.d(response.data);
-                                Get.defaultDialog(
-                                  title: '影视信息查询结果',
-                                  titleStyle: TextStyle(color: shadColorScheme.foreground),
-                                  backgroundColor: shadColorScheme.background,
-                                  content: SizedBox(
-                                    height: 500,
-                                    width: double.maxFinite,
-                                    child: ListView.builder(
-                                        shrinkWrap: true, // 👈 关键，避免无限高度
-                                        itemCount: response.data is List ? response.data!.length : 0,
-                                        itemBuilder: (context, index) {
-                                          MediaItem media = MediaItem.fromJson(response.data![index]);
-                                          return MediaItemCard(
-                                            media: media,
-                                            onDetail: (media) {},
-                                            onSearch: (media) async {},
-                                            onTap: () {
-                                              Get.defaultDialog(
-                                                backgroundColor: shadColorScheme.background,
-                                                radius: 10,
-                                                title: "写入刮削信息中...",
-                                                titleStyle: TextStyle(fontSize: 16, color: shadColorScheme.foreground),
-                                                content: Text("是否确认写入刮削信息？"),
-                                                confirm: ShadButton.destructive(
-                                                  size: ShadButtonSize.sm,
-                                                  child: Text("确定"),
-                                                  onPressed: () async {
-                                                    Get.back();
-                                                    var response =
-                                                        await controller.writeScrapeInfoApi(item.path, media);
-                                                    if (!response.succeed) {
-                                                      ShadToaster.of(buildContext).show(
-                                                        ShadToast.destructive(
-                                                          title: const Text('出错啦'),
-                                                          description: Text(response.msg),
-                                                        ),
-                                                      );
-                                                    } else {
-                                                      ShadToaster.of(buildContext).show(
-                                                        ShadToast(
-                                                            title: const Text('成功啦'), description: Text(response.msg)),
-                                                      );
-                                                    }
-                                                  },
-                                                ),
-                                                cancel: ShadButton.outline(
-                                                  size: ShadButtonSize.sm,
-                                                  child: Text("取消"),
-                                                  onPressed: () {
-                                                    Get.back();
-                                                  },
-                                                ),
-                                              );
-                                            },
-                                          );
-                                        }),
-                                  ),
-                                );
-                              },
-                              leading: Icon(
-                                Icons.movie_filter_outlined,
-                                color: shadColorScheme.foreground,
-                                size: 16,
-                              ),
-                              child: Text("电影刮削"),
-                            ),
-                            ShadButton.ghost(
-                              onPressed: () async {
-                                Get.back();
-                                controller.isLoading = true;
-                                controller.update(['file_manage']);
-                                var response = await getTMDBMatchTvApi(item.name);
-                                controller.isLoading = false;
-                                controller.update(['file_manage']);
-                                if (!response.succeed) {
-                                  ShadToaster.of(buildContext).show(
-                                    ShadToast.destructive(
-                                      title: const Text('出错啦'),
-                                      description: Text(response.msg),
-                                    ),
-                                  );
-                                  return;
-                                }
-                                if (response.data!.isEmpty) {
-                                  ShadToaster.of(buildContext).show(
-                                    ShadToast.destructive(
-                                      title: const Text('出错啦'),
-                                      description: Text('未查询到相关影视信息！'),
-                                    ),
-                                  );
-                                  return;
-                                }
-                                Logger.instance.d(response.data);
-                                Get.defaultDialog(
-                                    title: '影视信息查询结果',
-                                    titleStyle: TextStyle(color: shadColorScheme.foreground, fontSize: 16),
-                                    backgroundColor: shadColorScheme.background,
-                                    content: SizedBox(
-                                        height: 500,
-                                        width: double.maxFinite,
-                                        child: ListView.builder(
-                                            shrinkWrap: true, // 👈 关键，避免无限高度
-                                            itemCount: response.data is List ? response.data!.length : 0,
-                                            itemBuilder: (context, index) {
-                                              MediaItem media = MediaItem.fromJson(response.data![index]);
-                                              return MediaItemCard(
-                                                media: media,
-                                                onDetail: (media) {},
-                                                onSearch: (media) async {},
-                                                onTap: () async {
-                                                  Get.defaultDialog(
-                                                    title: "写入刮削信息中...",
-                                                    content: Text("是否确认写入刮削信息？"),
-                                                    onConfirm: () async {
-                                                      Get.back();
-                                                      var response =
-                                                          await controller.writeScrapeInfoApi(item.path, media);
-                                                      if (!response.succeed) {
-                                                        ShadToaster.of(buildContext).show(
-                                                          ShadToast.destructive(
-                                                            title: const Text('出错啦'),
-                                                            description: Text(response.msg),
-                                                          ),
-                                                        );
-                                                      } else {
-                                                        ShadToaster.of(buildContext).show(
-                                                          ShadToast(
-                                                              title: const Text('成功啦'),
-                                                              description: Text(response.msg)),
-                                                        );
-                                                      }
-                                                    },
-                                                    onCancel: () async {
-                                                      Get.back();
-                                                    },
-                                                  );
-                                                },
-                                              );
-                                            })));
-                              },
-                              leading: Icon(
-                                Icons.movie_filter_outlined,
-                                color: shadColorScheme.foreground,
-                                size: 16,
-                              ),
-                              child: Text("电视剧刮削"),
-                            ),
-                          ],
-                          ShadButton.ghost(
-                            onPressed: () async {
-                              doFileAction(item.path, 'search_seed');
-                            },
-                            leading: Icon(
-                              Icons.local_movies_outlined,
+                        if (!item.isDir)
+                          Text(
+                            FileSizeConvert.parseToFileSize(item.size),
+                            style: TextStyle(
+                              fontSize: 12,
                               color: shadColorScheme.foreground,
-                              size: 16,
                             ),
-                            child: Text("做种查询"),
                           ),
-                          ShadButton.ghost(
-                            onPressed: () async {
-                              CommonResponse res = await controller.getFileSourceUrl(item.path);
-                              if (res.succeed) {
-                                await pickAndDownload(res.data, buildContext);
-                              }
-                            },
-                            leading: Icon(
-                              Icons.download_outlined,
-                              color: shadColorScheme.foreground,
-                              size: 16,
-                            ),
-                            child: Text("下载"),
-                          ),
-                          // ShadButton.ghost(
-                          //   onPressed: () async {
-                          //     doFileAction(item.path, 'hard_link', newFileName: "newFileName");
-                          //   },
-                          //   leading: Icon(Icons.hardware,color: shadColorScheme.foreground,
-                          //                     size: 16,),
-                          //   child: Text("硬链接"),
-                          // ),
-                          if (!item.isDir)
-                            ShadButton.ghost(
-                              onPressed: () async {
-                                Logger.instance.d('文件后缀名：${item.ext}，文件类型：${item.mimeType}');
-                                CommonResponse res = await controller.getFileSourceUrl(item.path);
-                                Logger.instance.d(res.toString());
-                                if (res.succeed) {
-                                  Clipboard.setData(ClipboardData(text: res.data));
-                                  if (item.mimeType?.startsWith('image') == true) {
-                                    showImage(res.data, buildContext);
-                                  } else if (item.mimeType?.startsWith('video') == true) {
-                                    showPlayer(res.data, buildContext);
-                                  } else if (item.mimeType?.startsWith('audio') == true) {
-                                    showPlayer(res.data, buildContext);
-                                  } else {
-                                    Get.defaultDialog(
-                                      title: '文件操作',
-                                      backgroundColor: shadColorScheme.background,
-                                      content: Wrap(
-                                        alignment: WrapAlignment.spaceAround,
-                                        spacing: 10,
-                                        runSpacing: 10,
-                                        children: [
-                                          ShadButton.ghost(
-                                            onPressed: () async {
-                                              await pickAndDownload(res.data, buildContext);
-                                            },
-                                            leading: Icon(Icons.download_outlined,
-                                                size: 16, color: shadColorScheme.foreground),
-                                            child: Text(
-                                              "下载",
-                                              style: TextStyle(color: shadColorScheme.foreground),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }
-                                } else {
-                                  ShadToaster.of(buildContext).show(
-                                    ShadToast.destructive(
-                                      title: const Text('提示'),
-                                      description: Text(res.msg),
-                                    ),
-                                  );
-                                }
-                              },
-                              leading: Icon(
-                                Icons.hardware,
-                                color: shadColorScheme.foreground,
-                                size: 16,
-                              ),
-                              child: Text("打开"),
-                            ),
-                        ],
-                      ),
-                    );
-                  },
-                  onTap: () async {
-                    if (item.isDir) {
-                      controller.isLoading = true;
-                      controller.update(['file_manage']);
-                      controller.currentPath = item.path;
-                      CommonResponse response = await controller.initSourceData();
-                      if (!response.succeed) {
-                        ShadToaster.of(buildContext).show(ShadToast(description: Text(response.msg)));
-                      }
-                    } else {
-                      Logger.instance.d('文件后缀名：${item.ext}，文件类型：${item.mimeType}');
-                      CommonResponse res = await controller.getFileSourceUrl(item.path);
-                      Logger.instance.d(res.toString());
-                      if (res.succeed) {
-                        Clipboard.setData(ClipboardData(text: res.data));
-                        if (item.mimeType?.startsWith('image') == true) {
-                          showImage(res.data, buildContext);
-                        } else if (item.mimeType?.startsWith('video') == true ||
-                            item.mimeType?.startsWith('audio') == true) {
-                          Get.dialog(CustomCard(
-                              child: VideoPlayerPage(
-                            initialUrl: res.data,
-                          )));
-                        } else {
-                          Get.defaultDialog(
-                            title: '文件操作',
-                            titleStyle: TextStyle(
-                              color: shadColorScheme.foreground,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            backgroundColor: shadColorScheme.background,
-                            content: Wrap(
-                              alignment: WrapAlignment.spaceAround,
-                              spacing: 10,
-                              runSpacing: 10,
-                              children: [
-                                ShadButton.ghost(
-                                  size: ShadButtonSize.sm,
-                                  onPressed: () async {
-                                    await pickAndDownload(res.data, buildContext);
-                                  },
-                                  leading: Icon(
-                                    Icons.download_outlined,
-                                    color: shadColorScheme.foreground,
-                                    size: 16,
-                                  ),
-                                  child: Text("下载", style: TextStyle(color: shadColorScheme.foreground)),
-                                ),
-                              ],
-                            ),
-                          );
+                      ],
+                    ),
+                    trailing: CircleAvatar(
+                      backgroundColor: Colors.transparent,
+                      child: buildItemWidget(item, shadColorScheme),
+                    ),
+                    // onLongPress: () {
+                    //   Get.defaultDialog(
+                    //     title: '常用操作',
+                    //     titleStyle: TextStyle(color: shadColorScheme.foreground),
+                    //     backgroundColor: shadColorScheme.background,
+                    //     content: Wrap(
+                    //       alignment: WrapAlignment.spaceAround,
+                    //       spacing: 10,
+                    //       runSpacing: 10,
+                    //       children: [
+                    //         //  ShadButton.ghost(
+                    //         //   onPressed: () async {},
+                    //         //   icon: Icon(Icons.open_in_new, color: shadColorScheme.foreground,
+                    //         //                     size: 16,),
+                    //         //   label: Text("打开目录"),
+                    //         // ),
+                    //         if (item.isDir) ...[
+                    //           ShadButton.ghost(
+                    //             onPressed: () async {
+                    //               Get.back();
+                    //               hard_link(shadColorScheme, controller, item, buildContext);
+                    //             },
+                    //             leading: Icon(
+                    //               Icons.movie_filter_outlined,
+                    //               color: shadColorScheme.foreground,
+                    //               size: 16,
+                    //             ),
+                    //             child: Tooltip(message: item.path, child: Text("硬链接")),
+                    //           ),
+                    //           ShadButton.ghost(
+                    //             onPressed: () async {
+                    //               Get.back();
+                    //               movieScraper(shadColorScheme, controller, item, buildContext);
+                    //             },
+                    //             leading: Icon(
+                    //               Icons.movie_filter_outlined,
+                    //               color: shadColorScheme.foreground,
+                    //               size: 16,
+                    //             ),
+                    //             child: Text("电影刮削"),
+                    //           ),
+                    //           ShadButton.ghost(
+                    //             onPressed: () async {
+                    //               Get.back();
+                    //               tvScraper(shadColorScheme, controller, item, buildContext);
+                    //             },
+                    //             leading: Icon(
+                    //               Icons.movie_filter_outlined,
+                    //               color: shadColorScheme.foreground,
+                    //               size: 16,
+                    //             ),
+                    //             child: Text("电视剧刮削"),
+                    //           ),
+                    //         ],
+                    //         ShadButton.ghost(
+                    //           onPressed: () async {
+                    //             doFileAction(item.path, 'search_seed');
+                    //           },
+                    //           leading: Icon(
+                    //             Icons.local_movies_outlined,
+                    //             color: shadColorScheme.foreground,
+                    //             size: 16,
+                    //           ),
+                    //           child: Text("做种查询"),
+                    //         ),
+                    //         ShadButton.ghost(
+                    //           onPressed: () => downloadSource(controller, item, buildContext),
+                    //           leading: Icon(
+                    //             Icons.download_outlined,
+                    //             color: shadColorScheme.foreground,
+                    //             size: 16,
+                    //           ),
+                    //           child: Text("下载"),
+                    //         ),
+                    //         // ShadButton.ghost(
+                    //         //   onPressed: () async {
+                    //         //     doFileAction(item.path, 'hard_link', newFileName: "newFileName");
+                    //         //   },
+                    //         //   leading: Icon(Icons.hardware,color: shadColorScheme.foreground,
+                    //         //                     size: 16,),
+                    //         //   child: Text("硬链接"),
+                    //         // ),
+                    //         if (!item.isDir)
+                    //           ShadButton.ghost(
+                    //             onPressed: () => openSource(item, controller, buildContext, shadColorScheme),
+                    //             leading: Icon(
+                    //               Icons.hardware,
+                    //               color: shadColorScheme.foreground,
+                    //               size: 16,
+                    //             ),
+                    //             child: Text("打开"),
+                    //           ),
+                    //       ],
+                    //     ),
+                    //   );
+                    // },
+                    onTap: () async {
+                      if (item.isDir) {
+                        controller.isLoading = true;
+                        controller.update(['file_manage']);
+                        controller.currentPath = item.path;
+                        CommonResponse response = await controller.initSourceData();
+                        if (!response.succeed) {
+                          ShadToaster.of(buildContext).show(ShadToast(description: Text(response.msg)));
                         }
                       } else {
-                        ShadToaster.of(buildContext).show(
-                          ShadToast(title: const Text('提示'), description: Text(res.msg)),
-                        );
+                        Logger.instance.d('文件后缀名：${item.ext}，文件类型：${item.mimeType}');
+                        CommonResponse res = await controller.getFileSourceUrl(item.path);
+                        Logger.instance.d(res.toString());
+                        if (res.succeed) {
+                          Clipboard.setData(ClipboardData(text: res.data));
+                          if (item.mimeType?.startsWith('image') == true) {
+                            showImage(res.data, buildContext);
+                          } else if (item.mimeType?.startsWith('video') == true ||
+                              item.mimeType?.startsWith('audio') == true) {
+                            Get.dialog(CustomCard(
+                                child: VideoPlayerPage(
+                              initialUrl: res.data,
+                            )));
+                          } else {
+                            Get.defaultDialog(
+                              title: '文件操作',
+                              titleStyle: TextStyle(
+                                color: shadColorScheme.foreground,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              backgroundColor: shadColorScheme.background,
+                              content: Wrap(
+                                alignment: WrapAlignment.spaceAround,
+                                spacing: 10,
+                                runSpacing: 10,
+                                children: [
+                                  ShadButton.ghost(
+                                    size: ShadButtonSize.sm,
+                                    onPressed: () async {
+                                      await pickAndDownload(res.data, buildContext);
+                                    },
+                                    leading: Icon(
+                                      Icons.download_outlined,
+                                      color: shadColorScheme.foreground,
+                                      size: 16,
+                                    ),
+                                    child: Text("下载", style: TextStyle(color: shadColorScheme.foreground)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        } else {
+                          ShadToaster.of(buildContext).show(
+                            ShadToast(title: const Text('提示'), description: Text(res.msg)),
+                          );
+                        }
                       }
-                    }
-                  },
+                    },
+                  ),
                 ),
               ),
             ),
           );
         });
+  }
+
+  Future<void> openSource(SourceItemView item, BuildContext buildContext, ShadColorScheme shadColorScheme) async {
+    Logger.instance.d('文件后缀名：${item.ext}，文件类型：${item.mimeType}');
+    CommonResponse res = await controller.getFileSourceUrl(item.path);
+    Logger.instance.d(res.toString());
+    if (res.succeed) {
+      Clipboard.setData(ClipboardData(text: res.data));
+      if (item.mimeType?.startsWith('image') == true) {
+        showImage(res.data, buildContext);
+      } else if (item.mimeType?.startsWith('video') == true) {
+        showPlayer(res.data, buildContext);
+      } else if (item.mimeType?.startsWith('audio') == true) {
+        showPlayer(res.data, buildContext);
+      } else {
+        Get.defaultDialog(
+          title: '文件操作',
+          backgroundColor: shadColorScheme.background,
+          content: Wrap(
+            alignment: WrapAlignment.spaceAround,
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              ShadButton.ghost(
+                size: ShadButtonSize.sm,
+                onPressed: () async {
+                  await pickAndDownload(res.data, buildContext);
+                },
+                leading: Icon(Icons.download_outlined, size: 16, color: shadColorScheme.foreground),
+                child: Text(
+                  "下载",
+                  style: TextStyle(color: shadColorScheme.foreground),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    } else {
+      ShadToaster.of(buildContext).show(
+        ShadToast.destructive(
+          title: const Text('提示'),
+          description: Text(res.msg),
+        ),
+      );
+    }
+  }
+
+  Future<void> downloadSource(SourceItemView item, BuildContext buildContext) async {
+    CommonResponse res = await controller.getFileSourceUrl(item.path);
+    if (res.succeed) {
+      await pickAndDownload(res.data, buildContext);
+    }
+  }
+
+  void tvScraper(ShadColorScheme shadColorScheme, SourceItemView item, BuildContext buildContext) async {
+    controller.isLoading = true;
+    controller.update(['file_manage']);
+    var response = await getTMDBMatchTvApi(item.name);
+    controller.isLoading = false;
+    controller.update(['file_manage']);
+    if (!response.succeed) {
+      ShadToaster.of(buildContext).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text(response.msg),
+        ),
+      );
+      return;
+    }
+    if (response.data!.isEmpty) {
+      ShadToaster.of(buildContext).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('未查询到相关影视信息！'),
+        ),
+      );
+      return;
+    }
+    Logger.instance.d(response.data);
+    Get.defaultDialog(
+        title: '影视信息查询结果',
+        titleStyle: TextStyle(color: shadColorScheme.foreground, fontSize: 16),
+        backgroundColor: shadColorScheme.background,
+        content: SizedBox(
+            height: 500,
+            width: double.maxFinite,
+            child: ListView.builder(
+                shrinkWrap: true, // 👈 关键，避免无限高度
+                itemCount: response.data is List ? response.data!.length : 0,
+                itemBuilder: (context, index) {
+                  MediaItem media = MediaItem.fromJson(response.data![index]);
+                  return MediaItemCard(
+                    media: media,
+                    onDetail: (media) {},
+                    onSearch: (media) async {},
+                    onTap: () async {
+                      Get.defaultDialog(
+                        title: "写入刮削信息中...",
+                        content: Text("是否确认写入刮削信息？"),
+                        backgroundColor: shadColorScheme.background,
+                        onConfirm: () async {
+                          Get.back();
+                          var response = await controller.writeScrapeInfoApi(item.path, media);
+                          if (!response.succeed) {
+                            ShadToaster.of(buildContext).show(
+                              ShadToast.destructive(
+                                title: const Text('出错啦'),
+                                description: Text(response.msg),
+                              ),
+                            );
+                          } else {
+                            ShadToaster.of(buildContext).show(
+                              ShadToast(title: const Text('成功啦'), description: Text(response.msg)),
+                            );
+                          }
+                        },
+                        onCancel: () async {
+                          Get.back();
+                        },
+                      );
+                    },
+                  );
+                })));
+  }
+
+  void movieScraper(ShadColorScheme shadColorScheme, SourceItemView item, BuildContext buildContext) async {
+    controller.isLoading = true;
+    controller.update(['file_manage']);
+    var response = await getTMDBMatchMovieApi(item.name);
+    controller.isLoading = false;
+    controller.update(['file_manage']);
+    if (!response.succeed) {
+      ShadToaster.of(buildContext).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text(response.msg),
+        ),
+      );
+      return;
+    }
+    if (response.data != null && response.data!.isEmpty) {
+      ShadToaster.of(buildContext).show(
+        ShadToast.destructive(
+          title: const Text('出错啦'),
+          description: Text('未查询到相关影视信息！'),
+        ),
+      );
+      return;
+    }
+    Logger.instance.d(response.data);
+    Get.defaultDialog(
+      title: '影视信息查询结果',
+      titleStyle: TextStyle(color: shadColorScheme.foreground),
+      backgroundColor: shadColorScheme.background,
+      content: SizedBox(
+        height: 500,
+        width: double.maxFinite,
+        child: ListView.builder(
+            shrinkWrap: true, // 👈 关键，避免无限高度
+            itemCount: response.data is List ? response.data!.length : 0,
+            itemBuilder: (context, index) {
+              MediaItem media = MediaItem.fromJson(response.data![index]);
+              return MediaItemCard(
+                media: media,
+                onDetail: (media) {},
+                onSearch: (media) async {},
+                onTap: () {
+                  Get.defaultDialog(
+                    backgroundColor: shadColorScheme.background,
+                    radius: 10,
+                    title: "写入刮削信息中...",
+                    titleStyle: TextStyle(fontSize: 16, color: shadColorScheme.foreground),
+                    content: Text("是否确认写入刮削信息？"),
+                    confirm: ShadButton.destructive(
+                      size: ShadButtonSize.sm,
+                      child: Text("确定"),
+                      onPressed: () async {
+                        Get.back();
+                        var response = await controller.writeScrapeInfoApi(item.path, media);
+                        if (!response.succeed) {
+                          ShadToaster.of(buildContext).show(
+                            ShadToast.destructive(
+                              title: const Text('出错啦'),
+                              description: Text(response.msg),
+                            ),
+                          );
+                        } else {
+                          ShadToaster.of(buildContext).show(
+                            ShadToast(title: const Text('成功啦'), description: Text(response.msg)),
+                          );
+                        }
+                      },
+                    ),
+                    cancel: ShadButton.ghost(
+                      size: ShadButtonSize.sm,
+                      child: Text("取消"),
+                      onPressed: () {
+                        Get.back();
+                      },
+                    ),
+                  );
+                },
+              );
+            }),
+      ),
+    );
+  }
+
+  void doHardlink(ShadColorScheme shadColorScheme, SourceItemView item, BuildContext buildContext) {
+    RxBool unlinkExisting = false.obs;
+    Get.defaultDialog(
+      title: '硬链接',
+      backgroundColor: shadColorScheme.background,
+      radius: 10,
+      content: Obx(() {
+        return SwitchTile(title: '重建', value: unlinkExisting.value, onChanged: (v) => unlinkExisting.value = v);
+      }),
+      actions: [
+        ShadButton.ghost(
+          size: ShadButtonSize.sm,
+          onPressed: () {
+            Get.back();
+          },
+          child: const Text('取消'),
+        ),
+        ShadButton.destructive(
+          size: ShadButtonSize.sm,
+          onPressed: () async {
+            Get.back();
+            CommonResponse res = await controller.hardLinkSource(item.path, unlinkExisting: unlinkExisting.value);
+
+            ShadToaster.of(buildContext).show(
+              res.succeed
+                  ? ShadToast(title: const Text('成功啦'), description: Text(res.msg))
+                  : ShadToast.destructive(title: const Text('出错啦'), description: Text(res.msg)),
+            );
+          },
+          child: Obx(() {
+            return Text(unlinkExisting.value ? '重建' : '确认');
+          }),
+        ),
+      ],
+    );
+  }
+
+  void removeSource(ShadColorScheme shadColorScheme, SourceItemView item, BuildContext context) {
+    RxBool deleteSource = false.obs;
+
+    Get.defaultDialog(
+      title: '确认',
+      radius: 5,
+      backgroundColor: shadColorScheme.background,
+      titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
+      content: Obx(() {
+        return SwitchTile(title: '删除硬链接', value: deleteSource.value, onChanged: (v) => deleteSource.value = v);
+      }),
+      actions: [
+        ShadButton.ghost(
+          size: ShadButtonSize.sm,
+          onPressed: () {
+            Get.back(result: false);
+          },
+          child: Text('取消'),
+        ),
+        ShadButton.destructive(
+          size: ShadButtonSize.sm,
+          onPressed: () async {
+            Get.back(result: true);
+            CommonResponse res = await controller.removeSource(item.path, deleteSource: deleteSource.value);
+            if (res.succeed) {
+              ShadToaster.of(context).show(
+                ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+              );
+              var r = controller.items.remove(item);
+              Logger.instance.d(r);
+              controller.update(["file_manage"]);
+              await controller.initSourceData(noCache: true);
+            } else {
+              ShadToaster.of(context).show(
+                ShadToast.destructive(
+                  title: const Text('出错啦'),
+                  description: Text(res.msg),
+                ),
+              );
+            }
+          },
+          child: const Text('确认'),
+        ),
+      ],
+    );
+  }
+
+  void renameSource(SourceItemView item, ShadColorScheme shadColorScheme, BuildContext buildContext) {
+    TextEditingController nameController = TextEditingController(text: item.name);
+    RxBool renameSource = false.obs;
+    Get.defaultDialog(
+      title: '重命名',
+      radius: 5,
+      titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.deepPurple),
+      middleText: '确定要重新命名吗？',
+      backgroundColor: shadColorScheme.background,
+      content: Column(
+        children: [
+          CustomTextField(controller: nameController, labelText: "重命名为"),
+          Obx(() {
+            return SwitchTile(title: '重命名源文件', value: renameSource.value, onChanged: (v) => renameSource.value = v);
+          }),
+        ],
+      ),
+      actions: [
+        ShadButton.ghost(
+          size: ShadButtonSize.sm,
+          onPressed: () {
+            Get.back(result: false);
+          },
+          child: const Text('取消'),
+        ),
+        ShadButton.destructive(
+          size: ShadButtonSize.sm,
+          onPressed: () async {
+            CommonResponse res =
+                await controller.editSource(item.path, nameController.text, renameSource: renameSource.value);
+            if (res.succeed) {
+              ShadToaster.of(buildContext).show(
+                ShadToast(title: const Text('成功啦'), description: Text(res.msg)),
+              );
+              Get.back(result: true);
+              await controller.initSourceData(noCache: true);
+            } else {
+              ShadToaster.of(buildContext).show(
+                ShadToast.destructive(
+                  title: const Text('出错啦'),
+                  description: Text(res.msg),
+                ),
+              );
+            }
+          },
+          child: const Text('确认'),
+        ),
+      ],
+    );
   }
 
   Widget buildImageItem(String path, ShadColorScheme shadColorScheme, bool isFolder) {
