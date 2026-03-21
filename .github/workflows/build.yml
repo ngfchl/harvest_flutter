@@ -301,13 +301,32 @@ jobs:
              build/macos/Build/Products/Release/harvest.app
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT
+          
+          # --- 2. 生成 PKG (新增逻辑) ---
+          # 创建 payload 目录结构
+          mkdir -p pkg_payload
+          cp -R build/macos/Build/Products/Release/harvest.app pkg_payload/
+          
+          # 执行 pkgbuild
+          # --identifier: 必须唯一，通常用反向域名
+          # --install-location: 安装目标路径 (/Applications)
+          # --version: 版本号
+          pkgbuild \
+            --root pkg_payload \
+            --identifier com.ptools.harvest \
+            --install-location /Applications \
+            --version "$VERSION" \
+            "${FILE_NAME}.pkg"
+          # 验证生成的文件
           ls -l $FILE_NAME.dmg
 
       - name: 发布 macOS x86 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
-          files: ${{ github.workspace }}/${{ steps.build_macos_x86.outputs.file_name }}.dmg
+          files: |
+            ${{ github.workspace }}/${{ steps.build_macos_x86.outputs.file_name }}.dmg
+            ${{ github.workspace }}/${{ steps.build_macos_x86.outputs.file_name }}.pkg
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
           name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
           draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
@@ -354,13 +373,33 @@ jobs:
              build/macos/Build/Products/Release/harvest.app 
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT
+          
+          
+          # --- 2. 生成 PKG (新增逻辑) ---
+          # 创建 payload 目录结构
+          mkdir -p pkg_payload
+          cp -R build/macos/Build/Products/Release/harvest.app pkg_payload/
+          
+          # 执行 pkgbuild
+          # --identifier: 必须唯一，通常用反向域名
+          # --install-location: 安装目标路径 (/Applications)
+          # --version: 版本号
+          pkgbuild \
+            --root pkg_payload \
+            --identifier com.ptools.harvest \
+            --install-location /Applications \
+            --version "$VERSION" \
+            "${FILE_NAME}.pkg"
+          # 验证生成的文件
           ls -l $FILE_NAME.dmg
 
       - name: 发布 macOS arm64 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
-          files: ${{ github.workspace }}/${{ steps.build_macos_arm.outputs.file_name }}.dmg  # 上传 DMG 文件
+          files: |
+            ${{ github.workspace }}/${{ steps.build_macos_arm.outputs.file_name }}.dmg
+            ${{ github.workspace }}/${{ steps.build_macos_arm.outputs.file_name }}.pkg
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
           name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
           draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
@@ -596,6 +635,8 @@ jobs:
             # macOS
             ("harvest_\($v)_x86_64-macos.dmg"): "\($base)/harvest_\($v)_x86_64-macos.dmg",
             ("harvest_\($v)_arm64-macos.dmg"): "\($base)/harvest_\($v)_arm64-macos.dmg",
+            ("harvest_\($v)_x86_64-macos.pkg"): "\($base)/harvest_\($v)_x86_64-macos.pkg",
+            ("harvest_\($v)_arm64-macos.pkg"): "\($base)/harvest_\($v)_arm64-macos.pkg",
           
             # iOS
             ("harvest_\($v)_arm64-ios.ipa"): "\($base)/harvest_\($v)_arm64-ios.ipa",
