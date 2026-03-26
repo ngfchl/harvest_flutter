@@ -15,6 +15,7 @@ import 'package:get/get.dart' hide FormData, MultipartFile;
 import 'package:harvest/app/home/pages/dash_board/controller.dart';
 import 'package:harvest/models/common_response.dart';
 import 'package:harvest/utils/date_time_utils.dart';
+import 'package:harvest/utils/platform.dart';
 import 'package:multi_select_flutter/chip_field/multi_select_chip_field.dart';
 import 'package:multi_select_flutter/util/multi_select_item.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -704,7 +705,7 @@ class _MySitePagePageState extends State<MySitePage> with AutomaticKeepAliveClie
     }
     String url = '${mySite.mirror!.endsWith('/') ? mySite.mirror : '${mySite.mirror}/'}$path';
     if (mySite.mirror!.contains('m-team')) {
-      url = url.replaceFirst("api", "next");
+      url = url.replaceFirst("api", PlatformTool.isDesktopOS() ? "next" : 'h5');
     }
     if (kIsWeb || !openByInnerExplorer) {
       await _goOuterExplorer(url, shadColorScheme);
