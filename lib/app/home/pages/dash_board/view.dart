@@ -2354,9 +2354,9 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                     ),
                     tooltipBehavior: TooltipBehavior(
                       enable: true,
-                      canShowMarker: true,
+                      // canShowMarker: true,
                       // duration: 0,
-                      shouldAlwaysShow: true,
+                      // shouldAlwaysShow: true,
                       activationMode: ActivationMode.singleTap,
                       tooltipPosition: TooltipPosition.auto,
                       builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
@@ -2368,9 +2368,9 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                     .firstWhere(
                                       (d) => d.createdAt.toString().contains(point.x),
                                       orElse: () => TrafficDelta(
-                                          createdAt: DateTime.now(), uploaded: 0, downloaded: null, published: null),
+                                          createdAt: DateTime.now(), uploaded: 0, downloaded: 0, published: 0),
                                     )
-                                    .uploaded,
+                                    .downloaded,
                               ),
                             )
                             .where((item) => item.value > 0)
@@ -2584,7 +2584,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                       enable: true,
                       canShowMarker: true,
                       // duration: 0,
-                      shouldAlwaysShow: true,
+                      // shouldAlwaysShow: true,
                       activationMode: ActivationMode.singleTap,
                       tooltipPosition: TooltipPosition.auto,
                       builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
@@ -2596,9 +2596,9 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                     .firstWhere(
                                       (d) => d.createdAt.toString().contains(point.x),
                                       orElse: () => TrafficDelta(
-                                          createdAt: DateTime.now(), uploaded: 0, downloaded: null, published: null),
+                                          createdAt: DateTime.now(), uploaded: 0, downloaded: 0, published: 0),
                                     )
-                                    .uploaded,
+                                    .published,
                               ),
                             )
                             .where((item) => item.value > 0)
@@ -2632,7 +2632,7 @@ class _DashBoardPageState extends State<DashBoardPage> with AutomaticKeepAliveCl
                                           ),
                                         ),
                                         Text(
-                                          FileSizeConvert.parseToFileSize(item.value),
+                                          item.value.toString(),
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: shadColorScheme.foreground,
