@@ -1,0 +1,126 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'site_info.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_SiteInfo _$SiteInfoFromJson(Map<String, dynamic> json) => _SiteInfo(
+  id: (json['id'] as num?)?.toInt() ?? 0,
+  site: json['site'] as String? ?? '',
+  nickname: json['nickname'] as String? ?? '',
+  sortId: (json['sort_id'] as num?)?.toInt() ?? 0,
+  tags:
+      (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+      const [],
+  userId: json['user_id'] as String?,
+  username: json['username'] as String?,
+  email: json['email'] as String?,
+  passkey: json['passkey'] as String?,
+  authkey: json['authkey'] as String?,
+  cookie: json['cookie'] as String?,
+  userAgent: json['user_agent'] as String?,
+  rss: json['rss'] as String?,
+  torrents: json['torrents'] as String?,
+  available: json['available'] as bool? ?? false,
+  signIn: json['sign_in'] as bool? ?? false,
+  getInfo: json['get_info'] as bool? ?? false,
+  repeatTorrents: json['repeat_torrents'] as bool? ?? false,
+  brushFree: json['brush_free'] as bool? ?? false,
+  brushRss: json['brush_rss'] as bool? ?? false,
+  packageFile: json['package_file'] as bool? ?? false,
+  hrDiscern: json['hr_discern'] as bool? ?? false,
+  searchTorrents: json['search_torrents'] as bool? ?? false,
+  showInDash: json['show_in_dash'] as bool? ?? true,
+  proxy: json['proxy'] as String?,
+  removeTorrentRules:
+      json['removeTorrentRules'] as Map<String, dynamic>? ?? const {},
+  mirror: json['mirror'] as String?,
+  timeJoin: json['time_join'] as String?,
+  latestActive: json['latest_active'] as String?,
+  mail: (json['mail'] as num?)?.toInt() ?? 0,
+  notice: (json['notice'] as num?)?.toInt() ?? 0,
+  signInfo: json['sign_info'] as Map<String, dynamic>?,
+  status: _statusFromJson(json['status'] as Map<String, dynamic>?),
+  updatedAt: json['updated_at'] as String?,
+);
+
+Map<String, dynamic> _$SiteInfoToJson(_SiteInfo instance) => <String, dynamic>{
+  'id': instance.id,
+  'site': instance.site,
+  'nickname': instance.nickname,
+  'sort_id': instance.sortId,
+  'tags': instance.tags,
+  'user_id': instance.userId,
+  'username': instance.username,
+  'email': instance.email,
+  'passkey': instance.passkey,
+  'authkey': instance.authkey,
+  'cookie': instance.cookie,
+  'user_agent': instance.userAgent,
+  'rss': instance.rss,
+  'torrents': instance.torrents,
+  'available': instance.available,
+  'sign_in': instance.signIn,
+  'get_info': instance.getInfo,
+  'repeat_torrents': instance.repeatTorrents,
+  'brush_free': instance.brushFree,
+  'brush_rss': instance.brushRss,
+  'package_file': instance.packageFile,
+  'hr_discern': instance.hrDiscern,
+  'search_torrents': instance.searchTorrents,
+  'show_in_dash': instance.showInDash,
+  'proxy': instance.proxy,
+  'removeTorrentRules': instance.removeTorrentRules,
+  'mirror': instance.mirror,
+  'time_join': instance.timeJoin,
+  'latest_active': instance.latestActive,
+  'mail': instance.mail,
+  'notice': instance.notice,
+  'sign_info': instance.signInfo,
+  'status': instance.status?.map((k, e) => MapEntry(k, e.toJson())),
+  'updated_at': instance.updatedAt,
+};
+
+_SiteDailyStatus _$SiteDailyStatusFromJson(Map<String, dynamic> json) =>
+    _SiteDailyStatus(
+      date: json['date'] as String? ?? '',
+      seed: (json['seed'] as num?)?.toInt() ?? 0,
+      leech: (json['leech'] as num?)?.toInt() ?? 0,
+      myHr: json['my_hr'] as String? ?? '0',
+      ratio: (json['ratio'] as num?)?.toDouble() ?? 0.0,
+      publish: (json['publish'] as num?)?.toInt() ?? 0,
+      myBonus: (json['my_bonus'] as num?)?.toDouble() ?? 0.0,
+      myLevel: json['my_level'] as String? ?? '',
+      myScore: (json['my_score'] as num?)?.toDouble() ?? 0.0,
+      uploaded: (json['uploaded'] as num?)?.toInt() ?? 0,
+      seedDays: (json['seed_days'] as num?)?.toInt() ?? 0,
+      bonusHour: (json['bonus_hour'] as num?)?.toDouble() ?? 0.0,
+      created_at: json['created_at'] as String? ?? '',
+      downloaded: (json['downloaded'] as num?)?.toInt() ?? 0,
+      invitation: (json['invitation'] as num?)?.toInt() ?? 0,
+      updated_at: json['updated_at'] as String? ?? '',
+      seedVolume: (json['seed_volume'] as num?)?.toInt() ?? 0,
+    );
+
+Map<String, dynamic> _$SiteDailyStatusToJson(_SiteDailyStatus instance) =>
+    <String, dynamic>{
+      'date': instance.date,
+      'seed': instance.seed,
+      'leech': instance.leech,
+      'my_hr': instance.myHr,
+      'ratio': instance.ratio,
+      'publish': instance.publish,
+      'my_bonus': instance.myBonus,
+      'my_level': instance.myLevel,
+      'my_score': instance.myScore,
+      'uploaded': instance.uploaded,
+      'seed_days': instance.seedDays,
+      'bonus_hour': instance.bonusHour,
+      'created_at': instance.created_at,
+      'downloaded': instance.downloaded,
+      'invitation': instance.invitation,
+      'updated_at': instance.updated_at,
+      'seed_volume': instance.seedVolume,
+    };

@@ -1,151 +1,65 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:get/get.dart';
-import 'package:harvest/utils/dio_util.dart';
-import 'package:harvest/utils/logger_helper.dart';
-import 'package:harvest/utils/storage.dart';
-import 'package:media_kit/media_kit.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'app/routes/app_pages.dart';
-import 'common/app_lifecycle_server.dart';
-import 'common/app_upgrade/controller.dart';
-import 'theme/theme_controller.dart';
+import 'app.dart';
+import 'core/storage/hive_manager.dart';
+import 'core/storage/storage_keys.dart';
+import 'package:harvest/core/utils/utils.dart';
+import 'modules/auth/auth_provider.dart';
 
 void main() async {
-  // 初始化插件前需要在runApp之前调用初始化代码
   WidgetsFlutterBinding.ensureInitialized();
-  Logger.instance.i("============初始化项目依赖===========");
-  await initDependencies();
-  Logger.instance.i("============项目依赖初始化完成===========");
-  Logger.instance.i("============添加APP状态监听器===========");
-  // SystemChannels.lifecycle.setMessageHandler((msg) async {
-  //   debugPrint('SystemChannels> $msg');
-  //   // msg是个字符串，是下面的值
-  //   // AppLifecycleState.resumed
-  //   // AppLifecycleState.inactive
-  //   // AppLifecycleState.paused
-  //   // AppLifecycleState.detached
-  //   return msg;
-  // });
-  Get.put(() => ThemeController());
-  Get.put(AppLifecycleService());
-  Logger.instance.i("============添加APP状态监听器完成===========");
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final themeController = Get.put<ThemeController>(ThemeController());
-    Logger.instance.d("暗黑模式：${themeController.isDark.value}");
-    Logger.instance.d("暗黑模式：${Get.isDarkMode}");
-    Logger.instance.d("暗黑模式：${SPUtil.getBool('isDark')}");
-
-    return Obx(() {
-      return ShadApp.custom(
-          darkTheme: themeController.darkTheme,
-          theme: themeController.lightTheme,
-          themeMode: themeController.themeMode,
-          appBuilder: (context) {
-            return GetMaterialApp(
-              title: "Harvest",
-              defaultTransition: Transition.cupertino,
-              debugShowCheckedModeBanner: Get.testMode,
-              initialRoute: AppPages.INITIAL,
-              navigatorKey: Get.key,
-              getPages: AppPages.routes,
-              builder: (context, child) {
-                // 处理 MediaQuery 异常问题，特别是小米澎湃系统
-                MediaQueryData mediaQuery = MediaQuery.of(context);
-                double safeTop = mediaQuery.padding.top;
-
-                // 如果出现异常值，使用默认值替代
-                if (safeTop > 80 || safeTop < 0) {
-                  print('Detected abnormal top padding: $safeTop, using fallback.');
-                  safeTop = 24.0; // 合理默认值
-                }
-
-                return MediaQuery(
-                  data: mediaQuery.copyWith(
-                    padding: mediaQuery.padding.copyWith(top: safeTop),
-                  ),
-                  child: ShadToaster(child: child ?? const SizedBox.shrink()),
-                );
-              },
-              locale: const Locale('zh', 'CN'),
-              fallbackLocale: const Locale('en', 'US'),
-              onReady: () async {
-                await Future.delayed(const Duration(seconds: 3), () {
-                  FlutterNativeSplash.remove();
-                });
-              },
-            );
-          });
-    });
-  }
-}
-
-Future<void> initDependencies() async {
-  /// 必须调用这行！
-
-  Logger.instance.i("============初始化MediaKit===========");
-  MediaKit.ensureInitialized();
-  Logger.instance.i("============MediaKit初始化完成===========");
-  // 初始化 持久化数据信息
-  Logger.instance.i("============初始化SharedPreferences===========");
-  await SPUtil.getInstance();
-  Logger.instance.i("============SharedPreferences初始化完成===========");
-
-  Get.testMode = false;
-
-  Logger.instance.i("============初始化DioUtil===========");
-  String? server = SPUtil.getLocalStorage('server');
-  if (server == null || server.length <= 10) {
-    SPUtil.setBool('isLogin', false);
-  } else {
-    await DioUtil().initialize(server);
-  }
-  Logger.instance.i("============DioUtil初始化完成===========");
-  // 强制竖屏
-  // SystemChrome.setPreferredOrientations(
-  //     [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
-  Get.lazyPut<AppUpgradeController>(() => AppUpgradeController());
+  await HiveManager.init();
+  // 初始化日志
+  await AppLogger.init();
+  // await AppLogger.init();
   // 固定写法，处理状态栏背景颜色透明问题
-  Logger.instance.i("============处理状态栏背景颜色透明问题===========");
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-  ));
-  Logger.instance.i("============处理状态栏背景颜色透明问题完成===========");
-  // 必须加上这一行。
-  Logger.instance.i("============初始化窗口管理器===========");
-  if (GetPlatform.isDesktop && !GetPlatform.isWeb) {
-    await windowManager.ensureInitialized();
-    double height = SPUtil.getDouble('ScreenSizeHeight', defaultValue: 900).toDouble();
-    double width = SPUtil.getDouble('ScreenSizeWidth', defaultValue: 1200).toDouble();
-    Logger.instance.d('已缓存的窗口大小: $width, $height');
-    WindowOptions windowOptions = WindowOptions(
-      size: Size(width, height + 28),
-      center: true,
-      backgroundColor: Colors.transparent,
-      skipTaskbar: false,
-      titleBarStyle: TitleBarStyle.normal,
-      windowButtonVisibility: true,
-    );
-    windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
-    });
+  AppLogger.debug("============尝试访问网络===========");
+  var canConnectInternet = await HiveManager.get('canConnectInternet');
+  if (!kIsWeb && (canConnectInternet == null || !canConnectInternet)) {
+    try {
+      final res = await Dio().get('https://www.baidu.com').timeout(const Duration(seconds: 5));
+      if (res.statusCode != 200) {
+        AppLogger.debug("============尝试访问网络失败: ${res.statusCode}===========");
+      } else {
+        HiveManager.set('canConnectInternet', true);
+        AppLogger.debug("============网络访问成功！${res.statusCode}===========");
+      }
+    } catch (e) {
+      AppLogger.debug("============网络访问异常: $e===========");
+    }
+  } else {
+    AppLogger.debug("============已有网络标记，跳过检测===========");
   }
-  Logger.instance.i("============窗口管理器初始化完成===========");
-  // await Future.delayed(Duration(milliseconds: 3000), () {
-  // FlutterNativeSplash.remove();
-  // });
-  Logger.instance.i("============设置SystemUiMode为edgeToEdge===========");
+
+  AppLogger.debug("============处理状态栏背景颜色透明问题===========");
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
+  AppLogger.debug("============处理状态栏背景颜色透明问题完成===========");
+  AppLogger.debug("============设置SystemUiMode为edgeToEdge===========");
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  Logger.instance.i("============设置SystemUiMode为edgeToEdge完成===========");
+  AppLogger.debug("============设置SystemUiMode为edgeToEdge完成===========");
+  final container = ProviderContainer();
+
+  /// 🔥 恢复登录
+  // 触发 auth 初始化（build 自动恢复）
+  final authState = container.read(authNotifierProvider);
+
+  // 如果已登录，先写入 token 再获取最新用户信息
+  if (authState.loggedIn && authState.accessToken != null) {
+    await HiveManager.set(StorageKeys.accessToken, authState.accessToken!);
+    if (authState.refreshToken != null) {
+      await HiveManager.set(StorageKeys.refreshToken, authState.refreshToken!);
+    }
+  }
+
+  // ✅ 确认状态
+  AppLogger.debug("启动 auth: ${container.read(authNotifierProvider).loggedIn}");
+  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
+  await Future.delayed(const Duration(seconds: 2), () {
+    FlutterNativeSplash.remove();
+  });
 }
