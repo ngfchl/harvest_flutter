@@ -17,6 +17,7 @@ import '../models/kv/kv.dart';
 import '../shell/provider/screenshot_provider.dart';
 import '../shell/widgets/shell_scaffold.dart';
 import '../site/provider/site_provider.dart';
+import '../user/provider/user_management_provider.dart';
 import 'model/dashboard_data.dart';
 import 'provider/dashboard_provider.dart';
 import 'provider/privacy_provider.dart';
@@ -112,9 +113,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   bool _isRefreshingSiteData = false;
   bool _isSigningInSites = false;
 
-  bool get _hasRunningSummaryAction => _isRefreshingDashboardData || _isRefreshingSiteData || _isSigningInSites;
+  bool get _hasRunningSummaryAction =>
+      _isRefreshingDashboardData || _isRefreshingSiteData || _isSigningInSites;
 
-  bool _isHidden(String key, int index) => _hiddenSeries[key]?.contains(index) ?? false;
+  bool _isHidden(String key, int index) =>
+      _hiddenSeries[key]?.contains(index) ?? false;
 
   void _toggleHidden(String key, int index) {
     setState(() {
@@ -136,14 +139,17 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     _chartHeight = DashboardChartConfig.getChartHeight(); // ← 新增
     _treemapCount = DashboardChartConfig.getTreemapCount();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
+      ref
+          .read(dashboardNotifierProvider.notifier)
+          .refresh(days: _phoneDashboardFetchDays);
       if (mounted) {
-        ref.read(activeScrollControllerProvider.notifier).state = _scrollController;
+        ref.read(activeScrollControllerProvider.notifier).state =
+            _scrollController;
       }
     });
   }
 
-  void _showChartSettings() {
+  void _showChartSettings({bool allowReorder = true}) {
     showDialog(
       context: context,
       builder: (ctx) => ChartSettingsDialog(
@@ -151,12 +157,16 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         visibility: _chartVisibility,
         chartHeight: _chartHeight,
         treemapCount: _treemapCount,
+        allowReorder: allowReorder,
+        showSizingControls: allowReorder,
         onSaved: (order, visibility, height, treemapCount) {
           setState(() {
-            _chartOrder = order;
+            if (allowReorder) _chartOrder = order;
             _chartVisibility = visibility;
-            _chartHeight = height;
-            _treemapCount = treemapCount;
+            if (allowReorder) {
+              _chartHeight = height;
+              _treemapCount = treemapCount;
+            }
           });
         },
       ),
@@ -172,7 +182,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   }
 
   Future<void> _onRefresh() async {
-    await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
+    await ref
+        .read(dashboardNotifierProvider.notifier)
+        .refresh(days: _phoneDashboardFetchDays);
     _refreshController.finishRefresh();
   }
 
@@ -181,7 +193,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     setState(() => _isRefreshingDashboardData = true);
 
     try {
-      await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
+      await ref
+          .read(dashboardNotifierProvider.notifier)
+          .refresh(days: _phoneDashboardFetchDays);
       Toast.success('刷新数据完成');
     } catch (e, st) {
       AppLogger.error('刷新首页数据失败', e, st);
@@ -195,7 +209,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     if (_hasRunningSummaryAction) return;
     setState(() => _isRefreshingDashboardData = true);
     try {
-      await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
+      await ref
+          .read(dashboardNotifierProvider.notifier)
+          .refresh(days: _phoneDashboardFetchDays);
     } catch (e, st) {
       AppLogger.error('刷新首页美化版数据失败', e, st);
       if (showErrorToast) Toast.error('切换数据范围失败');
@@ -209,7 +225,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     setState(() => _phoneTrendDays = days);
   }
 
-  String _taskEndpoint(String api) => api.endsWith('/') ? api.substring(0, api.length - 1) : api;
+  String _taskEndpoint(String api) =>
+      api.endsWith('/') ? api.substring(0, api.length - 1) : api;
 
   Future<void> _refreshSiteData() async {
     if (_hasRunningSummaryAction) return;
@@ -218,7 +235,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     try {
       await fetchBasic(_taskEndpoint(API.MYSITE_STATUS_OPERATE));
       await ref.read(siteInfoListProvider.notifier).refresh();
-      await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
+      await ref
+          .read(dashboardNotifierProvider.notifier)
+          .refresh(days: _phoneDashboardFetchDays);
       Toast.success('站点数据任务已执行');
     } catch (e, st) {
       AppLogger.error('执行站点数据刷新任务失败', e, st);
@@ -235,7 +254,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     try {
       await fetchBasic(_taskEndpoint(API.MYSITE_SIGNIN_OPERATE));
       await ref.read(siteInfoListProvider.notifier).refresh();
-      await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
+      await ref
+          .read(dashboardNotifierProvider.notifier)
+          .refresh(days: _phoneDashboardFetchDays);
       Toast.success('站点签到任务已执行');
     } catch (e, st) {
       AppLogger.error('执行站点签到任务失败', e, st);
@@ -328,19 +349,35 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       case 'todayUpload':
         return _buildTodayUploadPieChart(data.uploadIncrementDataList, privacy);
       case 'todayDownload':
-        return _buildTodayDownloadPieChart(data.downloadIncrementDataList, privacy);
+        return _buildTodayDownloadPieChart(
+          data.downloadIncrementDataList,
+          privacy,
+        );
       case 'publishedCount':
         return _buildPublishedCountPieChart(data.statusList, privacy);
       case 'seed':
         return _buildSeedChart(data.seedDataList, privacy);
       case 'monthUpload':
-        return _buildMonthUploadChart(data.uploadMonthIncrementDataList, privacy);
+        return _buildMonthUploadChart(
+          data.uploadMonthIncrementDataList,
+          privacy,
+        );
       case 'monthDownload':
-        return _buildMonthDownloadChart(data.uploadMonthIncrementDataList, privacy);
+        return _buildMonthDownloadChart(
+          data.uploadMonthIncrementDataList,
+          privacy,
+        );
       case 'monthPublished':
-        return _buildMonthPublishedChart(data.uploadMonthIncrementDataList, privacy);
+        return _buildMonthPublishedChart(
+          data.uploadMonthIncrementDataList,
+          privacy,
+        );
       case 'dailyStack':
-        return _buildDailyStackChart('每日上传趋势', data.stackChartDataList, privacy);
+        return _buildDailyStackChart(
+          '每日上传趋势',
+          data.stackChartDataList,
+          privacy,
+        );
       default:
         return null;
     }
@@ -358,7 +395,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   TextStyle _chartAxisTextStyle() {
     final cs = FTheme.of(context).colors;
-    return FTheme.of(context).typography.xs.copyWith(fontSize: 10, color: cs.mutedForeground.withValues(alpha: 0.72));
+    return FTheme.of(context).typography.xs.copyWith(
+      fontSize: 10,
+      color: cs.mutedForeground.withValues(alpha: 0.72),
+    );
   }
 
   Legend _chartLegend() => Legend(
@@ -366,9 +406,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     position: LegendPosition.bottom,
     overflowMode: LegendItemOverflowMode.scroll,
     orientation: LegendItemOrientation.horizontal,
-    textStyle: FTheme.of(
-      context,
-    ).typography.xs.copyWith(fontSize: 10, color: FTheme.of(context).colors.mutedForeground.withValues(alpha: 0.9)),
+    textStyle: FTheme.of(context).typography.xs.copyWith(
+      fontSize: 10,
+      color: FTheme.of(context).colors.mutedForeground.withValues(alpha: 0.9),
+    ),
     iconHeight: 8,
     iconWidth: 8,
     itemPadding: 12,
@@ -406,6 +447,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 child: Icon(privacy ? FIcons.eyeOff : FIcons.eye),
                 onPress: () => ref.read(privacyModeProvider.notifier).toggle(),
               ),
+              FButton.icon(
+                style: FButtonStyle.ghost(),
+                child: const Icon(FIcons.slidersHorizontal),
+                onPress: _showChartSettings,
+              ),
             ],
           ),
         ),
@@ -418,41 +464,452 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final uri = Uri.tryParse(server);
     if (uri == null || uri.host.isEmpty) return _mask(server, privacy);
 
-    final maskedHost = uri.host.split('.').map((part) => _mask(part, privacy)).join('.');
+    final maskedHost = uri.host
+        .split('.')
+        .map((part) => _mask(part, privacy))
+        .join('.');
     final authority = uri.hasPort ? '$maskedHost:${uri.port}' : maskedHost;
     final path = uri.path.isEmpty ? '' : '/***';
-    return uri.hasScheme ? '${uri.scheme}://$authority$path' : '$authority$path';
+    return uri.hasScheme
+        ? '${uri.scheme}://$authority$path'
+        : '$authority$path';
+  }
+
+  String _maskEmail(String email, bool privacy) {
+    if (!privacy) return email;
+    final parts = email.split('@');
+    if (parts.length != 2) return _mask(email, privacy);
+    return '${_mask(parts.first, privacy)}@${_maskServerInfo(parts.last, privacy)}';
+  }
+
+  String _dashboardAuthLabel(String key) {
+    const labels = {
+      'username': '用户名',
+      'email': '邮箱',
+      'expire': '到期时间',
+      'time expire': '到期时间',
+      'time_expire': '到期时间',
+      'timeExpire': '到期时间',
+      'expire_time': '到期时间',
+      'expired_at': '到期时间',
+      'expires_at': '到期时间',
+      'pay': '授权额度',
+      'invite': '邀请次数',
+      'try_user': '试用用户',
+      'marked': '备注',
+      'token': '授权 Token',
+      'active': '状态',
+      'is_active': '状态',
+    };
+    return labels[key] ?? key;
+  }
+
+  bool _isDashboardAuthIdentityKey(String key) {
+    final normalized = key.toLowerCase();
+    return normalized == 'username' ||
+        normalized == 'user_name' ||
+        normalized == 'name' ||
+        normalized == 'email' ||
+        normalized == 'mail' ||
+        normalized == 'user_email';
+  }
+
+  String _dashboardAuthValue(String key, dynamic value, bool privacy) {
+    if (value == null) return '';
+    if (value is bool) return value ? '有效' : '无效';
+    if (value is Map) {
+      return value.entries
+          .where((entry) => !_isDashboardAuthIdentityKey(entry.key.toString()))
+          .map((entry) => '${_dashboardAuthLabel(entry.key.toString())}: ${_dashboardAuthValue(entry.key.toString(), entry.value, privacy)}')
+          .where((value) => value.trim().isNotEmpty)
+          .join('；');
+    }
+    if (value is List) {
+      return value
+          .map((item) => _dashboardAuthValue(key, item, privacy))
+          .where((value) => value.trim().isNotEmpty)
+          .join('，');
+    }
+    final text = value.toString();
+    if (!privacy) return text;
+    final lowerKey = key.toLowerCase();
+    if (lowerKey.contains('token')) return _mask(text, privacy);
+    if (lowerKey.contains('email') || text.contains('@')) {
+      return _maskEmail(text, privacy);
+    }
+    return text;
+  }
+
+  dynamic _findDashboardAuthValue(dynamic data, Iterable<String> keys) {
+    if (data is Map) {
+      for (final key in keys) {
+        if (data.containsKey(key)) return data[key];
+      }
+      for (final entry in data.entries) {
+        final nested = _findDashboardAuthValue(entry.value, keys);
+        if (nested != null) return nested;
+      }
+    }
+    if (data is List) {
+      for (final item in data) {
+        final nested = _findDashboardAuthValue(item, keys);
+        if (nested != null) return nested;
+      }
+    }
+    return null;
+  }
+
+  List<MapEntry<String, String>> _dashboardAuthEntries(dynamic data, bool privacy) {
+    if (data == null) return const [];
+    if (data is Map) {
+      return data.entries
+          .where((entry) => entry.value != null)
+          .where((entry) => !_isDashboardAuthIdentityKey(entry.key.toString()))
+          .map(
+            (entry) => MapEntry(
+              _dashboardAuthLabel(entry.key.toString()),
+              _dashboardAuthValue(entry.key.toString(), entry.value, privacy),
+            ),
+          )
+          .where((entry) => entry.value.trim().isNotEmpty)
+          .toList();
+    }
+    if (data is List) {
+      final value = data
+          .map((item) => _dashboardAuthValue('auth', item, privacy))
+          .where((value) => value.trim().isNotEmpty)
+          .join('；');
+      return value.isEmpty ? const [] : [MapEntry('授权信息', value)];
+    }
+    final value = _dashboardAuthValue('auth', data, privacy);
+    return value.isEmpty ? const [] : [MapEntry('授权信息', value)];
+  }
+
+  String _dashboardAuthSummary(dynamic data, bool privacy) {
+    if (data == null) return '暂无授权信息';
+    final active = _findDashboardAuthValue(data, const ['active', 'is_active']);
+    final expire = _findDashboardAuthValue(data, const ['time_expire', 'time expire', 'timeExpire', 'expire', 'expire_time', 'expired_at', 'expires_at']);
+    final pay = _findDashboardAuthValue(data, const ['pay']);
+    final invite = _findDashboardAuthValue(data, const ['invite']);
+
+    final parts = <String>[];
+    if (active != null) parts.add('状态 ${_dashboardAuthValue('active', active, privacy)}');
+    if (expire != null) parts.add('到期时间 ${_dashboardAuthValue('expire', expire, privacy)}');
+    if (pay != null) parts.add('额度 ${_dashboardAuthValue('pay', pay, privacy)}');
+    if (invite != null) parts.add('邀请 ${_dashboardAuthValue('invite', invite, privacy)}');
+    if (parts.isNotEmpty) return parts.join(' · ');
+
+    final entries = _dashboardAuthEntries(data, privacy).take(2).toList();
+    if (entries.isEmpty) return '暂无授权信息';
+    return entries.map((entry) => '${entry.key} ${entry.value.replaceAll('\n', ' ')}').join(' · ');
+  }
+
+  DateTime? _parseDashboardAuthExpire(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    if (value is num) {
+      final timestamp = value.toInt();
+      if (timestamp <= 0) return null;
+      return timestamp > 100000000000
+          ? DateTime.fromMillisecondsSinceEpoch(timestamp)
+          : DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    }
+
+    final text = value.toString().trim();
+    if (text.isEmpty) return null;
+    final numeric = num.tryParse(text);
+    if (numeric != null) return _parseDashboardAuthExpire(numeric);
+    return DateTime.tryParse(text.replaceFirst(' ', 'T')) ?? DateTime.tryParse(text);
+  }
+
+  bool _isDashboardAuthExpiringSoon(dynamic data) {
+    final expire = _findDashboardAuthValue(data, const ['time_expire', 'time expire', 'timeExpire', 'expire', 'expire_time', 'expired_at', 'expires_at']);
+    final expireAt = _parseDashboardAuthExpire(expire);
+    if (expireAt == null) return false;
+    final remaining = expireAt.difference(DateTime.now());
+    return !remaining.isNegative && remaining.inDays < 15;
+  }
+
+  String _serverHostLabel(String server, bool privacy) {
+    final uri = Uri.tryParse(server);
+    final host = uri?.host.isNotEmpty == true ? uri!.host : server;
+    final port = uri?.hasPort == true ? ':${uri!.port}' : '';
+    if (!privacy) return '$host$port';
+    final maskedHost = host.split('.').map((part) => _mask(part, true)).join('.');
+    return '$maskedHost$port';
+  }
+
+  bool _dashboardAuthHealthy(dynamic data) {
+    if (data == null) return false;
+    final active = _findDashboardAuthValue(data, const ['active', 'is_active']);
+    if (active is bool) return active;
+    if (active is String) {
+      final normalized = active.toLowerCase();
+      return normalized == 'true' || normalized == '1' || normalized == 'yes' || normalized == 'active';
+    }
+    return true;
+  }
+
+  Widget _buildServerStatusPill({
+    required String label,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.36)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServerMetricTile({
+    required IconData icon,
+    required String label,
+    required String title,
+    required String subtitle,
+    required Color color,
+  }) {
+    final cs = FTheme.of(context).colors;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cs.muted.withValues(alpha: 0.28),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: cs.border.withValues(alpha: 0.34)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 16, color: color),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: cs.mutedForeground,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: cs.foreground,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            subtitle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: cs.mutedForeground,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              height: 1.25,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildServerBar(bool privacy) {
     final cs = FTheme.of(context).colors;
     final server = _maskServerInfo(AppConfig.baseUrl, privacy);
+    final authState = ref.watch(authNotifierProvider);
+    final authInfo = ref.watch(authInfoProvider);
+    final user = authState.user;
+    final serverHost = _serverHostLabel(AppConfig.baseUrl, privacy);
+    final username = user == null ? '未登录' : _mask(user.username, privacy);
+    final role = user == null
+        ? '未获取用户信息'
+        : user.isSuperuser
+        ? '超级管理员'
+        : user.isStaff
+        ? '管理员'
+        : '普通用户';
+    final userSubtitle = role;
+    final authText = authInfo.when(
+      data: (data) => _dashboardAuthSummary(data, privacy),
+      loading: () => '授权信息加载中',
+      error: (_, __) => '授权信息加载失败',
+    );
+    final showExpireWarning = authInfo.when(
+      data: _isDashboardAuthExpiringSoon,
+      loading: () => false,
+      error: (_, __) => false,
+    );
+    final authStatusText = authInfo.when(
+      data: (data) => _dashboardAuthHealthy(data) ? '授权有效' : '授权异常',
+      loading: () => '授权校验中',
+      error: (_, __) => '授权获取失败',
+    );
+    final statusColor = authInfo.when(
+      data: (data) => _dashboardAuthHealthy(data) ? const Color(0xFF34D399) : const Color(0xFFF59E0B),
+      loading: () => const Color(0xFF60A5FA),
+      error: (_, __) => const Color(0xFFF87171),
+    );
+    final statusIcon = authInfo.when(
+      data: (data) => _dashboardAuthHealthy(data) ? FIcons.shieldCheck : FIcons.circleAlert,
+      loading: () => FIcons.refreshCw,
+      error: (_, __) => FIcons.triangleAlert,
+    );
 
     return Container(
-      height: 38,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cs.background,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: cs.border, width: 0.5),
-      ),
-      child: Row(
-        children: [
-          Icon(FIcons.router, size: 13, color: cs.foreground.withValues(alpha: 0.45)),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              server,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: cs.foreground.withValues(alpha: 0.52), fontSize: 11),
-            ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: cs.border.withValues(alpha: 0.34)),
+        boxShadow: [
+          BoxShadow(
+            color: cs.foreground.withValues(alpha: 0.09),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+            spreadRadius: -8,
           ),
-          const SizedBox(width: 8),
-          FButton.icon(
-            style: FButtonStyle.ghost(),
-            onPress: () async => ref.read(authNotifierProvider.notifier).logout(),
-            child: Icon(FIcons.logOut, size: 14, color: cs.destructive),
+          BoxShadow(
+            color: cs.border.withValues(alpha: 0.30),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+            spreadRadius: -4,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: cs.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: cs.primary.withValues(alpha: 0.16)),
+                ),
+                child: Icon(FIcons.server, size: 24, color: cs.primary),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            serverHost,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: cs.foreground,
+                              fontSize: 19,
+                              fontWeight: FontWeight.w900,
+                              height: 1.1,
+                            ),
+                          ),
+                        ),
+                        if (showExpireWarning) ...[
+                          const SizedBox(width: 8),
+                          _buildServerStatusPill(
+                            label: '即将到期',
+                            color: const Color(0xFFF59E0B),
+                            icon: FIcons.circleAlert,
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 7),
+                    Text(
+                      server,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: cs.mutedForeground,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              FButton.icon(
+                style: FButtonStyle.ghost(),
+                onPress: () async => ref.read(authNotifierProvider.notifier).logout(),
+                child: Icon(FIcons.logOut, size: 16, color: cs.destructive),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildServerMetricTile(
+                  icon: FIcons.user,
+                  label: '登录用户',
+                  title: username,
+                  subtitle: userSubtitle,
+                  color: const Color(0xFF10B981),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildServerMetricTile(
+                  icon: FIcons.shieldCheck,
+                  label: '授权信息',
+                  title: authStatusText,
+                  subtitle: authText,
+                  color: statusColor,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -498,22 +955,58 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       ),
     ];
     final statItems = [
-      _StatItem('总上传', formatBytes(data.totalUploaded), FIcons.arrowUp, const Color(0xFF10B981)),
-      _StatItem('总下载', formatBytes(data.totalDownloaded), FIcons.arrowDown, const Color(0xFFEF4444)),
-      _StatItem('站点数', '${data.siteCount}', FIcons.globe, const Color(0xFF8B5CF6)),
-      _StatItem('发种数', '${data.totalPublished}', FIcons.hardDrive, const Color(0xFF3B82F6)),
-      _StatItem('做种量', formatBytes(data.totalSeedVol), FIcons.database, const Color(0xFF6366F1)),
-      _StatItem('做种数', '${data.totalSeeding}', FIcons.hardDrive, const Color(0xFF3B82F6)),
+      _StatItem(
+        '总上传',
+        formatBytes(data.totalUploaded),
+        FIcons.arrowUp,
+        const Color(0xFF10B981),
+      ),
+      _StatItem(
+        '总下载',
+        formatBytes(data.totalDownloaded),
+        FIcons.arrowDown,
+        const Color(0xFFEF4444),
+      ),
+      _StatItem(
+        '站点数',
+        '${data.siteCount}',
+        FIcons.globe,
+        const Color(0xFF8B5CF6),
+      ),
+      _StatItem(
+        '发种数',
+        '${data.totalPublished}',
+        FIcons.hardDrive,
+        const Color(0xFF3B82F6),
+      ),
+      _StatItem(
+        '做种量',
+        formatBytes(data.totalSeedVol),
+        FIcons.database,
+        const Color(0xFF6366F1),
+      ),
+      _StatItem(
+        '做种数',
+        '${data.totalSeeding}',
+        FIcons.hardDrive,
+        const Color(0xFF3B82F6),
+      ),
       // _StatItem('今日上传', formatBytes(data.todayUploadIncrement), FIcons.trendingUp, const Color(0xFFF59E0B)),
       _StatItem(
         'P龄',
         accountAge,
         FIcons.calendar,
         const Color(0xFF14B8A6),
-        onTap: () => setState(() => _showAccountAgeWeeks = !_showAccountAgeWeeks),
+        onTap: () =>
+            setState(() => _showAccountAgeWeeks = !_showAccountAgeWeeks),
       ),
     ];
-    final lastRefreshItem = _StatItem('最后刷新', lastRefresh, FIcons.clock, const Color(0xFF64748B));
+    final lastRefreshItem = _StatItem(
+      '最后刷新',
+      lastRefresh,
+      FIcons.clock,
+      const Color(0xFF64748B),
+    );
 
     const spacing = 10.0;
     const minItemWidth = 150.0;
@@ -521,17 +1014,21 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
-        final maxPerRow = ((availableWidth + spacing) / (minItemWidth + spacing))
-            .floor()
-            .clamp(1, actionItems.length + statItems.length + 2)
-            .toInt();
+        final maxPerRow =
+            ((availableWidth + spacing) / (minItemWidth + spacing))
+                .floor()
+                .clamp(1, actionItems.length + statItems.length + 2)
+                .toInt();
         final cards = [
           ...actionItems.map(_buildSummaryStatCard),
           ...statItems.map(_buildSummaryStatCard),
           // 称号（带 FPopover）
           SizedBox(
             height: 70,
-            child: _DesignationCard(designation: designation, siteCount: data.siteCount.toInt()),
+            child: _DesignationCard(
+              designation: designation,
+              siteCount: data.siteCount.toInt(),
+            ),
           ),
           _buildSummaryStatCard(lastRefreshItem),
         ];
@@ -543,7 +1040,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               children: [
                 for (var index = 0; index < rowItems.length; index++) ...[
                   Expanded(child: rowItems[index]),
-                  if (index != rowItems.length - 1) const SizedBox(width: spacing),
+                  if (index != rowItems.length - 1)
+                    const SizedBox(width: spacing),
                 ],
               ],
             ),
@@ -553,7 +1051,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           }
         }
 
-        return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: rows);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: rows,
+        );
       },
     );
   }
@@ -578,7 +1079,13 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           children: [
             Row(
               children: [
-                Icon(item.icon, size: 15, color: disabledAction ? item.color.withValues(alpha: 0.45) : item.color),
+                Icon(
+                  item.icon,
+                  size: 15,
+                  color: disabledAction
+                      ? item.color.withValues(alpha: 0.45)
+                      : item.color,
+                ),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
@@ -597,7 +1104,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       fontWeight: FontWeight.w600,
                       color: item.loading
                           ? item.color
-                          : cs.mutedForeground.withValues(alpha: disabledAction ? 0.35 : 0.7),
+                          : cs.mutedForeground.withValues(
+                              alpha: disabledAction ? 0.35 : 0.7,
+                            ),
                     ),
                   ),
                   if (!item.loading) ...[
@@ -605,7 +1114,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     Icon(
                       FIcons.chevronRight,
                       size: 12,
-                      color: cs.mutedForeground.withValues(alpha: disabledAction ? 0.25 : 0.55),
+                      color: cs.mutedForeground.withValues(
+                        alpha: disabledAction ? 0.25 : 0.55,
+                      ),
                     ),
                   ],
                 ],
@@ -615,12 +1126,20 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             if (item.loading)
               Row(
                 children: [
-                  const SizedBox(width: 16, height: 16, child: FProgress.circularIcon()),
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: FProgress.circularIcon(),
+                  ),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
                       item.value,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, height: 1.05),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        height: 1.05,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -637,7 +1156,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     height: 1.05,
-                    color: disabledAction ? cs.foreground.withValues(alpha: 0.45) : null,
+                    color: disabledAction
+                        ? cs.foreground.withValues(alpha: 0.45)
+                        : null,
                   ),
                 ),
               ),
@@ -649,7 +1170,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   // ———————————————— 卡片容器 ————————————————
 
-  Widget _buildCard({required String title, required Widget child, Widget? legend}) {
+  Widget _buildCard({
+    required String title,
+    required Widget child,
+    Widget? legend,
+  }) {
     final cs = FTheme.of(context).colors;
 
     return Container(
@@ -658,7 +1183,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       decoration: BoxDecoration(
         color: cs.background.withValues(alpha: 0.98),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: cs.border.withValues(alpha: 0.72), width: 0.8),
+        border: Border.all(
+          color: cs.border.withValues(alpha: 0.72),
+          width: 0.8,
+        ),
         boxShadow: [
           BoxShadow(
             color: cs.foreground.withValues(alpha: 0.09),
@@ -686,13 +1214,19 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   color: cs.primary.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Icon(FIcons.chartNoAxesCombined, size: 12, color: cs.primary),
+                child: Icon(
+                  FIcons.chartNoAxesCombined,
+                  size: 12,
+                  color: cs.primary,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
-                  style: FTheme.of(context).typography.base.copyWith(fontWeight: FontWeight.w800),
+                  style: FTheme.of(
+                    context,
+                  ).typography.base.copyWith(fontWeight: FontWeight.w800),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -721,14 +1255,18 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               Icon(
                 FIcons.chartNoAxesCombined,
                 size: 32,
-                color: FTheme.of(context).colors.mutedForeground.withValues(alpha: 0.3),
+                color: FTheme.of(
+                  context,
+                ).colors.mutedForeground.withValues(alpha: 0.3),
               ),
               const SizedBox(height: 8),
               Text(
                 '暂无数据',
-                style: FTheme.of(
-                  context,
-                ).typography.sm.copyWith(color: FTheme.of(context).colors.mutedForeground.withValues(alpha: 0.5)),
+                style: FTheme.of(context).typography.sm.copyWith(
+                  color: FTheme.of(
+                    context,
+                  ).colors.mutedForeground.withValues(alpha: 0.5),
+                ),
               ),
             ],
           ),
@@ -779,7 +1317,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
     if (chartData.isEmpty) return _buildEmptyPlaceholder(title);
     final visibleTotal = chartData.fold<num>(0, (sum, e) => sum + e.value);
-    final totalValue = visibleTotal == visibleTotal.roundToDouble() ? visibleTotal.round() : visibleTotal;
+    final totalValue = visibleTotal == visibleTotal.roundToDouble()
+        ? visibleTotal.round()
+        : visibleTotal;
     final totalLabel = getTooltipValue(0, totalValue);
 
     return _buildCard(
@@ -805,8 +1345,16 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                         header: '',
                         canShowMarker: false,
                         duration: 10000,
-                        builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) =>
-                            _buildDashboardOverlayTooltip((data as _PieData).tooltip),
+                        builder:
+                            (
+                              dynamic data,
+                              dynamic point,
+                              dynamic series,
+                              int pointIndex,
+                              int seriesIndex,
+                            ) => _buildDashboardOverlayTooltip(
+                              (data as _PieData).tooltip,
+                            ),
                       ),
                       series: <DoughnutSeries<_PieData, String>>[
                         DoughnutSeries<_PieData, String>(
@@ -814,7 +1362,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           xValueMapper: (d, _) => d.name,
                           yValueMapper: (d, _) => d.value,
                           pointColorMapper: (d, _) => d.color,
-                          dataLabelSettings: const DataLabelSettings(isVisible: false),
+                          dataLabelSettings: const DataLabelSettings(
+                            isVisible: false,
+                          ),
                           radius: '88%',
                           innerRadius: '62%',
                           cornerStyle: CornerStyle.bothCurve,
@@ -827,7 +1377,13 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('汇总', style: TextStyle(fontSize: 10, color: FTheme.of(context).colors.mutedForeground)),
+                        Text(
+                          '汇总',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: FTheme.of(context).colors.mutedForeground,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 88),
@@ -836,7 +1392,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
                       ],
@@ -896,7 +1455,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
     if (sortedDates.isEmpty) return _buildEmptyPlaceholder(title);
 
-    final hasAnyData = data.any((site) => site.value.any((r) => getValue(r) > 0));
+    final hasAnyData = data.any(
+      (site) => site.value.any((r) => getValue(r) > 0),
+    );
     if (!hasAnyData) return _buildEmptyPlaceholder(title);
 
     final tooltipMap = <String, String>{};
@@ -909,7 +1470,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         total += v;
         if (v > 0) siteLines.add('${data[j].name}\t${formatValue(v)}');
       }
-      tooltipMap[date] = '📅 ${_formatMonth(date)}\n汇总\t${formatValue(total)}\n${siteLines.join('\n')}';
+      tooltipMap[date] =
+          '📅 ${_formatMonth(date)}\n汇总\t${formatValue(total)}\n${siteLines.join('\n')}';
     }
 
     final series = <StackedColumnSeries<_BarData, String>>[];
@@ -919,7 +1481,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       final seriesData = sortedDates.map((date) {
         final records = site.value.where((r) => r.createdAt == date);
         final v = records.isNotEmpty ? getValue(records.first).toDouble() : 0.0;
-        return _BarData(label: _formatMonth(date), value: v, tooltip: tooltipMap[date] ?? '');
+        return _BarData(
+          label: _formatMonth(date),
+          value: v,
+          tooltip: tooltipMap[date] ?? '',
+        );
       }).toList();
       series.add(
         StackedColumnSeries<_BarData, String>(
@@ -960,10 +1526,15 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 majorTickLines: const MajorTickLines(size: 0),
                 majorGridLines: MajorGridLines(
                   width: 0.5,
-                  color: FTheme.of(context).colors.border.withValues(alpha: 0.45),
+                  color: FTheme.of(
+                    context,
+                  ).colors.border.withValues(alpha: 0.45),
                 ),
                 axisLabelFormatter: (AxisLabelRenderDetails details) =>
-                    ChartAxisLabel(formatValue(details.value), details.textStyle),
+                    ChartAxisLabel(
+                      formatValue(details.value),
+                      details.textStyle,
+                    ),
               ),
               series: series,
               tooltipBehavior: TooltipBehavior(
@@ -973,8 +1544,16 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 header: '',
                 canShowMarker: false,
                 duration: 10000,
-                builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) =>
-                    _buildDashboardOverlayTooltip((data as _BarData).tooltip),
+                builder:
+                    (
+                      dynamic data,
+                      dynamic point,
+                      dynamic series,
+                      int pointIndex,
+                      int seriesIndex,
+                    ) => _buildDashboardOverlayTooltip(
+                      (data as _BarData).tooltip,
+                    ),
               ),
             ),
           ),
@@ -1007,40 +1586,46 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     getTooltipValue: (i, v) => '$v',
   );
 
-  Widget _buildUploadedPieChart(List<SiteStatusData> list, bool privacy) => _buildPieChart(
-    title: '站点上传量',
-    items: list,
-    chartKey: 'uploaded',
-    privacy: privacy,
-    getName: (i) => _mask(list[i].name, privacy),
-    getRawName: (i) => list[i].name,
-    getValue: (i) => list[i].value.uploaded,
-    getTooltipValue: (i, v) => formatBytes(v),
-  );
+  Widget _buildUploadedPieChart(List<SiteStatusData> list, bool privacy) =>
+      _buildPieChart(
+        title: '站点上传量',
+        items: list,
+        chartKey: 'uploaded',
+        privacy: privacy,
+        getName: (i) => _mask(list[i].name, privacy),
+        getRawName: (i) => list[i].name,
+        getValue: (i) => list[i].value.uploaded,
+        getTooltipValue: (i, v) => formatBytes(v),
+      );
 
-  Widget _buildTodayUploadPieChart(List<KV> list, bool privacy) => _buildPieChart(
-    title: '今日上传增量',
-    items: list,
-    chartKey: 'todayUpload',
-    privacy: privacy,
-    getName: (i) => _mask(list[i].name, privacy),
-    getRawName: (i) => list[i].name,
-    getValue: (i) => list[i].value,
-    getTooltipValue: (i, v) => formatBytes(v),
-  );
+  Widget _buildTodayUploadPieChart(List<KV> list, bool privacy) =>
+      _buildPieChart(
+        title: '今日上传增量',
+        items: list,
+        chartKey: 'todayUpload',
+        privacy: privacy,
+        getName: (i) => _mask(list[i].name, privacy),
+        getRawName: (i) => list[i].name,
+        getValue: (i) => list[i].value,
+        getTooltipValue: (i, v) => formatBytes(v),
+      );
 
-  Widget _buildTodayDownloadPieChart(List<KV> list, bool privacy) => _buildPieChart(
-    title: '今日下载增量',
-    items: list,
-    chartKey: 'todayDownload',
-    privacy: privacy,
-    getName: (i) => _mask(list[i].name, privacy),
-    getRawName: (i) => list[i].name,
-    getValue: (i) => list[i].value,
-    getTooltipValue: (i, v) => formatBytes(v),
-  );
+  Widget _buildTodayDownloadPieChart(List<KV> list, bool privacy) =>
+      _buildPieChart(
+        title: '今日下载增量',
+        items: list,
+        chartKey: 'todayDownload',
+        privacy: privacy,
+        getName: (i) => _mask(list[i].name, privacy),
+        getRawName: (i) => list[i].name,
+        getValue: (i) => list[i].value,
+        getTooltipValue: (i, v) => formatBytes(v),
+      );
 
-  Widget _buildPublishedCountPieChart(List<SiteStatusData> list, bool privacy) => _buildPieChart(
+  Widget _buildPublishedCountPieChart(
+    List<SiteStatusData> list,
+    bool privacy,
+  ) => _buildPieChart(
     title: '站点发种数量',
     items: list,
     chartKey: 'publishedCount',
@@ -1062,36 +1647,43 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     getTooltipValue: (i, v) => formatBytes(v),
   );
 
-  Widget _buildMonthUploadChart(List<MonthSiteData> list, bool privacy) => _buildMonthChart(
-    title: '月度上传增量趋势',
-    data: list,
-    chartKey: 'monthUpload',
-    privacy: privacy,
-    getValue: (r) => r.uploaded,
-    formatValue: formatYAxis,
-  );
+  Widget _buildMonthUploadChart(List<MonthSiteData> list, bool privacy) =>
+      _buildMonthChart(
+        title: '月度上传增量趋势',
+        data: list,
+        chartKey: 'monthUpload',
+        privacy: privacy,
+        getValue: (r) => r.uploaded,
+        formatValue: formatYAxis,
+      );
 
-  Widget _buildMonthDownloadChart(List<MonthSiteData> list, bool privacy) => _buildMonthChart(
-    title: '月度下载增量趋势',
-    data: list,
-    chartKey: 'monthDownload',
-    privacy: privacy,
-    getValue: (r) => r.downloaded,
-    formatValue: formatYAxis,
-  );
+  Widget _buildMonthDownloadChart(List<MonthSiteData> list, bool privacy) =>
+      _buildMonthChart(
+        title: '月度下载增量趋势',
+        data: list,
+        chartKey: 'monthDownload',
+        privacy: privacy,
+        getValue: (r) => r.downloaded,
+        formatValue: formatYAxis,
+      );
 
-  Widget _buildMonthPublishedChart(List<MonthSiteData> list, bool privacy) => _buildMonthChart(
-    title: '月度发种增量趋势',
-    data: list,
-    chartKey: 'monthPublished',
-    privacy: privacy,
-    getValue: (r) => r.published,
-    formatValue: _formatCount,
-  );
+  Widget _buildMonthPublishedChart(List<MonthSiteData> list, bool privacy) =>
+      _buildMonthChart(
+        title: '月度发种增量趋势',
+        data: list,
+        chartKey: 'monthPublished',
+        privacy: privacy,
+        getValue: (r) => r.published,
+        formatValue: _formatCount,
+      );
 
   // ———————————————— 每日上传柱图 ————————————————
 
-  Widget _buildDailyStackChart(String title, List<StackSiteData> data, bool privacy) {
+  Widget _buildDailyStackChart(
+    String title,
+    List<StackSiteData> data,
+    bool privacy,
+  ) {
     if (data.isEmpty) return _buildEmptyPlaceholder(title);
 
     const chartKey = 'dailyStack';
@@ -1106,7 +1698,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
     if (sortedDates.isEmpty) return _buildEmptyPlaceholder(title);
 
-    final hasAnyData = data.any((site) => site.value.any((r) => r.uploaded > 0));
+    final hasAnyData = data.any(
+      (site) => site.value.any((r) => r.uploaded > 0),
+    );
     if (!hasAnyData) return _buildEmptyPlaceholder(title);
 
     final tooltipMap = <String, String>{};
@@ -1119,7 +1713,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         totalUpload += u;
         if (u > 0) siteLines.add('${data[j].name}\t${formatBytes(u)}');
       }
-      tooltipMap[date] = '📅 $date\n汇总\t${formatBytes(totalUpload)}\n${siteLines.join('\n')}';
+      tooltipMap[date] =
+          '📅 $date\n汇总\t${formatBytes(totalUpload)}\n${siteLines.join('\n')}';
     }
 
     final series = <StackedColumnSeries<_BarData, String>>[];
@@ -1128,8 +1723,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       final site = data[i];
       final seriesData = sortedDates.map((date) {
         final records = site.value.where((r) => r.createdAt == date);
-        final uploaded = records.isNotEmpty ? records.first.uploaded.toDouble() : 0.0;
-        return _BarData(label: _formatDay(date), value: uploaded, tooltip: tooltipMap[date] ?? '');
+        final uploaded = records.isNotEmpty
+            ? records.first.uploaded.toDouble()
+            : 0.0;
+        return _BarData(
+          label: _formatDay(date),
+          value: uploaded,
+          tooltip: tooltipMap[date] ?? '',
+        );
       }).toList();
       series.add(
         StackedColumnSeries<_BarData, String>(
@@ -1170,10 +1771,15 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 majorTickLines: const MajorTickLines(size: 0),
                 majorGridLines: MajorGridLines(
                   width: 0.5,
-                  color: FTheme.of(context).colors.border.withValues(alpha: 0.45),
+                  color: FTheme.of(
+                    context,
+                  ).colors.border.withValues(alpha: 0.45),
                 ),
                 axisLabelFormatter: (AxisLabelRenderDetails details) =>
-                    ChartAxisLabel(formatYAxis(details.value), details.textStyle),
+                    ChartAxisLabel(
+                      formatYAxis(details.value),
+                      details.textStyle,
+                    ),
               ),
               series: series,
               tooltipBehavior: TooltipBehavior(
@@ -1183,8 +1789,16 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 header: '',
                 canShowMarker: false,
                 duration: 10000,
-                builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) =>
-                    _buildDashboardOverlayTooltip((data as _BarData).tooltip),
+                builder:
+                    (
+                      dynamic data,
+                      dynamic point,
+                      dynamic series,
+                      int pointIndex,
+                      int seriesIndex,
+                    ) => _buildDashboardOverlayTooltip(
+                      (data as _BarData).tooltip,
+                    ),
               ),
             ),
           ),
@@ -1195,9 +1809,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   // ———————————————— Treemap ————————————————
 
-  Widget _buildStatusChart(String title, List<SiteStatusData> data, bool privacy) {
+  Widget _buildStatusChart(
+    String title,
+    List<SiteStatusData> data,
+    bool privacy,
+  ) {
     if (data.isEmpty) return _buildEmptyPlaceholder(title);
-    final sorted = data.toList()..sort((a, b) => b.value.uploaded.compareTo(a.value.uploaded));
+    final sorted = data.toList()
+      ..sort((a, b) => b.value.uploaded.compareTo(a.value.uploaded));
     final filtered = sorted.where((e) => e.value.uploaded > 0).toList();
     if (filtered.isEmpty) return _buildEmptyPlaceholder(title);
     return _buildCard(
@@ -1229,7 +1848,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         final value = line.substring(tabIndex + 1);
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 1),
-          padding: EdgeInsets.symmetric(horizontal: isSummary ? 7 : 0, vertical: isSummary ? 5 : 2),
+          padding: EdgeInsets.symmetric(
+            horizontal: isSummary ? 7 : 0,
+            vertical: isSummary ? 5 : 2,
+          ),
           decoration: isSummary
               ? BoxDecoration(
                   color: theme.colors.primary.withValues(alpha: 0.08),
@@ -1244,7 +1866,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   name,
                   style: theme.typography.sm.copyWith(
                     fontWeight: isSummary ? FontWeight.w800 : FontWeight.w400,
-                    color: isSummary ? theme.colors.primary : theme.colors.mutedForeground,
+                    color: isSummary
+                        ? theme.colors.primary
+                        : theme.colors.mutedForeground,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1258,7 +1882,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 overflow: TextOverflow.ellipsis,
                 style: theme.typography.sm.copyWith(
                   fontWeight: isSummary ? FontWeight.w800 : FontWeight.w500,
-                  color: isSummary ? theme.colors.primary : theme.colors.foreground,
+                  color: isSummary
+                      ? theme.colors.primary
+                      : theme.colors.foreground,
                 ),
               ),
             ],
@@ -1267,7 +1893,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       }
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
-        child: Text(line, style: theme.typography.sm.copyWith(color: theme.colors.mutedForeground)),
+        child: Text(
+          line,
+          style: theme.typography.sm.copyWith(
+            color: theme.colors.mutedForeground,
+          ),
+        ),
       );
     }
 
@@ -1301,7 +1932,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   Expanded(
                     child: Text(
                       hasTitle ? lines.first : '详情',
-                      style: theme.typography.sm.copyWith(fontWeight: FontWeight.w800, color: theme.colors.foreground),
+                      style: theme.typography.sm.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: theme.colors.foreground,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -1312,7 +1946,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     onTap: _hideDashboardOverlayTooltip,
                     child: Padding(
                       padding: const EdgeInsets.all(3),
-                      child: Icon(FIcons.x, size: 14, color: theme.colors.mutedForeground),
+                      child: Icon(
+                        FIcons.x,
+                        size: 14,
+                        color: theme.colors.mutedForeground,
+                      ),
                     ),
                   ),
                 ],
@@ -1349,7 +1987,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     const margin = 12.0;
     final tooltipWidth = size.width < 304 ? size.width - margin * 2 : 280.0;
     const tooltipHeight = 260.0;
-    final position = _dashboardTooltipPosition ?? Offset(size.width / 2, size.height / 2);
+    final position =
+        _dashboardTooltipPosition ?? Offset(size.width / 2, size.height / 2);
 
     var left = position.dx - tooltipWidth / 2;
     final maxLeft = size.width - tooltipWidth - margin;
@@ -1370,11 +2009,17 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         left: left,
         top: top,
         width: tooltipWidth,
-        child: Material(type: MaterialType.transparency, child: _buildTooltipWidget(text)),
+        child: Material(
+          type: MaterialType.transparency,
+          child: _buildTooltipWidget(text),
+        ),
       ),
     );
     overlay.insert(_dashboardTooltipEntry!);
-    _dashboardTooltipTimer = Timer(const Duration(seconds: 12), _hideDashboardOverlayTooltip);
+    _dashboardTooltipTimer = Timer(
+      const Duration(seconds: 12),
+      _hideDashboardOverlayTooltip,
+    );
   }
 
   void _hideDashboardOverlayTooltip() {
@@ -1403,7 +2048,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           color: hidden ? Colors.transparent : color.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: hidden ? cs.border.withValues(alpha: 0.35) : color.withValues(alpha: 0.12),
+            color: hidden
+                ? cs.border.withValues(alpha: 0.35)
+                : color.withValues(alpha: 0.12),
             width: 0.6,
           ),
         ),
@@ -1412,7 +2059,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             Container(
               width: 7,
               height: 7,
-              decoration: BoxDecoration(color: hidden ? color.withValues(alpha: 0.3) : color, shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: hidden ? color.withValues(alpha: 0.3) : color,
+                shape: BoxShape.circle,
+              ),
             ),
             const SizedBox(width: 6),
             Expanded(
@@ -1421,7 +2071,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 style: FTheme.of(context).typography.xs.copyWith(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  color: hidden ? cs.mutedForeground.withValues(alpha: 0.5) : cs.foreground.withValues(alpha: 0.84),
+                  color: hidden
+                      ? cs.mutedForeground.withValues(alpha: 0.5)
+                      : cs.foreground.withValues(alpha: 0.84),
                   decoration: hidden ? TextDecoration.lineThrough : null,
                 ),
                 maxLines: 1,
@@ -1434,7 +2086,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 style: FTheme.of(context).typography.xs.copyWith(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: hidden ? cs.mutedForeground.withValues(alpha: 0.5) : cs.mutedForeground,
+                  color: hidden
+                      ? cs.mutedForeground.withValues(alpha: 0.5)
+                      : cs.mutedForeground,
                 ),
               ),
           ],
@@ -1471,7 +2125,8 @@ class _DesignationCard extends StatefulWidget {
   State<_DesignationCard> createState() => _DesignationCardState();
 }
 
-class _DesignationCardState extends State<_DesignationCard> with TickerProviderStateMixin {
+class _DesignationCardState extends State<_DesignationCard>
+    with TickerProviderStateMixin {
   late FPopoverController _popoverCtrl;
   late AnimationController _animCtrl;
 
@@ -1491,17 +2146,40 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
     10: [Color(0xFF06B6D4), Color(0xFF3B82F6), Color(0xFF06B6D4)],
     20: [Color(0xFF3B82F6), Color(0xFF8B5CF6), Color(0xFF3B82F6)],
     30: [Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF8B5CF6)],
-    50: [Color(0xFF3B82F6), Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF3B82F6)],
-    100: [Color(0xFFFF6B6B), Color(0xFFFF8E53), Color(0xFFFFD93D), Color(0xFFFF6B6B)],
-    150: [Color(0xFFE11D48), Color(0xFFFF6B6B), Color(0xFFFFD93D), Color(0xFFE11D48)],
-    200: [Color(0xFFFFD700), Color(0xFFE11D48), Color(0xFF9B59B6), Color(0xFFFFD700)],
+    50: [
+      Color(0xFF3B82F6),
+      Color(0xFF8B5CF6),
+      Color(0xFFEC4899),
+      Color(0xFF3B82F6),
+    ],
+    100: [
+      Color(0xFFFF6B6B),
+      Color(0xFFFF8E53),
+      Color(0xFFFFD93D),
+      Color(0xFFFF6B6B),
+    ],
+    150: [
+      Color(0xFFE11D48),
+      Color(0xFFFF6B6B),
+      Color(0xFFFFD93D),
+      Color(0xFFE11D48),
+    ],
+    200: [
+      Color(0xFFFFD700),
+      Color(0xFFE11D48),
+      Color(0xFF9B59B6),
+      Color(0xFFFFD700),
+    ],
   };
 
   @override
   void initState() {
     super.initState();
     _popoverCtrl = FPopoverController(vsync: this);
-    _animCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
   }
 
   @override
@@ -1555,9 +2233,13 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
           child: ShaderMask(
             shaderCallback: (bounds) {
               final colors = _colors;
-              final stops = List.generate(colors.length, (i) => i / (colors.length - 1));
+              final stops = List.generate(
+                colors.length,
+                (i) => i / (colors.length - 1),
+              );
               final offset = _animCtrl.value;
-              final animatedStops = stops.map((s) => (s + offset) % 1.0).toList()..sort();
+              final animatedStops =
+                  stops.map((s) => (s + offset) % 1.0).toList()..sort();
 
               return LinearGradient(
                 colors: colors,
@@ -1570,7 +2252,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
             blendMode: BlendMode.srcIn,
             child: Stack(
               children: [
-                for (final offset in const [Offset.zero, Offset(0.45, 0), Offset(0, 0.35)])
+                for (final offset in const [
+                  Offset.zero,
+                  Offset(0.45, 0),
+                  Offset(0, 0.35),
+                ])
                   Transform.translate(
                     offset: offset,
                     child: Text(
@@ -1592,7 +2278,8 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
   }
 
   Widget _buildPopoverContent(FColors cs, FTypography typo) {
-    final entries = _designations.entries.toList()..sort((a, b) => b.key.compareTo(a.key));
+    final entries = _designations.entries.toList()
+      ..sort((a, b) => b.key.compareTo(a.key));
     final progress = _unlockProgress();
     return Container(
       width: 230,
@@ -1601,13 +2288,22 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
         color: cs.background,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: cs.border),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 12, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('称号等级', style: typo.sm.copyWith(fontWeight: FontWeight.w600, fontSize: 13)),
+          Text(
+            '称号等级',
+            style: typo.sm.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
+          ),
           const SizedBox(height: 8),
           _buildUnlockProgress(cs, typo, progress),
           const SizedBox(height: 10),
@@ -1622,7 +2318,9 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                     width: 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: isCurrent ? const Color(0xFFE11D48) : (isActive ? const Color(0xFF10B981) : cs.border),
+                      color: isCurrent
+                          ? const Color(0xFFE11D48)
+                          : (isActive ? const Color(0xFF10B981) : cs.border),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -1632,7 +2330,9 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                     child: Text(
                       '${entry.key}站',
                       style: typo.xs.copyWith(
-                        color: isActive ? cs.foreground : cs.mutedForeground.withValues(alpha: 0.4),
+                        color: isActive
+                            ? cs.foreground
+                            : cs.mutedForeground.withValues(alpha: 0.4),
                         fontSize: 11,
                       ),
                     ),
@@ -1642,7 +2342,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (isCurrent) ...[
-                          Icon(FIcons.check, size: 13, color: const Color(0xFFE11D48)),
+                          Icon(
+                            FIcons.check,
+                            size: 13,
+                            color: const Color(0xFFE11D48),
+                          ),
                           const SizedBox(width: 6),
                         ],
                         Flexible(
@@ -1652,8 +2356,14 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                             style: typo.xs.copyWith(
                               color: isCurrent
                                   ? const Color(0xFFE11D48)
-                                  : (isActive ? cs.foreground : cs.mutedForeground.withValues(alpha: 0.4)),
-                              fontWeight: isCurrent ? FontWeight.w700 : FontWeight.normal,
+                                  : (isActive
+                                        ? cs.foreground
+                                        : cs.mutedForeground.withValues(
+                                            alpha: 0.4,
+                                          )),
+                              fontWeight: isCurrent
+                                  ? FontWeight.w700
+                                  : FontWeight.normal,
                               fontSize: 12,
                             ),
                           ),
@@ -1671,7 +2381,8 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
   }
 
   _DesignationProgress _unlockProgress() {
-    final levels = _designations.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    final levels = _designations.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
     var current = levels.first;
     MapEntry<int, String>? next;
 
@@ -1709,7 +2420,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
     );
   }
 
-  Widget _buildUnlockProgress(FColors cs, FTypography typo, _DesignationProgress progress) {
+  Widget _buildUnlockProgress(
+    FColors cs,
+    FTypography typo,
+    _DesignationProgress progress,
+  ) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -1725,24 +2440,39 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
             children: [
               Text(
                 '${widget.siteCount}站',
-                style: typo.sm.copyWith(color: const Color(0xFFE11D48), fontWeight: FontWeight.w800, fontSize: 13),
+                style: typo.sm.copyWith(
+                  color: const Color(0xFFE11D48),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                ),
               ),
               const Spacer(),
               Text(
-                progress.completed ? '已解锁最高称号' : '距 ${progress.nextTitle} 还差 ${progress.remaining}站',
-                style: typo.xs.copyWith(color: cs.mutedForeground, fontSize: 11),
+                progress.completed
+                    ? '已解锁最高称号'
+                    : '距 ${progress.nextTitle} 还差 ${progress.remaining}站',
+                style: typo.xs.copyWith(
+                  color: cs.mutedForeground,
+                  fontSize: 11,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Container(
             height: 5,
-            decoration: BoxDecoration(color: cs.border.withValues(alpha: 0.55), borderRadius: BorderRadius.circular(3)),
+            decoration: BoxDecoration(
+              color: cs.border.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(3),
+            ),
             alignment: Alignment.centerLeft,
             child: FractionallySizedBox(
               widthFactor: progress.ratio.clamp(0.0, 1.0).toDouble(),
               child: Container(
-                decoration: BoxDecoration(color: const Color(0xFFE11D48), borderRadius: BorderRadius.circular(3)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE11D48),
+                  borderRadius: BorderRadius.circular(3),
+                ),
               ),
             ),
           ),
@@ -1753,7 +2483,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                 : '${progress.currentLevel}站 ${progress.currentTitle} → ${progress.nextLevel}站 ${progress.nextTitle}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: typo.xs.copyWith(color: cs.foreground, fontSize: 11, fontWeight: FontWeight.w600),
+            style: typo.xs.copyWith(
+              color: cs.foreground,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -1812,7 +2546,13 @@ class _DistributionItem {
   final String? valueText;
   final String? tooltip;
 
-  const _DistributionItem({required this.name, required this.value, required this.color, this.valueText, this.tooltip});
+  const _DistributionItem({
+    required this.name,
+    required this.value,
+    required this.color,
+    this.valueText,
+    this.tooltip,
+  });
 }
 
 class _IncrementChartItem {
@@ -1821,7 +2561,12 @@ class _IncrementChartItem {
   final num download;
   final String tooltip;
 
-  const _IncrementChartItem(this.name, this.upload, this.download, this.tooltip);
+  const _IncrementChartItem(
+    this.name,
+    this.upload,
+    this.download,
+    this.tooltip,
+  );
 }
 
 class _TrendPoint {
@@ -1846,7 +2591,12 @@ class _MonthlyChartItem {
   final String displayValue;
   final String tooltip;
 
-  const _MonthlyChartItem(this.label, this.value, this.displayValue, this.tooltip);
+  const _MonthlyChartItem(
+    this.label,
+    this.value,
+    this.displayValue,
+    this.tooltip,
+  );
 }
 
 class _PieData {
@@ -1855,7 +2605,12 @@ class _PieData {
   final String tooltip;
   final Color color;
 
-  _PieData({required this.name, required this.value, required this.tooltip, required this.color});
+  _PieData({
+    required this.name,
+    required this.value,
+    required this.tooltip,
+    required this.color,
+  });
 }
 
 class _BarData {

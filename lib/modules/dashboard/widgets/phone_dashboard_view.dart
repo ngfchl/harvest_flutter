@@ -33,9 +33,7 @@ extension _PhoneDashboardView on _DashboardPageState {
     final dates = _phoneTrendDateKeys(data);
     if (dates.isEmpty) return const [];
 
-    final totals = {
-      for (final date in dates) date: _TrendPoint(date, 0, 0),
-    };
+    final totals = {for (final date in dates) date: _TrendPoint(date, 0, 0)};
     final uploadDetails = {
       for (final date in dates) date: <MapEntry<String, num>>[],
     };
@@ -54,20 +52,26 @@ extension _PhoneDashboardView on _DashboardPageState {
           current.download + record.downloaded,
         );
         if (record.uploaded > 0) {
-          uploadDetails[date]?.add(MapEntry(_mask(site.name, privacy), record.uploaded));
+          uploadDetails[date]?.add(
+            MapEntry(_mask(site.name, privacy), record.uploaded),
+          );
         }
         if (record.downloaded > 0) {
-          downloadDetails[date]?.add(MapEntry(_mask(site.name, privacy), record.downloaded));
+          downloadDetails[date]?.add(
+            MapEntry(_mask(site.name, privacy), record.downloaded),
+          );
         }
       }
     }
 
     return dates.map((date) {
       final point = totals[date]!;
-      final uploads = [...uploadDetails[date] ?? const <MapEntry<String, num>>[]]
-        ..sort((a, b) => b.value.compareTo(a.value));
-      final downloads = [...downloadDetails[date] ?? const <MapEntry<String, num>>[]]
-        ..sort((a, b) => b.value.compareTo(a.value));
+      final uploads = [
+        ...uploadDetails[date] ?? const <MapEntry<String, num>>[],
+      ]..sort((a, b) => b.value.compareTo(a.value));
+      final downloads = [
+        ...downloadDetails[date] ?? const <MapEntry<String, num>>[],
+      ]..sort((a, b) => b.value.compareTo(a.value));
       return _TrendPoint(
         date,
         point.upload,
@@ -110,15 +114,11 @@ extension _PhoneDashboardView on _DashboardPageState {
     int refreshSerial,
   ) {
     final children = <Widget>[
-      _buildServerBar(privacy),
-      CacheStatusBanner(
-        info: cacheInfo,
-        margin: const EdgeInsets.only(top: 8),
-      ),
-      const SizedBox(height: 12),
+      CacheStatusBanner(info: cacheInfo, margin: const EdgeInsets.only(top: 8)),
       ..._buildPolishedPhoneDashboardChildren(data, privacy),
       SizedBox(
-        height: _DashboardPageState._bottomSafeGap +
+        height:
+            _DashboardPageState._bottomSafeGap +
             ShellBottomSpacing.value(context),
       ),
     ];
@@ -134,9 +134,7 @@ extension _PhoneDashboardView on _DashboardPageState {
         slivers: [
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate(children),
-            ),
+            sliver: SliverList(delegate: SliverChildListDelegate(children)),
           ),
         ],
       ),
@@ -186,52 +184,76 @@ extension _PhoneDashboardView on _DashboardPageState {
     DashboardData data,
     bool privacy,
   ) {
-    return [
-      _buildPhoneDesignationPanel(data),
-      const SizedBox(height: 12),
-      _buildPhoneOverviewCard(data),
-      const SizedBox(height: 12),
-      _buildPhoneQuickActionsCard(),
-      const SizedBox(height: 12),
-      _buildPhoneTrendCard(data, privacy),
-      const SizedBox(height: 12),
-      _buildStatusChart('站点状态', data.statusList, privacy),
-      const SizedBox(height: 12),
-      _buildPhoneUploadDistributionCard(data, privacy),
-      const SizedBox(height: 12),
-      _buildPhoneUserDistributionCard(data, privacy),
-      const SizedBox(height: 12),
-      _buildPhoneTodayIncrementCard(data, privacy),
-      const SizedBox(height: 12),
-      _buildPhoneSeedDistributionCard(data, privacy),
-      const SizedBox(height: 12),
-      _buildPhoneMonthlyMetricCard(
-        title: '月度上传',
-        data: data.uploadMonthIncrementDataList,
-        getValue: (record) => record.uploaded,
-        formatValue: formatBytes,
-        color: const Color(0xFF10B981),
-        privacy: privacy,
-      ),
-      const SizedBox(height: 12),
-      _buildPhoneMonthlyMetricCard(
-        title: '月度下载',
-        data: data.uploadMonthIncrementDataList,
-        getValue: (record) => record.downloaded,
-        formatValue: formatBytes,
-        color: const Color(0xFFEF4444),
-        privacy: privacy,
-      ),
-      const SizedBox(height: 12),
-      _buildPhoneMonthlyMetricCard(
-        title: '月度发种',
-        data: data.uploadMonthIncrementDataList,
-        getValue: (record) => record.published,
-        formatValue: (value) => '${_formatCount(value)} 个',
-        color: const Color(0xFFF59E0B),
-        privacy: privacy,
-      ),
-    ];
+    final children = <Widget>[];
+
+    for (final id in _chartOrder) {
+      if (!(_chartVisibility[id] ?? true)) continue;
+      final child = _buildPhoneDashboardModule(id, data, privacy);
+      if (child == null) continue;
+      children
+        ..add(const SizedBox(height: 12))
+        ..add(child);
+    }
+
+    return children;
+  }
+
+  Widget? _buildPhoneDashboardModule(
+    String id,
+    DashboardData data,
+    bool privacy,
+  ) {
+    switch (id) {
+      case 'phoneServer':
+        return _buildServerBar(privacy);
+      case 'phoneDesignation':
+        return _buildPhoneDesignationPanel(data);
+      case 'phoneOverview':
+        return _buildPhoneOverviewCard(data);
+      case 'phoneActions':
+        return _buildPhoneQuickActionsCard();
+      case 'phoneTrend':
+        return _buildPhoneTrendCard(data, privacy);
+      case 'phoneStatus':
+        return _buildStatusChart('站点状态', data.statusList, privacy);
+      case 'phoneUploadShare':
+        return _buildPhoneUploadDistributionCard(data, privacy);
+      case 'phoneAccount':
+        return _buildPhoneUserDistributionCard(data, privacy);
+      case 'phoneToday':
+        return _buildPhoneTodayIncrementCard(data, privacy);
+      case 'phoneSeedShare':
+        return _buildPhoneSeedDistributionCard(data, privacy);
+      case 'phoneMonthUpload':
+        return _buildPhoneMonthlyMetricCard(
+          title: '月度上传',
+          data: data.uploadMonthIncrementDataList,
+          getValue: (record) => record.uploaded,
+          formatValue: formatBytes,
+          color: const Color(0xFF10B981),
+          privacy: privacy,
+        );
+      case 'phoneMonthDownload':
+        return _buildPhoneMonthlyMetricCard(
+          title: '月度下载',
+          data: data.uploadMonthIncrementDataList,
+          getValue: (record) => record.downloaded,
+          formatValue: formatBytes,
+          color: const Color(0xFFEF4444),
+          privacy: privacy,
+        );
+      case 'phoneMonthPublish':
+        return _buildPhoneMonthlyMetricCard(
+          title: '月度发种',
+          data: data.uploadMonthIncrementDataList,
+          getValue: (record) => record.published,
+          formatValue: (value) => '${_formatCount(value)} 个',
+          color: const Color(0xFFF59E0B),
+          privacy: privacy,
+        );
+      default:
+        return null;
+    }
   }
 
   Widget _buildPhoneDesignationPanel(DashboardData data) {
@@ -349,7 +371,8 @@ extension _PhoneDashboardView on _DashboardPageState {
   }
 
   _DesignationProgress _phoneDesignationProgress(int siteCount) {
-    final levels = _DashboardPageState._designations.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    final levels = _DashboardPageState._designations.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
     final first = levels.first;
 
     if (siteCount < first.key) {
@@ -438,10 +461,30 @@ extension _PhoneDashboardView on _DashboardPageState {
         : _formatAccountAgeYears(data.earliestSite?.timeJoin);
     final lastRefresh = formatDateStringToMinute(data.updatedAt, empty: '-');
     final overallItems = [
-      _StatItem('做种数', '${data.totalSeeding}', FIcons.users, const Color(0xFF10B981)),
-      _StatItem('下载数', '${data.totalLeeching}', FIcons.download, const Color(0xFF2563EB)),
-      _StatItem('做种量', formatBytes(data.totalSeedVol), FIcons.database, const Color(0xFF8B5CF6)),
-      _StatItem('发种数', _formatCount(data.totalPublished), FIcons.star, const Color(0xFFF59E0B)),
+      _StatItem(
+        '做种数',
+        '${data.totalSeeding}',
+        FIcons.users,
+        const Color(0xFF10B981),
+      ),
+      _StatItem(
+        '下载数',
+        '${data.totalLeeching}',
+        FIcons.download,
+        const Color(0xFF2563EB),
+      ),
+      _StatItem(
+        '做种量',
+        formatBytes(data.totalSeedVol),
+        FIcons.database,
+        const Color(0xFF8B5CF6),
+      ),
+      _StatItem(
+        '发种数',
+        _formatCount(data.totalPublished),
+        FIcons.star,
+        const Color(0xFFF59E0B),
+      ),
     ];
 
     return _buildBeautyCard(
@@ -451,12 +494,7 @@ extension _PhoneDashboardView on _DashboardPageState {
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  '数据总览',
-                  style: _phoneTitleStyle(17),
-                ),
-              ),
+              Expanded(child: Text('数据总览', style: _phoneTitleStyle(17))),
               Text(
                 '更新于 $lastRefresh',
                 style: TextStyle(
@@ -737,14 +775,17 @@ extension _PhoneDashboardView on _DashboardPageState {
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  '上传 / 下载趋势',
-                  style: _phoneTitleStyle(17),
-                ),
+              Expanded(child: Text('上传 / 下载趋势', style: _phoneTitleStyle(17))),
+              _buildRangeChip(
+                '本周',
+                _phoneTrendDays == 7,
+                () => _setPhoneTrendDays(7),
               ),
-              _buildRangeChip('本周', _phoneTrendDays == 7, () => _setPhoneTrendDays(7)),
-              _buildRangeChip('本月', _phoneTrendDays == 30, () => _setPhoneTrendDays(30)),
+              _buildRangeChip(
+                '本月',
+                _phoneTrendDays == 30,
+                () => _setPhoneTrendDays(30),
+              ),
             ],
           ),
           const SizedBox(height: 18),
@@ -794,7 +835,9 @@ extension _PhoneDashboardView on _DashboardPageState {
         margin: const EdgeInsets.only(left: 4),
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? cs.primary : cs.mutedForeground.withValues(alpha: 0.08),
+          color: selected
+              ? cs.primary
+              : cs.mutedForeground.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
@@ -862,7 +905,13 @@ extension _PhoneDashboardView on _DashboardPageState {
           const SizedBox(height: 20),
           SizedBox(
             height: 58,
-            child: _buildSparkBars(points, color, valueOf, detailsOf, tooltipLabel),
+            child: _buildSparkBars(
+              points,
+              color,
+              valueOf,
+              detailsOf,
+              tooltipLabel,
+            ),
           ),
         ],
       ),
@@ -876,7 +925,10 @@ extension _PhoneDashboardView on _DashboardPageState {
     List<MapEntry<String, num>> Function(_TrendPoint point) detailsOf,
     String tooltipLabel,
   ) {
-    final points = rawPoints.where((point) => valueOf(point) > 0).take(24).toList();
+    final points = rawPoints
+        .where((point) => valueOf(point) > 0)
+        .take(24)
+        .toList();
     if (points.isEmpty) {
       return Center(child: this._buildPanelEmpty(compact: true));
     }
@@ -894,7 +946,14 @@ extension _PhoneDashboardView on _DashboardPageState {
             onPointerDown: (event) {
               _hideDashboardOverlayTooltip();
               _rememberDashboardTooltipPosition(event);
-              _scheduleDashboardOverlayTooltip(_buildTrendTooltipText(point, value, detailsOf(point), tooltipLabel));
+              _scheduleDashboardOverlayTooltip(
+                _buildTrendTooltipText(
+                  point,
+                  value,
+                  detailsOf(point),
+                  tooltipLabel,
+                ),
+              );
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 1.5),
@@ -937,8 +996,12 @@ extension _PhoneDashboardView on _DashboardPageState {
 
   Widget _buildPhoneUploadDistributionCard(DashboardData data, bool privacy) {
     final items = _buildUploadDistributionItems(data, privacy);
-    final top = items.take(_DashboardPageState._phoneDistributionLimit).toList();
-    final otherItems = items.skip(_DashboardPageState._phoneDistributionLimit).toList();
+    final top = items
+        .take(_DashboardPageState._phoneDistributionLimit)
+        .toList();
+    final otherItems = items
+        .skip(_DashboardPageState._phoneDistributionLimit)
+        .toList();
     final otherValue = items
         .skip(_DashboardPageState._phoneDistributionLimit)
         .fold<num>(0, (sum, item) => sum + item.value);
@@ -949,8 +1012,8 @@ extension _PhoneDashboardView on _DashboardPageState {
         _DistributionItem(
           name: '其他 ${items.length - top.length} 个站点',
           value: otherValue,
-          color: _DashboardPageState._colors[
-              top.length % _DashboardPageState._colors.length],
+          color: _DashboardPageState
+              ._colors[top.length % _DashboardPageState._colors.length],
           valueText: formatBytes(otherValue),
           tooltip: _buildDistributionTooltip(
             '其他 ${items.length - top.length} 个站点',
@@ -968,12 +1031,7 @@ extension _PhoneDashboardView on _DashboardPageState {
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  '上传量分布',
-                  style: _phoneTitleStyle(17),
-                ),
-              ),
+              Expanded(child: Text('上传量分布', style: _phoneTitleStyle(17))),
               Icon(
                 FIcons.chevronRight,
                 size: 18,
@@ -1021,15 +1079,15 @@ extension _PhoneDashboardView on _DashboardPageState {
 
   Widget _buildPhoneUserDistributionCard(DashboardData data, bool privacy) {
     final emailItems = _buildKvDistributionItems(data.emailCount, privacy);
-    final usernameItems = _buildKvDistributionItems(data.usernameCount, privacy);
+    final usernameItems = _buildKvDistributionItems(
+      data.usernameCount,
+      privacy,
+    );
     return _buildBeautyCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '用户信息分布',
-            style: _phoneTitleStyle(17),
-          ),
+          Text('用户信息分布', style: _phoneTitleStyle(17)),
           const SizedBox(height: 16),
           _buildMiniDonutChartBlock('邮箱', emailItems),
           const SizedBox(height: 18),
@@ -1114,12 +1172,16 @@ extension _PhoneDashboardView on _DashboardPageState {
         }
       }
     }
-    final entries = totals.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
-    final visible = entries.length > 12 ? entries.sublist(entries.length - 12) : entries;
+    final entries = totals.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    final visible = entries.length > 12
+        ? entries.sublist(entries.length - 12)
+        : entries;
     final total = visible.fold<num>(0, (sum, entry) => sum + entry.value);
     final chartItems = visible.map((entry) {
-      final details = [...siteDetails[entry.key] ?? const <MapEntry<String, num>>[]]
-        ..sort((a, b) => b.value.compareTo(a.value));
+      final details = [
+        ...siteDetails[entry.key] ?? const <MapEntry<String, num>>[],
+      ]..sort((a, b) => b.value.compareTo(a.value));
       final tooltipLines = [
         title,
         _formatMonth(entry.key),
@@ -1139,12 +1201,7 @@ extension _PhoneDashboardView on _DashboardPageState {
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: _phoneTitleStyle(17),
-                ),
-              ),
+              Expanded(child: Text(title, style: _phoneTitleStyle(17))),
               Text(
                 formatValue(total),
                 style: TextStyle(
@@ -1197,10 +1254,8 @@ extension _PhoneDashboardView on _DashboardPageState {
             width: 0.5,
             color: cs.border.withValues(alpha: 0.45),
           ),
-          axisLabelFormatter: (details) => ChartAxisLabel(
-            formatValue(details.value),
-            details.textStyle,
-          ),
+          axisLabelFormatter: (details) =>
+              ChartAxisLabel(formatValue(details.value), details.textStyle),
         ),
         series: <CartesianSeries<_MonthlyChartItem, String>>[
           ColumnSeries<_MonthlyChartItem, String>(
@@ -1241,8 +1296,12 @@ extension _PhoneDashboardView on _DashboardPageState {
     required List<_DistributionItem> items,
     required String Function(num value) totalFormatter,
   }) {
-    final top = items.take(_DashboardPageState._phoneDistributionLimit).toList();
-    final otherItems = items.skip(_DashboardPageState._phoneDistributionLimit).toList();
+    final top = items
+        .take(_DashboardPageState._phoneDistributionLimit)
+        .toList();
+    final otherItems = items
+        .skip(_DashboardPageState._phoneDistributionLimit)
+        .toList();
     final otherValue = items
         .skip(_DashboardPageState._phoneDistributionLimit)
         .fold<num>(0, (sum, item) => sum + item.value);
@@ -1253,8 +1312,8 @@ extension _PhoneDashboardView on _DashboardPageState {
         _DistributionItem(
           name: '其他 ${items.length - top.length} 项',
           value: otherValue,
-          color: _DashboardPageState._colors[
-              top.length % _DashboardPageState._colors.length],
+          color: _DashboardPageState
+              ._colors[top.length % _DashboardPageState._colors.length],
           valueText: totalFormatter(otherValue),
           tooltip: _buildDistributionTooltip(
             '其他 ${items.length - top.length} 项',
@@ -1269,10 +1328,7 @@ extension _PhoneDashboardView on _DashboardPageState {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: _phoneTitleStyle(17),
-          ),
+          Text(title, style: _phoneTitleStyle(17)),
           const SizedBox(height: 16),
           if (displayItems.isEmpty)
             this._buildPanelEmpty()
@@ -1287,16 +1343,25 @@ extension _PhoneDashboardView on _DashboardPageState {
               ),
             ),
             const SizedBox(height: 8),
-            ...displayItems.map((item) => _buildDistributionListRow(item, total)),
+            ...displayItems.map(
+              (item) => _buildDistributionListRow(item, total),
+            ),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildMiniDonutChartBlock(String title, List<_DistributionItem> items) {
-    final top = items.take(_DashboardPageState._phoneDistributionLimit).toList();
-    final otherItems = items.skip(_DashboardPageState._phoneDistributionLimit).toList();
+  Widget _buildMiniDonutChartBlock(
+    String title,
+    List<_DistributionItem> items,
+  ) {
+    final top = items
+        .take(_DashboardPageState._phoneDistributionLimit)
+        .toList();
+    final otherItems = items
+        .skip(_DashboardPageState._phoneDistributionLimit)
+        .toList();
     final otherValue = items
         .skip(_DashboardPageState._phoneDistributionLimit)
         .fold<num>(0, (sum, item) => sum + item.value);
@@ -1307,8 +1372,8 @@ extension _PhoneDashboardView on _DashboardPageState {
         _DistributionItem(
           name: '其他 ${items.length - top.length} 项',
           value: otherValue,
-          color: _DashboardPageState._colors[
-              top.length % _DashboardPageState._colors.length],
+          color: _DashboardPageState
+              ._colors[top.length % _DashboardPageState._colors.length],
           valueText: '${_formatCount(otherValue)}',
           tooltip: _buildDistributionTooltip(
             '其他 ${items.length - top.length} 项',
@@ -1322,10 +1387,7 @@ extension _PhoneDashboardView on _DashboardPageState {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: _phoneTitleStyle(14),
-        ),
+        Text(title, style: _phoneTitleStyle(14)),
         const SizedBox(height: 10),
         if (displayItems.isEmpty)
           this._buildPanelEmpty(compact: true)
@@ -1350,11 +1412,7 @@ extension _PhoneDashboardView on _DashboardPageState {
 
               if (constraints.maxWidth < 300) {
                 return Column(
-                  children: [
-                    chart,
-                    const SizedBox(height: 6),
-                    list,
-                  ],
+                  children: [chart, const SizedBox(height: 6), list],
                 );
               }
 
@@ -1397,7 +1455,9 @@ extension _PhoneDashboardView on _DashboardPageState {
           );
         }
       }
-      items.sort((a, b) => (b.upload + b.download).compareTo(a.upload + a.download));
+      items.sort(
+        (a, b) => (b.upload + b.download).compareTo(a.upload + a.download),
+      );
       return items.take(10).toList();
     }
 
@@ -1408,23 +1468,25 @@ extension _PhoneDashboardView on _DashboardPageState {
     for (final item in data.downloadIncrementDataList) {
       if (item.value > 0) names.add(item.name);
     }
-    final items = names.map((name) {
-      num upload = 0;
-      num download = 0;
-      for (final item in data.uploadIncrementDataList) {
-        if (item.name == name) upload = item.value;
-      }
-      for (final item in data.downloadIncrementDataList) {
-        if (item.name == name) download = item.value;
-      }
-      return _IncrementChartItem(
-        _mask(name, privacy),
-        upload,
-        download,
-        '上传\t${formatBytes(upload)}\n下载\t${formatBytes(download)}',
-      );
-    }).toList()
-      ..sort((a, b) => (b.upload + b.download).compareTo(a.upload + a.download));
+    final items =
+        names.map((name) {
+          num upload = 0;
+          num download = 0;
+          for (final item in data.uploadIncrementDataList) {
+            if (item.name == name) upload = item.value;
+          }
+          for (final item in data.downloadIncrementDataList) {
+            if (item.name == name) download = item.value;
+          }
+          return _IncrementChartItem(
+            _mask(name, privacy),
+            upload,
+            download,
+            '上传\t${formatBytes(upload)}\n下载\t${formatBytes(download)}',
+          );
+        }).toList()..sort(
+          (a, b) => (b.upload + b.download).compareTo(a.upload + a.download),
+        );
     return items.take(10).toList();
   }
 
@@ -1460,10 +1522,8 @@ extension _PhoneDashboardView on _DashboardPageState {
             width: 0.5,
             color: cs.border.withValues(alpha: 0.5),
           ),
-          axisLabelFormatter: (details) => ChartAxisLabel(
-            formatYAxis(details.value),
-            details.textStyle,
-          ),
+          axisLabelFormatter: (details) =>
+              ChartAxisLabel(formatYAxis(details.value), details.textStyle),
         ),
         series: <CartesianSeries<_IncrementChartItem, String>>[
           BarSeries<_IncrementChartItem, String>(
@@ -1472,8 +1532,9 @@ extension _PhoneDashboardView on _DashboardPageState {
             yValueMapper: (item, _) => item.upload,
             name: '上传',
             color: const Color(0xFF10B981),
-            borderRadius:
-                const BorderRadius.horizontal(right: Radius.circular(5)),
+            borderRadius: const BorderRadius.horizontal(
+              right: Radius.circular(5),
+            ),
             width: 0.62,
             spacing: 0.18,
           ),
@@ -1483,8 +1544,9 @@ extension _PhoneDashboardView on _DashboardPageState {
             yValueMapper: (item, _) => item.download,
             name: '下载',
             color: const Color(0xFFEF4444),
-            borderRadius:
-                const BorderRadius.horizontal(right: Radius.circular(5)),
+            borderRadius: const BorderRadius.horizontal(
+              right: Radius.circular(5),
+            ),
             width: 0.62,
             spacing: 0.18,
           ),
@@ -1520,12 +1582,7 @@ extension _PhoneDashboardView on _DashboardPageState {
       children: [
         Row(
           children: [
-            Expanded(
-              child: Text(
-                title,
-                style: _phoneTitleStyle(14),
-              ),
-            ),
+            Expanded(child: Text(title, style: _phoneTitleStyle(14))),
             Text(
               '${_formatCount(total)}',
               style: TextStyle(
@@ -1556,7 +1613,8 @@ extension _PhoneDashboardView on _DashboardPageState {
         _DistributionItem(
           name: _mask(sorted[i].name, privacy),
           value: sorted[i].value.uploaded,
-          color: _DashboardPageState._colors[i % _DashboardPageState._colors.length],
+          color: _DashboardPageState
+              ._colors[i % _DashboardPageState._colors.length],
           valueText: formatBytes(sorted[i].value.uploaded),
         ),
     ];
@@ -1574,8 +1632,11 @@ extension _PhoneDashboardView on _DashboardPageState {
         _DistributionItem(
           name: _mask(sorted[i].name, privacy),
           value: sorted[i].value,
-          color: _DashboardPageState._colors[i % _DashboardPageState._colors.length],
-          valueText: valueFormatter?.call(sorted[i].value) ?? '${_formatCount(sorted[i].value)}',
+          color: _DashboardPageState
+              ._colors[i % _DashboardPageState._colors.length],
+          valueText:
+              valueFormatter?.call(sorted[i].value) ??
+              '${_formatCount(sorted[i].value)}',
         ),
     ];
   }
@@ -1586,26 +1647,23 @@ extension _PhoneDashboardView on _DashboardPageState {
     String centerLabel = '总上传',
     String Function(num value) totalFormatter = formatBytes,
   }) {
-    final chartData = items
-        .map(
-          (item) {
-            final pct = total <= 0 ? 0.0 : item.value / total * 100;
-            return _PieData(
-              name: item.name,
-              value: item.value.toDouble(),
-              tooltip: item.tooltip ??
-                  _buildDistributionTooltip(
-                    item.name,
-                    item.value,
-                    total,
-                    totalFormatter,
-                    valueText: item.valueText,
-                  ),
-              color: item.color,
-            );
-          },
-        )
-        .toList();
+    final chartData = items.map((item) {
+      final pct = total <= 0 ? 0.0 : item.value / total * 100;
+      return _PieData(
+        name: item.name,
+        value: item.value.toDouble(),
+        tooltip:
+            item.tooltip ??
+            _buildDistributionTooltip(
+              item.name,
+              item.value,
+              total,
+              totalFormatter,
+              valueText: item.valueText,
+            ),
+        color: item.color,
+      );
+    }).toList();
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -1625,9 +1683,8 @@ extension _PhoneDashboardView on _DashboardPageState {
                     dynamic series,
                     int pointIndex,
                     int seriesIndex,
-                  ) => _buildDashboardOverlayTooltip(
-                    (data as _PieData).tooltip,
-                  ),
+                  ) =>
+                      _buildDashboardOverlayTooltip((data as _PieData).tooltip),
             ),
             series: <DoughnutSeries<_PieData, String>>[
               DoughnutSeries<_PieData, String>(
@@ -1693,7 +1750,8 @@ extension _PhoneDashboardView on _DashboardPageState {
     final pct = total <= 0 ? 0.0 : item.value / total * 100;
     final valueText = item.valueText ?? formatBytes(item.value);
     return Tooltip(
-      message: item.tooltip ??
+      message:
+          item.tooltip ??
           '${item.name}\n数值\t$valueText\n占比\t${pct.toStringAsFixed(1)}%',
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1746,6 +1804,4 @@ extension _PhoneDashboardView on _DashboardPageState {
       ),
     );
   }
-
-
 }

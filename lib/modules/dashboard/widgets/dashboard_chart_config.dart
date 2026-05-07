@@ -5,30 +5,69 @@ import '../../../core/storage/storage_keys.dart';
 
 class DashboardChartConfig {
   static const defaultOrder = [
-    'status', 'email', 'username', 'uploaded',
-    'todayUpload', 'todayDownload', 'publishedCount', 'seed',
-    'monthUpload', 'monthDownload', 'monthPublished', 'dailyStack',
+    'phoneDesignation',
+    'phoneOverview',
+    'phoneActions',
+    'phoneServer',
+    'phoneTrend',
+    'phoneStatus',
+    'phoneUploadShare',
+    'phoneAccount',
+    'phoneToday',
+    'phoneSeedShare',
+    'phoneMonthUpload',
+    'phoneMonthDownload',
+    'phoneMonthPublish',
+  ];
+
+  static const desktopOrder = [
+    'desktopKpi',
+    'desktopTrend',
+    'desktopDesignation',
+    'desktopResource',
+    'desktopUploadShare',
+    'desktopSeedShare',
+    'desktopAccount',
+    'desktopToday',
+    'desktopRank',
+    'desktopMonthlyPublish',
+  ];
+
+  static const allModuleIds = [
+    ...defaultOrder,
+    ...desktopOrder,
   ];
 
   static const names = {
-    'status': '站点状态',
-    'email': '邮箱分布',
-    'username': '用户名分布',
-    'uploaded': '站点上传量',
-    'todayUpload': '今日上传增量',
-    'todayDownload': '今日下载增量',
-    'publishedCount': '站点发种数量',
-    'seed': '做种分布',
-    'monthUpload': '月度上传增量趋势',
-    'monthDownload': '月度下载增量趋势',
-    'monthPublished': '月度发种增量趋势',
-    'dailyStack': '每日上传趋势',
+    'phoneServer': '服务器信息',
+    'phoneDesignation': '称号进度',
+    'phoneOverview': '数据总览',
+    'phoneActions': '快捷操作',
+    'phoneTrend': '上传 / 下载趋势',
+    'phoneStatus': '站点状态',
+    'phoneUploadShare': '上传量分布',
+    'phoneAccount': '用户信息分布',
+    'phoneToday': '增量排行',
+    'phoneSeedShare': '做种分布',
+    'phoneMonthUpload': '月度上传',
+    'phoneMonthDownload': '月度下载',
+    'phoneMonthPublish': '月度发种',
+    'desktopKpi': '核心指标',
+    'desktopTrend': '吞吐趋势',
+    'desktopDesignation': '称号',
+    'desktopResource': '全局资源',
+    'desktopUploadShare': '上传占比',
+    'desktopSeedShare': '做种分布',
+    'desktopAccount': '账号分布',
+    'desktopToday': '今日增量',
+    'desktopRank': '累计排行',
+    'desktopMonthlyPublish': '月度发布',
   };
 
   static List<String> getOrder() {
     final saved = HiveManager.get<List>(StorageKeys.dashboardChartOrder);
     if (saved != null) {
-      final order = List<String>.from(saved);
+      final order = List<String>.from(saved).where(defaultOrder.contains).toList();
       for (final id in defaultOrder) {
         if (!order.contains(id)) order.add(id);
       }
@@ -45,12 +84,12 @@ class DashboardChartConfig {
     final saved = HiveManager.get<Map>(StorageKeys.dashboardChartVisibility);
     if (saved != null) {
       final vis = Map<String, bool>.from(saved);
-      for (final id in defaultOrder) {
+      for (final id in allModuleIds) {
         vis.putIfAbsent(id, () => true);
       }
       return vis;
     }
-    return {for (final id in defaultOrder) id: true};
+    return {for (final id in allModuleIds) id: true};
   }
 
   static Future<void> setVisibility(String id, bool visible) async {
@@ -76,7 +115,7 @@ class DashboardChartConfig {
   static Future<void> reset() async {
     await HiveManager.set(StorageKeys.dashboardChartOrder, defaultOrder);
     await HiveManager.set(StorageKeys.dashboardChartVisibility, {
-      for (final id in defaultOrder) id: true,
+      for (final id in allModuleIds) id: true,
     });
     await HiveManager.set(StorageKeys.dashboardChartHeight, defaultChartHeight);
   }

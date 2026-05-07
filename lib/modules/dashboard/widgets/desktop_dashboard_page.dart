@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:harvest/core/cache/session_cache.dart';
@@ -19,6 +19,8 @@ import '../../site/provider/site_provider.dart';
 import '../model/dashboard_data.dart';
 import '../provider/dashboard_provider.dart';
 import '../provider/privacy_provider.dart';
+import 'dashboard_chart_config.dart';
+import 'dashboard_chart_settings.dart';
 
 class DesktopDashboardPage extends ConsumerStatefulWidget {
   const DesktopDashboardPage({super.key});
@@ -60,6 +62,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   bool _refreshingSites = false;
   bool _signingIn = false;
   bool _showWeeks = false;
+  late Map<String, bool> _chartVisibility;
   _ChartTooltipData? _trendTooltip;
   Offset? _trendTooltipPosition;
   bool _trendTooltipHovering = false;
@@ -69,6 +72,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   @override
   void initState() {
     super.initState();
+    _chartVisibility = DashboardChartConfig.getVisibility();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(dashboardNotifierProvider.notifier).refresh();
       if (mounted) {
@@ -87,6 +91,28 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   Future<void> _onRefresh() async {
     await ref.read(dashboardNotifierProvider.notifier).refresh();
     _refreshController.finishRefresh();
+  }
+
+  bool _isChartVisible(String id) => _chartVisibility[id] ?? true;
+
+  bool _anyChartVisible(Iterable<String> ids) => ids.any(_isChartVisible);
+
+  void _showChartSettings() {
+    showDialog(
+      context: context,
+      builder: (ctx) => ChartSettingsDialog(
+        order: DashboardChartConfig.desktopOrder,
+        visibility: _chartVisibility,
+        chartHeight: DashboardChartConfig.defaultChartHeight,
+        treemapCount: DashboardChartConfig.defaultTreemapCount,
+        allowReorder: false,
+        showSizingControls: false,
+        title: '桌面看板显示设置',
+        onSaved: (_, visibility, __, ___) {
+          setState(() => _chartVisibility = visibility);
+        },
+      ),
+    );
   }
 
   String _taskEndpoint(String api) => api.endsWith('/') ? api.substring(0, api.length - 1) : api;
@@ -229,7 +255,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return IgnorePointer(child: CustomPaint(painter: _BoardBackdropPainter()));
   }
 
-  Widget _buildBoard(BuildContext context, DashboardData data, DataCacheInfo cacheInfo, bool privacy, int refreshSerial) {
+  Widget _buildBoard(
+    BuildContext context,
+    DashboardData data,
+    DataCacheInfo cacheInfo,
+    bool privacy,
+    int refreshSerial,
+  ) {
     return EasyRefresh(
       key: ValueKey('desktop-dashboard-$refreshSerial'),
       controller: _refreshController,
@@ -249,12 +281,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildHeader(data, cacheInfo, privacy),
-                      CacheStatusBanner(
-                        info: cacheInfo,
-                        margin: const EdgeInsets.only(top: 10),
-                      ),
-                      const SizedBox(height: 14),
-                      _buildKpiStrip(data, constraints.crossAxisExtent),
+                      CacheStatusBanner(info: cacheInfo, margin: const EdgeInsets.only(top: 10)),
+                      if (_isChartVisible('desktopKpi')) ...[
+                        const SizedBox(height: 14),
+                        _buildKpiStrip(data, constraints.crossAxisExtent),
+                      ],
                       const SizedBox(height: 14),
                       if (compact) _buildCompactContent(data, privacy) else _buildWideContent(data, privacy),
                     ],
@@ -310,6 +341,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           _headerAction(icon: FIcons.database, label: _refreshingSites ? '执行中' : '站点数据', onTap: _refreshSiteData),
           const SizedBox(width: 8),
           _headerAction(icon: FIcons.checkCheck, label: _signingIn ? '签到中' : '签到', onTap: _signInSites),
+          const SizedBox(width: 8),
+          _headerAction(icon: FIcons.slidersHorizontal, label: '模块', onTap: _showChartSettings),
           const SizedBox(width: 8),
           _headerAction(
             icon: privacy ? FIcons.eyeOff : FIcons.eye,
@@ -470,67 +503,87 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }
 
   Widget _buildWideContent(DashboardData data, bool privacy) {
+    final showTrend = _isChartVisible('desktopTrend');
+    final showDesignation = _isChartVisible('desktopDesignation');
+    final showResource = _isChartVisible('desktopResource');
+    final showUploaded = _isChartVisible('desktopUploadShare');
+    final showSeed = _isChartVisible('desktopSeedShare');
+    final showAccount = _isChartVisible('desktopAccount');
+    final showToday = _isChartVisible('desktopToday');
+    final showRank = _isChartVisible('desktopRank');
+    final showPublished = _isChartVisible('desktopMonthlyPublish');
+
     return Column(
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(flex: 7, child: _buildTrendPanel(data, privacy)),
-            const SizedBox(width: 10),
-            Expanded(
-              flex: 4,
-              child: Column(
-                children: [
-                  _buildDesignationPanel(data, height: 128),
-                  const SizedBox(height: 10),
-                  _buildResourcePanel(data, height: 252),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(flex: 7, child: _buildDistributionRow(data, privacy, stacked: false)),
-            const SizedBox(width: 10),
-            Expanded(flex: 4, child: _buildAccountPanel(data, privacy, height: 300)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(flex: 7, child: _buildTodayPanel(data, privacy, height: 440)),
-            const SizedBox(width: 10),
-            Expanded(flex: 4, child: _buildRankPanel(data, privacy, height: 440)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        _buildMonthlyPublishPanel(data, privacy),
+        if (showTrend || showDesignation || showResource) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showTrend) Expanded(flex: 7, child: _buildTrendPanel(data, privacy)),
+              if (showTrend && (showDesignation || showResource)) const SizedBox(width: 10),
+              if (showDesignation || showResource)
+                Expanded(
+                  flex: 4,
+                  child: Column(
+                    children: [
+                      if (showDesignation) _buildDesignationPanel(data, height: showResource ? 128 : 390),
+                      if (showDesignation && showResource) const SizedBox(height: 10),
+                      if (showResource) _buildResourcePanel(data, height: showDesignation ? 252 : 390),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+        ],
+        if (showUploaded || showSeed || showAccount) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showUploaded || showSeed)
+                Expanded(flex: 7, child: _buildDistributionRow(data, privacy, stacked: false)),
+              if ((showUploaded || showSeed) && showAccount) const SizedBox(width: 10),
+              if (showAccount) Expanded(flex: 4, child: _buildAccountPanel(data, privacy, height: 300)),
+            ],
+          ),
+          const SizedBox(height: 10),
+        ],
+        if (showToday || showRank) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showToday) Expanded(flex: 7, child: _buildTodayPanel(data, privacy, height: 440)),
+              if (showToday && showRank) const SizedBox(width: 10),
+              if (showRank) Expanded(flex: 4, child: _buildRankPanel(data, privacy, height: 440)),
+            ],
+          ),
+          const SizedBox(height: 10),
+        ],
+        if (showPublished) _buildMonthlyPublishPanel(data, privacy),
       ],
     );
   }
 
   Widget _buildCompactContent(DashboardData data, bool privacy) {
+    final showDesignation = _isChartVisible('desktopDesignation');
+    final showTrend = _isChartVisible('desktopTrend');
+    final showDistribution = _anyChartVisible(const ['desktopUploadShare', 'desktopSeedShare']);
+    final showResource = _isChartVisible('desktopResource');
+    final showRank = _isChartVisible('desktopRank');
+    final showToday = _isChartVisible('desktopToday');
+    final showPublished = _isChartVisible('desktopMonthlyPublish');
+    final showAccount = _isChartVisible('desktopAccount');
+
     return Column(
       children: [
-        _buildDesignationPanel(data),
-        const SizedBox(height: 10),
-        _buildTrendPanel(data, privacy),
-        const SizedBox(height: 10),
-        _buildDistributionRow(data, privacy, stacked: true),
-        const SizedBox(height: 10),
-        _buildResourcePanel(data),
-        const SizedBox(height: 10),
-        _buildRankPanel(data, privacy),
-        const SizedBox(height: 10),
-        _buildTodayPanel(data, privacy),
-        const SizedBox(height: 10),
-        _buildMonthlyPublishPanel(data, privacy),
-        const SizedBox(height: 10),
-        _buildAccountPanel(data, privacy),
+        if (showDesignation) ...[_buildDesignationPanel(data), const SizedBox(height: 10)],
+        if (showTrend) ...[_buildTrendPanel(data, privacy), const SizedBox(height: 10)],
+        if (showDistribution) ...[_buildDistributionRow(data, privacy, stacked: true), const SizedBox(height: 10)],
+        if (showResource) ...[_buildResourcePanel(data), const SizedBox(height: 10)],
+        if (showRank) ...[_buildRankPanel(data, privacy), const SizedBox(height: 10)],
+        if (showToday) ...[_buildTodayPanel(data, privacy), const SizedBox(height: 10)],
+        if (showPublished) ...[_buildMonthlyPublishPanel(data, privacy), const SizedBox(height: 10)],
+        if (showAccount) _buildAccountPanel(data, privacy),
       ],
     );
   }
@@ -658,7 +711,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   child: SfCartesianChart(
                     plotAreaBorderWidth: 0,
                     margin: EdgeInsets.zero,
-                    primaryXAxis: CategoryAxis(majorGridLines: const MajorGridLines(width: 0), labelStyle: _axisStyle()),
+                    primaryXAxis: CategoryAxis(
+                      majorGridLines: const MajorGridLines(width: 0),
+                      labelStyle: _axisStyle(),
+                    ),
                     primaryYAxis: NumericAxis(
                       opposedPosition: false,
                       majorGridLines: MajorGridLines(width: 0.7, color: _line.withValues(alpha: 0.55)),
@@ -767,21 +823,24 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }
 
   Widget _buildDistributionRow(DashboardData data, bool privacy, {required bool stacked}) {
+    final showUploaded = _isChartVisible('desktopUploadShare');
+    final showSeed = _isChartVisible('desktopSeedShare');
+
     if (stacked) {
       return Column(
         children: [
-          _buildUploadSharePanel(data, privacy),
-          const SizedBox(height: 10),
-          _buildSeedSharePanel(data, privacy),
+          if (showUploaded) _buildUploadSharePanel(data, privacy),
+          if (showUploaded && showSeed) const SizedBox(height: 10),
+          if (showSeed) _buildSeedSharePanel(data, privacy),
         ],
       );
     }
 
     return Row(
       children: [
-        Expanded(child: _buildUploadSharePanel(data, privacy)),
-        const SizedBox(width: 10),
-        Expanded(child: _buildSeedSharePanel(data, privacy)),
+        if (showUploaded) Expanded(child: _buildUploadSharePanel(data, privacy)),
+        if (showUploaded && showSeed) const SizedBox(width: 10),
+        if (showSeed) Expanded(child: _buildSeedSharePanel(data, privacy)),
       ],
     );
   }
@@ -806,11 +865,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _donutChart(
-    List<_NameValuePoint> items,
-    Color baseColor, {
-    required String Function(num) formatter,
-  }) {
+  Widget _donutChart(List<_NameValuePoint> items, Color baseColor, {required String Function(num) formatter}) {
     if (items.isEmpty) {
       return const Center(
         child: Text('暂无数据', style: TextStyle(color: _muted)),
@@ -835,8 +890,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         opacity: 1,
         color: _panel,
         canShowMarker: false,
-        builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
-            _donutTooltip(dataPoint, items, formatter),
+        builder: (dataPoint, point, series, pointIndex, seriesIndex) => _donutTooltip(dataPoint, items, formatter),
       ),
       series: <CircularSeries>[
         DoughnutSeries<_NameValuePoint, String>(
@@ -966,10 +1020,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       top = cursor.dy - tooltip.height - gap;
     }
 
-    return Offset(
-      left.clamp(0.0, maxLeft).toDouble(),
-      top.clamp(0.0, maxTop).toDouble(),
-    );
+    return Offset(left.clamp(0.0, maxLeft).toDouble(), top.clamp(0.0, maxTop).toDouble());
   }
 
   void _scheduleTrendTooltip(
@@ -1040,10 +1091,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       }
       rows.addAll(_dailySiteTransferRows(data, dailyPoint.label, privacy));
       if (rows.isEmpty) return null;
-      return _ChartTooltipData(
-        _formatDay(dailyPoint.label),
-        rows,
-      );
+      return _ChartTooltipData(_formatDay(dailyPoint.label), rows);
     }
 
     if (monthPoint != null) {
@@ -1060,21 +1108,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       }
       rows.addAll(_monthlySiteTransferRows(data, monthPoint.label, privacy));
       if (rows.isEmpty) return null;
-      return _ChartTooltipData(
-        _formatMonth(monthPoint.label),
-        rows,
-      );
+      return _ChartTooltipData(_formatMonth(monthPoint.label), rows);
     }
 
     return null;
   }
 
-  Widget _monthlyTrackballTooltip(
-    TrackballDetails details,
-    List<_TrendPoint> items,
-    DashboardData data,
-    bool privacy,
-  ) {
+  Widget _monthlyTrackballTooltip(TrackballDetails details, List<_TrendPoint> items, DashboardData data, bool privacy) {
     final info = details.groupingModeInfo;
     final pointIndex = info != null && info.currentPointIndices.isNotEmpty
         ? info.currentPointIndices.first
@@ -1101,40 +1141,23 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       rows.add(_TooltipLine.rich('汇总', summary));
     }
     rows.addAll(
-      _monthlySiteRows(
-        data,
-        dataPoint.label,
-        privacy,
-        valueOf: (record) => record.published,
-        formatter: _formatCount,
-      ),
+      _monthlySiteRows(data, dataPoint.label, privacy, valueOf: (record) => record.published, formatter: _formatCount),
     );
 
-    return _chartTooltip(
-      _formatMonth(dataPoint.label),
-      rows,
-      width: 250,
-    );
+    return _chartTooltip(_formatMonth(dataPoint.label), rows, width: 250);
   }
 
-  Widget _donutTooltip(
-    dynamic dataPoint,
-    List<_NameValuePoint> items,
-    String Function(num) formatter,
-  ) {
+  Widget _donutTooltip(dynamic dataPoint, List<_NameValuePoint> items, String Function(num) formatter) {
     if (dataPoint is! _NameValuePoint) {
       return const SizedBox.shrink();
     }
 
     final total = items.fold<num>(0, (sum, item) => sum + item.value);
     final percent = total <= 0 ? 0 : dataPoint.value / total * 100;
-    return _chartTooltip(
-      dataPoint.name,
-      [
-        _TooltipLine('数值', formatter(dataPoint.value), _cyan),
-        _TooltipLine('占比', '${percent.toStringAsFixed(1)}%', _amber),
-      ],
-    );
+    return _chartTooltip(dataPoint.name, [
+      _TooltipLine('数值', formatter(dataPoint.value), _cyan),
+      _TooltipLine('占比', '${percent.toStringAsFixed(1)}%', _amber),
+    ]);
   }
 
   List<_TooltipSegment> _transferSegments({
@@ -1165,12 +1188,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return segments;
   }
 
-  List<_TooltipLine> _dailySiteTransferRows(
-    DashboardData data,
-    String date,
-    bool privacy, {
-    int limit = 10,
-  }) {
+  List<_TooltipLine> _dailySiteTransferRows(DashboardData data, String date, bool privacy, {int limit = 10}) {
     final rows = <_TrendSitePoint>[];
     for (final site in data.stackChartDataList) {
       num uploaded = 0;
@@ -1192,22 +1210,18 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return [
       for (final row in visible)
         if (_transferSegments(
-          uploaded: row.uploaded,
-          downloaded: row.downloaded,
-          uploadColor: _cyan,
-          downloadColor: _orange,
-        ) case final segments when segments.isNotEmpty)
+              uploaded: row.uploaded,
+              downloaded: row.downloaded,
+              uploadColor: _cyan,
+              downloadColor: _orange,
+            )
+            case final segments when segments.isNotEmpty)
           _TooltipLine.rich(row.name, segments),
       if (hidden > 0) _TooltipLine('其余', '$hidden 项', _muted),
     ];
   }
 
-  List<_TooltipLine> _monthlySiteTransferRows(
-    DashboardData data,
-    String month,
-    bool privacy, {
-    int limit = 10,
-  }) {
+  List<_TooltipLine> _monthlySiteTransferRows(DashboardData data, String month, bool privacy, {int limit = 10}) {
     final rows = <_TrendSitePoint>[];
     for (final site in data.uploadMonthIncrementDataList) {
       num uploaded = 0;
@@ -1231,12 +1245,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return [
       for (final row in visible)
         if (_transferSegments(
-          uploaded: row.uploaded,
-          downloaded: row.downloaded,
-          published: row.published,
-          uploadColor: _green,
-          downloadColor: _red,
-        ) case final segments when segments.isNotEmpty)
+              uploaded: row.uploaded,
+              downloaded: row.downloaded,
+              published: row.published,
+              uploadColor: _green,
+              downloadColor: _red,
+            )
+            case final segments when segments.isNotEmpty)
           _TooltipLine.rich(row.name, segments),
       if (hidden > 0) _TooltipLine('其余', '$hidden 项', _muted),
     ];
@@ -1272,12 +1287,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     ];
   }
 
-  Widget _chartTooltip(
-    String title,
-    List<_TooltipLine> rows, {
-    double width = 220,
-    double maxHeight = 240,
-  }) {
+  Widget _chartTooltip(String title, List<_TooltipLine> rows, {double width = 220, double maxHeight = 240}) {
     final hasSummary = rows.isNotEmpty && rows.first.label == '汇总';
     final summary = hasSummary ? rows.first : null;
     final detailRows = hasSummary ? rows.skip(1).toList() : rows;
@@ -1292,11 +1302,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: _cyan.withValues(alpha: 0.42)),
         boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF000000).withValues(alpha: 0.45),
-            blurRadius: 22,
-            offset: const Offset(0, 8),
-          ),
+          BoxShadow(color: const Color(0xFF000000).withValues(alpha: 0.45), blurRadius: 22, offset: const Offset(0, 8)),
         ],
       ),
       child: Column(
@@ -1313,10 +1319,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   style: const TextStyle(color: _text, fontSize: 12, fontWeight: FontWeight.w900),
                 ),
               ),
-              if (summary != null) ...[
-                const SizedBox(width: 12),
-                _tooltipValue(summary, fontSize: 11),
-              ],
+              if (summary != null) ...[const SizedBox(width: 12), _tooltipValue(summary, fontSize: 11)],
             ],
           ),
           if (detailRows.isNotEmpty) ...[
@@ -1354,10 +1357,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         ),
         const SizedBox(width: 12),
         Flexible(
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: _tooltipValue(row),
-          ),
+          child: Align(alignment: Alignment.centerRight, child: _tooltipValue(row)),
         ),
       ],
     );
@@ -1829,11 +1829,7 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
             blendMode: BlendMode.srcIn,
             child: Stack(
               children: [
-                for (final offset in const [
-                  Offset.zero,
-                  Offset(0.45, 0),
-                  Offset(0, 0.35),
-                ])
+                for (final offset in const [Offset.zero, Offset(0.45, 0), Offset(0, 0.35)])
                   Transform.translate(
                     offset: offset,
                     child: Text(
@@ -2100,9 +2096,7 @@ class _TooltipLine {
 
   const _TooltipLine(this.label, this.value, [this.color]) : segments = const [];
 
-  const _TooltipLine.rich(this.label, this.segments)
-    : value = '',
-      color = null;
+  const _TooltipLine.rich(this.label, this.segments) : value = '', color = null;
 
   String get signature {
     if (segments.isEmpty) return '$label|$value';
@@ -2126,10 +2120,7 @@ class _BoardBackdropPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          const Color(0xFF12365A).withValues(alpha: 0.34),
-          const Color(0x00000000),
-        ],
+        colors: [const Color(0xFF12365A).withValues(alpha: 0.34), const Color(0x00000000)],
       ).createShader(Offset.zero & size);
     canvas.drawRect(Offset.zero & size, topWash);
 
