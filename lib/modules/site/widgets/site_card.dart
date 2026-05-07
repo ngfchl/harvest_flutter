@@ -7,6 +7,7 @@ import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/browser_page.dart';
 
 import '../model/site_config.dart';
 import '../model/site_info.dart';
@@ -160,8 +161,9 @@ class SiteCard extends ConsumerWidget {
     );
   }
 
-  Widget _siteLogo(BuildContext context, WebSite? config) => _SiteLogoImage(
-    siteName: site.site,
+  Widget _siteLogo(BuildContext context, WebSite? config) => _siteBrowserLogo(
+    context: context,
+    site: site,
     config: config,
     size: 22,
     decoration: BoxDecoration(
@@ -786,6 +788,37 @@ class _SiteLogoImage extends StatelessWidget {
   }
 }
 
+Widget _siteBrowserLogo({
+  required BuildContext context,
+  required SiteInfo site,
+  required WebSite? config,
+  required double size,
+  required BoxDecoration decoration,
+  required TextStyle fallbackStyle,
+}) {
+  final logo = _SiteLogoImage(
+    siteName: site.site,
+    config: config,
+    size: size,
+    decoration: decoration,
+    fallbackStyle: fallbackStyle,
+  );
+  final mirror = site.mirror?.trim() ?? '';
+  if (mirror.isEmpty) return logo;
+
+  return GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: () => BrowserPage.open(
+      context,
+      url: mirror,
+      title: site.nickname.isNotEmpty ? site.nickname : site.site,
+      cookie: site.cookie,
+      userAgent: site.userAgent,
+    ),
+    child: logo,
+  );
+}
+
 Widget _siteTooltip(String text, Widget child) {
   return FTooltip(
     longPress: false,
@@ -1266,8 +1299,9 @@ class SiteCard2 extends ConsumerWidget {
   }
 
   Widget _siteLogo(BuildContext context, WebSite? config) {
-    return _SiteLogoImage(
-      siteName: site.site,
+    return _siteBrowserLogo(
+      context: context,
+      site: site,
       config: config,
       size: 44,
       decoration: BoxDecoration(
@@ -1472,7 +1506,7 @@ class SiteCard3 extends ConsumerWidget {
   Widget _emptyCard(BuildContext context, WebSite? config) {
     return Row(
       children: [
-        _siteLogo(config, 54),
+        _siteLogo(context, config, 54),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -1501,7 +1535,7 @@ class SiteCard3 extends ConsumerWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _siteLogo(config, 54),
+        _siteLogo(context, config, 54),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -1868,9 +1902,10 @@ class SiteCard3 extends ConsumerWidget {
     );
   }
 
-  Widget _siteLogo(WebSite? config, double size) {
-    return _SiteLogoImage(
-      siteName: site.site,
+  Widget _siteLogo(BuildContext context, WebSite? config, double size) {
+    return _siteBrowserLogo(
+      context: context,
+      site: site,
       config: config,
       size: size,
       decoration: BoxDecoration(
