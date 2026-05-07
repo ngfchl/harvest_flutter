@@ -280,6 +280,8 @@ class SiteFilterPanel extends ConsumerWidget {
         return '有上传增量';
       case FilterCondition.hasDownloadDelta:
         return '有下载增量';
+      case FilterCondition.hasDelta:
+        return '有增量';
       case FilterCondition.noProxy:
         return '无Proxy';
       case FilterCondition.noUid:

@@ -27,7 +27,6 @@ class SiteActionMenu extends StatelessWidget {
       builder: (_, controller, menuChild) => GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => controller.toggle(),
-        onLongPress: () => controller.toggle(),
         onSecondaryTap: () => controller.toggle(),
         child: menuChild!,
       ),

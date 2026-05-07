@@ -7,12 +7,15 @@ import 'site_provider.dart';
 
 part 'site_filtered_provider.g.dart';
 
-final siteFilterStateProvider = ChangeNotifierProvider((_) => SiteFilterState());
+final siteFilterStateProvider = ChangeNotifierProvider(
+  (_) => SiteFilterState(),
+);
 
 @riverpod
 List<String> availableTags(Ref ref) {
   final sites = ref.watch(siteInfoListProvider).valueOrNull ?? [];
-  return sites.expand((s) => s.tags).where((t) => t.isNotEmpty).toSet().toList()..sort();
+  return sites.expand((s) => s.tags).where((t) => t.isNotEmpty).toSet().toList()
+    ..sort();
 }
 
 @riverpod
@@ -27,20 +30,33 @@ List<SiteInfo> _applyFilter(List<SiteInfo> sites, SiteFilterState filter) {
   final query = filter.siteNameQuery.toLowerCase();
 
   List<SiteInfo> result;
-  if (condition == null && filter.selectedTags.isEmpty && query.isEmpty) {
+  if (condition == FilterCondition.all &&
+      filter.selectedTags.isEmpty &&
+      query.isEmpty) {
     result = List.of(sites);
   } else {
     result = sites.where((s) {
       if (query.isNotEmpty) {
-        if (!s.site.toLowerCase().contains(query) && !s.nickname.toLowerCase().contains(query)) return false;
+        if (!s.site.toLowerCase().contains(query) &&
+            !s.nickname.toLowerCase().contains(query)) {
+          return false;
+        }
       }
-      if (condition != null && !_matchCondition(s, condition)) return false;
-      if (filter.selectedTags.isNotEmpty && !filter.selectedTags.any(s.tags.contains)) return false;
+      if (condition != FilterCondition.all && !_matchCondition(s, condition)) {
+        return false;
+      }
+      if (filter.selectedTags.isNotEmpty &&
+          !filter.selectedTags.any(s.tags.contains)) {
+        return false;
+      }
       return true;
     }).toList();
   }
 
   result.sort((a, b) {
+    final noticeCmp = _noticeCount(b).compareTo(_noticeCount(a));
+    if (noticeCmp != 0) return noticeCmp;
+
     final va = _sortKey(a, filter.sortField);
     final vb = _sortKey(b, filter.sortField);
     int cmp;
@@ -55,11 +71,15 @@ List<SiteInfo> _applyFilter(List<SiteInfo> sites, SiteFilterState filter) {
   return result;
 }
 
+int _noticeCount(SiteInfo s) => s.mail + s.notice;
+
 bool _matchCondition(SiteInfo s, FilterCondition c) {
   final status = s.latestStatus;
   switch (c) {
     case FilterCondition.alive:
       return s.available;
+    case FilterCondition.all:
+      return true;
     case FilterCondition.dead:
       return !s.available;
     case FilterCondition.notSignedIn:
@@ -79,6 +99,8 @@ bool _matchCondition(SiteInfo s, FilterCondition c) {
       return _uploadDelta(s) > 0;
     case FilterCondition.hasDownloadDelta:
       return _downloadDelta(s) > 0;
+    case FilterCondition.hasDelta:
+      return _uploadDelta(s) > 0 || _downloadDelta(s) > 0;
     case FilterCondition.noProxy:
       return (s.proxy ?? '').isEmpty;
     case FilterCondition.noUid:
@@ -115,7 +137,8 @@ String _todayStr() {
   return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 }
 
-String _dateStr(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+String _dateStr(DateTime d) =>
+    '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
 int _uploadDelta(SiteInfo s) {
   if (s.status == null || s.status!.isEmpty) return 0;
@@ -174,5 +197,7 @@ Object _sortKey(SiteInfo s, SortField field) {
       return status?.seed ?? 0;
     case SortField.shareRatio:
       return status?.ratio ?? 0.0;
+    case SortField.sortId:
+      return s.sortId;
   }
 }

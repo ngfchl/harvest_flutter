@@ -28,6 +28,8 @@ enum FilterCondition {
   noSeeding,
   hasDownloading,
   abnormalShareRatio,
+  all,
+  hasDelta,
 }
 
 enum SortField {
@@ -49,12 +51,13 @@ enum SortField {
   downloading,
   seeding,
   shareRatio,
+  sortId,
 }
 
 class SiteFilterState extends ChangeNotifier {
-  FilterCondition _condition = FilterCondition.alive; // 默认 alive
-  SortField _sortField = SortField.updatedAt;
-  bool _sortAscending = false;
+  FilterCondition _condition = FilterCondition.all;
+  SortField _sortField = SortField.sortId;
+  bool _sortAscending = true;
   final Set<String> _selectedTags = {};
   String _siteNameQuery = '';
   Timer? _debounce;
@@ -73,12 +76,12 @@ class SiteFilterState extends ChangeNotifier {
 
   String get siteNameQuery => _siteNameQuery;
 
-  /// alive 是默认值，不算"额外"筛选
+  /// 全部 + 排序 ID 正序 是默认值，不算"额外"筛选
   bool get hasActiveFilters =>
-      _condition != FilterCondition.alive ||
+      _condition != FilterCondition.all ||
       _selectedTags.isNotEmpty ||
-      _sortField != SortField.updatedAt ||
-      _sortAscending ||
+      _sortField != SortField.sortId ||
+      _sortAscending != _defaultSortAscending(_sortField) ||
       _siteNameQuery.isNotEmpty;
 
   void _loadFromStorage() {
@@ -86,11 +89,6 @@ class SiteFilterState extends ChangeNotifier {
     if (ci != null && ci >= 0 && ci < FilterCondition.values.length) {
       _condition = FilterCondition.values[ci];
     }
-    // 没有存储过 → 保持默认 alive，并写入
-    if (ci == null) {
-      HiveManager.set(StorageKeys.siteFilterCondition, FilterCondition.alive.index);
-    }
-
     final si = HiveManager.get<int>(StorageKeys.siteFilterSortField);
     if (si != null && si >= 0 && si < SortField.values.length) {
       _sortField = SortField.values[si];
@@ -112,15 +110,23 @@ class SiteFilterState extends ChangeNotifier {
       HiveManager.set(StorageKeys.siteFilterSortAscending, _sortAscending);
     } else {
       _sortField = f;
-      _sortAscending = false;
+      _sortAscending = _defaultSortAscending(f);
       HiveManager.set(StorageKeys.siteFilterSortField, f.index);
-      HiveManager.set(StorageKeys.siteFilterSortAscending, false);
+      HiveManager.set(StorageKeys.siteFilterSortAscending, _sortAscending);
     }
     notifyListeners();
   }
 
   void toggleTag(String tag) {
-    _selectedTags.contains(tag) ? _selectedTags.remove(tag) : _selectedTags.add(tag);
+    _selectedTags.contains(tag)
+        ? _selectedTags.remove(tag)
+        : _selectedTags.add(tag);
+    notifyListeners();
+  }
+
+  void clearTags() {
+    if (_selectedTags.isEmpty) return;
+    _selectedTags.clear();
     notifyListeners();
   }
 
@@ -140,12 +146,12 @@ class SiteFilterState extends ChangeNotifier {
 
   void clearAll() {
     _debounce?.cancel();
-    _condition = FilterCondition.alive; // 重置为默认值
-    _sortField = SortField.updatedAt;
-    _sortAscending = false;
+    _condition = FilterCondition.all;
+    _sortField = SortField.sortId;
+    _sortAscending = _defaultSortAscending(_sortField);
     _selectedTags.clear();
     _siteNameQuery = '';
-    HiveManager.set(StorageKeys.siteFilterCondition, FilterCondition.alive.index);
+    HiveManager.delete(StorageKeys.siteFilterCondition);
     HiveManager.delete(StorageKeys.siteFilterSortField);
     HiveManager.delete(StorageKeys.siteFilterSortAscending);
     notifyListeners();
@@ -155,5 +161,9 @@ class SiteFilterState extends ChangeNotifier {
   void dispose() {
     _debounce?.cancel();
     super.dispose();
+  }
+
+  static bool _defaultSortAscending(SortField field) {
+    return field == SortField.sortId;
   }
 }
