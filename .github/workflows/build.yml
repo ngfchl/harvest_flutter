@@ -414,18 +414,53 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 指定 Xcode 26
+      - name: 指定 Xcode 26 并初始化 iOS Platform
         shell: bash
         run: |
+          echo "::group::Available Xcode apps"
+          ls -la /Applications | grep Xcode || true
+          echo "::endgroup::"
+
           XCODE_PATH=$(find /Applications -maxdepth 1 -name 'Xcode_26*.app' -print | sort -V | tail -n 1)
           if [ -z "$XCODE_PATH" ]; then
             echo "Xcode 26 not found"
             ls -1 /Applications | grep Xcode || true
             exit 1
           fi
-          sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+          DEVELOPER_DIR="$XCODE_PATH/Contents/Developer"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+
+          echo "::group::Selected Xcode"
+          echo "XCODE_PATH=$XCODE_PATH"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR"
+          sudo xcode-select -s "$DEVELOPER_DIR"
+          echo "xcode-select -p: $(xcode-select -p)"
+          sudo xcodebuild -license accept || true
+          sudo xcodebuild -runFirstLaunch || true
           xcodebuild -version
+          echo "::endgroup::"
+
+          echo "::group::Xcode SDKs before platform init"
           xcodebuild -showsdks
+          echo "::endgroup::"
+
+          xcodebuild -downloadPlatform iOS || true
+
+          echo "::group::Xcode SDKs after platform init"
+          xcodebuild -showsdks
+          echo "::endgroup::"
+
+          echo "::group::iOS platform diagnostics"
+          ls -la "$DEVELOPER_DIR/Platforms" || true
+          ls -la "$DEVELOPER_DIR/Platforms/iPhoneOS.platform" || true
+          xcrun --sdk iphoneos --show-sdk-path || true
+          xcrun --sdk iphoneos --show-sdk-version || true
+          xcrun --sdk iphoneos --find clang || true
+          echo "::endgroup::"
+
+          echo "::group::Runner destinations"
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -showdestinations
+          echo "::endgroup::"
 
       - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
@@ -434,6 +469,22 @@ jobs:
 
       - name: 安装 Flutter 依赖
         run: flutter pub get
+
+      - name: 输出 Flutter / Xcode 诊断信息
+        shell: bash
+        run: |
+          echo "::group::Flutter doctor"
+          flutter doctor -v
+          echo "::endgroup::"
+          echo "::group::Flutter devices"
+          flutter devices
+          echo "::endgroup::"
+          echo "::group::Effective Xcode"
+          echo "DEVELOPER_DIR=${DEVELOPER_DIR:-}"
+          xcode-select -p
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-path || true
+          echo "::endgroup::"
 
       - name: 打包 iOS arm64 发行版
         run: flutter build ios --release --no-codesign  # 构建 iOS 应用，但不签名（用于测试）
