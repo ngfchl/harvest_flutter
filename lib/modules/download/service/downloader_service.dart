@@ -31,6 +31,17 @@ class DownloaderService {
     return editData('${API.DOWNLOADER_PREFERENCES}/$id', prefs);
   }
 
+  /// 切换下载器极速/龟速模式。
+  static Future<void> toggleSpeedLimitMode(
+    int id, {
+    required bool enabled,
+  }) async {
+    await Http.get<dynamic>(
+      '${API.DOWNLOADER_TOGGLE_SPEED_LIMIT_ENABLE}$id',
+      queryParameters: {'state': enabled},
+    );
+  }
+
   /// 获取下载器列表
   static Future<List<Downloader>> fetchList({bool withStatus = false}) {
     return fetchModelList<Downloader>(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:harvest/common/style.dart';
+import 'package:harvest/modules/torrents/qbittorrent/widgets/torrent_action_menu.dart';
+import 'package:harvest/modules/torrents/qbittorrent/widgets/torrent_list_page.dart';
 
 import '../model/downloader.dart';
 import '../model/downloader_speed.dart';
@@ -85,7 +87,7 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard>
       menu: menu.build(context),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => _popoverCtrl.toggle(),
+        onDoubleTap: _openTorrentList,
         onLongPress: () => _popoverCtrl.toggle(),
         onSecondaryTap: () => _popoverCtrl.toggle(),
         child: Container(
@@ -278,6 +280,23 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard>
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openTorrentList() async {
+    await _popoverCtrl.hide();
+    if (!mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TorrentListPage(
+          downloaderId: d.id,
+          downloaderName: d.name,
+          downloaderType: d.isQb
+              ? DownloaderType.qbittorrent
+              : DownloaderType.transmission,
         ),
       ),
     );
