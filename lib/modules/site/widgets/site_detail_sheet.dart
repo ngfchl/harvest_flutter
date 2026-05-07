@@ -560,11 +560,11 @@ class SiteDetailSheet extends ConsumerWidget {
 
   Future<void> _doSignIn(BuildContext context) async {
     try {
-      await ProviderScope.containerOf(
+      final message = await ProviderScope.containerOf(
         context,
       ).read(siteInfoListProvider.notifier).signIn(site.id);
       if (context.mounted) {
-        Toast.success('签到成功');
+        Toast.success(message);
       }
     } catch (e) {
       if (context.mounted) {

@@ -18,6 +18,10 @@ final siteInfoCacheInfoProvider = StateProvider<DataCacheInfo>(
   (_) => const DataCacheInfo.none(),
 );
 
+final siteRefreshingIdsProvider = StateProvider<Set<int>>(
+  (_) => const <int>{},
+);
+
 @riverpod
 class WebsiteList extends _$WebsiteList {
   @override
@@ -110,15 +114,23 @@ class SiteInfoList extends _$SiteInfoList {
   }
 
   /// 刷新单个站点状态
-  Future<void> refreshStatus(int siteId) async {
-    await SiteService.refreshSiteStatus(siteId);
-    await refresh();
+  Future<String> refreshStatus(int siteId) async {
+    final refreshingIds = ref.read(siteRefreshingIdsProvider.notifier);
+    refreshingIds.state = {...refreshingIds.state, siteId};
+    try {
+      final message = await SiteService.refreshSiteStatus(siteId);
+      await refresh();
+      return message;
+    } finally {
+      refreshingIds.state = {...refreshingIds.state}..remove(siteId);
+    }
   }
 
   /// 执行签到
-  Future<void> signIn(int siteId) async {
-    await SiteService.signInSite(siteId);
+  Future<String> signIn(int siteId) async {
+    final message = await SiteService.signInSite(siteId);
     await refresh();
+    return message;
   }
 
   /// 执行辅种

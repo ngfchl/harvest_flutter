@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:harvest/common/style.dart';
+import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/browser_page.dart';
 
 import '../model/site_info.dart';
@@ -9,15 +10,18 @@ import '../provider/site_provider.dart';
 import 'site_detail_sheet.dart';
 import 'site_form_sheet.dart';
 
-class SiteActionMenu extends StatelessWidget {
+class SiteActionMenu extends ConsumerWidget {
   final SiteInfo site;
   final Widget child;
 
   const SiteActionMenu({super.key, required this.site, required this.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final anchorContext = context;
+    final refreshing = ref.watch(
+      siteRefreshingIdsProvider.select((ids) => ids.contains(site.id)),
+    );
 
     return FPopoverMenu.tiles(
       style: fPopoverMenuStyle(context).call,
@@ -26,11 +30,45 @@ class SiteActionMenu extends StatelessWidget {
           _buildActionGroups(anchorContext, site, controller),
       builder: (_, controller, menuChild) => GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => controller.toggle(),
-        onSecondaryTap: () => controller.toggle(),
+        onTap: refreshing ? null : () => controller.toggle(),
+        onSecondaryTap: refreshing ? null : () => controller.toggle(),
         child: menuChild!,
       ),
-      child: child,
+      child: Stack(
+        children: [
+          child,
+          if (refreshing) const _SiteCardLoadingOverlay(),
+        ],
+      ),
+    );
+  }
+}
+
+class _SiteCardLoadingOverlay extends StatelessWidget {
+  const _SiteCardLoadingOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = context.theme.colors;
+    return Positioned.fill(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: cs.background.withValues(alpha: 0.72),
+          ),
+          child: Center(
+            child: SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.4,
+                color: cs.primary,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -140,7 +178,8 @@ List<FTileGroupMixin> _buildActionGroups(
               context,
             ).read(siteInfoListProvider.notifier);
             await controller.hide();
-            await notifier.refreshStatus(site.id);
+            final message = await notifier.refreshStatus(site.id);
+            Toast.success(message);
           },
         ),
         // 未签到才显示签到按钮
@@ -153,7 +192,8 @@ List<FTileGroupMixin> _buildActionGroups(
                 context,
               ).read(siteInfoListProvider.notifier);
               await controller.hide();
-              await notifier.signIn(site.id);
+              final message = await notifier.signIn(site.id);
+              Toast.success(message);
             },
           ),
         FTile(

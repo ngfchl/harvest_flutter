@@ -87,12 +87,12 @@ class SiteService {
     return removeData('$_mysiteList/$id');
   }
 
-  static Future<void> refreshSiteStatus(int siteId) {
-    return fetchBasic('$_mysiteStatus$siteId');
+  static Future<String> refreshSiteStatus(int siteId) {
+    return _operateSite('$_mysiteStatus$siteId', fallback: '刷新成功');
   }
 
-  static Future<void> signInSite(int siteId) {
-    return fetchBasic('$_mysiteSignin$siteId');
+  static Future<String> signInSite(int siteId) {
+    return _operateSite('$_mysiteSignin$siteId', fallback: '签到成功');
   }
 
   static Future<void> repeatTorrents(int siteId) {
@@ -101,5 +101,36 @@ class SiteService {
 
   static Future<void> clearCache() {
     return fetchBasic(_clearCache);
+  }
+
+  static Future<String> _operateSite(
+    String apiEndpoint, {
+    required String fallback,
+  }) async {
+    final response = await DioClient.dio.get<dynamic>(apiEndpoint);
+    final body = response.data;
+    final message = _extractMessage(body) ?? fallback;
+    return message.trim().isEmpty ? fallback : message.trim();
+  }
+
+  static String? _extractMessage(dynamic value) {
+    if (value == null) return null;
+    if (value is String) return value.trim().isEmpty ? null : value.trim();
+    if (value is Map) {
+      for (final key in const ['message', 'msg', 'info', 'detail', 'result']) {
+        final message = _extractMessage(value[key]);
+        if (message != null) return message;
+      }
+      return _extractMessage(value['data']);
+    }
+    if (value is Iterable) {
+      final messages = value
+          .map(_extractMessage)
+          .whereType<String>()
+          .where((message) => message.trim().isNotEmpty)
+          .toList();
+      return messages.isEmpty ? null : messages.join('\n');
+    }
+    return null;
   }
 }
