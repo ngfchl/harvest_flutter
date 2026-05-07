@@ -13,6 +13,7 @@ import 'package:forui/forui.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/browser_page.dart';
+import 'package:install_plugin_v3/install_plugin_v3.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -583,14 +584,14 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
       }
 
       if (PlatformTool.isDesktopOS()) {
-        if (Platform.isMacOS) {
+        if (Platform.isMacOS || Platform.isWindows) {
           final dir = await getTemporaryDirectory();
           final packageDir = Directory(p.join(dir.path, 'harvest_app_upgrade'));
           await packageDir.create(recursive: true);
           final savePath = p.join(packageDir.path, fileName);
           AppLogger.debug(
-            '[AppUpgrade] macos installer download: asset=${entry.key}, '
-            'isPkg=${_isPkgAsset(entry, url)}, savePath=$savePath',
+            '[AppUpgrade] desktop installer download: asset=${entry.key}, '
+            'platform=${_platformDebugName()}, savePath=$savePath',
           );
           await _downloadToPath(url, savePath, _cancelToken!);
           Toast.success('安装包已下载，正在启动安装器');
@@ -611,9 +612,16 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
         final dir = await getTemporaryDirectory();
         final savePath = p.join(dir.path, fileName);
         await _downloadToPath(url, savePath, _cancelToken!);
-        await SharePlus.instance.share(
-          ShareParams(files: [XFile(savePath)], text: 'APP 安装包：$fileName'),
-        );
+        if (Platform.isAndroid) {
+          Toast.success('安装包已下载，正在打开安装器');
+          await _installAndroidApk(savePath);
+        } else if (Platform.isIOS) {
+          await SharePlus.instance.share(
+            ShareParams(files: [XFile(savePath)], text: 'APP 安装包：$fileName'),
+          );
+        } else {
+          Toast.info('安装包已下载到 $savePath');
+        }
       }
     } on DioException catch (e, st) {
       if (CancelToken.isCancel(e)) {
@@ -630,6 +638,24 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
       _progress = 0;
       _cancelToken = null;
       _refreshUi();
+    }
+  }
+
+  Future<void> _installAndroidApk(String savePath) async {
+    final result = await InstallPlugin.installApk(savePath);
+    final success = result is Map && result['isSuccess'] == true;
+    if (success) {
+      Toast.success('安装完成');
+      return;
+    }
+
+    final errorMessage = result is Map
+        ? result['errorMessage']?.toString()
+        : null;
+    if (errorMessage?.trim().isNotEmpty == true) {
+      Toast.error(errorMessage!.trim());
+    } else {
+      Toast.error('安装失败');
     }
   }
 
@@ -934,11 +960,6 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     return null;
   }
 
-  bool _isPkgAsset(MapEntry<String, String> entry, String effectiveUrl) {
-    final text = '${entry.key} ${entry.value} $effectiveUrl'.toLowerCase();
-    return text.contains('.pkg') || text.endsWith('pkg');
-  }
-
   String _safeFileName(String value) {
     final safe = value.trim().replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
     return safe.isEmpty ? 'harvest_install_package' : safe;
@@ -1173,7 +1194,7 @@ class _VersionHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  hasNewVersion ? '发现可用新版本' : 'APP 版本状态',
+                  hasNewVersion ? '发现可用新版本' : '已是最新版本',
                   style: TextStyle(
                     color: cs.foreground,
                     fontSize: 15,
@@ -1181,14 +1202,19 @@ class _VersionHeader extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                _InfoLine(label: '当前', value: currentVersion),
-                const SizedBox(height: 4),
-                _InfoLine(
-                  label: '最新',
-                  value: latestVersion?.isNotEmpty == true
-                      ? 'v$latestVersion'
-                      : '-',
-                ),
+                _InfoLine(label: '当前', value: 'v$currentVersion'),
+                if (hasNewVersion) ...[
+                  const SizedBox(height: 4),
+                  _InfoLine(
+                    label: '最新',
+                    value: latestVersion?.isNotEmpty == true
+                        ? 'v$latestVersion'
+                        : '-',
+                  ),
+                ] else ...[
+                  const SizedBox(height: 4),
+                  const _InfoLine(label: '状态', value: '无需更新'),
+                ],
               ],
             ),
           ),
