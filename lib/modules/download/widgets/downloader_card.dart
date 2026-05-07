@@ -62,7 +62,8 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard>
     final speedMap = ref.watch(downloaderSpeedProvider);
     DownloaderInfo? liveInfo;
     for (final entry in speedMap.entries) {
-      if (entry.key.toLowerCase() == d.wsKey.toLowerCase()) {
+      final key = entry.key.toLowerCase();
+      if (key == d.wsKey.toLowerCase() || key == d.id.toString()) {
         liveInfo = entry.value.info;
         break;
       }

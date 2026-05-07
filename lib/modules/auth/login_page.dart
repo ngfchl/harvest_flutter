@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
@@ -132,6 +133,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   } catch (e, trace) {
                                     AppLogger.error(e);
                                     AppLogger.error(trace);
+                                    if (context.mounted) {
+                                      Toast.error(_loginErrorMessage(e));
+                                    }
                                   }
                                 },
                           child: Text(auth.loading ? '登录中...' : '登录'),
@@ -168,5 +172,31 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         ),
       ),
     );
+  }
+
+  String _loginErrorMessage(Object error) {
+    if (error is DioException) {
+      final status = error.response?.statusCode;
+      final data = error.response?.data;
+      final serverMessage = _extractLoginErrorMessage(data);
+      if (serverMessage != null) return serverMessage;
+      if (status == 400 || status == 401) return '账号或密码错误';
+      if (error.type == DioExceptionType.connectionError ||
+          error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout) {
+        return '服务器连接失败，请检查网络或服务器地址';
+      }
+    }
+    return '登录失败，请检查账号信息';
+  }
+
+  String? _extractLoginErrorMessage(dynamic data) {
+    if (data is! Map) return null;
+    for (final key in const ['msg', 'message', 'detail', 'error']) {
+      final value = data[key]?.toString().trim();
+      if (value != null && value.isNotEmpty) return value;
+    }
+    return null;
   }
 }

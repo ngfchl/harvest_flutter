@@ -13,6 +13,7 @@ class DownloaderWsService {
   StreamController<Map<String, DownloaderSpeedData>>? _controller;
   Timer? _reconnectTimer;
   bool _closed = false;
+  bool _loggedFirstFrame = false;
   int _interval = 1;
 
   final String baseUrl;
@@ -32,6 +33,7 @@ class DownloaderWsService {
 
   void _doConnect() {
     if (_closed) return;
+    _loggedFirstFrame = false;
 
     try {
       // 构造 ws url，token 走 query 参数
@@ -76,12 +78,17 @@ class DownloaderWsService {
               final dataMap = json['data'] as Map<String, dynamic>;
               final result = <String, DownloaderSpeedData>{};
               for (final entry in dataMap.entries) {
-                if (entry.value != null) {
+                if (entry.value is Map) {
+                  final raw = Map<String, dynamic>.from(entry.value as Map);
                   result[entry.key] = DownloaderSpeedData.fromJson(
                     entry.key,
-                    entry.value as Map<String, dynamic>,
+                    raw,
                   );
                 }
+              }
+              if (!_loggedFirstFrame) {
+                _loggedFirstFrame = true;
+                AppLogger.debug(_frameDebugMessage(dataMap, result));
               }
               AppLogger.verbose(
                 '[WS] downloader speed frame parsed items=${result.length}',
@@ -120,6 +127,21 @@ class DownloaderWsService {
         _doConnect();
       }
     });
+  }
+
+  String _frameDebugMessage(
+    Map<String, dynamic> raw,
+    Map<String, DownloaderSpeedData> parsed,
+  ) {
+    if (raw.isEmpty) return '[WS] downloader speed DEBUG raw frame is empty';
+
+    final key = raw.keys.first;
+    final value = raw[key];
+    final rawKeys = value is Map ? value.keys.toList() : const <dynamic>[];
+    final info = parsed[key]?.info;
+    return '[WS] downloader speed DEBUG first=$key rawKeys=$rawKeys '
+        'parsed(dl=${info?.downloadSpeed ?? 0}, up=${info?.uploadSpeed ?? 0}, '
+        'total=${info?.totalTorrentCount ?? 0}, active=${info?.activeTorrentCount ?? 0})';
   }
 
   void disconnect() {
