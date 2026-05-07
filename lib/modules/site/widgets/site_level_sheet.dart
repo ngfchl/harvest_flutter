@@ -75,24 +75,6 @@ class _LevelInfoSheet extends ConsumerWidget {
     final currentIdx = levels.indexWhere((e) => e.key == currentName);
     final hasNext = currentIdx > 0;
     final nextEntry = hasNext ? levels[currentIdx - 1] : null;
-    final nextLevel = nextEntry?.value;
-
-    // ── 权利 ──
-    final currentRights = <String>[];
-    if (currentIdx >= 0) {
-      for (var i = currentIdx; i < levels.length; i++) {
-        final r = levels[i].value.rights;
-        if (r.isNotEmpty && r != '无') currentRights.add(r);
-      }
-    }
-
-    final newRights = <String>[];
-    if (nextLevel != null) {
-      final r = nextLevel.rights;
-      if (r.isNotEmpty && r != '无' && !currentRights.contains(r)) {
-        newRights.add(r);
-      }
-    }
 
     final cs = FTheme.of(context).colors;
 
@@ -174,13 +156,6 @@ class _LevelInfoSheet extends ConsumerWidget {
           _sectionTitle(context, '等级体系'),
           _buildUnifiedLevels(context, levels, currentName, status, nextEntry),
         ],
-
-        // ── 即将获得权利 ──
-        if (newRights.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          _sectionTitle(context, '升级至 ${nextEntry!.key} 新增权利'),
-          _buildRightsBlock(context, newRights),
-        ],
       ],
     );
 
@@ -221,6 +196,19 @@ class _LevelInfoSheet extends ConsumerWidget {
             final isBelowCurrent = currentIdx >= 0 && i > currentIdx;
             final color = levelColor(name);
             final isLast = i == levels.length - 1;
+            final nextNewRights = <String>[];
+            if (isNext && currentIdx >= 0) {
+              final currentRights = <String>[];
+              for (var j = currentIdx; j < levels.length; j++) {
+                final r = levels[j].value.rights;
+                if (_hasEffectiveRight(r)) currentRights.add(r.trim());
+              }
+              final r = lv.rights;
+              final right = r.trim();
+              if (_hasEffectiveRight(right) && !currentRights.contains(right)) {
+                nextNewRights.add(right);
+              }
+            }
 
             return Container(
               decoration: BoxDecoration(
@@ -285,15 +273,23 @@ class _LevelInfoSheet extends ConsumerWidget {
                             false,
                           ),
 
-                        const Spacer(),
+                        const SizedBox(width: 8),
                         if (isVip)
                           _statusTag('无需求', Colors.amber, false)
                         else
-                          Text(
-                            _levelSummary(lv),
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: context.theme.colors.mutedForeground,
+                          Flexible(
+                            child: FTooltip(
+                              tipBuilder: (_, _) => Text(_levelSummary(lv)),
+                              child: Text(
+                                _levelSummary(lv),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: context.theme.colors.mutedForeground,
+                                ),
+                              ),
                             ),
                           ),
                       ],
@@ -325,9 +321,7 @@ class _LevelInfoSheet extends ConsumerWidget {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                isCurrent
-                                    ? 'VIP 等级，享有全部权限'
-                                    : 'VIP 等级，无需任何条件，享有全部权限',
+                                isCurrent ? 'VIP 等级，享有全部权限' : 'VIP 等级，可享有全部权限',
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: Colors.amber.shade800,
@@ -344,6 +338,12 @@ class _LevelInfoSheet extends ConsumerWidget {
                     if (isNext && status != null && !isVip) ...[
                       const SizedBox(height: 12),
                       _buildProgressSection(context, status, lv),
+                    ],
+
+                    // ── 下一个等级可新增获得的权利 ──
+                    if (nextNewRights.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      _buildNextRights(context, nextNewRights, color),
                     ],
 
                     // ── 当前等级的权利 ──
@@ -402,7 +402,8 @@ class _LevelInfoSheet extends ConsumerWidget {
 
     final progressItems = <Widget>[];
     void addProgressItem(Widget item) {
-      if (progressItems.isNotEmpty) progressItems.add(const SizedBox(height: 8));
+      if (progressItems.isNotEmpty)
+        progressItems.add(const SizedBox(height: 8));
       progressItems.add(item);
     }
 
@@ -500,7 +501,7 @@ class _LevelInfoSheet extends ConsumerWidget {
     final rights = <String>[];
     for (var i = currentIdx; i < levels.length; i++) {
       final r = levels[i].value.rights;
-      if (r.isNotEmpty && r != '无') rights.add(r);
+      if (_hasEffectiveRight(r)) rights.add(r.trim());
     }
     if (rights.isEmpty) return const SizedBox.shrink();
 
@@ -516,41 +517,39 @@ class _LevelInfoSheet extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 6),
-        ...rights.map(
-          (r) => Padding(
-            padding: const EdgeInsets.only(bottom: 3),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 5),
-                  child: Container(
-                    width: 4,
-                    height: 4,
-                    decoration: const BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    r,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: context.theme.colors.foreground.withValues(
-                        alpha: 0.7,
-                      ),
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
+        ..._buildRightsRows(context, rights, Colors.green),
+      ],
+    );
+  }
+
+  Widget _buildNextRights(
+    BuildContext context,
+    List<String> rights,
+    Color levelColor,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: levelColor.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: levelColor.withValues(alpha: 0.16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '即将获得新增权利',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: levelColor,
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 6),
+          ..._buildRightsRows(context, rights, levelColor),
+        ],
+      ),
     );
   }
 
@@ -717,52 +716,47 @@ class _LevelInfoSheet extends ConsumerWidget {
 
   // ────────────── 权利列表 ──────────────
 
-  Widget _buildRightsBlock(BuildContext context, List<String> rights) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: context.theme.colors.muted.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: rights
-            .map(
-              (r) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 5),
-                      child: Container(
-                        width: 4,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: context.theme.colors.mutedForeground,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+  List<Widget> _buildRightsRows(
+    BuildContext context,
+    List<String> rights,
+    Color markerColor,
+  ) {
+    return rights
+        .map(
+          (r) => Padding(
+            padding: const EdgeInsets.only(bottom: 3),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 5),
+                  child: Container(
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: markerColor,
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        r,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: context.theme.colors.foreground,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            )
-            .toList(),
-      ),
-    );
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    r,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.theme.colors.foreground.withValues(
+                        alpha: 0.7,
+                      ),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )
+        .toList();
   }
 
   // ────────────── 工具 ──────────────
@@ -789,5 +783,10 @@ class _LevelInfoSheet extends ConsumerWidget {
     if (lv.bonus > 0) parts.add('魔力${fmtCompact(lv.bonus)}');
     if (lv.torrents > 0) parts.add('做种${lv.torrents}');
     return parts.isEmpty ? '-' : parts.join(' ');
+  }
+
+  bool _hasEffectiveRight(String value) {
+    final right = value.trim();
+    return right.isNotEmpty && right != '无' && right != '同上';
   }
 }
