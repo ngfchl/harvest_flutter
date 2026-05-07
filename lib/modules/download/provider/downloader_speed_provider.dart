@@ -152,6 +152,64 @@ class DownloaderSpeedNotifier
 
   bool get _isRunning => _subscription != null;
 
+  void refresh() {
+    if (!mounted) return;
+    final enabled = ref.read(speedEnabledProvider);
+    final paused = ref.read(speedPausedProvider);
+    if (!enabled || paused) return;
+    _restart();
+  }
+
+  void setAlternativeSpeedMode({
+    required int downloaderId,
+    required bool enabled,
+    String? wsKey,
+  }) {
+    final matchedKey = _findStateKey(downloaderId: downloaderId, wsKey: wsKey);
+    if (matchedKey == null) return;
+
+    final data = state[matchedKey];
+    if (data == null) return;
+
+    final prefs = Map<String, dynamic>.from(data.prefs)
+      ..['use_alt_speed_limits'] = enabled
+      ..['alternative_speed_enabled'] = enabled
+      ..['alternativeSpeedEnabled'] = enabled
+      ..['alt-speed-enabled'] = enabled
+      ..['altSpeedEnabled'] = enabled
+      ..['slow_mode'] = enabled
+      ..['slowMode'] = enabled;
+
+    state = {
+      ...state,
+      matchedKey: data.copyWith(
+        info: data.info.copyWith(
+          alternativeSpeedEnabled: enabled,
+          speedLimitEnabled:
+              enabled ||
+              data.info.uploadLimit > 0 ||
+              data.info.downloadLimit > 0,
+        ),
+        prefs: prefs,
+      ),
+    };
+  }
+
+  String? _findStateKey({required int downloaderId, String? wsKey}) {
+    final id = downloaderId.toString().toLowerCase();
+    final normalizedWsKey = wsKey?.toLowerCase();
+    for (final entry in state.entries) {
+      final key = entry.key.toLowerCase();
+      final dataId = entry.value.downloaderId.toLowerCase();
+      if (key == id || dataId == id) return entry.key;
+      if (normalizedWsKey != null &&
+          (key == normalizedWsKey || dataId == normalizedWsKey)) {
+        return entry.key;
+      }
+    }
+    return null;
+  }
+
   void _connect() {
     if (!HiveManager.hasAccessToken) {
       _pause();
@@ -214,7 +272,7 @@ class DownloaderSpeedNotifier
     // 到时自动停止
     _autoStopTimer = Timer(Duration(seconds: totalSeconds), () {
       if (!mounted) return;
-      debugPrint('[Speed] ${durationMin}分钟到时, 自动停止');
+      debugPrint('[Speed] $durationMin分钟到时, 自动停止');
       _countdownTimer?.cancel();
       ref.read(speedRemainingProvider.notifier).state = 0;
       ref.read(speedPausedProvider.notifier).state = true;

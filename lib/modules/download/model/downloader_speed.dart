@@ -13,6 +13,18 @@ class DownloaderSpeedData {
     required this.prefs,
   });
 
+  DownloaderSpeedData copyWith({
+    String? downloaderId,
+    DownloaderInfo? info,
+    Map<String, dynamic>? prefs,
+  }) {
+    return DownloaderSpeedData(
+      downloaderId: downloaderId ?? this.downloaderId,
+      info: info ?? this.info,
+      prefs: prefs ?? this.prefs,
+    );
+  }
+
   factory DownloaderSpeedData.fromJson(String id, Map<String, dynamic> json) {
     final prefsJson =
         _asStringMap(_pick(json, const ['prefs', 'preferences'])) ?? {};
@@ -68,6 +80,45 @@ class DownloaderInfo {
     this.alternativeSpeedEnabled = false,
     this.totalPeerConnections = 0,
   });
+
+  DownloaderInfo copyWith({
+    int? downloadSpeed,
+    int? uploadSpeed,
+    int? activeTorrentCount,
+    int? pausedTorrentCount,
+    int? totalTorrentCount,
+    int? freeSpace,
+    double? ratio,
+    int? downloadedSession,
+    int? uploadedSession,
+    String? connectionStatus,
+    String? version,
+    int? uploadLimit,
+    int? downloadLimit,
+    bool? speedLimitEnabled,
+    bool? alternativeSpeedEnabled,
+    int? totalPeerConnections,
+  }) {
+    return DownloaderInfo(
+      downloadSpeed: downloadSpeed ?? this.downloadSpeed,
+      uploadSpeed: uploadSpeed ?? this.uploadSpeed,
+      activeTorrentCount: activeTorrentCount ?? this.activeTorrentCount,
+      pausedTorrentCount: pausedTorrentCount ?? this.pausedTorrentCount,
+      totalTorrentCount: totalTorrentCount ?? this.totalTorrentCount,
+      freeSpace: freeSpace ?? this.freeSpace,
+      ratio: ratio ?? this.ratio,
+      downloadedSession: downloadedSession ?? this.downloadedSession,
+      uploadedSession: uploadedSession ?? this.uploadedSession,
+      connectionStatus: connectionStatus ?? this.connectionStatus,
+      version: version ?? this.version,
+      uploadLimit: uploadLimit ?? this.uploadLimit,
+      downloadLimit: downloadLimit ?? this.downloadLimit,
+      speedLimitEnabled: speedLimitEnabled ?? this.speedLimitEnabled,
+      alternativeSpeedEnabled:
+          alternativeSpeedEnabled ?? this.alternativeSpeedEnabled,
+      totalPeerConnections: totalPeerConnections ?? this.totalPeerConnections,
+    );
+  }
 
   factory DownloaderInfo.fromJson(
     Map<String, dynamic> json,
