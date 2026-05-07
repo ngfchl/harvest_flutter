@@ -407,12 +407,25 @@ jobs:
 
 
   ios: # 构建 iOS 应用（需要 macOS 系统）
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - name: 签出仓库
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: 指定 Xcode 26
+        shell: bash
+        run: |
+          XCODE_PATH=$(find /Applications -maxdepth 1 -name 'Xcode_26*.app' -print | sort -V | tail -n 1)
+          if [ -z "$XCODE_PATH" ]; then
+            echo "Xcode 26 not found"
+            ls -1 /Applications | grep Xcode || true
+            exit 1
+          fi
+          sudo xcode-select -s "$XCODE_PATH/Contents/Developer"
+          xcodebuild -version
+          xcodebuild -showsdks
 
       - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
