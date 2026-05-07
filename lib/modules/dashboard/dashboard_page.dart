@@ -9,6 +9,7 @@ import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/hooks.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/cache_status_banner.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../auth/auth_provider.dart';
@@ -135,9 +136,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     _chartHeight = DashboardChartConfig.getChartHeight(); // ← 新增
     _treemapCount = DashboardChartConfig.getTreemapCount();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(dashboardNotifierProvider.notifier)
-          .refresh(days: _phoneDashboardFetchDays);
+      ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
       if (mounted) {
         ref.read(activeScrollControllerProvider.notifier).state = _scrollController;
       }
@@ -173,9 +172,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   }
 
   Future<void> _onRefresh() async {
-    await ref
-        .read(dashboardNotifierProvider.notifier)
-        .refresh(days: _phoneDashboardFetchDays);
+    await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
     _refreshController.finishRefresh();
   }
 
@@ -184,9 +181,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     setState(() => _isRefreshingDashboardData = true);
 
     try {
-      await ref
-          .read(dashboardNotifierProvider.notifier)
-          .refresh(days: _phoneDashboardFetchDays);
+      await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
       Toast.success('刷新数据完成');
     } catch (e, st) {
       AppLogger.error('刷新首页数据失败', e, st);
@@ -223,9 +218,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     try {
       await fetchBasic(_taskEndpoint(API.MYSITE_STATUS_OPERATE));
       await ref.read(siteInfoListProvider.notifier).refresh();
-      await ref
-          .read(dashboardNotifierProvider.notifier)
-          .refresh(days: _phoneDashboardFetchDays);
+      await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
       Toast.success('站点数据任务已执行');
     } catch (e, st) {
       AppLogger.error('执行站点数据刷新任务失败', e, st);
@@ -242,9 +235,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     try {
       await fetchBasic(_taskEndpoint(API.MYSITE_SIGNIN_OPERATE));
       await ref.read(siteInfoListProvider.notifier).refresh();
-      await ref
-          .read(dashboardNotifierProvider.notifier)
-          .refresh(days: _phoneDashboardFetchDays);
+      await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
       Toast.success('站点签到任务已执行');
     } catch (e, st) {
       AppLogger.error('执行站点签到任务失败', e, st);
@@ -390,6 +381,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     if (!context.isMobile) return const DesktopDashboardPage();
 
     final data = ref.watch(dashboardNotifierProvider);
+    final cacheInfo = ref.watch(dashboardCacheInfoProvider);
+    final refreshSerial = ref.watch(dashboardRefreshSerialProvider);
     final privacy = ref.watch(privacyModeProvider);
     final isPhone = PlatformTool.isPhone();
 
@@ -398,8 +391,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     return Stack(
       children: [
         isPhone
-            ? _buildPhoneLayout(data, privacy)
-            : _buildDesktopLayout(data, privacy),
+            ? _buildPhoneLayout(data, privacy, cacheInfo, refreshSerial)
+            : _buildDesktopLayout(data, privacy, cacheInfo, refreshSerial),
         // 隐私开关
         Positioned(
           right: 12,
@@ -673,7 +666,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             offset: const Offset(0, 10),
             spreadRadius: -8,
           ),
-          BoxShadow(color: cs.border.withValues(alpha: 0.22), blurRadius: 10, offset: const Offset(0, 2), spreadRadius: -4),
+          BoxShadow(
+            color: cs.border.withValues(alpha: 0.22),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+            spreadRadius: -4,
+          ),
         ],
       ),
       child: Column(
@@ -1557,13 +1555,9 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
           child: ShaderMask(
             shaderCallback: (bounds) {
               final colors = _colors;
-              final stops = List.generate(
-                colors.length,
-                (i) => i / (colors.length - 1),
-              );
+              final stops = List.generate(colors.length, (i) => i / (colors.length - 1));
               final offset = _animCtrl.value;
-              final animatedStops = stops.map((s) => (s + offset) % 1.0).toList()
-                ..sort();
+              final animatedStops = stops.map((s) => (s + offset) % 1.0).toList()..sort();
 
               return LinearGradient(
                 colors: colors,
@@ -1576,11 +1570,7 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
             blendMode: BlendMode.srcIn,
             child: Stack(
               children: [
-                for (final offset in const [
-                  Offset.zero,
-                  Offset(0.45, 0),
-                  Offset(0, 0.35),
-                ])
+                for (final offset in const [Offset.zero, Offset(0.45, 0), Offset(0, 0.35)])
                   Transform.translate(
                     offset: offset,
                     child: Text(

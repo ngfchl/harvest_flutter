@@ -8,6 +8,7 @@ import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 class ShellBottomNavigation extends StatefulWidget {
   final int index;
   final ValueChanged<int> onChange;
+  final bool dashboardChrome;
 
   static const _barHeight = 58.0;
   static const _horizontalMargin = 12.0;
@@ -19,6 +20,7 @@ class ShellBottomNavigation extends StatefulWidget {
     super.key,
     required this.index,
     required this.onChange,
+    this.dashboardChrome = false,
   });
 
   static double reservedHeight(BuildContext context) {
@@ -36,6 +38,7 @@ class ShellBottomControls extends StatelessWidget {
   final int index;
   final ValueChanged<int> onChange;
   final VoidCallback onSearchPress;
+  final bool dashboardChrome;
 
   static const _maxWidth = 720.0;
 
@@ -44,6 +47,7 @@ class ShellBottomControls extends StatelessWidget {
     required this.index,
     required this.onChange,
     required this.onSearchPress,
+    this.dashboardChrome = false,
   });
 
   @override
@@ -56,9 +60,16 @@ class ShellBottomControls extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
-              child: ShellBottomNavigation(index: index, onChange: onChange),
+              child: ShellBottomNavigation(
+                index: index,
+                onChange: onChange,
+                dashboardChrome: dashboardChrome,
+              ),
             ),
-            ShellSearchButton(onPress: onSearchPress),
+            ShellSearchButton(
+              onPress: onSearchPress,
+              dashboardChrome: dashboardChrome,
+            ),
           ],
         ),
       ),
@@ -76,6 +87,10 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation>
     _ShellNavItem(label: '任务', icon: FIcons.listTodo),
   ];
   static const _dragDwellDuration = Duration(milliseconds: 420);
+  static const _dashboardPanel = Color(0xFF0D1B2E);
+  static const _dashboardPanelSoft = Color(0xFF10243B);
+  static const _dashboardMuted = Color(0xFF88A4C4);
+  static const _dashboardCyan = Color(0xFF22D3EE);
 
   late final AnimationController _controller;
   late Animation<double> _position;
@@ -202,6 +217,7 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation>
                                 items: _items,
                                 selectedIndex: _selectedIndex,
                                 selectedBackgroundOpacity: selectionOpacity,
+                                dashboardChrome: widget.dashboardChrome,
                               ),
                             ),
                           ),
@@ -221,9 +237,11 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation>
                               distortionWidth: 42,
                               chromaticAberration: 0.002,
                               saturation: 1.08,
-                              color: FTheme.of(
-                                context,
-                              ).colors.background.withValues(alpha: 0.1),
+                              color: widget.dashboardChrome
+                                  ? _dashboardPanelSoft.withValues(alpha: 0.28)
+                                  : FTheme.of(
+                                      context,
+                                    ).colors.background.withValues(alpha: 0.1),
                               blur: const LiquidGlassBlur(
                                 sigmaX: 0.65,
                                 sigmaY: 0.65,
@@ -338,11 +356,13 @@ class _NavigationChrome extends StatelessWidget {
   final List<_ShellNavItem> items;
   final int selectedIndex;
   final double selectedBackgroundOpacity;
+  final bool dashboardChrome;
 
   const _NavigationChrome({
     required this.items,
     required this.selectedIndex,
     required this.selectedBackgroundOpacity,
+    required this.dashboardChrome,
   });
 
   @override
@@ -350,24 +370,46 @@ class _NavigationChrome extends StatelessWidget {
     final theme = FTheme.of(context);
     final colors = theme.colors;
     final radius = BorderRadius.circular(22);
+    final background = dashboardChrome
+        ? _ShellBottomNavigationState._dashboardPanel.withValues(alpha: 0.9)
+        : colors.background.withValues(alpha: 0.78);
+    final border = dashboardChrome
+        ? _ShellBottomNavigationState._dashboardCyan.withValues(alpha: 0.26)
+        : colors.border.withValues(alpha: 0.38);
+    final shadows = dashboardChrome
+        ? [
+            BoxShadow(
+              color: _ShellBottomNavigationState._dashboardCyan.withValues(
+                alpha: 0.14,
+              ),
+              blurRadius: 26,
+              offset: const Offset(0, 10),
+            ),
+            BoxShadow(
+              color: const Color(0xFF000000).withValues(alpha: 0.42),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ]
+        : const [
+            BoxShadow(
+              color: Color(0x26000000),
+              blurRadius: 24,
+              offset: Offset(0, 10),
+            ),
+            BoxShadow(
+              color: Color(0x12000000),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ];
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.background.withValues(alpha: 0.78),
-        border: Border.all(color: colors.border.withValues(alpha: 0.38)),
+        color: background,
+        border: Border.all(color: border),
         borderRadius: radius,
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x26000000),
-            blurRadius: 24,
-            offset: Offset(0, 10),
-          ),
-          BoxShadow(
-            color: Color(0x12000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+        boxShadow: shadows,
       ),
       child: ClipRRect(
         borderRadius: radius,
@@ -379,6 +421,7 @@ class _NavigationChrome extends StatelessWidget {
                   item: item,
                   selected: i == selectedIndex,
                   selectedBackgroundOpacity: selectedBackgroundOpacity,
+                  dashboardChrome: dashboardChrome,
                 ),
               ),
           ],
@@ -392,19 +435,25 @@ class _NavigationItemButton extends StatelessWidget {
   final _ShellNavItem item;
   final bool selected;
   final double selectedBackgroundOpacity;
+  final bool dashboardChrome;
 
   const _NavigationItemButton({
     required this.item,
     required this.selected,
     required this.selectedBackgroundOpacity,
+    required this.dashboardChrome,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = FTheme.of(context);
     final colors = theme.colors;
-    final activeColor = colors.primary;
-    final inactiveColor = colors.foreground.withValues(alpha: 0.58);
+    final activeColor = dashboardChrome
+        ? _ShellBottomNavigationState._dashboardCyan
+        : colors.primary;
+    final inactiveColor = dashboardChrome
+        ? _ShellBottomNavigationState._dashboardMuted.withValues(alpha: 0.82)
+        : colors.foreground.withValues(alpha: 0.58);
     final color = selected ? activeColor : inactiveColor;
 
     return LayoutBuilder(
@@ -436,7 +485,17 @@ class _NavigationItemButton extends StatelessWidget {
                   opacity: selected ? selectedBackgroundOpacity : 0,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: colors.primary.withValues(alpha: 0.11),
+                      color: dashboardChrome
+                          ? _ShellBottomNavigationState._dashboardCyan
+                                .withValues(alpha: 0.13)
+                          : colors.primary.withValues(alpha: 0.11),
+                      border: dashboardChrome
+                          ? Border.all(
+                              color: _ShellBottomNavigationState._dashboardCyan
+                                  .withValues(alpha: 0.22),
+                              width: 0.6,
+                            )
+                          : null,
                       borderRadius: BorderRadius.circular(18),
                     ),
                   ),
@@ -470,13 +529,18 @@ class _NavigationItemButton extends StatelessWidget {
 
 class ShellSearchButton extends StatefulWidget {
   final VoidCallback onPress;
+  final bool dashboardChrome;
 
   static const _buttonSize = 58.0;
   static const _horizontalMargin = 12.0;
   static const _topGap = 6.0;
   static const _bottomGap = 8.0;
 
-  const ShellSearchButton({super.key, required this.onPress});
+  const ShellSearchButton({
+    super.key,
+    required this.onPress,
+    this.dashboardChrome = false,
+  });
 
   @override
   State<ShellSearchButton> createState() => _ShellSearchButtonState();
@@ -526,6 +590,15 @@ class _ShellSearchButtonState extends State<ShellSearchButton>
   @override
   Widget build(BuildContext context) {
     final colors = FTheme.of(context).colors;
+    final background = widget.dashboardChrome
+        ? _ShellBottomNavigationState._dashboardPanel
+        : colors.background;
+    final border = widget.dashboardChrome
+        ? _ShellBottomNavigationState._dashboardCyan.withValues(alpha: 0.26)
+        : colors.border;
+    final primary = widget.dashboardChrome
+        ? _ShellBottomNavigationState._dashboardCyan
+        : colors.primary;
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Padding(
@@ -573,9 +646,10 @@ class _ShellSearchButtonState extends State<ShellSearchButton>
                           child: SizedBox.square(
                             dimension: ShellSearchButton._buttonSize,
                             child: _SearchButtonChrome(
-                              background: colors.background,
-                              border: colors.border,
-                              primary: colors.primary,
+                              background: background,
+                              border: border,
+                              primary: primary,
+                              dashboardChrome: widget.dashboardChrome,
                             ),
                           ),
                         ),
@@ -593,7 +667,9 @@ class _ShellSearchButtonState extends State<ShellSearchButton>
                             distortionWidth: 42,
                             chromaticAberration: 0.002,
                             saturation: 1.08,
-                            color: colors.background.withValues(alpha: 0.10),
+                            color: background.withValues(
+                              alpha: widget.dashboardChrome ? 0.26 : 0.10,
+                            ),
                             blur: const LiquidGlassBlur(
                               sigmaX: 0.65,
                               sigmaY: 0.65,
@@ -626,11 +702,13 @@ class _SearchButtonChrome extends StatelessWidget {
   final Color background;
   final Color border;
   final Color primary;
+  final bool dashboardChrome;
 
   const _SearchButtonChrome({
     required this.background,
     required this.border,
     required this.primary,
+    required this.dashboardChrome,
   });
 
   @override
@@ -638,20 +716,37 @@ class _SearchButtonChrome extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: background.withValues(alpha: 0.78),
-        border: Border.all(color: border.withValues(alpha: 0.42)),
+        border: Border.all(
+          color: border.withValues(alpha: dashboardChrome ? 1 : 0.42),
+        ),
         borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x26000000),
-            blurRadius: 24,
-            offset: Offset(0, 10),
-          ),
-          BoxShadow(
-            color: Color(0x12000000),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+        boxShadow: dashboardChrome
+            ? [
+                BoxShadow(
+                  color: _ShellBottomNavigationState._dashboardCyan.withValues(
+                    alpha: 0.14,
+                  ),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+                BoxShadow(
+                  color: const Color(0xFF000000).withValues(alpha: 0.42),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : const [
+                BoxShadow(
+                  color: Color(0x26000000),
+                  blurRadius: 24,
+                  offset: Offset(0, 10),
+                ),
+                BoxShadow(
+                  color: Color(0x12000000),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
       ),
       child: Center(child: Icon(FIcons.search, size: 22, color: primary)),
     );

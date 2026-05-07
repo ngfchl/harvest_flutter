@@ -18,6 +18,8 @@ final dashboardCacheInfoProvider = StateProvider<DataCacheInfo>(
   (_) => const DataCacheInfo.none(),
 );
 
+final dashboardRefreshSerialProvider = StateProvider<int>((_) => 0);
+
 DateTime? _dashboardUpdatedAt(DashboardData data) {
   final updatedAt = data.updatedAt?.trim();
   if (updatedAt == null || updatedAt.isEmpty) return null;
@@ -63,6 +65,7 @@ class DashboardNotifier extends _$DashboardNotifier {
         isCached: false,
         cachedAt: _dashboardUpdatedAt(data),
       );
+      ref.read(dashboardRefreshSerialProvider.notifier).state++;
       // if (response != null) {
       //   state = DashboardData.fromJson(response);
       // }

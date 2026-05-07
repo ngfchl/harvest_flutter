@@ -106,9 +106,15 @@ extension _PhoneDashboardView on _DashboardPageState {
   Widget _buildPhoneLayout(
     DashboardData data,
     bool privacy,
+    DataCacheInfo cacheInfo,
+    int refreshSerial,
   ) {
     final children = <Widget>[
       _buildServerBar(privacy),
+      CacheStatusBanner(
+        info: cacheInfo,
+        margin: const EdgeInsets.only(top: 8),
+      ),
       const SizedBox(height: 12),
       ..._buildPolishedPhoneDashboardChildren(data, privacy),
       SizedBox(
@@ -118,6 +124,7 @@ extension _PhoneDashboardView on _DashboardPageState {
     ];
 
     final scrollView = EasyRefresh(
+      key: ValueKey('phone-dashboard-$refreshSerial'),
       controller: _refreshController,
       onRefresh: _onRefresh,
       header: appRefreshHeader(context),

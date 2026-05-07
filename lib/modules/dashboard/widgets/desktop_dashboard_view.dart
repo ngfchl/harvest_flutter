@@ -3,12 +3,18 @@ part of '../dashboard_page.dart';
 extension _DesktopDashboardView on _DashboardPageState {
   // ———————————————— 桌面布局 ————————————————
 
-  Widget _buildDesktopLayout(DashboardData data, bool privacy) {
+  Widget _buildDesktopLayout(
+    DashboardData data,
+    bool privacy,
+    DataCacheInfo cacheInfo,
+    int refreshSerial,
+  ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final padding = 8.0;
 
         return EasyRefresh(
+          key: ValueKey('tablet-dashboard-$refreshSerial'),
           controller: _refreshController,
           onRefresh: _onRefresh,
           header: appRefreshHeader(context),
@@ -21,6 +27,10 @@ extension _DesktopDashboardView on _DashboardPageState {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     _buildServerBar(privacy),
+                    CacheStatusBanner(
+                      info: cacheInfo,
+                      margin: const EdgeInsets.only(top: 8),
+                    ),
                     const SizedBox(height: 12),
                     ..._buildPolishedDesktopDashboardChildren(data, privacy),
                     SizedBox(height: _DashboardPageState._bottomSafeGap + ShellBottomSpacing.value(context)),

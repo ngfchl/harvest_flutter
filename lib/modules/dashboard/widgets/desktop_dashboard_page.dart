@@ -9,6 +9,7 @@ import 'package:harvest/core/cache/session_cache.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/hooks.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/cache_status_banner.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../models/kv/kv.dart';
@@ -206,6 +207,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   Widget build(BuildContext context) {
     final data = ref.watch(dashboardNotifierProvider);
     final cacheInfo = ref.watch(dashboardCacheInfoProvider);
+    final refreshSerial = ref.watch(dashboardRefreshSerialProvider);
     final privacy = ref.watch(privacyModeProvider);
 
     return DecoratedBox(
@@ -216,7 +218,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           Positioned.fill(
             child: data == null
                 ? const Center(child: FProgress.circularIcon())
-                : _buildBoard(context, data, cacheInfo, privacy),
+                : _buildBoard(context, data, cacheInfo, privacy, refreshSerial),
           ),
         ],
       ),
@@ -227,8 +229,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return IgnorePointer(child: CustomPaint(painter: _BoardBackdropPainter()));
   }
 
-  Widget _buildBoard(BuildContext context, DashboardData data, DataCacheInfo cacheInfo, bool privacy) {
+  Widget _buildBoard(BuildContext context, DashboardData data, DataCacheInfo cacheInfo, bool privacy, int refreshSerial) {
     return EasyRefresh(
+      key: ValueKey('desktop-dashboard-$refreshSerial'),
       controller: _refreshController,
       onRefresh: _onRefresh,
       header: appRefreshHeader(context),
@@ -246,6 +249,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildHeader(data, cacheInfo, privacy),
+                      CacheStatusBanner(
+                        info: cacheInfo,
+                        margin: const EdgeInsets.only(top: 10),
+                      ),
                       const SizedBox(height: 14),
                       _buildKpiStrip(data, constraints.crossAxisExtent),
                       const SizedBox(height: 14),

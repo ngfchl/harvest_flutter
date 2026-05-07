@@ -13,6 +13,7 @@ class ShellScaffold extends StatelessWidget {
   final int index;
   final ValueChanged<int> onChange;
   final FScaffoldStyle Function(FScaffoldStyle)? scaffoldStyle;
+  final bool dashboardChrome;
 
   const ShellScaffold({
     super.key,
@@ -21,6 +22,7 @@ class ShellScaffold extends StatelessWidget {
     required this.index,
     required this.onChange,
     this.scaffoldStyle,
+    this.dashboardChrome = false,
   });
 
   static const _routeItemCount = 5;
@@ -92,6 +94,8 @@ class ShellScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveDashboardChrome = dashboardChrome && !PlatformInfo.isIOS;
+
     if (PlatformInfo.isIOS) {
       final colors = FTheme.of(context).colors;
 
@@ -103,7 +107,7 @@ class ShellScaffold extends StatelessWidget {
           selectedIndex: _selectedIndex,
           onTap: (tappedIndex) => _handleNavigationTap(context, tappedIndex),
           selectedItemColor: colors.primary,
-          unselectedItemColor: colors.foreground.withOpacity(0.58),
+          unselectedItemColor: colors.foreground.withValues(alpha: 0.58),
           items: [
             for (final item in _items)
               AdaptiveNavigationDestination(
@@ -141,6 +145,7 @@ class ShellScaffold extends StatelessWidget {
             index: _selectedIndex,
             onChange: onChange,
             onSearchPress: () => _openSearchPage(context),
+            dashboardChrome: effectiveDashboardChrome,
           ),
         ),
       ],
