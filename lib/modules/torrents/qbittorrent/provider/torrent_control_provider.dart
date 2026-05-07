@@ -10,7 +10,10 @@ import 'package:harvest/core/http/hooks.dart';
 class TorrentControlNotifier extends StateNotifier<AsyncValue<void>> {
   TorrentControlNotifier() : super(const AsyncValue.data(null));
 
-  Future<bool> control({required int downloaderId, required Map<String, dynamic> command}) async {
+  Future<bool> control({
+    required int downloaderId,
+    required Map<String, dynamic> command,
+  }) async {
     state = const AsyncValue.loading();
     try {
       await addData('${API.DOWNLOADER_CONTROL}$downloaderId', command);
@@ -25,9 +28,10 @@ class TorrentControlNotifier extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-final torrentControlProvider = StateNotifierProvider<TorrentControlNotifier, AsyncValue<void>>(
-  (ref) => TorrentControlNotifier(),
-);
+final torrentControlProvider =
+    StateNotifierProvider<TorrentControlNotifier, AsyncValue<void>>(
+      (ref) => TorrentControlNotifier(),
+    );
 
 // ══════════════════════════════════════════════════════════
 //  统一执行入口
@@ -72,31 +76,62 @@ Future<bool> executeTorrentAction({
     case 'set_super_seeding':
       return control.control(
         downloaderId: downloaderId,
-        command: {'command': action, 'torrent_hashes': params['hashes'], 'enable': params['enable']},
+        command: {
+          'command': action,
+          'torrent_hashes': params['hashes'],
+          'enable': params['enable'],
+        },
       );
 
     case 'set_location':
       return control.control(
         downloaderId: downloaderId,
-        command: {'command': 'set_location', 'torrent_hashes': params['hashes'], 'location': params['savePath']},
+        command: {
+          'command': 'set_location',
+          'torrent_hashes': params['hashes'],
+          'location': params['savePath'],
+        },
       );
 
     case 'set_category':
       return control.control(
         downloaderId: downloaderId,
-        command: {'command': 'set_category', 'torrent_hashes': params['hashes'], 'category': params['category']},
+        command: {
+          'command': 'set_category',
+          'torrent_hashes': params['hashes'],
+          'category': params['category'],
+        },
       );
 
     case 'add_tags':
       return control.control(
         downloaderId: downloaderId,
-        command: {'command': 'add_tags', 'torrent_hashes': params['hashes'], 'tags': params['tags']},
+        command: {
+          'command': 'add_tags',
+          'torrent_hashes': params['hashes'],
+          'tags': params['tags'],
+        },
+      );
+
+    case 'set_tracker':
+    case 'qb_set_tracker':
+      return control.control(
+        downloaderId: downloaderId,
+        command: {
+          'command': 'set_tracker',
+          'torrent_hashes': params['hashes'],
+          'tracker_list': params['trackerList'],
+        },
       );
 
     case 'set_upload_limit':
       return control.control(
         downloaderId: downloaderId,
-        command: {'command': 'set_upload_limit', 'torrent_hashes': params['hashes'], 'limit': params['limit']},
+        command: {
+          'command': 'set_upload_limit',
+          'torrent_hashes': params['hashes'],
+          'limit': params['limit'],
+        },
       );
 
     case 'set_share_limits':
@@ -113,7 +148,10 @@ Future<bool> executeTorrentAction({
     case 'export':
       return control.control(
         downloaderId: downloaderId,
-        command: {'command': 'export', 'torrent_hash': (params['hashes'] as List).first},
+        command: {
+          'command': 'export',
+          'torrent_hash': (params['hashes'] as List).first,
+        },
       );
 
     // ── TR 命令 ──
@@ -122,31 +160,50 @@ Future<bool> executeTorrentAction({
     case 'stop_torrent':
     case 'verify_torrent':
     case 'reannounce_torrent':
-      return control.control(downloaderId: downloaderId, command: {'command': action, 'ids': params['ids']});
+      return control.control(
+        downloaderId: downloaderId,
+        command: {'command': action, 'ids': params['ids']},
+      );
 
     case 'start_torrent_now':
       return control.control(
         downloaderId: downloaderId,
-        command: {'command': 'start_torrent', 'ids': params['ids'], 'bypass_queue': true},
+        command: {
+          'command': 'start_torrent',
+          'ids': params['ids'],
+          'bypass_queue': true,
+        },
       );
 
     case 'remove_torrent':
       return control.control(
         downloaderId: downloaderId,
-        command: {'command': 'remove_torrent', 'ids': params['ids'], 'delete_data': params['deleteFiles'] ?? false},
+        command: {
+          'command': 'remove_torrent',
+          'ids': params['ids'],
+          'delete_data': params['deleteFiles'] ?? false,
+        },
       );
 
     case 'move_torrent_data':
       return control.control(
         downloaderId: downloaderId,
-        command: {'command': 'move_torrent_data', 'ids': params['ids'], 'location': params['savePath'], 'move': true},
+        command: {
+          'command': 'move_torrent_data',
+          'ids': params['ids'],
+          'location': params['savePath'],
+          'move': true,
+        },
       );
 
     case 'queue_top':
     case 'queue_up':
     case 'queue_down':
     case 'queue_bottom':
-      return control.control(downloaderId: downloaderId, command: {'command': action, 'ids': params['ids']});
+      return control.control(
+        downloaderId: downloaderId,
+        command: {'command': action, 'ids': params['ids']},
+      );
 
     case 'change_torrent':
       return control.control(
@@ -155,7 +212,8 @@ Future<bool> executeTorrentAction({
           'command': 'change_torrent',
           'ids': params['ids'],
           if (params['labels'] != null) 'labels': params['labels'],
-          if (params['trackerList'] != null) 'tracker_list': params['trackerList'],
+          if (params['trackerList'] != null)
+            'tracker_list': params['trackerList'],
         },
       );
 

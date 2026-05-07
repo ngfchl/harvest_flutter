@@ -144,6 +144,29 @@ enum TorrentFilter {
   const TorrentFilter(this.label);
 }
 
+enum DesktopTorrentStatusFilter {
+  all('全部'),
+  active('活动中的'),
+  downloadingActive('下载中的'),
+  uploadingActive('上传中的'),
+  waiting('等待中'),
+  downloadWaiting('等待下载'),
+  seedWaiting('等待做种'),
+  checking('校验中的'),
+  checkWaiting('等待校验'),
+  paused('暂停的'),
+  pausedDownloading('下载中暂停'),
+  pausedCompleted('下载完成暂停'),
+  stalledDownloading('停滞下载'),
+  stalledUploading('停滞上传'),
+  completed('已完成'),
+  error('错误');
+
+  final String label;
+
+  const DesktopTorrentStatusFilter(this.label);
+}
+
 enum TorrentSort {
   queuePosition('队列顺序'),
   name('名称'),

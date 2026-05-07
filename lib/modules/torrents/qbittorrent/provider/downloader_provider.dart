@@ -251,6 +251,11 @@ final torrentFilterProvider = StateProvider.autoDispose<TorrentFilter>(
   (_) => TorrentFilter.all,
 );
 
+final desktopTorrentStatusFilterProvider =
+    StateProvider.autoDispose<DesktopTorrentStatusFilter>(
+      (_) => DesktopTorrentStatusFilter.all,
+    );
+
 final torrentSearchProvider = StateProvider.autoDispose<String>((_) => '');
 
 final torrentSortProvider = StateProvider.autoDispose<TorrentSort>(
@@ -311,14 +316,41 @@ final availableCategoriesProvider = Provider.autoDispose
     .family<List<String>, int>((ref, id) {
       final data = ref.watch(torrentListProvider(id)).valueOrNull;
       if (data == null) return [];
-      final cats = data.torrents
-          .map((t) => t.category)
-          .where((c) => c.isNotEmpty)
-          .toSet()
-          .toList();
-      cats.sort();
-      return cats;
+      final cats = <String>{};
+      for (final torrent in data.torrents) {
+        if (torrent.category.isNotEmpty) {
+          cats.add(torrent.category);
+          continue;
+        }
+        cats.addAll(_pathCategoryLevels(torrent.downloadDir));
+      }
+      final list = cats.toList();
+      list.sort();
+      return list;
     });
+
+List<String> _pathCategoryLevels(String rawPath) {
+  final path = rawPath.trim();
+  if (path.isEmpty) return const [];
+  final normalized = path.replaceAll('\\\\', '/');
+  final parts = normalized
+      .split('/')
+      .map((part) => part.trim())
+      .where((part) => part.isNotEmpty)
+      .toList();
+  if (parts.isEmpty) return const [];
+
+  final levels = <String>[];
+  for (var i = 0; i < parts.length; i++) {
+    levels.add(parts.take(i + 1).join('/'));
+  }
+  return levels;
+}
+
+bool _matchesCategory(Torrent torrent, String category) {
+  if (torrent.category.isNotEmpty) return torrent.category == category;
+  return _pathCategoryLevels(torrent.downloadDir).contains(category);
+}
 
 // ── 新增：所有可用标签 ──
 final availableTagsProvider = Provider.autoDispose.family<List<String>, int>((
@@ -341,6 +373,7 @@ final filteredTorrentsProvider = Provider.autoDispose
     .family<List<Torrent>, int>((ref, id) {
       final asyncData = ref.watch(torrentListProvider(id));
       final filter = ref.watch(torrentFilterProvider);
+      final desktopStatusFilter = ref.watch(desktopTorrentStatusFilterProvider);
       final search = ref.watch(torrentSearchProvider).toLowerCase();
       final category = ref.watch(torrentCategoryProvider);
       final tag = ref.watch(torrentTagProvider);
@@ -374,9 +407,15 @@ final filteredTorrentsProvider = Provider.autoDispose
         }).toList();
       }
 
+      if (desktopStatusFilter != DesktopTorrentStatusFilter.all) {
+        list = list
+            .where((t) => matchesDesktopTorrentStatus(t, desktopStatusFilter))
+            .toList();
+      }
+
       // ── 分类过滤 ──
       if (category.isNotEmpty) {
-        list = list.where((t) => t.category == category).toList();
+        list = list.where((t) => _matchesCategory(t, category)).toList();
       }
 
       // ── 标签过滤 ──
@@ -418,3 +457,52 @@ final filteredTorrentsProvider = Provider.autoDispose
 
       return list;
     });
+
+bool matchesDesktopTorrentStatus(
+  Torrent torrent,
+  DesktopTorrentStatusFilter filter,
+) {
+  final status = torrent.torrentStatus;
+  final completed = _isTorrentCompleted(torrent);
+
+  return switch (filter) {
+    DesktopTorrentStatusFilter.all => true,
+    DesktopTorrentStatusFilter.active =>
+      status == TorrentStatus.downloading || status == TorrentStatus.seeding,
+    DesktopTorrentStatusFilter.downloadingActive =>
+      status == TorrentStatus.downloading,
+    DesktopTorrentStatusFilter.uploadingActive =>
+      status == TorrentStatus.seeding,
+    DesktopTorrentStatusFilter.waiting =>
+      status == TorrentStatus.downloadWait || status == TorrentStatus.seedWait,
+    DesktopTorrentStatusFilter.downloadWaiting =>
+      status == TorrentStatus.downloadWait,
+    DesktopTorrentStatusFilter.seedWaiting => status == TorrentStatus.seedWait,
+    DesktopTorrentStatusFilter.checking => status == TorrentStatus.checking,
+    DesktopTorrentStatusFilter.checkWaiting =>
+      status == TorrentStatus.checkWait,
+    DesktopTorrentStatusFilter.paused => status == TorrentStatus.stopped,
+    DesktopTorrentStatusFilter.pausedDownloading =>
+      status == TorrentStatus.stopped && !completed,
+    DesktopTorrentStatusFilter.pausedCompleted =>
+      status == TorrentStatus.stopped && completed,
+    DesktopTorrentStatusFilter.stalledDownloading =>
+      status == TorrentStatus.downloadWait && torrent.isStalled,
+    DesktopTorrentStatusFilter.stalledUploading =>
+      status == TorrentStatus.seedWait && torrent.isStalled,
+    DesktopTorrentStatusFilter.completed => completed,
+    DesktopTorrentStatusFilter.error => torrent.hasError,
+  };
+}
+
+bool _isTorrentCompleted(Torrent torrent) {
+  final status = torrent.torrentStatus;
+  if (status == TorrentStatus.seeding || status == TorrentStatus.seedWait) {
+    return true;
+  }
+  if (torrent.isFinished || torrent.doneDate > 0) return true;
+  if (torrent.percentDone >= 0.999 || torrent.percentComplete >= 0.999) {
+    return true;
+  }
+  return false;
+}
