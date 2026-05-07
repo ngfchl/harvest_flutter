@@ -19,6 +19,7 @@ import '../dashboard/dashboard_page.dart';
 // 各个子页面，按需调整路径
 import '../download/download_page.dart';
 import '../download/provider/downloader_speed_provider.dart';
+import '../login/login_history_provider.dart';
 import '../news/news_page.dart';
 import '../option/provider/update_provider.dart';
 import '../option/widgets/option_page.dart';
@@ -47,14 +48,27 @@ class ShellPage extends ConsumerStatefulWidget {
   ConsumerState<ShellPage> createState() => _ShellPageState();
 }
 
-class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProviderStateMixin {
+class _ShellPageState extends ConsumerState<ShellPage>
+    with SingleTickerProviderStateMixin {
   late FPopoverController controller;
   final _appUpgradeController = AppUpgradeController();
   PageController? _pageController;
 
-  static const _routes = ['/home', '/sites', '/dashboard', '/downloads', '/tasks'];
+  static const _routes = [
+    '/home',
+    '/sites',
+    '/dashboard',
+    '/downloads',
+    '/tasks',
+  ];
 
-  static final _pages = [NewsPage(), SitePage(), const DashboardPage(), DownloaderPage(), TaskPage()];
+  static final _pages = [
+    NewsPage(),
+    SitePage(),
+    const DashboardPage(),
+    DownloaderPage(),
+    TaskPage(),
+  ];
 
   // ── 截图 ──
   final _screenshotKey = GlobalKey();
@@ -134,13 +148,20 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
 
       debugPrint('[Screenshot] scrollController=$scrollController');
       debugPrint('[Screenshot] hasClients=${scrollController?.hasClients}');
-      debugPrint('[Screenshot] maxScrollExtent=${scrollController?.position.maxScrollExtent}');
+      debugPrint(
+        '[Screenshot] maxScrollExtent=${scrollController?.position.maxScrollExtent}',
+      );
 
       Uint8List? bytes;
 
-      if (scrollController != null && scrollController.hasClients && scrollController.position.maxScrollExtent > 0) {
+      if (scrollController != null &&
+          scrollController.hasClients &&
+          scrollController.position.maxScrollExtent > 0) {
         debugPrint('[Screenshot] → 长截图模式');
-        bytes = await ScreenshotSaver.captureLong(scrollKey: _screenshotKey, scrollController: scrollController);
+        bytes = await ScreenshotSaver.captureLong(
+          scrollKey: _screenshotKey,
+          scrollController: scrollController,
+        );
       } else {
         debugPrint('[Screenshot] → 普通截图模式');
         bytes = await ScreenshotSaver.capture(_screenshotKey);
@@ -182,7 +203,11 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
         title: const Text('退出应用'),
         body: const Text('确定要退出应用吗？'),
         actions: [
-          FButton(style: FButtonStyle.outline(), onPress: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+          FButton(
+            style: FButtonStyle.outline(),
+            onPress: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
           FButton(
             style: FButtonStyle.destructive(),
             onPress: () => Navigator.of(ctx).pop(true),
@@ -215,6 +240,7 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
     final updateState = ref.watch(updateProvider);
     final appUpgradeStatus = ref.watch(appUpgradeStatusProvider);
     final hasAppUpgrade = appUpgradeStatus.valueOrNull?.hasNewVersion == true;
+    final showAccountSwitcher = ref.watch(loginHistoryProvider).length >= 2;
     final colors = FTheme.of(context).colors;
     final dashboardShellChrome = currentIndex == 2 && !context.isMobile;
 
@@ -223,10 +249,14 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
       child: ShellScaffold(
         index: currentIndex,
         onChange: _onTap,
-        scaffoldStyle: dashboardShellChrome ? _dashboardShellScaffoldStyle() : null,
+        scaffoldStyle: dashboardShellChrome
+            ? _dashboardShellScaffoldStyle()
+            : null,
         dashboardChrome: dashboardShellChrome,
         header: FHeader(
-          style: dashboardShellChrome ? _dashboardShellHeaderStyle(context) : fHeaderStyle(context),
+          style: dashboardShellChrome
+              ? _dashboardShellHeaderStyle(context)
+              : fHeaderStyle(context),
           suffixes: [
             // FButton.icon(
             //   onPress: () => Navigator.push(
@@ -241,8 +271,14 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
             //     child: Icon(FIcons.search),
             //   ),
             // ),
-            _UpdateHeaderButton(state: updateState, dashboardChrome: dashboardShellChrome),
-            _AppUpgradeHeaderButton(dashboardChrome: dashboardShellChrome, onOpen: _appUpgradeController.openDialog),
+            _UpdateHeaderButton(
+              state: updateState,
+              dashboardChrome: dashboardShellChrome,
+            ),
+            _AppUpgradeHeaderButton(
+              dashboardChrome: dashboardShellChrome,
+              onOpen: _appUpgradeController.openDialog,
+            ),
             _NoticeHeaderButton(
               unreadCount: ref.watch(noticeUnreadCountProvider),
               dashboardChrome: dashboardShellChrome,
@@ -263,7 +299,11 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
                       onPress: () async {
                         await controller.hide();
                         if (context.mounted) {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const UserManagementPage()));
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const UserManagementPage(),
+                            ),
+                          );
                         }
                       },
                     ),
@@ -274,19 +314,26 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
                         onPress: () async {
                           await controller.hide();
                           if (context.mounted) {
-                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AdminUserPage()));
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const AdminUserPage(),
+                              ),
+                            );
                           }
                         },
                       ),
                     inviteUserTile(context),
-                    FTile(
-                      prefix: const Icon(FIcons.users),
-                      title: const Text('切换账号'),
-                      onPress: () async {
-                        await controller.hide();
-                        await ref.read(authNotifierProvider.notifier).logout(redirectTo: '/login-history');
-                      },
-                    ),
+                    if (showAccountSwitcher)
+                      FTile(
+                        prefix: const Icon(FIcons.users),
+                        title: const Text('切换账号'),
+                        onPress: () async {
+                          await controller.hide();
+                          await ref
+                              .read(authNotifierProvider.notifier)
+                              .logout(redirectTo: '/login-history');
+                        },
+                      ),
                     FTile(
                       prefix: const Icon(FIcons.logOut),
                       title: const Text('退出登录'),
@@ -304,7 +351,10 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
                     FTile(
                       prefix: const Icon(FIcons.palette),
                       title: const Text('主题设置'),
-                      onPress: () => showDialog(context: context, builder: (_) => const ThemeDialog()),
+                      onPress: () => showDialog(
+                        context: context,
+                        builder: (_) => const ThemeDialog(),
+                      ),
                     ),
                     FTile(
                       prefix: const Icon(FIcons.camera),
@@ -315,33 +365,52 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
                       },
                     ),
                     FTile(
-                      prefix: Icon(FIcons.download, color: updateState.hasAnyUpdate ? colors.foreground : null),
+                      prefix: Icon(
+                        FIcons.download,
+                        color: updateState.hasAnyUpdate
+                            ? colors.foreground
+                            : null,
+                      ),
                       title: Row(
                         children: [
                           Expanded(
                             child: Text(
                               '程序更新',
                               style: updateState.hasAnyUpdate
-                                  ? const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.w700)
+                                  ? const TextStyle(
+                                      color: Color(0xFFF59E0B),
+                                      fontWeight: FontWeight.w700,
+                                    )
                                   : null,
                             ),
                           ),
-                          if (updateState.hasAnyUpdate) _UpdateCountBadge(count: updateState.updateCount),
+                          if (updateState.hasAnyUpdate)
+                            _UpdateCountBadge(count: updateState.updateCount),
                         ],
                       ),
                       onPress: () async {
                         await controller.hide();
                         if (context.mounted) {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const UpdatePage()));
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const UpdatePage(),
+                            ),
+                          );
                         }
                       },
                     ),
                     FTile(
-                      prefix: Icon(FIcons.circleArrowUp, color: hasAppUpgrade ? colors.foreground : null),
+                      prefix: Icon(
+                        FIcons.circleArrowUp,
+                        color: hasAppUpgrade ? colors.foreground : null,
+                      ),
                       title: Text(
                         'APP升级',
                         style: hasAppUpgrade
-                            ? const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.w700)
+                            ? const TextStyle(
+                                color: Color(0xFFF59E0B),
+                                fontWeight: FontWeight.w700,
+                              )
                             : null,
                       ),
                       onPress: () async {
@@ -352,7 +421,9 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
                     FTile(
                       prefix: const Icon(FIcons.settings),
                       title: const Text('设置中心'),
-                      onPress: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const OptionPage())),
+                      onPress: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const OptionPage()),
+                      ),
                     ),
                     FTile(
                       prefix: const Icon(FIcons.terminal),
@@ -373,9 +444,14 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
                     foregroundColor: dashboardShellChrome
                         ? _dashboardShellText
                         : FTheme.of(context).colors.primaryForeground,
-                    textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ).call,
-                  child: Text(user?.username.substring(0, 1).toUpperCase() ?? "未登录"),
+                  child: Text(
+                    user?.username.substring(0, 1).toUpperCase() ?? "未登录",
+                  ),
                 ),
               ),
             ),
@@ -386,12 +462,19 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
           children: [
             RepaintBoundary(
               key: _screenshotKey,
-              child: PageView(controller: _pageController, onPageChanged: _onPageChanged, children: _pages),
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: _onPageChanged,
+                children: _pages,
+              ),
             ),
             IgnorePointer(
               child: Align(
                 alignment: Alignment.topLeft,
-                child: AppUpgradePage(controller: _appUpgradeController, child: SizedBox.shrink()),
+                child: AppUpgradePage(
+                  controller: _appUpgradeController,
+                  child: SizedBox.shrink(),
+                ),
               ),
             ),
           ],
@@ -401,7 +484,9 @@ class _ShellPageState extends ConsumerState<ShellPage> with SingleTickerProvider
   }
 }
 
-FHeaderStyle Function(FHeaderStyle) _dashboardShellHeaderStyle(BuildContext context) {
+FHeaderStyle Function(FHeaderStyle) _dashboardShellHeaderStyle(
+  BuildContext context,
+) {
   final typography = FTheme.of(context).typography;
 
   return (style) => style.copyWith(
@@ -415,10 +500,22 @@ FHeaderStyle Function(FHeaderStyle) _dashboardShellHeaderStyle(BuildContext cont
     actionSpacing: 8,
     actionStyle: (actionStyle) => actionStyle.copyWith(
       iconStyle: FWidgetStateMap({
-        WidgetState.disabled: IconThemeData(color: _dashboardShellMuted.withValues(alpha: 0.38), size: 24),
-        WidgetState.hovered: const IconThemeData(color: _dashboardShellCyan, size: 24),
-        WidgetState.pressed: const IconThemeData(color: _dashboardShellCyan, size: 24),
-        WidgetState.any: const IconThemeData(color: _dashboardShellText, size: 24),
+        WidgetState.disabled: IconThemeData(
+          color: _dashboardShellMuted.withValues(alpha: 0.38),
+          size: 24,
+        ),
+        WidgetState.hovered: const IconThemeData(
+          color: _dashboardShellCyan,
+          size: 24,
+        ),
+        WidgetState.pressed: const IconThemeData(
+          color: _dashboardShellCyan,
+          size: 24,
+        ),
+        WidgetState.any: const IconThemeData(
+          color: _dashboardShellText,
+          size: 24,
+        ),
       }),
     ),
   );
@@ -427,34 +524,77 @@ FHeaderStyle Function(FHeaderStyle) _dashboardShellHeaderStyle(BuildContext cont
 _dashboardShellGhostButtonStyle() => FButtonStyle.ghost(
   (style) => style.copyWith(
     decoration: FWidgetStateMap({
-      WidgetState.disabled: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+      WidgetState.disabled: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+      ),
       WidgetState.hovered | WidgetState.pressed: BoxDecoration(
         color: _dashboardShellPanelSoft.withValues(alpha: 0.76),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _dashboardShellCyan.withValues(alpha: 0.26), width: 0.7),
+        border: Border.all(
+          color: _dashboardShellCyan.withValues(alpha: 0.26),
+          width: 0.7,
+        ),
       ),
-      WidgetState.any: BoxDecoration(borderRadius: BorderRadius.circular(8), color: const Color(0x00000000)),
+      WidgetState.any: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: const Color(0x00000000),
+      ),
     }),
     contentStyle: (contentStyle) => contentStyle.copyWith(
       textStyle: FWidgetStateMap({
-        WidgetState.disabled: TextStyle(color: _dashboardShellMuted.withValues(alpha: 0.42)),
-        WidgetState.hovered: const TextStyle(color: _dashboardShellCyan, fontWeight: FontWeight.w700),
-        WidgetState.pressed: const TextStyle(color: _dashboardShellCyan, fontWeight: FontWeight.w700),
-        WidgetState.any: const TextStyle(color: _dashboardShellText, fontWeight: FontWeight.w700),
+        WidgetState.disabled: TextStyle(
+          color: _dashboardShellMuted.withValues(alpha: 0.42),
+        ),
+        WidgetState.hovered: const TextStyle(
+          color: _dashboardShellCyan,
+          fontWeight: FontWeight.w700,
+        ),
+        WidgetState.pressed: const TextStyle(
+          color: _dashboardShellCyan,
+          fontWeight: FontWeight.w700,
+        ),
+        WidgetState.any: const TextStyle(
+          color: _dashboardShellText,
+          fontWeight: FontWeight.w700,
+        ),
       }),
       iconStyle: FWidgetStateMap({
-        WidgetState.disabled: IconThemeData(color: _dashboardShellMuted.withValues(alpha: 0.42), size: 20),
-        WidgetState.hovered: const IconThemeData(color: _dashboardShellCyan, size: 20),
-        WidgetState.pressed: const IconThemeData(color: _dashboardShellCyan, size: 20),
-        WidgetState.any: const IconThemeData(color: _dashboardShellText, size: 20),
+        WidgetState.disabled: IconThemeData(
+          color: _dashboardShellMuted.withValues(alpha: 0.42),
+          size: 20,
+        ),
+        WidgetState.hovered: const IconThemeData(
+          color: _dashboardShellCyan,
+          size: 20,
+        ),
+        WidgetState.pressed: const IconThemeData(
+          color: _dashboardShellCyan,
+          size: 20,
+        ),
+        WidgetState.any: const IconThemeData(
+          color: _dashboardShellText,
+          size: 20,
+        ),
       }),
     ),
     iconContentStyle: (iconStyle) => iconStyle.copyWith(
       iconStyle: FWidgetStateMap({
-        WidgetState.disabled: IconThemeData(color: _dashboardShellMuted.withValues(alpha: 0.42), size: 20),
-        WidgetState.hovered: const IconThemeData(color: _dashboardShellCyan, size: 20),
-        WidgetState.pressed: const IconThemeData(color: _dashboardShellCyan, size: 20),
-        WidgetState.any: const IconThemeData(color: _dashboardShellText, size: 20),
+        WidgetState.disabled: IconThemeData(
+          color: _dashboardShellMuted.withValues(alpha: 0.42),
+          size: 20,
+        ),
+        WidgetState.hovered: const IconThemeData(
+          color: _dashboardShellCyan,
+          size: 20,
+        ),
+        WidgetState.pressed: const IconThemeData(
+          color: _dashboardShellCyan,
+          size: 20,
+        ),
+        WidgetState.any: const IconThemeData(
+          color: _dashboardShellText,
+          size: 20,
+        ),
       }),
     ),
   ),
@@ -468,11 +608,24 @@ FScaffoldStyle Function(FScaffoldStyle) _dashboardShellScaffoldStyle() {
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [_dashboardShellBg, _dashboardShellPanel.withValues(alpha: 0.98), _dashboardShellBg],
+        colors: [
+          _dashboardShellBg,
+          _dashboardShellPanel.withValues(alpha: 0.98),
+          _dashboardShellBg,
+        ],
       ),
-      border: Border(bottom: BorderSide(color: _dashboardShellLine.withValues(alpha: 0.95), width: 0.8)),
+      border: Border(
+        bottom: BorderSide(
+          color: _dashboardShellLine.withValues(alpha: 0.95),
+          width: 0.8,
+        ),
+      ),
       boxShadow: [
-        BoxShadow(color: _dashboardShellCyan.withValues(alpha: 0.08), blurRadius: 18, offset: const Offset(0, 8)),
+        BoxShadow(
+          color: _dashboardShellCyan.withValues(alpha: 0.08),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
       ],
     ),
   );
@@ -482,23 +635,34 @@ class _UpdateHeaderButton extends StatelessWidget {
   final UpdateState state;
   final bool dashboardChrome;
 
-  const _UpdateHeaderButton({required this.state, this.dashboardChrome = false});
+  const _UpdateHeaderButton({
+    required this.state,
+    this.dashboardChrome = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     if (!state.hasAnyUpdate) return const SizedBox.shrink();
 
     final cs = FTheme.of(context).colors;
-    final displayCount = state.updateCount > 99 ? '99+' : '${state.updateCount}';
+    final displayCount = state.updateCount > 99
+        ? '99+'
+        : '${state.updateCount}';
     final iconColor = dashboardChrome ? _dashboardShellText : cs.foreground;
     final borderColor = dashboardChrome ? _dashboardShellBg : cs.background;
     const badgeColor = Color(0xFFF59E0B);
 
     return FButton.icon(
-      onPress: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpdatePage())),
-      style: dashboardChrome ? _dashboardShellGhostButtonStyle() : FButtonStyle.ghost(),
+      onPress: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const UpdatePage()),
+      ),
+      style: dashboardChrome
+          ? _dashboardShellGhostButtonStyle()
+          : FButtonStyle.ghost(),
       child: FTooltip(
-        tipBuilder: (BuildContext p1, FTooltipController p2) => const Text('发现程序更新'),
+        tipBuilder: (BuildContext p1, FTooltipController p2) =>
+            const Text('发现程序更新'),
         child: SizedBox(
           width: 28,
           height: 28,
@@ -511,7 +675,10 @@ class _UpdateHeaderButton extends StatelessWidget {
                 top: -2,
                 right: -10,
                 child: Container(
-                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     color: badgeColor,
@@ -521,7 +688,12 @@ class _UpdateHeaderButton extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text(
                     displayCount,
-                    style: const TextStyle(color: Colors.white, fontSize: 9, height: 1, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      height: 1,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
@@ -554,7 +726,12 @@ class _UpdateCountBadge extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         displayCount,
-        style: const TextStyle(color: color, fontSize: 10, height: 1, fontWeight: FontWeight.w700),
+        style: const TextStyle(
+          color: color,
+          fontSize: 10,
+          height: 1,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -564,7 +741,10 @@ class _AppUpgradeHeaderButton extends ConsumerWidget {
   final bool dashboardChrome;
   final Future<void> Function() onOpen;
 
-  const _AppUpgradeHeaderButton({required this.onOpen, this.dashboardChrome = false});
+  const _AppUpgradeHeaderButton({
+    required this.onOpen,
+    this.dashboardChrome = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -576,14 +756,19 @@ class _AppUpgradeHeaderButton extends ConsumerWidget {
 
     final cs = FTheme.of(context).colors;
     final iconColor = dashboardChrome ? _dashboardShellText : cs.destructive;
-    final badgeBorderColor = dashboardChrome ? _dashboardShellBg : cs.background;
+    final badgeBorderColor = dashboardChrome
+        ? _dashboardShellBg
+        : cs.background;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onOpen,
       child: FTooltip(
-        tipBuilder: (_, _) =>
-            Text(data.ignored ? '已忽略 APP 新版本 v${data.latest.version}，点击查看' : '发现 APP 新版本 v${data.latest.version}'),
+        tipBuilder: (_, _) => Text(
+          data.ignored
+              ? '已忽略 APP 新版本 v${data.latest.version}，点击查看'
+              : '发现 APP 新版本 v${data.latest.version}',
+        ),
         child: SizedBox(
           width: 28,
           height: 28,
@@ -617,20 +802,33 @@ class _NoticeHeaderButton extends StatelessWidget {
   final int unreadCount;
   final bool dashboardChrome;
 
-  const _NoticeHeaderButton({required this.unreadCount, this.dashboardChrome = false});
+  const _NoticeHeaderButton({
+    required this.unreadCount,
+    this.dashboardChrome = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = FTheme.of(context).colors;
     final displayCount = unreadCount > 99 ? '99+' : '$unreadCount';
     final iconColor = dashboardChrome ? _dashboardShellText : null;
-    final badgeBorderColor = dashboardChrome ? _dashboardShellBg : cs.background;
+    final badgeBorderColor = dashboardChrome
+        ? _dashboardShellBg
+        : cs.background;
 
     return FButton.icon(
-      onPress: () => Navigator.push(context, PageRouteBuilder(pageBuilder: (_, __, ___) => const NoticeHistoryPage())),
-      style: dashboardChrome ? _dashboardShellGhostButtonStyle() : FButtonStyle.ghost(),
+      onPress: () => Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const NoticeHistoryPage(),
+        ),
+      ),
+      style: dashboardChrome
+          ? _dashboardShellGhostButtonStyle()
+          : FButtonStyle.ghost(),
       child: FTooltip(
-        tipBuilder: (BuildContext p1, FTooltipController p2) => const Text('通知历史'),
+        tipBuilder: (BuildContext p1, FTooltipController p2) =>
+            const Text('通知历史'),
         child: SizedBox(
           width: 28,
           height: 28,
@@ -638,13 +836,20 @@ class _NoticeHeaderButton extends StatelessWidget {
             clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
-              Icon(unreadCount > 0 ? FIcons.bellRing : FIcons.bell, size: 18, color: iconColor),
+              Icon(
+                unreadCount > 0 ? FIcons.bellRing : FIcons.bell,
+                size: 18,
+                color: iconColor,
+              ),
               if (unreadCount > 0)
                 Positioned(
                   top: -2,
                   right: -10,
                   child: Container(
-                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
                       color: cs.destructive,

@@ -30,7 +30,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.initState();
     final savedServer = HiveManager.get<String>(StorageKeys.baseUrl) ?? '';
     if (kDebugMode) {
-      _serverController = TextEditingController(text: savedServer.isNotEmpty ? savedServer : 'http://127.0.0.1:8000');
+      _serverController = TextEditingController(
+        text: savedServer.isNotEmpty ? savedServer : 'http://127.0.0.1:8000',
+      );
       _usernameController = TextEditingController(text: 'admin');
       _passwordController = TextEditingController(text: 'adminadmin');
     } else {
@@ -51,6 +53,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final auth = ref.watch(authNotifierProvider);
+    final loginHistory = ref.watch(loginHistoryProvider);
+    final showLoginHistory = loginHistory.length >= 2;
 
     ref.listen(loginHistoryProvider, (prev, next) {
       if (!_filledFromHistory && next.isNotEmpty) {
@@ -80,15 +84,33 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 40),
-                  Image.asset('assets/images/logo.png', width: 108, height: 108, fit: BoxFit.contain),
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: 108,
+                    height: 108,
+                    fit: BoxFit.contain,
+                  ),
                   const SizedBox(height: 16),
-                  Text(kDebugMode ? '调试模式' : 'PT 一下', style: const TextStyle(fontSize: 24)),
+                  Text(
+                    kDebugMode ? '调试模式' : 'PT 一下',
+                    style: const TextStyle(fontSize: 24),
+                  ),
                   const SizedBox(height: 20),
-                  FTextField(controller: _serverController, label: const Text('服务器地址')),
+                  FTextField(
+                    controller: _serverController,
+                    label: const Text('服务器地址'),
+                  ),
                   const SizedBox(height: 12),
-                  FTextField(controller: _usernameController, label: const Text('账号')),
+                  FTextField(
+                    controller: _usernameController,
+                    label: const Text('账号'),
+                  ),
                   const SizedBox(height: 12),
-                  FTextField(controller: _passwordController, label: const Text('密码'), obscureText: true),
+                  FTextField(
+                    controller: _passwordController,
+                    label: const Text('密码'),
+                    obscureText: true,
+                  ),
                   const SizedBox(height: 20),
                   Row(
                     children: [
@@ -101,7 +123,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     await ref
                                         .read(authNotifierProvider.notifier)
                                         .login(
-                                          AppConfig.normalizeBaseUrl(_serverController.text),
+                                          AppConfig.normalizeBaseUrl(
+                                            _serverController.text,
+                                          ),
                                           _usernameController.text.trim(),
                                           _passwordController.text,
                                         );
@@ -113,15 +137,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           child: Text(auth.loading ? '登录中...' : '登录'),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      FButton.icon(
-                        style: FButtonStyle.outline(),
-                        onPress: auth.loading ? null : () => context.go('/login-history'),
-                        child: FTooltip(
-                          tipBuilder: (_, __) => const Text('登录历史'),
-                          child: const Icon(FIcons.history, size: 18),
+                      if (showLoginHistory) ...[
+                        const SizedBox(width: 10),
+                        FButton.icon(
+                          style: FButtonStyle.outline(),
+                          onPress: auth.loading
+                              ? null
+                              : () => context.go('/login-history'),
+                          child: FTooltip(
+                            tipBuilder: (_, __) => const Text('登录历史'),
+                            child: const Icon(FIcons.history, size: 18),
+                          ),
                         ),
-                      ),
+                      ],
                       const SizedBox(width: 10),
                       FButton.icon(
                         style: FButtonStyle.outline(),
