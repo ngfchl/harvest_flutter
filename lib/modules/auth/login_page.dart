@@ -176,9 +176,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   String _loginErrorMessage(Object error) {
     if (error is DioException) {
+      if (error.type == DioExceptionType.cancel &&
+          _isCredentialErrorMessage(error.error?.toString())) {
+        return '账号或密码错误';
+      }
       final status = error.response?.statusCode;
       final data = error.response?.data;
       final serverMessage = _extractLoginErrorMessage(data);
+      if (_isCredentialErrorMessage(serverMessage)) return '账号或密码错误';
       if (serverMessage != null) return serverMessage;
       if (status == 400 || status == 401) return '账号或密码错误';
       if (error.type == DioExceptionType.connectionError ||
@@ -189,6 +194,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
     }
     return '登录失败，请检查账号信息';
+  }
+
+  bool _isCredentialErrorMessage(String? message) {
+    final normalized = message?.trim().toLowerCase();
+    if (normalized == null || normalized.isEmpty) return false;
+    return normalized == 'token_expired' ||
+        normalized.contains('token_expired') ||
+        normalized.contains('no active account') ||
+        normalized.contains('invalid credentials') ||
+        normalized.contains('incorrect');
   }
 
   String? _extractLoginErrorMessage(dynamic data) {
