@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../model/site_config.dart';
 import '../model/site_info.dart';
+import '../utils/site_level_milestone.dart';
 import 'site_filter_state.dart';
 import 'site_provider.dart';
 
@@ -21,11 +23,16 @@ List<String> availableTags(Ref ref) {
 @riverpod
 List<SiteInfo> filteredSiteList(Ref ref) {
   final sites = ref.watch(siteInfoListProvider).valueOrNull ?? [];
+  final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
   final filter = ref.watch(siteFilterStateProvider);
-  return _applyFilter(sites, filter);
+  return _applyFilter(sites, filter, configs);
 }
 
-List<SiteInfo> _applyFilter(List<SiteInfo> sites, SiteFilterState filter) {
+List<SiteInfo> _applyFilter(
+  List<SiteInfo> sites,
+  SiteFilterState filter,
+  List<WebSite> configs,
+) {
   final condition = filter.condition;
   final query = filter.siteNameQuery.toLowerCase();
 
@@ -42,7 +49,8 @@ List<SiteInfo> _applyFilter(List<SiteInfo> sites, SiteFilterState filter) {
           return false;
         }
       }
-      if (condition != FilterCondition.all && !_matchCondition(s, condition)) {
+      if (condition != FilterCondition.all &&
+          !_matchCondition(s, condition, _siteConfigFor(configs, s.site))) {
         return false;
       }
       if (filter.selectedTags.isNotEmpty &&
@@ -73,7 +81,14 @@ List<SiteInfo> _applyFilter(List<SiteInfo> sites, SiteFilterState filter) {
 
 int _noticeCount(SiteInfo s) => s.mail + s.notice;
 
-bool _matchCondition(SiteInfo s, FilterCondition c) {
+WebSite? _siteConfigFor(List<WebSite> configs, String siteName) {
+  for (final config in configs) {
+    if (config.name == siteName) return config;
+  }
+  return null;
+}
+
+bool _matchCondition(SiteInfo s, FilterCondition c, WebSite? config) {
   final status = s.latestStatus;
   switch (c) {
     case FilterCondition.alive:
@@ -123,6 +138,12 @@ bool _matchCondition(SiteInfo s, FilterCondition c) {
       return s.timeJoin == null || s.timeJoin!.startsWith('0001');
     case FilterCondition.hasInvitation:
       return status != null && status.invitation > 0;
+    case FilterCondition.keepAccount:
+      return siteLevelMilestone(config, status) ==
+          SiteLevelMilestoneType.keepAccount;
+    case FilterCondition.graduated:
+      return siteLevelMilestone(config, status) ==
+          SiteLevelMilestoneType.graduation;
     case FilterCondition.noSeeding:
       return status == null || status.seed <= 0;
     case FilterCondition.hasDownloading:

@@ -304,6 +304,10 @@ class SiteFilterPanel extends ConsumerWidget {
         return '注册时间异常';
       case FilterCondition.hasInvitation:
         return '有邀请';
+      case FilterCondition.keepAccount:
+        return '已保号';
+      case FilterCondition.graduated:
+        return '已毕业';
       case FilterCondition.noSeeding:
         return '无做种';
       case FilterCondition.hasDownloading:

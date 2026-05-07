@@ -30,6 +30,8 @@ enum FilterCondition {
   abnormalShareRatio,
   all,
   hasDelta,
+  keepAccount,
+  graduated,
 }
 
 enum SortField {

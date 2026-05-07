@@ -12,6 +12,7 @@ import '../model/site_config.dart';
 import '../model/site_info.dart';
 import '../provider/site_card_style_provider.dart';
 import '../provider/site_provider.dart';
+import '../utils/site_level_milestone.dart';
 import 'site_action_menu.dart';
 import 'site_level_sheet.dart';
 
@@ -83,7 +84,7 @@ class SiteCard extends ConsumerWidget {
           children: [
             _firstRow(context, status, config),
             const SizedBox(height: 3),
-            _secondRow(context, status),
+            _secondRow(context, status, config),
             if (status != null) ...[
               const SizedBox(height: 3),
               _thirdRow(context, status, dailyUp, dailyDown),
@@ -175,38 +176,64 @@ class SiteCard extends ConsumerWidget {
     ),
   );
 
-  Widget _secondRow(BuildContext context, SiteDailyStatus? status) {
+  Widget _secondRow(
+    BuildContext context,
+    SiteDailyStatus? status,
+    WebSite? config,
+  ) {
+    final milestone = _siteLevelMilestone(config, status);
+    final hasMail = site.mail > 0;
+    final hasNotice = site.notice > 0;
+    final hasRight = hasMail || hasNotice || milestone != null;
     return Row(
       children: [
-        if (site.durationText.isNotEmpty)
-          _tooltipWrap(
-            context,
-            '注册时长',
-            _infoTag(context, Icons.access_time, site.durationText),
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: site.durationText.isEmpty
+                ? const SizedBox.shrink()
+                : _tooltipWrap(
+                    context,
+                    '注册时长',
+                    _infoTag(context, Icons.access_time, site.durationText),
+                  ),
           ),
-        const Spacer(),
-        if (site.mail > 0)
-          _tooltipWrap(
-            context,
-            '短消息',
-            _indicator(
-              FIcons.mail,
-              fmtCompact(site.mail.toDouble()),
-              Colors.blue,
+        ),
+        if (hasRight)
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hasMail)
+                  _tooltipWrap(
+                    context,
+                    '短消息',
+                    _indicator(
+                      FIcons.mail,
+                      fmtCompact(site.mail.toDouble()),
+                      Colors.blue,
+                    ),
+                  ),
+                if (hasNotice) ...[
+                  if (hasMail) const SizedBox(width: 6),
+                  _tooltipWrap(
+                    context,
+                    '公告通知',
+                    _indicator(
+                      FIcons.bell,
+                      fmtCompact(site.notice.toDouble()),
+                      Colors.orange,
+                    ),
+                  ),
+                ],
+                if (milestone != null) ...[
+                  if (hasMail || hasNotice) const SizedBox(width: 8),
+                  _levelMilestoneBadge(context, milestone),
+                ],
+              ],
             ),
           ),
-        if (site.notice > 0) ...[
-          const SizedBox(width: 6),
-          _tooltipWrap(
-            context,
-            '公告通知',
-            _indicator(
-              FIcons.bell,
-              fmtCompact(site.notice.toDouble()),
-              Colors.orange,
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -518,6 +545,21 @@ class SiteCard extends ConsumerWidget {
     ),
   );
 
+  Widget _levelMilestoneBadge(
+    BuildContext context,
+    _SiteLevelMilestone milestone,
+  ) {
+    return _siteLevelMilestoneBadge(
+      context,
+      milestone,
+      fontSize: 9,
+      horizontal: 5,
+      vertical: 2,
+      radius: 5,
+      iconSize: 10,
+    );
+  }
+
   Widget _signBadge(BuildContext context, String text) {
     final ok = text.contains('已');
     return Container(
@@ -752,6 +794,97 @@ Widget _siteTooltip(String text, Widget child) {
   );
 }
 
+enum _SiteLevelMilestone {
+  keepAccount('保号', '已达到保号等级', Icons.verified_user_outlined, Color(0xFF0F766E)),
+  graduation('毕业', '已达到毕业等级', Icons.school_outlined, Color(0xFFB45309));
+
+  final String label;
+  final String tooltip;
+  final IconData icon;
+  final Color color;
+
+  const _SiteLevelMilestone(this.label, this.tooltip, this.icon, this.color);
+}
+
+_SiteLevelMilestone? _siteLevelMilestone(
+  WebSite? config,
+  SiteDailyStatus? status,
+) {
+  return switch (siteLevelMilestone(config, status)) {
+    SiteLevelMilestoneType.keepAccount => _SiteLevelMilestone.keepAccount,
+    SiteLevelMilestoneType.graduation => _SiteLevelMilestone.graduation,
+    null => null,
+  };
+}
+
+Widget _siteLevelMilestoneBadge(
+  BuildContext context,
+  _SiteLevelMilestone milestone, {
+  double fontSize = 9,
+  double horizontal = 4,
+  double vertical = 1,
+  double radius = 3,
+  double? iconSize,
+}) {
+  final color = milestone.color;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final text = Text(
+    milestone.label,
+    style: TextStyle(
+      fontSize: fontSize,
+      color: isDark ? color.withValues(alpha: 0.96) : color,
+      fontWeight: FontWeight.w900,
+      height: 1.1,
+    ),
+  );
+
+  return _siteTooltip(
+    milestone.tooltip,
+    Container(
+      padding: EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            color.withValues(alpha: isDark ? 0.22 : 0.16),
+            color.withValues(alpha: isDark ? 0.09 : 0.06),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: color.withValues(alpha: 0.32), width: 0.8),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: isDark ? 0.18 : 0.14),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+            spreadRadius: -3,
+          ),
+        ],
+      ),
+      child: iconSize == null
+          ? text
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: iconSize + 5,
+                  height: iconSize + 5,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color.withValues(alpha: isDark ? 0.20 : 0.13),
+                  ),
+                  child: Icon(milestone.icon, size: iconSize, color: color),
+                ),
+                const SizedBox(width: 4),
+                text,
+              ],
+            ),
+    ),
+  );
+}
+
 class SiteCard2 extends ConsumerWidget {
   final SiteInfo site;
 
@@ -791,7 +924,7 @@ class SiteCard2 extends ConsumerWidget {
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _header(context, config),
+                  _header(context, status, config),
                   const SizedBox(height: 9),
                   _mainMetrics(context, status, delta),
                   const SizedBox(height: 8),
@@ -866,9 +999,14 @@ class SiteCard2 extends ConsumerWidget {
     );
   }
 
-  Widget _header(BuildContext context, WebSite? config) {
+  Widget _header(
+    BuildContext context,
+    SiteDailyStatus status,
+    WebSite? config,
+  ) {
     final cs = context.theme.colors;
     final updateText = site.latestStatusUpdatedText;
+    final milestone = _siteLevelMilestone(config, status);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -884,12 +1022,37 @@ class SiteCard2 extends ConsumerWidget {
                   _statusDot(site.available),
                   const SizedBox(width: 8),
                   Expanded(child: _siteTitle(context)),
+                  const SizedBox(width: 8),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 96),
+                    child: _siteTooltip(
+                      updateText.isEmpty
+                          ? '-'
+                          : '更新于 ${site.latestStatusUpdatedAt ?? updateText}',
+                      Text(
+                        updateText.isEmpty ? '-' : '更新于 $updateText',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: cs.mutedForeground,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    FIcons.chevronRight,
+                    color: _mutedText(context),
+                    size: 20,
+                  ),
                 ],
               ),
               const SizedBox(height: 4),
               Row(
                 children: [
-                  Flexible(
+                  Expanded(
                     child: Text(
                       site.timeJoin == null || site.timeJoin!.trim().isEmpty
                           ? '注册于 -'
@@ -902,33 +1065,23 @@ class SiteCard2 extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  for (final tag in site.tags.take(1)) ...[
-                    const SizedBox(width: 6),
-                    _tagBadge(context, tag),
+                  if (milestone != null) ...[
+                    const SizedBox(width: 8),
+                    _siteLevelMilestoneBadge(
+                      context,
+                      milestone,
+                      fontSize: 11,
+                      horizontal: 7,
+                      vertical: 2,
+                      radius: 5,
+                      iconSize: 12,
+                    ),
                   ],
                 ],
               ),
             ],
           ),
         ),
-        const SizedBox(width: 8),
-        _siteTooltip(
-          updateText.isEmpty
-              ? '-'
-              : '更新于 ${site.latestStatusUpdatedAt ?? updateText}',
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 96),
-            child: Text(
-              updateText.isEmpty ? '-' : '更新于 $updateText',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.right,
-              style: TextStyle(fontSize: 11, color: cs.mutedForeground),
-            ),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Icon(FIcons.chevronRight, color: _mutedText(context), size: 20),
       ],
     );
   }
@@ -1168,34 +1321,6 @@ class SiteCard2 extends ConsumerWidget {
     ),
   );
 
-  Widget _tagBadge(BuildContext context, String tag) {
-    final color = _tagColor(tag);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: Text(
-        tag,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          height: 1.1,
-        ),
-      ),
-    );
-  }
-
-  Color _tagColor(String tag) {
-    if (tag.contains('官')) return const Color(0xFF16A34A);
-    if (tag.contains('二次元')) return const Color(0xFF1D6BFF);
-    if (tag.contains('影视')) return const Color(0xFF7C3AED);
-    if (tag.contains('原')) return const Color(0xFFFF3B30);
-    return const Color(0xFF7C3AED);
-  }
-
   Widget _verticalDivider(BuildContext context) =>
       Container(width: 1, height: 38, color: _dividerColor(context));
 
@@ -1372,6 +1497,7 @@ class SiteCard3 extends ConsumerWidget {
   }
 
   Widget _top(BuildContext context, SiteDailyStatus status, WebSite? config) {
+    final milestone = _siteLevelMilestone(config, status);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1381,7 +1507,17 @@ class SiteCard3 extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _title(context),
+              Row(
+                children: [
+                  Expanded(child: _title(context)),
+                  if (status.myLevel.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    _levelPill(context, status.myLevel),
+                  ],
+                  const SizedBox(width: 6),
+                  _invitePill(context, status.invitation),
+                ],
+              ),
               const SizedBox(height: 6),
               Row(
                 children: [
@@ -1391,7 +1527,7 @@ class SiteCard3 extends ConsumerWidget {
                     color: _mutedText(context),
                   ),
                   const SizedBox(width: 4),
-                  Flexible(
+                  Expanded(
                     child: Text(
                       site.durationText.isEmpty ? '-' : site.durationText,
                       overflow: TextOverflow.ellipsis,
@@ -1403,19 +1539,22 @@ class SiteCard3 extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  if (milestone != null) ...[
+                    const SizedBox(width: 8),
+                    _siteLevelMilestoneBadge(
+                      context,
+                      milestone,
+                      fontSize: 12,
+                      horizontal: 9,
+                      vertical: 5,
+                      radius: 16,
+                      iconSize: 13,
+                    ),
+                  ],
                 ],
               ),
             ],
           ),
-        ),
-        const SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (status.myLevel.isNotEmpty) _levelPill(context, status.myLevel),
-            const SizedBox(height: 6),
-            _invitePill(context, status.invitation),
-          ],
         ),
       ],
     );
@@ -1897,18 +2036,6 @@ class SiteCard3 extends ConsumerWidget {
       accent.withValues(alpha: 0.13),
       context.theme.colors.background,
     );
-  }
-
-  String _timeOnly(String value) {
-    final text = value.trim();
-    if (text.isEmpty) return '';
-    final parsed = DateTime.tryParse(text);
-    if (parsed != null) {
-      return '${parsed.hour.toString().padLeft(2, '0')}:${parsed.minute.toString().padLeft(2, '0')}';
-    }
-    final match = RegExp(r'(\d{1,2}):(\d{2})').firstMatch(text);
-    if (match == null) return text.length > 5 ? text.substring(0, 5) : text;
-    return '${match.group(1)!.padLeft(2, '0')}:${match.group(2)!}';
   }
 }
 
