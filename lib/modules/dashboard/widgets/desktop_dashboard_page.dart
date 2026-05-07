@@ -37,7 +37,8 @@ class DesktopDashboardPage extends ConsumerStatefulWidget {
       _DesktopDashboardPageState();
 }
 
-class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
+class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
+    with SingleTickerProviderStateMixin {
   static const _bg = Color(0xFF07111F);
   static const _panel = Color(0xFF0D1B2E);
   static const _panelSoft = Color(0xFF10243B);
@@ -71,6 +72,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   bool _signingIn = false;
   bool _showWeeks = false;
   late Map<String, bool> _chartVisibility;
+  late final AnimationController _backdropController;
   _ChartTooltipData? _trendTooltip;
   Offset? _trendTooltipPosition;
   bool _trendTooltipHovering = false;
@@ -80,6 +82,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   @override
   void initState() {
     super.initState();
+    _backdropController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2800),
+    )..repeat();
     _chartVisibility = DashboardChartConfig.getVisibility();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(dashboardNotifierProvider.notifier).refresh();
@@ -93,6 +99,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
 
   @override
   void dispose() {
+    _backdropController.dispose();
     _refreshController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -310,7 +317,16 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }
 
   Widget _buildBackdrop() {
-    return IgnorePointer(child: CustomPaint(painter: _BoardBackdropPainter()));
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _backdropController,
+        builder: (context, child) {
+          return CustomPaint(
+            painter: _BoardBackdropPainter(tick: _backdropController.value),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildBoard(
@@ -3445,7 +3461,9 @@ class _TooltipSegment {
 }
 
 class _BoardBackdropPainter extends CustomPainter {
-  const _BoardBackdropPainter();
+  final double tick;
+
+  const _BoardBackdropPainter({required this.tick});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -3501,29 +3519,60 @@ class _BoardBackdropPainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), scanPaint);
     }
 
-    _drawDataColumns(canvas, size);
+    _drawJumpingDigits(canvas, size);
     _drawCircuitTraces(canvas, size);
     _drawCornerBrackets(canvas, size);
   }
 
-  void _drawDataColumns(Canvas canvas, Size size) {
-    final pattern = [0.22, 0.46, 0.32, 0.68, 0.28, 0.54, 0.38, 0.74];
-    final uploadPaint = Paint()
-      ..color = const Color(0xFF22D3EE).withValues(alpha: 0.16)
-      ..strokeWidth = 1.1;
-    final downloadPaint = Paint()
-      ..color = const Color(0xFF34D399).withValues(alpha: 0.13)
-      ..strokeWidth = 1.1;
+  void _drawJumpingDigits(Canvas canvas, Size size) {
+    const columnStep = 27.0;
+    const rowStep = 22.0;
+    final phase = tick * 64;
+    final columns = (size.width / columnStep).ceil() + 1;
+    final rows = (size.height / rowStep).ceil() + 1;
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
-    for (double x = 16; x < size.width; x += 34) {
-      final index = ((x / 34).floor()) % pattern.length;
-      final height = 24 + pattern[index] * 72;
-      final base = size.height - 20 - (index.isEven ? 0 : 16);
-      final paint = index.isEven ? uploadPaint : downloadPaint;
-      final top = math.max(0.0, base - height);
-      canvas.drawLine(Offset(x, base), Offset(x, top), paint);
-      canvas.drawCircle(Offset(x, top), 1.6, paint);
+    for (var column = 0; column < columns; column++) {
+      final x = column * columnStep + (column.isEven ? 8.0 : 18.0);
+      final speed = 0.72 + (column % 5) * 0.18;
+      final verticalShift = (phase * speed + column * 9) % rowStep;
+      final columnHighlight = (phase + column * 7) % rows;
+
+      for (var row = -1; row < rows; row++) {
+        final y = row * rowStep + verticalShift;
+        if (y < -rowStep || y > size.height + rowStep) continue;
+
+        final distance = ((row - columnHighlight).abs() % rows).toDouble();
+        final pulse = math.max(0.0, 1.0 - distance / 5.5);
+        final edgeFade = _edgeFade(x, size.width);
+        final baseAlpha = 0.035 + ((column + row).abs() % 4) * 0.014;
+        final alpha = (baseAlpha + pulse * 0.12) * edgeFade;
+        if (alpha <= 0.006) continue;
+
+        final digit = ((column * 7 + row * 3 + phase.floor()) % 10).abs();
+        final color = column.isEven
+            ? const Color(0xFF22D3EE)
+            : const Color(0xFF34D399);
+        textPainter.text = TextSpan(
+          text: '$digit',
+          style: TextStyle(
+            color: color.withValues(alpha: alpha),
+            fontSize: 12 + pulse * 3,
+            fontWeight: pulse > 0.65 ? FontWeight.w800 : FontWeight.w600,
+            height: 1,
+          ),
+        );
+        textPainter.layout();
+        textPainter.paint(canvas, Offset(x, y));
+      }
     }
+  }
+
+  double _edgeFade(double x, double width) {
+    final distanceToEdge = math.min(x, width - x).clamp(0.0, 180.0);
+    final edge = distanceToEdge / 180.0;
+    final middle = (1 - ((x / width) - 0.5).abs() * 1.55).clamp(0.36, 1.0);
+    return (0.45 + edge * 0.55) * middle;
   }
 
   void _drawCircuitTraces(Canvas canvas, Size size) {
@@ -3623,5 +3672,6 @@ class _BoardBackdropPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _BoardBackdropPainter oldDelegate) =>
+      oldDelegate.tick != tick;
 }
