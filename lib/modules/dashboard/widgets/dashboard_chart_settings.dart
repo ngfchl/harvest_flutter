@@ -312,8 +312,8 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                       padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
                       child: FTile(
                         prefix: const Icon(FIcons.activity, size: 14),
-                        title: const Text('自动获取服务器状态'),
-                        subtitle: const Text('进入仪表页时自动开始监控'),
+                        title: const Text('自动刷新状态监控'),
+                        subtitle: const Text('开启后持续刷新服务器与服务状态，关闭时仅获取一次'),
                         suffix: FSwitch(
                           value: _serverResourceAutoStart,
                           onChange: (value) =>
@@ -325,7 +325,7 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                     _serverResourceSettingRow(
                       theme,
                       icon: FIcons.clock,
-                      title: '服务器状态获取间隔',
+                      title: '状态刷新间隔',
                       value: '${_serverResourceInterval}s',
                       onMinus: () => setState(
                         () => _serverResourceInterval =
@@ -349,7 +349,7 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                     _serverResourceSettingRow(
                       theme,
                       icon: FIcons.timer,
-                      title: '服务器状态运行时长',
+                      title: '状态刷新时长',
                       value: '${_serverResourceDuration}min',
                       onMinus: () => setState(
                         () => _serverResourceDuration =

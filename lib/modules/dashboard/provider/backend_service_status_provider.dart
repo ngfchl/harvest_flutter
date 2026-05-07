@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
+import 'package:harvest/core/utils/utils.dart';
 
 import '../model/backend_service_status.dart';
+import 'server_resource_provider.dart';
 import '../service/backend_service_status_service.dart';
 
 class BackendServiceStatusState {
@@ -45,9 +47,23 @@ class BackendServiceStatusNotifier
     extends StateNotifier<BackendServiceStatusState> {
   final Ref ref;
   StreamSubscription<BackendServiceSnapshot>? _subscription;
+  Timer? _autoStopTimer;
+  bool _stopAfterFirstData = false;
 
   BackendServiceStatusNotifier(this.ref)
-    : super(const BackendServiceStatusState());
+    : super(const BackendServiceStatusState()) {
+    ref.listen<int>(serverResourceIntervalProvider, (prev, next) {
+      if (prev != next && state.running) start();
+    });
+    ref.listen<int>(serverResourceDurationProvider, (prev, next) {
+      if (prev != next && state.running && !_stopAfterFirstData) {
+        _resetAutoStop();
+      }
+    });
+    ref.listen<bool>(serverResourceAutoStartProvider, (prev, next) {
+      if (prev != next && state.running) start();
+    });
+  }
 
   void toggle() => state.running ? stop() : start();
 
@@ -59,16 +75,33 @@ class BackendServiceStatusNotifier
     }
 
     _subscription?.cancel();
+    _autoStopTimer?.cancel();
     state = state.copyWith(running: true, connected: false, clearError: true);
-    _subscription = BackendServiceStatusService.watch().listen(
+    final interval = ref.read(serverResourceIntervalProvider);
+    final autoRefresh = ref.read(serverResourceAutoStartProvider);
+    _stopAfterFirstData = !autoRefresh;
+    final providerWatch = Stopwatch()..start();
+    AppLogger.debug(
+      '[SSE] backend services provider start interval=$interval autoRefresh=$autoRefresh',
+    );
+    _subscription = BackendServiceStatusService.watch(interval: interval).listen(
       (data) {
         if (!mounted) return;
+        final wasEmpty = state.data == null;
+        if (wasEmpty) {
+          AppLogger.debug(
+            '[SSE] backend services provider first data elapsed=${providerWatch.elapsedMilliseconds}ms serverTs=${data.timestamp?.toIso8601String() ?? '-'}',
+          );
+        }
         state = state.copyWith(
           data: data,
           running: true,
           connected: true,
           clearError: true,
         );
+        if (_stopAfterFirstData) {
+          stop();
+        }
       },
       onError: (error) {
         if (!mounted) return;
@@ -83,18 +116,30 @@ class BackendServiceStatusNotifier
         );
       },
     );
+    if (autoRefresh) {
+      _resetAutoStop();
+    }
   }
 
   void stop() {
     _subscription?.cancel();
     _subscription = null;
+    _autoStopTimer?.cancel();
+    _stopAfterFirstData = false;
     if (!mounted) return;
     state = state.copyWith(running: false, connected: false);
+  }
+
+  void _resetAutoStop() {
+    _autoStopTimer?.cancel();
+    final totalSeconds = ref.read(serverResourceDurationProvider) * 60;
+    _autoStopTimer = Timer(Duration(seconds: totalSeconds), stop);
   }
 
   @override
   void dispose() {
     _subscription?.cancel();
+    _autoStopTimer?.cancel();
     super.dispose();
   }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
+import 'package:harvest/core/utils/utils.dart';
 
 import '../model/server_resource_status.dart';
 import '../service/server_resource_service.dart';
@@ -122,13 +123,19 @@ class ServerResourceNotifier extends StateNotifier<ServerResourceState> {
   StreamSubscription<ServerResourceStatus>? _subscription;
   Timer? _autoStopTimer;
   Timer? _countdownTimer;
+  bool _stopAfterFirstData = false;
 
   ServerResourceNotifier(this.ref) : super(const ServerResourceState()) {
     ref.listen<int>(serverResourceIntervalProvider, (prev, next) {
       if (prev != next && state.running) start();
     });
     ref.listen<int>(serverResourceDurationProvider, (prev, next) {
-      if (prev != next && state.running) _resetAutoStop();
+      if (prev != next && state.running && !_stopAfterFirstData) {
+        _resetAutoStop();
+      }
+    });
+    ref.listen<bool>(serverResourceAutoStartProvider, (prev, next) {
+      if (prev != next && state.running) start();
     });
   }
 
@@ -140,11 +147,28 @@ class ServerResourceNotifier extends StateNotifier<ServerResourceState> {
       return;
     }
     _subscription?.cancel();
+    _autoStopTimer?.cancel();
+    _countdownTimer?.cancel();
     final interval = ref.read(serverResourceIntervalProvider);
+    final autoRefresh = ref.read(serverResourceAutoStartProvider);
+    _stopAfterFirstData = !autoRefresh;
     state = state.copyWith(running: true, connected: false, clearError: true);
+    final providerWatch = Stopwatch()..start();
+    AppLogger.debug(
+      '[SSE] server resource provider start interval=$interval autoRefresh=$autoRefresh',
+    );
+    if (_stopAfterFirstData) {
+      ref.read(serverResourceRemainingProvider.notifier).state = 0;
+    }
     _subscription = ServerResourceService.watch(interval: interval).listen(
       (data) {
         if (!mounted) return;
+        final wasEmpty = state.data == null;
+        if (wasEmpty) {
+          AppLogger.debug(
+            '[SSE] server resource provider first data elapsed=${providerWatch.elapsedMilliseconds}ms serverTs=${data.timestamp?.toIso8601String() ?? '-'}',
+          );
+        }
         final history = [...state.history, data];
         final start = history.length > kMaxServerResourceHistory
             ? history.length - kMaxServerResourceHistory
@@ -156,6 +180,9 @@ class ServerResourceNotifier extends StateNotifier<ServerResourceState> {
           connected: true,
           clearError: true,
         );
+        if (_stopAfterFirstData) {
+          stop();
+        }
       },
       onError: (error) {
         if (!mounted) return;
@@ -170,7 +197,9 @@ class ServerResourceNotifier extends StateNotifier<ServerResourceState> {
         );
       },
     );
-    _resetAutoStop();
+    if (autoRefresh) {
+      _resetAutoStop();
+    }
   }
 
   void stop() {
@@ -178,6 +207,7 @@ class ServerResourceNotifier extends StateNotifier<ServerResourceState> {
     _subscription = null;
     _autoStopTimer?.cancel();
     _countdownTimer?.cancel();
+    _stopAfterFirstData = false;
     if (!mounted) return;
     ref.read(serverResourceRemainingProvider.notifier).state = 0;
     state = state.copyWith(running: false, connected: false);

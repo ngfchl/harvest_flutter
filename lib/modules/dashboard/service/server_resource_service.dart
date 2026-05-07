@@ -14,12 +14,17 @@ class ServerResourceService {
   static Stream<ServerResourceStatus> watch({required int interval}) async* {
     HttpClient? client;
     var eventCount = 0;
+    final stopwatch = Stopwatch()..start();
     try {
       client = HttpClient()..autoUncompress = false;
       final uri = Uri.parse(
         '${AppConfig.baseUrl}${API.SERVER_STATUS}',
       ).replace(queryParameters: {'interval': '$interval'});
+      AppLogger.debug('[SSE] server resource open uri=$uri interval=$interval');
       final request = await client.getUrl(uri);
+      AppLogger.debug(
+        '[SSE] server resource request ready elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)}',
+      );
       request.headers.set('Accept-Encoding', 'identity');
       request.headers.set('Accept', 'text/event-stream');
       request.headers.set('Cache-Control', 'no-cache');
@@ -34,13 +39,19 @@ class ServerResourceService {
       AppLogger.info(
         '[SSE] server resource connected status=${response.statusCode}',
       );
+      AppLogger.debug(
+        '[SSE] server resource connected status=${response.statusCode} elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)}',
+      );
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw HttpException('服务器状态连接失败: ${response.statusCode}', uri: uri);
       }
 
       String buffer = '';
       await for (final chunk in response) {
-        buffer += utf8.decode(chunk, allowMalformed: true);
+        buffer += utf8
+            .decode(chunk, allowMalformed: true)
+            .replaceAll('\r\n', '\n')
+            .replaceAll('\r', '\n');
         while (buffer.contains('\n\n')) {
           final index = buffer.indexOf('\n\n');
           final event = buffer.substring(0, index).trim();
@@ -48,6 +59,11 @@ class ServerResourceService {
           final status = _parseEvent(event);
           if (status != null) {
             eventCount++;
+            if (eventCount == 1) {
+              AppLogger.debug(
+                '[SSE] server resource first data elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)} serverTs=${status.timestamp?.toIso8601String() ?? '-'}',
+              );
+            }
             yield status;
           }
         }
@@ -56,16 +72,30 @@ class ServerResourceService {
       final remaining = buffer.trim();
       if (remaining.isNotEmpty) {
         final status = _parseEvent(remaining);
-        if (status != null) yield status;
+        if (status != null) {
+          eventCount++;
+          if (eventCount == 1) {
+            AppLogger.debug(
+              '[SSE] server resource first data elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)} serverTs=${status.timestamp?.toIso8601String() ?? '-'} remaining=true',
+            );
+          }
+          yield status;
+        }
       }
     } catch (e, st) {
       AppLogger.error('[SSE] server resource error', e, st);
       Error.throwWithStackTrace(e, st);
     } finally {
       client?.close(force: true);
+      AppLogger.debug(
+        '[SSE] server resource closed events=$eventCount elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)}',
+      );
       AppLogger.info('[SSE] server resource closed events=$eventCount');
     }
   }
+
+  static String _formatElapsed(int milliseconds) =>
+      '${milliseconds}ms(${(milliseconds / 1000).toStringAsFixed(3)}s)';
 
   static ServerResourceStatus? _parseEvent(String event) {
     if (event.trim().isEmpty) return null;

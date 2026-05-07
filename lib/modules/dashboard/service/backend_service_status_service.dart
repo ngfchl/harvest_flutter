@@ -11,13 +11,22 @@ import 'package:harvest/core/utils/utils.dart';
 import '../model/backend_service_status.dart';
 
 class BackendServiceStatusService {
-  static Stream<BackendServiceSnapshot> watch() async* {
+  static Stream<BackendServiceSnapshot> watch({required int interval}) async* {
     HttpClient? client;
     var eventCount = 0;
+    final stopwatch = Stopwatch()..start();
     try {
       client = HttpClient()..autoUncompress = false;
-      final uri = Uri.parse('${AppConfig.baseUrl}${API.SERVICES_STATUS}');
+      final uri = Uri.parse(
+        '${AppConfig.baseUrl}${API.SERVICES_STATUS}',
+      ).replace(queryParameters: {'interval': '$interval'});
+      AppLogger.debug(
+        '[SSE] backend services open uri=$uri interval=$interval',
+      );
       final request = await client.getUrl(uri);
+      AppLogger.debug(
+        '[SSE] backend services request ready elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)}',
+      );
       request.headers.set('Accept-Encoding', 'identity');
       request.headers.set('Accept', 'text/event-stream');
       request.headers.set('Cache-Control', 'no-cache');
@@ -27,10 +36,13 @@ class BackendServiceStatusService {
         request.headers.set('Authorization', 'Bearer $token');
       }
 
-      AppLogger.info('[SSE] backend services connecting');
+      AppLogger.info('[SSE] backend services connecting interval=$interval');
       final response = await request.close();
       AppLogger.info(
         '[SSE] backend services connected status=${response.statusCode}',
+      );
+      AppLogger.debug(
+        '[SSE] backend services connected status=${response.statusCode} elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)}',
       );
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw HttpException('后台服务状态连接失败: ${response.statusCode}', uri: uri);
@@ -40,7 +52,8 @@ class BackendServiceStatusService {
       await for (final chunk in response) {
         buffer += utf8
             .decode(chunk, allowMalformed: true)
-            .replaceAll('\r\n', '\n');
+            .replaceAll('\r\n', '\n')
+            .replaceAll('\r', '\n');
         while (buffer.contains('\n\n')) {
           final index = buffer.indexOf('\n\n');
           final event = buffer.substring(0, index).trim();
@@ -48,6 +61,11 @@ class BackendServiceStatusService {
           final status = _parseEvent(event);
           if (status != null) {
             eventCount++;
+            if (eventCount == 1) {
+              AppLogger.debug(
+                '[SSE] backend services first data elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)} serverTs=${status.timestamp?.toIso8601String() ?? '-'}',
+              );
+            }
             yield status;
           }
         }
@@ -56,16 +74,30 @@ class BackendServiceStatusService {
       final remaining = buffer.trim();
       if (remaining.isNotEmpty) {
         final status = _parseEvent(remaining);
-        if (status != null) yield status;
+        if (status != null) {
+          eventCount++;
+          if (eventCount == 1) {
+            AppLogger.debug(
+              '[SSE] backend services first data elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)} serverTs=${status.timestamp?.toIso8601String() ?? '-'} remaining=true',
+            );
+          }
+          yield status;
+        }
       }
     } catch (e, st) {
       AppLogger.error('[SSE] backend services error', e, st);
       Error.throwWithStackTrace(e, st);
     } finally {
       client?.close(force: true);
+      AppLogger.debug(
+        '[SSE] backend services closed events=$eventCount elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)}',
+      );
       AppLogger.info('[SSE] backend services closed events=$eventCount');
     }
   }
+
+  static String _formatElapsed(int milliseconds) =>
+      '${milliseconds}ms(${(milliseconds / 1000).toStringAsFixed(3)}s)';
 
   static BackendServiceSnapshot? _parseEvent(String event) {
     if (event.trim().isEmpty) return null;
