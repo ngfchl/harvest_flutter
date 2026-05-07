@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
+import 'package:collection/collection.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/browser_page.dart';
 
@@ -37,14 +38,17 @@ void openDetail(BuildContext context, SiteInfo site) {
 
 // ──────────────────── 详情内容 ────────────────────
 
-class SiteDetailSheet extends StatelessWidget {
+class SiteDetailSheet extends ConsumerWidget {
   final SiteInfo site;
 
   const SiteDetailSheet({super.key, required this.site});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final status = site.latestStatus;
+    final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
+    final config = configs.firstWhereOrNull((c) => c.name == site.site);
+    final spFull = _numVal(config?.spFull);
     final cs = FTheme.of(context).colors;
     final typo = FTheme.of(context).typography;
 
@@ -54,23 +58,38 @@ class SiteDetailSheet extends StatelessWidget {
         childPad: false,
         header: _buildHeader(context, cs),
         child: ListView(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 24),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            MediaQuery.of(context).padding.bottom + 24,
+          ),
           children: [
             // ── 用户信息卡片 ──
-            _buildUserCard(context, cs, typo),
+            _buildUserCard(context, cs, typo, spFull),
             const SizedBox(height: 12),
             // ── 功能开关 ──
-            _section(context, '功能开关', FIcons.settings, [_buildFlagsGrid(context, cs)]),
+            _section(context, '功能开关', FIcons.settings, [
+              _buildFlagsGrid(context, cs),
+            ]),
             // ── 站点状态详情 ──
-            if (status != null) ...[const SizedBox(height: 12), _buildDetailStats(context, cs, status)],
+            if (status != null) ...[
+              const SizedBox(height: 12),
+              _buildDetailStats(context, cs, status, spFull),
+            ],
             const SizedBox(height: 12),
             // ── 基本信息 ──
             _section(context, '基本信息', FIcons.info, [
               _row(context, '站点名称', site.site),
               _row(context, '昵称', site.nickname.isEmpty ? '-' : site.nickname),
               _row(context, '排序 ID', '${site.sortId}'),
-              _row(context, '标签', site.tags.isEmpty ? '-' : site.tags.join(', ')),
-              if (site.durationText.isNotEmpty) _row(context, '注册时长', site.durationText),
+              _row(
+                context,
+                '标签',
+                site.tags.isEmpty ? '-' : site.tags.join(', '),
+              ),
+              if (site.durationText.isNotEmpty)
+                _row(context, '注册时长', site.durationText),
             ]),
             const SizedBox(height: 12),
 
@@ -89,7 +108,11 @@ class SiteDetailSheet extends StatelessWidget {
               _row(context, '代理', site.proxy ?? '-'),
               _row(context, '镜像', site.mirror ?? '-'),
               _row(context, 'RSS', site.rss?.isEmpty ?? true ? '-' : site.rss!),
-              _row(context, '种子地址', site.torrents?.isEmpty ?? true ? '-' : site.torrents!),
+              _row(
+                context,
+                '种子地址',
+                site.torrents?.isEmpty ?? true ? '-' : site.torrents!,
+              ),
               _row(context, 'Cookie', _truncate(site.cookie, 40)),
               _row(context, 'User-Agent', _truncate(site.userAgent, 50)),
             ]),
@@ -98,13 +121,20 @@ class SiteDetailSheet extends StatelessWidget {
             // ── 数据统计 ──
             _section(context, '数据统计', FIcons.chartBar, [
               _row(context, '注册时间', fmtDate(site.timeJoin)),
-              _row(context, '最后访问', site.latestActiveText.isEmpty ? '-' : site.latestActiveText),
+              _row(
+                context,
+                '最后访问',
+                site.latestActiveText.isEmpty ? '-' : site.latestActiveText,
+              ),
               _row(context, '短消息', '${site.mail}'),
               _row(context, '公告', '${site.notice}'),
             ]),
 
             // ── 签到信息 ──
-            if (site.signInText != null) ...[const SizedBox(height: 12), _buildSignInSection(context, cs)],
+            if (site.signInText != null) ...[
+              const SizedBox(height: 12),
+              _buildSignInSection(context, cs),
+            ],
           ],
         ),
       ),
@@ -113,24 +143,40 @@ class SiteDetailSheet extends StatelessWidget {
 
   // ── 详细数据 ──
 
-  Widget _buildDetailStats(BuildContext context, FColors cs, SiteDailyStatus status) {
+  Widget _buildDetailStats(
+    BuildContext context,
+    FColors cs,
+    SiteDailyStatus status,
+    double spFull,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 标题
         Row(
           children: [
-            Icon(FIcons.activity, size: 14, color: cs.foreground.withOpacity(0.4)),
+            Icon(
+              FIcons.activity,
+              size: 14,
+              color: cs.foreground.withOpacity(0.4),
+            ),
             const SizedBox(width: 6),
             Text(
               '详细数据',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: cs.foreground.withOpacity(0.6)),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: cs.foreground.withOpacity(0.6),
+              ),
             ),
             const Spacer(),
             if (status.updated_at.isNotEmpty)
               Text(
                 formatTime(status.updated_at),
-                style: TextStyle(fontSize: 10, color: cs.foreground.withOpacity(0.3)),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: cs.foreground.withOpacity(0.3),
+                ),
               ),
           ],
         ),
@@ -148,9 +194,21 @@ class SiteDetailSheet extends StatelessWidget {
               levelColor(status.myLevel),
             ),
             const SizedBox(width: 6),
-            _statCard(context, '发布', '${status.publish}', FIcons.fileText, const Color(0xFF6366F1)),
+            _statCard(
+              context,
+              '发布',
+              '${status.publish}',
+              FIcons.fileText,
+              const Color(0xFF6366F1),
+            ),
             const SizedBox(width: 6),
-            _statCard(context, '邀请', '${status.invitation}', FIcons.userPlus, const Color(0xFFEC4899)),
+            _statCard(
+              context,
+              '邀请',
+              '${status.invitation}',
+              FIcons.userPlus,
+              const Color(0xFFEC4899),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -160,11 +218,29 @@ class SiteDetailSheet extends StatelessWidget {
         const SizedBox(height: 4),
         Row(
           children: [
-            _statCard(context, '上传量', fmtBytes(status.uploaded), FIcons.arrowUp, const Color(0xFF10B981)),
+            _statCard(
+              context,
+              '上传量',
+              fmtBytes(status.uploaded),
+              FIcons.arrowUp,
+              const Color(0xFF10B981),
+            ),
             const SizedBox(width: 6),
-            _statCard(context, '下载量', fmtBytes(status.downloaded), FIcons.arrowDown, const Color(0xFF3B82F6)),
+            _statCard(
+              context,
+              '下载量',
+              fmtBytes(status.downloaded),
+              FIcons.arrowDown,
+              const Color(0xFF3B82F6),
+            ),
             const SizedBox(width: 6),
-            _statCard(context, '分享率', status.ratio.toStringAsFixed(2), FIcons.scale, _ratioColor(status.ratio)),
+            _statCard(
+              context,
+              '分享率',
+              status.ratio.toStringAsFixed(2),
+              FIcons.scale,
+              _ratioColor(status.ratio),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -174,11 +250,29 @@ class SiteDetailSheet extends StatelessWidget {
         const SizedBox(height: 4),
         Row(
           children: [
-            _statCard(context, '做种数', '${status.seed}', FIcons.leaf, const Color(0xFF10B981)),
+            _statCard(
+              context,
+              '做种数',
+              '${status.seed}',
+              FIcons.leaf,
+              const Color(0xFF10B981),
+            ),
             const SizedBox(width: 6),
-            _statCard(context, '下载数', '${status.leech}', FIcons.arrowDown, const Color(0xFFEF4444)),
+            _statCard(
+              context,
+              '下载数',
+              '${status.leech}',
+              FIcons.arrowDown,
+              const Color(0xFFEF4444),
+            ),
             const SizedBox(width: 6),
-            _statCard(context, '做种量', fmtBytes(status.seedVolume), FIcons.hardDrive, const Color(0xFF8B5CF6)),
+            _statCard(
+              context,
+              '做种量',
+              fmtBytes(status.seedVolume),
+              FIcons.hardDrive,
+              const Color(0xFF8B5CF6),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -188,11 +282,29 @@ class SiteDetailSheet extends StatelessWidget {
         const SizedBox(height: 4),
         Row(
           children: [
-            _statCard(context, '魔力值', fmtCompact(status.myBonus), FIcons.diamond, const Color(0xFFF59E0B)),
+            _statCard(
+              context,
+              '魔力值',
+              fmtCompact(status.myBonus),
+              FIcons.diamond,
+              const Color(0xFFF59E0B),
+            ),
             const SizedBox(width: 6),
-            _statCard(context, '做种积分', fmtCompact(status.myScore), FIcons.star, const Color(0xFFF59E0B)),
+            _statCard(
+              context,
+              '做种积分',
+              fmtCompact(status.myScore),
+              FIcons.star,
+              const Color(0xFFF59E0B),
+            ),
             const SizedBox(width: 6),
-            _statCard(context, '时魔', status.bonusHour.toStringAsFixed(1), FIcons.zap, const Color(0xFFEF4444)),
+            _statCard(
+              context,
+              '时魔',
+              _fmtMagicWithRatio(status.bonusHour, spFull),
+              FIcons.zap,
+              const Color(0xFFEF4444),
+            ),
           ],
         ),
       ],
@@ -210,7 +322,13 @@ class SiteDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _statCard(BuildContext context, String label, String value, IconData icon, Color color) {
+  Widget _statCard(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     final cs = FTheme.of(context).colors;
     return Expanded(
       child: Container(
@@ -227,13 +345,23 @@ class SiteDetailSheet extends StatelessWidget {
               children: [
                 Icon(icon, size: 10, color: color.withOpacity(0.7)),
                 const SizedBox(width: 3),
-                Text(label, style: TextStyle(fontSize: 9, color: cs.foreground.withOpacity(0.4))),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: cs.foreground.withOpacity(0.4),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
               value,
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cs.foreground),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: cs.foreground,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -245,7 +373,8 @@ class SiteDetailSheet extends StatelessWidget {
 
   Widget _buildSignInSection(BuildContext context, FColors cs) {
     final today = DateTime.now();
-    final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final todayKey =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     final todayInfo = site.signInfo?[todayKey] as Map<String, dynamic>?;
     final signed = todayInfo != null;
     final todayText = todayInfo?['info']?.toString() ?? '';
@@ -255,7 +384,9 @@ class SiteDetailSheet extends StatelessWidget {
     String displayText = '';
     if (todayText.isNotEmpty) {
       final colonIndex = todayText.indexOf('签到返回信息：');
-      displayText = colonIndex >= 0 ? todayText.substring(colonIndex + 6).trim() : todayText;
+      displayText = colonIndex >= 0
+          ? todayText.substring(colonIndex + 6).trim()
+          : todayText;
     }
 
     return Column(
@@ -264,11 +395,19 @@ class SiteDetailSheet extends StatelessWidget {
         // ── 标题行 ──
         Row(
           children: [
-            Icon(FIcons.calendarCheck, size: 14, color: cs.foreground.withOpacity(0.4)),
+            Icon(
+              FIcons.calendarCheck,
+              size: 14,
+              color: cs.foreground.withOpacity(0.4),
+            ),
             const SizedBox(width: 6),
             Text(
               '签到信息',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: cs.foreground.withOpacity(0.6)),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: cs.foreground.withOpacity(0.6),
+              ),
             ),
             const Spacer(),
             // 签到历史
@@ -276,7 +415,10 @@ class SiteDetailSheet extends StatelessWidget {
               onTap: () => _openSignInHistory(context),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: cs.primary.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+                decoration: BoxDecoration(
+                  color: cs.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(6),
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -284,7 +426,11 @@ class SiteDetailSheet extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       '签到历史',
-                      style: TextStyle(fontSize: 11, color: cs.primary, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: cs.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -302,7 +448,9 @@ class SiteDetailSheet extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: cs.border, width: 0.5),
           ),
-          child: signed ? _buildSignedDetail(cs, displayText, todayTime) : _buildNotSigned(cs, context),
+          child: signed
+              ? _buildSignedDetail(cs, displayText, todayTime)
+              : _buildNotSigned(cs, context),
         ),
       ],
     );
@@ -317,11 +465,20 @@ class SiteDetailSheet extends StatelessWidget {
         Row(
           children: [
             if (time.isNotEmpty)
-              Text(formatTime(time), style: TextStyle(fontSize: 10, color: cs.foreground.withOpacity(0.35))),
+              Text(
+                formatTime(time),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: cs.foreground.withOpacity(0.35),
+                ),
+              ),
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -329,7 +486,11 @@ class SiteDetailSheet extends StatelessWidget {
                   const SizedBox(width: 3),
                   Text(
                     '今日已签到',
-                    style: TextStyle(fontSize: 11, color: Colors.green.shade700, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.green.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -338,7 +499,14 @@ class SiteDetailSheet extends StatelessWidget {
         ),
         if (text.isNotEmpty) ...[
           const SizedBox(height: 8),
-          Text(text, style: TextStyle(fontSize: 11, color: cs.foreground.withOpacity(0.65), height: 1.5)),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 11,
+              color: cs.foreground.withOpacity(0.65),
+              height: 1.5,
+            ),
+          ),
         ],
       ],
     );
@@ -351,7 +519,10 @@ class SiteDetailSheet extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -359,7 +530,11 @@ class SiteDetailSheet extends StatelessWidget {
               const SizedBox(width: 3),
               Text(
                 '今日未签到',
-                style: TextStyle(fontSize: 11, color: Colors.orange.shade700, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.orange.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -370,7 +545,11 @@ class SiteDetailSheet extends StatelessWidget {
           onPress: site.signIn ? () => _doSignIn(context) : null,
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: [Icon(FIcons.check, size: 14), const SizedBox(width: 4), const Text('签到')],
+            children: [
+              Icon(FIcons.check, size: 14),
+              const SizedBox(width: 4),
+              const Text('签到'),
+            ],
           ),
         ),
       ],
@@ -381,7 +560,9 @@ class SiteDetailSheet extends StatelessWidget {
 
   Future<void> _doSignIn(BuildContext context) async {
     try {
-      await ProviderScope.containerOf(context).read(siteInfoListProvider.notifier).signIn(site.id);
+      await ProviderScope.containerOf(
+        context,
+      ).read(siteInfoListProvider.notifier).signIn(site.id);
       if (context.mounted) {
         Toast.success('签到成功');
       }
@@ -406,7 +587,9 @@ class SiteDetailSheet extends StatelessWidget {
         context: context,
         builder: (ctx) => Dialog(
           backgroundColor: FTheme.of(ctx).colors.background,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: SizedBox(
             width: 480,
             height: MediaQuery.of(ctx).size.height * 0.6,
@@ -444,7 +627,9 @@ class SiteDetailSheet extends StatelessWidget {
               height: 8,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: site.available ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                color: site.available
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFEF4444),
               ),
             ),
             const SizedBox(width: 10),
@@ -455,10 +640,20 @@ class SiteDetailSheet extends StatelessWidget {
                 children: [
                   Text(
                     site.site,
-                    style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: cs.foreground,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   if (site.nickname.isNotEmpty)
-                    Text(site.nickname, style: TextStyle(color: cs.foreground.withOpacity(0.4), fontSize: 11)),
+                    Text(
+                      site.nickname,
+                      style: TextStyle(
+                        color: cs.foreground.withOpacity(0.4),
+                        fontSize: 11,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -488,7 +683,12 @@ class SiteDetailSheet extends StatelessWidget {
 
   // ────────────────── 用户卡片 ──────────────────
 
-  Widget _buildUserCard(BuildContext context, FColors cs, dynamic typo) {
+  Widget _buildUserCard(
+    BuildContext context,
+    FColors cs,
+    dynamic typo,
+    double spFull,
+  ) {
     final status = site.latestStatus;
     final hasUser = site.username != null && site.username!.isNotEmpty;
 
@@ -507,11 +707,18 @@ class SiteDetailSheet extends StatelessWidget {
               Container(
                 width: 44,
                 height: 44,
-                decoration: BoxDecoration(color: cs.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(
+                  color: cs.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: Center(
                   child: Text(
                     hasUser ? site.username![0].toUpperCase() : '?',
-                    style: TextStyle(color: cs.primary, fontSize: 18, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: cs.primary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
@@ -522,10 +729,20 @@ class SiteDetailSheet extends StatelessWidget {
                   children: [
                     Text(
                       hasUser ? site.username! : '未配置',
-                      style: TextStyle(color: cs.foreground, fontSize: 15, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: cs.foreground,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 2),
-                    Text(site.email ?? '-', style: TextStyle(color: cs.foreground.withOpacity(0.4), fontSize: 12)),
+                    Text(
+                      site.email ?? '-',
+                      style: TextStyle(
+                        color: cs.foreground.withOpacity(0.4),
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -534,7 +751,10 @@ class SiteDetailSheet extends StatelessWidget {
                 GestureDetector(
                   onTap: () => openLevelInfo(context, site: site),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: levelColor(status.myLevel).withOpacity(0.12),
                       borderRadius: BorderRadius.circular(6),
@@ -568,21 +788,34 @@ class SiteDetailSheet extends StatelessWidget {
             Row(
               children: [
                 // HR
-                if (status != null && status.myHr != '0/0/0' && status.myHr != '0') ...[
-                  _miniBadge(FIcons.triangleAlert, 'HR ${status.myHr}', const Color(0xFFF85149)),
-                  if (site.signInText != null || status.bonusHour > 0) const SizedBox(width: 8),
+                if (status != null &&
+                    status.myHr != '0/0/0' &&
+                    status.myHr != '0') ...[
+                  _miniBadge(
+                    FIcons.triangleAlert,
+                    'HR ${status.myHr}',
+                    const Color(0xFFF85149),
+                  ),
+                  if (site.signInText != null || status.bonusHour > 0)
+                    const SizedBox(width: 8),
                 ],
                 // 签到状态
                 if (site.signInText != null)
                   _miniBadge(
                     site.signInText == '已签到' ? FIcons.check : FIcons.x,
                     site.signInText!,
-                    site.signInText == '已签到' ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                    site.signInText == '已签到'
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFEF4444),
                   ),
                 // 时魔
                 if (status != null) ...[
                   if (site.signInText != null) const SizedBox(width: 8),
-                  _miniBadge(FIcons.zap, '${status.bonusHour.toStringAsFixed(1)}/h', const Color(0xFFF59E0B)),
+                  _miniBadge(
+                    FIcons.zap,
+                    '${_fmtMagicWithRatio(status.bonusHour, spFull)}/h',
+                    const Color(0xFFF59E0B),
+                  ),
                 ],
               ],
             ),
@@ -595,7 +828,10 @@ class SiteDetailSheet extends StatelessWidget {
   Widget _miniBadge(IconData icon, String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(6),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -603,7 +839,11 @@ class SiteDetailSheet extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             text,
-            style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -619,7 +859,12 @@ class SiteDetailSheet extends StatelessWidget {
 
   // ────────────────── Section ──────────────────
 
-  Widget _section(BuildContext ctx, String title, IconData icon, List<Widget> children) {
+  Widget _section(
+    BuildContext ctx,
+    String title,
+    IconData icon,
+    List<Widget> children,
+  ) {
     final cs = FTheme.of(ctx).colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,7 +877,11 @@ class SiteDetailSheet extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 title,
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: cs.foreground.withOpacity(0.6)),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: cs.foreground.withOpacity(0.6),
+                ),
               ),
             ],
           ),
@@ -649,7 +898,12 @@ class SiteDetailSheet extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: List.generate(children.length * 2 - 1, (i) {
                 if (i.isOdd) {
-                  return Divider(height: 0.5, thickness: 0.5, indent: 14, color: cs.border);
+                  return Divider(
+                    height: 0.5,
+                    thickness: 0.5,
+                    indent: 14,
+                    color: cs.border,
+                  );
                 }
                 return children[i ~/ 2];
               }),
@@ -670,12 +924,22 @@ class SiteDetailSheet extends StatelessWidget {
         children: [
           SizedBox(
             width: 80,
-            child: Text(label, style: TextStyle(color: cs.foreground.withOpacity(0.45), fontSize: 13)),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: cs.foreground.withOpacity(0.45),
+                fontSize: 13,
+              ),
+            ),
           ),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(color: cs.foreground, fontSize: 13, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                color: cs.foreground,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -711,20 +975,34 @@ class SiteDetailSheet extends StatelessWidget {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: f.on ? const Color(0xFF10B981).withOpacity(0.08) : cs.foreground.withOpacity(0.03),
+              color: f.on
+                  ? const Color(0xFF10B981).withOpacity(0.08)
+                  : cs.foreground.withOpacity(0.03),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: f.on ? const Color(0xFF10B981).withOpacity(0.2) : cs.border),
+              border: Border.all(
+                color: f.on
+                    ? const Color(0xFF10B981).withOpacity(0.2)
+                    : cs.border,
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(f.icon, size: 12, color: f.on ? const Color(0xFF10B981) : cs.foreground.withOpacity(0.25)),
+                Icon(
+                  f.icon,
+                  size: 12,
+                  color: f.on
+                      ? const Color(0xFF10B981)
+                      : cs.foreground.withOpacity(0.25),
+                ),
                 const SizedBox(width: 5),
                 Text(
                   f.label,
                   style: TextStyle(
                     fontSize: 11,
-                    color: f.on ? const Color(0xFF10B981) : cs.foreground.withOpacity(0.4),
+                    color: f.on
+                        ? const Color(0xFF10B981)
+                        : cs.foreground.withOpacity(0.4),
                     fontWeight: f.on ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
@@ -739,6 +1017,21 @@ class SiteDetailSheet extends StatelessWidget {
   String _truncate(String? value, int max) {
     if (value == null || value.isEmpty) return '-';
     return value.length > max ? '${value.substring(0, max)}...' : value;
+  }
+
+  String _fmtMagicWithRatio(double current, double full) {
+    final value = current.toStringAsFixed(1);
+    if (full <= 0) return value;
+    final pct = ((current / full) * 100).round();
+    return '$value($pct%)';
+  }
+
+  double _numVal(dynamic v) {
+    if (v == null) return 0.0;
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    if (v is String) return double.tryParse(v) ?? 0.0;
+    return 0.0;
   }
 }
 
