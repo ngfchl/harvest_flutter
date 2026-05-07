@@ -78,32 +78,40 @@ class SiteFilterPanel extends ConsumerWidget {
             Wrap(
               spacing: 8,
               runSpacing: 4,
-              children: FilterCondition.values.map((c) {
-                return FilterChip(
-                  label: Text(
-                    _conditionLabel(c),
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  selected: filter.condition == c,
-                  showCheckmark: false,
-                  onSelected: (_) => filter.setCondition(c),
-                  selectedColor: cs.primary.withValues(alpha: 0.15),
-                  side: BorderSide(
-                    color: filter.condition == c
-                        ? cs.primary
-                        : cs.border.withValues(alpha: 0.5),
-                  ),
-                  labelStyle: TextStyle(
-                    fontSize: 12,
-                    color: filter.condition == c ? cs.primary : cs.foreground,
-                    fontWeight: filter.condition == c
-                        ? FontWeight.w600
-                        : FontWeight.w400,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  visualDensity: VisualDensity.compact,
-                );
-              }).toList(),
+              children:
+                  [
+                    FilterCondition.all,
+                    ...FilterCondition.values.where(
+                      (c) => c != FilterCondition.all,
+                    ),
+                  ].map((c) {
+                    return FilterChip(
+                      label: Text(
+                        _conditionLabel(c),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      selected: filter.condition == c,
+                      showCheckmark: false,
+                      onSelected: (_) => filter.setCondition(c),
+                      selectedColor: cs.primary.withValues(alpha: 0.15),
+                      side: BorderSide(
+                        color: filter.condition == c
+                            ? cs.primary
+                            : cs.border.withValues(alpha: 0.5),
+                      ),
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: filter.condition == c
+                            ? cs.primary
+                            : cs.foreground,
+                        fontWeight: filter.condition == c
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      visualDensity: VisualDensity.compact,
+                    );
+                  }).toList(),
             ),
           ),
 
@@ -114,46 +122,50 @@ class SiteFilterPanel extends ConsumerWidget {
             Wrap(
               spacing: 8,
               runSpacing: 4,
-              children: SortField.values.map((f) {
-                final active = filter.sortField == f;
-                return FilterChip(
-                  label: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _sortFieldLabel(f),
-                        style: const TextStyle(fontSize: 12),
+              children:
+                  [
+                    SortField.sortId,
+                    ...SortField.values.where((f) => f != SortField.sortId),
+                  ].map((f) {
+                    final active = filter.sortField == f;
+                    return FilterChip(
+                      label: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _sortFieldLabel(f),
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          if (active) ...[
+                            const SizedBox(width: 3),
+                            Icon(
+                              filter.sortAscending
+                                  ? FIcons.arrowUp
+                                  : FIcons.arrowDown,
+                              size: 11,
+                              color: cs.primary,
+                            ),
+                          ],
+                        ],
                       ),
-                      if (active) ...[
-                        const SizedBox(width: 3),
-                        Icon(
-                          filter.sortAscending
-                              ? FIcons.arrowUp
-                              : FIcons.arrowDown,
-                          size: 11,
-                          color: cs.primary,
-                        ),
-                      ],
-                    ],
-                  ),
-                  selected: active,
-                  showCheckmark: false,
-                  onSelected: (_) => filter.setSortField(f),
-                  selectedColor: cs.primary.withValues(alpha: 0.15),
-                  side: BorderSide(
-                    color: active
-                        ? cs.primary
-                        : cs.border.withValues(alpha: 0.5),
-                  ),
-                  labelStyle: TextStyle(
-                    fontSize: 12,
-                    color: active ? cs.primary : cs.foreground,
-                    fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  visualDensity: VisualDensity.compact,
-                );
-              }).toList(),
+                      selected: active,
+                      showCheckmark: false,
+                      onSelected: (_) => filter.setSortField(f),
+                      selectedColor: cs.primary.withValues(alpha: 0.15),
+                      side: BorderSide(
+                        color: active
+                            ? cs.primary
+                            : cs.border.withValues(alpha: 0.5),
+                      ),
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: active ? cs.primary : cs.foreground,
+                        fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      visualDensity: VisualDensity.compact,
+                    );
+                  }).toList(),
             ),
           ),
 
@@ -165,28 +177,56 @@ class SiteFilterPanel extends ConsumerWidget {
               Wrap(
                 spacing: 8,
                 runSpacing: 4,
-                children: tags.map((tag) {
-                  final active = filter.selectedTags.contains(tag);
-                  return FilterChip(
-                    label: Text('#$tag', style: const TextStyle(fontSize: 12)),
-                    selected: active,
+                children: [
+                  FilterChip(
+                    label: const Text('全部', style: TextStyle(fontSize: 12)),
+                    selected: filter.selectedTags.isEmpty,
                     showCheckmark: false,
-                    onSelected: (_) => filter.toggleTag(tag),
+                    onSelected: (_) => filter.clearTags(),
                     selectedColor: cs.primary.withValues(alpha: 0.15),
                     side: BorderSide(
-                      color: active
+                      color: filter.selectedTags.isEmpty
                           ? cs.primary
                           : cs.border.withValues(alpha: 0.5),
                     ),
                     labelStyle: TextStyle(
                       fontSize: 12,
-                      color: active ? cs.primary : cs.foreground,
-                      fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                      color: filter.selectedTags.isEmpty
+                          ? cs.primary
+                          : cs.foreground,
+                      fontWeight: filter.selectedTags.isEmpty
+                          ? FontWeight.w600
+                          : FontWeight.w400,
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 2),
                     visualDensity: VisualDensity.compact,
-                  );
-                }).toList(),
+                  ),
+                  ...tags.map((tag) {
+                    final active = filter.selectedTags.contains(tag);
+                    return FilterChip(
+                      label: Text(
+                        '#$tag',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      selected: active,
+                      showCheckmark: false,
+                      onSelected: (_) => filter.toggleTag(tag),
+                      selectedColor: cs.primary.withValues(alpha: 0.15),
+                      side: BorderSide(
+                        color: active
+                            ? cs.primary
+                            : cs.border.withValues(alpha: 0.5),
+                      ),
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: active ? cs.primary : cs.foreground,
+                        fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      visualDensity: VisualDensity.compact,
+                    );
+                  }),
+                ],
               ),
             ),
 
@@ -220,6 +260,8 @@ class SiteFilterPanel extends ConsumerWidget {
 
   static String _conditionLabel(FilterCondition c) {
     switch (c) {
+      case FilterCondition.all:
+        return '全部';
       case FilterCondition.alive:
         return '站点存活';
       case FilterCondition.dead:
@@ -307,6 +349,8 @@ class SiteFilterPanel extends ConsumerWidget {
         return '正在做种';
       case SortField.shareRatio:
         return '分享率';
+      case SortField.sortId:
+        return '排序 ID';
     }
   }
 }
