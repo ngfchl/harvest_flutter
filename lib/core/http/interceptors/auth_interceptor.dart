@@ -17,19 +17,19 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (_isAuthExemptPath(options.path)) {
+      AppLogger.debug(
+        '[Auth] auth exempt request: ${options.method} ${options.path}',
+      );
+      return handler.next(options);
+    }
+
     final token = HiveManager.get<String>(StorageKeys.accessToken);
     if (token != null && token.isNotEmpty) {
       _logoutScheduled = false;
       options.headers['Authorization'] = 'Bearer $token';
       AppLogger.debug(
         '[Auth] token attached: ${options.method} ${options.path}',
-      );
-      return handler.next(options);
-    }
-
-    if (_isAuthExemptPath(options.path)) {
-      AppLogger.debug(
-        '[Auth] auth exempt request: ${options.method} ${options.path}',
       );
       return handler.next(options);
     }
@@ -66,6 +66,10 @@ class AuthInterceptor extends Interceptor {
       AppLogger.warn(
         '[Auth] request error path=${err.requestOptions.path} status=$status',
       );
+    }
+
+    if (_isAuthExemptPath(err.requestOptions.path)) {
+      return handler.next(err);
     }
 
     // 网络错误
