@@ -5,10 +5,12 @@ import '../../../core/storage/storage_keys.dart';
 
 class DashboardChartConfig {
   static const defaultOrder = [
+    'phoneServer',
+    'phoneServerResource',
+    'phoneServiceStatus',
     'phoneDesignation',
     'phoneOverview',
     'phoneActions',
-    'phoneServer',
     'phoneTrend',
     'phoneStatus',
     'phoneUploadShare',
@@ -21,6 +23,8 @@ class DashboardChartConfig {
   ];
 
   static const desktopOrder = [
+    'desktopServerResource',
+    'desktopServiceStatus',
     'desktopKpi',
     'desktopTrend',
     'desktopDesignation',
@@ -33,13 +37,12 @@ class DashboardChartConfig {
     'desktopMonthlyPublish',
   ];
 
-  static const allModuleIds = [
-    ...defaultOrder,
-    ...desktopOrder,
-  ];
+  static const allModuleIds = [...defaultOrder, ...desktopOrder];
 
   static const names = {
-    'phoneServer': '服务器信息',
+    'phoneServer': '用户信息',
+    'phoneServerResource': '服务器状态',
+    'phoneServiceStatus': '后台服务状态',
     'phoneDesignation': '称号进度',
     'phoneOverview': '数据总览',
     'phoneActions': '快捷操作',
@@ -53,6 +56,8 @@ class DashboardChartConfig {
     'phoneMonthDownload': '月度下载',
     'phoneMonthPublish': '月度发种',
     'desktopKpi': '核心指标',
+    'desktopServerResource': '服务器状态',
+    'desktopServiceStatus': '后台服务状态',
     'desktopTrend': '吞吐趋势',
     'desktopDesignation': '称号',
     'desktopResource': '全局资源',
@@ -67,7 +72,9 @@ class DashboardChartConfig {
   static List<String> getOrder() {
     final saved = HiveManager.get<List>(StorageKeys.dashboardChartOrder);
     if (saved != null) {
-      final order = List<String>.from(saved).where(defaultOrder.contains).toList();
+      final order = List<String>.from(
+        saved,
+      ).where(defaultOrder.contains).toList();
       for (final id in defaultOrder) {
         if (!order.contains(id)) order.add(id);
       }
@@ -105,7 +112,8 @@ class DashboardChartConfig {
   static const double maxChartHeight = 400.0;
 
   static double getChartHeight() {
-    return HiveManager.get<double>(StorageKeys.dashboardChartHeight) ?? defaultChartHeight;
+    return HiveManager.get<double>(StorageKeys.dashboardChartHeight) ??
+        defaultChartHeight;
   }
 
   static Future<void> saveChartHeight(double height) async {
@@ -120,13 +128,13 @@ class DashboardChartConfig {
     await HiveManager.set(StorageKeys.dashboardChartHeight, defaultChartHeight);
   }
 
-
   static const int defaultTreemapCount = 15;
   static const int minTreemapCount = 10;
   static const int maxTreemapCount = 50;
 
   static int getTreemapCount() {
-    return HiveManager.get<int>(StorageKeys.dashboardTreemapCount) ?? defaultTreemapCount;
+    return HiveManager.get<int>(StorageKeys.dashboardTreemapCount) ??
+        defaultTreemapCount;
   }
 
   static Future<void> saveTreemapCount(int count) async {

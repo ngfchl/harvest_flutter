@@ -28,4 +28,7 @@ class StorageKeys {
   static const String downloaderSpeedInterval = 'downloader_speed_interval';
   static const String downloaderSpeedEnabled = 'downloader_speed_enabled';
   static const String downloaderSpeedDuration = 'downloader_speed_duration';
+  static const String serverResourceInterval = 'server_resource_interval';
+  static const String serverResourceDuration = 'server_resource_duration';
+  static const String serverResourceAutoStart = 'server_resource_auto_start';
 }

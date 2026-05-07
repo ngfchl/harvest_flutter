@@ -8,6 +8,8 @@ import 'package:harvest/core/cache/session_cache.dart';
 import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/hooks.dart';
+import 'package:harvest/core/storage/hive_manager.dart';
+import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/cache_status_banner.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -18,9 +20,13 @@ import '../shell/provider/screenshot_provider.dart';
 import '../shell/widgets/shell_scaffold.dart';
 import '../site/provider/site_provider.dart';
 import '../user/provider/user_management_provider.dart';
+import 'model/backend_service_status.dart';
 import 'model/dashboard_data.dart';
+import 'model/server_resource_status.dart';
+import 'provider/backend_service_status_provider.dart';
 import 'provider/dashboard_provider.dart';
 import 'provider/privacy_provider.dart';
+import 'provider/server_resource_provider.dart';
 import 'widgets/dashboard_chart_config.dart';
 import 'widgets/dashboard_chart_settings.dart';
 import 'widgets/desktop_dashboard_page.dart';
@@ -142,6 +148,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       ref
           .read(dashboardNotifierProvider.notifier)
           .refresh(days: _phoneDashboardFetchDays);
+      _syncPhoneMonitorCards(_chartVisibility);
       if (mounted) {
         ref.read(activeScrollControllerProvider.notifier).state =
             _scrollController;
@@ -160,6 +167,23 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         allowReorder: allowReorder,
         showSizingControls: allowReorder,
         onSaved: (order, visibility, height, treemapCount) {
+          ref
+              .read(serverResourceIntervalProvider.notifier)
+              .update(
+                HiveManager.get<int>(StorageKeys.serverResourceInterval) ??
+                    kDefaultServerResourceInterval,
+              );
+          ref
+              .read(serverResourceDurationProvider.notifier)
+              .update(
+                HiveManager.get<int>(StorageKeys.serverResourceDuration) ??
+                    kDefaultServerResourceDuration,
+              );
+          final autoStart =
+              HiveManager.get<bool>(StorageKeys.serverResourceAutoStart) ??
+              kDefaultServerResourceAutoStart;
+          ref.read(serverResourceAutoStartProvider.notifier).update(autoStart);
+          _syncPhoneMonitorCards(visibility);
           setState(() {
             if (allowReorder) _chartOrder = order;
             _chartVisibility = visibility;
@@ -171,6 +195,23 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         },
       ),
     );
+  }
+
+  void _syncPhoneMonitorCards(Map<String, bool> visibility) {
+    final showServerResource = visibility['phoneServerResource'] ?? true;
+    final showServiceStatus = visibility['phoneServiceStatus'] ?? true;
+
+    if (!showServerResource) {
+      ref.read(serverResourceProvider.notifier).stop();
+    } else if (!ref.read(serverResourceProvider).running) {
+      ref.read(serverResourceProvider.notifier).start();
+    }
+
+    if (!showServiceStatus) {
+      ref.read(backendServiceStatusProvider.notifier).stop();
+    } else if (!ref.read(backendServiceStatusProvider).running) {
+      ref.read(backendServiceStatusProvider.notifier).start();
+    }
   }
 
   @override
@@ -520,7 +561,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     if (value is Map) {
       return value.entries
           .where((entry) => !_isDashboardAuthIdentityKey(entry.key.toString()))
-          .map((entry) => '${_dashboardAuthLabel(entry.key.toString())}: ${_dashboardAuthValue(entry.key.toString(), entry.value, privacy)}')
+          .map(
+            (entry) =>
+                '${_dashboardAuthLabel(entry.key.toString())}: ${_dashboardAuthValue(entry.key.toString(), entry.value, privacy)}',
+          )
           .where((value) => value.trim().isNotEmpty)
           .join('；');
     }
@@ -559,7 +603,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     return null;
   }
 
-  List<MapEntry<String, String>> _dashboardAuthEntries(dynamic data, bool privacy) {
+  List<MapEntry<String, String>> _dashboardAuthEntries(
+    dynamic data,
+    bool privacy,
+  ) {
     if (data == null) return const [];
     if (data is Map) {
       return data.entries
@@ -588,20 +635,34 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   String _dashboardAuthSummary(dynamic data, bool privacy) {
     if (data == null) return '暂无授权信息';
     final active = _findDashboardAuthValue(data, const ['active', 'is_active']);
-    final expire = _findDashboardAuthValue(data, const ['time_expire', 'time expire', 'timeExpire', 'expire', 'expire_time', 'expired_at', 'expires_at']);
+    final expire = _findDashboardAuthValue(data, const [
+      'time_expire',
+      'time expire',
+      'timeExpire',
+      'expire',
+      'expire_time',
+      'expired_at',
+      'expires_at',
+    ]);
     final pay = _findDashboardAuthValue(data, const ['pay']);
     final invite = _findDashboardAuthValue(data, const ['invite']);
 
     final parts = <String>[];
-    if (active != null) parts.add('状态 ${_dashboardAuthValue('active', active, privacy)}');
-    if (expire != null) parts.add('到期时间 ${_dashboardAuthValue('expire', expire, privacy)}');
-    if (pay != null) parts.add('额度 ${_dashboardAuthValue('pay', pay, privacy)}');
-    if (invite != null) parts.add('邀请 ${_dashboardAuthValue('invite', invite, privacy)}');
+    if (active != null)
+      parts.add('状态 ${_dashboardAuthValue('active', active, privacy)}');
+    if (expire != null)
+      parts.add('到期时间 ${_dashboardAuthValue('expire', expire, privacy)}');
+    if (pay != null)
+      parts.add('额度 ${_dashboardAuthValue('pay', pay, privacy)}');
+    if (invite != null)
+      parts.add('邀请 ${_dashboardAuthValue('invite', invite, privacy)}');
     if (parts.isNotEmpty) return parts.join(' · ');
 
     final entries = _dashboardAuthEntries(data, privacy).take(2).toList();
     if (entries.isEmpty) return '暂无授权信息';
-    return entries.map((entry) => '${entry.key} ${entry.value.replaceAll('\n', ' ')}').join(' · ');
+    return entries
+        .map((entry) => '${entry.key} ${entry.value.replaceAll('\n', ' ')}')
+        .join(' · ');
   }
 
   DateTime? _parseDashboardAuthExpire(dynamic value) {
@@ -619,11 +680,20 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     if (text.isEmpty) return null;
     final numeric = num.tryParse(text);
     if (numeric != null) return _parseDashboardAuthExpire(numeric);
-    return DateTime.tryParse(text.replaceFirst(' ', 'T')) ?? DateTime.tryParse(text);
+    return DateTime.tryParse(text.replaceFirst(' ', 'T')) ??
+        DateTime.tryParse(text);
   }
 
   bool _isDashboardAuthExpiringSoon(dynamic data) {
-    final expire = _findDashboardAuthValue(data, const ['time_expire', 'time expire', 'timeExpire', 'expire', 'expire_time', 'expired_at', 'expires_at']);
+    final expire = _findDashboardAuthValue(data, const [
+      'time_expire',
+      'time expire',
+      'timeExpire',
+      'expire',
+      'expire_time',
+      'expired_at',
+      'expires_at',
+    ]);
     final expireAt = _parseDashboardAuthExpire(expire);
     if (expireAt == null) return false;
     final remaining = expireAt.difference(DateTime.now());
@@ -635,7 +705,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final host = uri?.host.isNotEmpty == true ? uri!.host : server;
     final port = uri?.hasPort == true ? ':${uri!.port}' : '';
     if (!privacy) return '$host$port';
-    final maskedHost = host.split('.').map((part) => _mask(part, true)).join('.');
+    final maskedHost = host
+        .split('.')
+        .map((part) => _mask(part, true))
+        .join('.');
     return '$maskedHost$port';
   }
 
@@ -645,7 +718,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     if (active is bool) return active;
     if (active is String) {
       final normalized = active.toLowerCase();
-      return normalized == 'true' || normalized == '1' || normalized == 'yes' || normalized == 'active';
+      return normalized == 'true' ||
+          normalized == '1' ||
+          normalized == 'yes' ||
+          normalized == 'active';
     }
     return true;
   }
@@ -756,11 +832,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   Widget _buildServerBar(bool privacy) {
     final cs = FTheme.of(context).colors;
-    final server = _maskServerInfo(AppConfig.baseUrl, privacy);
     final authState = ref.watch(authNotifierProvider);
     final authInfo = ref.watch(authInfoProvider);
     final user = authState.user;
-    final serverHost = _serverHostLabel(AppConfig.baseUrl, privacy);
     final username = user == null ? '未登录' : _mask(user.username, privacy);
     final role = user == null
         ? '未获取用户信息'
@@ -769,7 +843,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         : user.isStaff
         ? '管理员'
         : '普通用户';
-    final userSubtitle = role;
+    final userSubtitle = user == null ? '等待登录状态同步' : role;
     final authText = authInfo.when(
       data: (data) => _dashboardAuthSummary(data, privacy),
       loading: () => '授权信息加载中',
@@ -786,16 +860,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       error: (_, __) => '授权获取失败',
     );
     final statusColor = authInfo.when(
-      data: (data) => _dashboardAuthHealthy(data) ? const Color(0xFF34D399) : const Color(0xFFF59E0B),
+      data: (data) => _dashboardAuthHealthy(data)
+          ? const Color(0xFF34D399)
+          : const Color(0xFFF59E0B),
       loading: () => const Color(0xFF60A5FA),
       error: (_, __) => const Color(0xFFF87171),
     );
-    final statusIcon = authInfo.when(
-      data: (data) => _dashboardAuthHealthy(data) ? FIcons.shieldCheck : FIcons.circleAlert,
-      loading: () => FIcons.refreshCw,
-      error: (_, __) => FIcons.triangleAlert,
-    );
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -832,7 +902,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: cs.primary.withValues(alpha: 0.16)),
                 ),
-                child: Icon(FIcons.server, size: 24, color: cs.primary),
+                child: Icon(FIcons.user, size: 24, color: cs.primary),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -843,7 +913,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       children: [
                         Expanded(
                           child: Text(
-                            serverHost,
+                            '用户信息',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -866,7 +936,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     ),
                     const SizedBox(height: 7),
                     Text(
-                      server,
+                      username,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -881,7 +951,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               const SizedBox(width: 6),
               FButton.icon(
                 style: FButtonStyle.ghost(),
-                onPress: () async => ref.read(authNotifierProvider.notifier).logout(),
+                onPress: () async =>
+                    ref.read(authNotifierProvider.notifier).logout(),
                 child: Icon(FIcons.logOut, size: 16, color: cs.destructive),
               ),
             ],
@@ -904,7 +975,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 child: _buildServerMetricTile(
                   icon: FIcons.shieldCheck,
                   label: '授权信息',
-                  title: authStatusText,
+                  title: showExpireWarning
+                      ? '$authStatusText · 即将到期'
+                      : authStatusText,
                   subtitle: authText,
                   color: statusColor,
                 ),
@@ -2583,6 +2656,13 @@ class _TrendPoint {
     this.uploadDetails = const [],
     this.downloadDetails = const [],
   });
+}
+
+class _ServerResourceUsagePoint {
+  final String label;
+  final double value;
+
+  const _ServerResourceUsagePoint(this.label, this.value);
 }
 
 class _MonthlyChartItem {

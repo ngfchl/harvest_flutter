@@ -206,6 +206,10 @@ extension _PhoneDashboardView on _DashboardPageState {
     switch (id) {
       case 'phoneServer':
         return _buildServerBar(privacy);
+      case 'phoneServerResource':
+        return _buildServerResourceCard(privacy);
+      case 'phoneServiceStatus':
+        return _buildBackendServiceStatusCard();
       case 'phoneDesignation':
         return _buildPhoneDesignationPanel(data);
       case 'phoneOverview':
@@ -368,6 +372,677 @@ extension _PhoneDashboardView on _DashboardPageState {
         ],
       ),
     );
+  }
+
+  Widget _buildServerResourceCard(bool privacy) {
+    final cs = FTheme.of(context).colors;
+    final state = ref.watch(serverResourceProvider);
+    final interval = ref.watch(serverResourceIntervalProvider);
+    final remaining = ref.watch(serverResourceRemainingProvider);
+    final data = state.data;
+    final running = state.running;
+    final statusText = state.error != null
+        ? '连接失败'
+        : running
+        ? '监控中'
+        : '已停止';
+    final statusColor = state.error != null
+        ? const Color(0xFFEF4444)
+        : running
+        ? const Color(0xFF10B981)
+        : cs.mutedForeground;
+    final remainingText =
+        '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}';
+    final latestText = data?.timestamp == null
+        ? null
+        : '更新于 ${_formatDashboardTimeToSecond(data!.timestamp!)}';
+    final serverHost = _serverHostLabel(AppConfig.baseUrl, privacy);
+
+    return _buildBeautyCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text('服务器状态', style: _phoneTitleStyle(17))),
+              if (running) ...[
+                Flexible(
+                  child: Text(
+                    '间隔 ${interval}s · 运行 $remainingText',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: cs.mutedForeground,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  statusText,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              FButton.icon(
+                style: FButtonStyle.ghost(),
+                onPress: () =>
+                    ref.read(serverResourceProvider.notifier).toggle(),
+                child: Icon(running ? FIcons.pause : FIcons.play, size: 17),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  serverHost,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: cs.foreground,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              if (latestText != null) ...[
+                const SizedBox(width: 10),
+                Text(
+                  latestText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: cs.mutedForeground,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildServerResourceMetric(
+                  icon: FIcons.cpu,
+                  label: 'CPU',
+                  value: '${(data?.cpu.percent ?? 0).toStringAsFixed(1)}%',
+                  subtitle:
+                      '${(data?.cpu.limitCores ?? 0).toStringAsFixed(1)} 核',
+                  color: const Color(0xFF3B82F6),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildServerResourceMetric(
+                  icon: FIcons.memoryStick,
+                  label: '内存',
+                  value: '${(data?.memory.percent ?? 0).toStringAsFixed(1)}%',
+                  subtitle:
+                      '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)}',
+                  color: const Color(0xFF8B5CF6),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _buildServerResourceMetric(
+                  icon: FIcons.arrowUp,
+                  label: '上传',
+                  value: formatSpeed(data?.network.uploadSpeed ?? 0),
+                  subtitle: formatBytes(data?.network.bytesSent ?? 0),
+                  color: const Color(0xFF10B981),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildServerResourceMetric(
+                  icon: FIcons.arrowDown,
+                  label: '下载',
+                  value: formatSpeed(data?.network.downloadSpeed ?? 0),
+                  subtitle: formatBytes(data?.network.bytesRecv ?? 0),
+                  color: const Color(0xFFEF4444),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildServerResourceUsageChart(
+            title: 'CPU 占用',
+            value: data?.cpu.percent ?? 0,
+            history: state.history,
+            valueOf: (item) => item.cpu.percent,
+            color: const Color(0xFF3B82F6),
+          ),
+          const SizedBox(height: 10),
+          _buildServerResourceUsageChart(
+            title: '内存占用',
+            value: data?.memory.percent ?? 0,
+            history: state.history,
+            valueOf: (item) => item.memory.percent,
+            color: const Color(0xFF8B5CF6),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServerResourceUsageChart({
+    required String title,
+    required double value,
+    required List<ServerResourceStatus> history,
+    required double Function(ServerResourceStatus item) valueOf,
+    required Color color,
+  }) {
+    final cs = FTheme.of(context).colors;
+    final points = _serverResourceUsagePoints(history, valueOf);
+
+    return Container(
+      height: 132,
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.055),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.12)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: cs.foreground,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Text(
+                '${value.toStringAsFixed(1)}%',
+                style: TextStyle(
+                  color: color,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Expanded(
+            child: points.isEmpty
+                ? Center(
+                    child: Text(
+                      '等待数据',
+                      style: TextStyle(
+                        color: cs.mutedForeground,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  )
+                : SfCartesianChart(
+                    plotAreaBorderWidth: 0,
+                    margin: EdgeInsets.zero,
+                    primaryXAxis: CategoryAxis(
+                      isVisible: false,
+                      majorGridLines: const MajorGridLines(width: 0),
+                    ),
+                    primaryYAxis: NumericAxis(
+                      minimum: 0,
+                      maximum: 100,
+                      interval: 50,
+                      axisLine: const AxisLine(width: 0),
+                      majorTickLines: const MajorTickLines(size: 0),
+                      majorGridLines: MajorGridLines(
+                        width: 0.5,
+                        color: cs.border.withValues(alpha: 0.42),
+                      ),
+                      labelStyle: TextStyle(
+                        color: cs.mutedForeground,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      axisLabelFormatter: (details) => ChartAxisLabel(
+                        '${details.value.toInt()}%',
+                        details.textStyle,
+                      ),
+                    ),
+                    series: <CartesianSeries>[
+                      SplineAreaSeries<_ServerResourceUsagePoint, String>(
+                        dataSource: points,
+                        xValueMapper: (point, _) => point.label,
+                        yValueMapper: (point, _) => point.value,
+                        color: color.withValues(alpha: 0.18),
+                        borderColor: color,
+                        borderWidth: 2,
+                      ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<_ServerResourceUsagePoint> _serverResourceUsagePoints(
+    List<ServerResourceStatus> history,
+    double Function(ServerResourceStatus item) valueOf,
+  ) {
+    return history.asMap().entries.map((entry) {
+      final time = entry.value.timestamp;
+      final label = time == null
+          ? '${entry.key + 1}'
+          : '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
+      return _ServerResourceUsagePoint(
+        label,
+        valueOf(entry.value).clamp(0, 100).toDouble(),
+      );
+    }).toList();
+  }
+
+  Widget _buildServerResourceMetric({
+    required IconData icon,
+    required String label,
+    required String value,
+    required String subtitle,
+    required Color color,
+  }) {
+    final cs = FTheme.of(context).colors;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.055),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 15, color: color),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: cs.mutedForeground,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: cs.mutedForeground,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackendServiceStatusCard() {
+    final cs = FTheme.of(context).colors;
+    final state = ref.watch(backendServiceStatusProvider);
+    final data = state.data;
+    final summary = data?.summary ?? BackendServiceSummary.empty;
+    final services = data?.services ?? const <BackendServiceInfo>[];
+    final visibleServices = services.take(6).toList();
+    final running = state.running;
+    final statusText = _backendServiceStatusText(state);
+    final statusColor = _backendServiceStatusColor(state);
+    final updatedText = data?.timestamp == null
+        ? (running ? '等待服务状态' : '手动启动监控')
+        : '更新于 ${_formatDashboardTimeToSecond(data!.timestamp!)}';
+
+    return _buildBeautyCard(
+      padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Text('后台服务状态', style: _phoneTitleStyle(17))),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  statusText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              FButton.icon(
+                style: FButtonStyle.ghost(),
+                onPress: () =>
+                    ref.read(backendServiceStatusProvider.notifier).toggle(),
+                child: Icon(running ? FIcons.pause : FIcons.play, size: 17),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            [
+              if ((data?.source ?? '').isNotEmpty) data!.source,
+              updatedText,
+              if ((data?.connectionId ?? '').isNotEmpty) data!.connectionId,
+            ].join(' · '),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: cs.mutedForeground,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _buildBackendServiceSummaryPill(
+                  '总数',
+                  '${summary.total}',
+                  cs.foreground,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildBackendServiceSummaryPill(
+                  '运行',
+                  '${summary.running}',
+                  const Color(0xFF10B981),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildBackendServiceSummaryPill(
+                  '停止',
+                  '${summary.stopped}',
+                  const Color(0xFFF59E0B),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildBackendServiceSummaryPill(
+                  '失败',
+                  '${summary.failed}',
+                  const Color(0xFFEF4444),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (state.error != null)
+            _buildBackendServiceMessage(state.error!, const Color(0xFFEF4444))
+          else if (services.isEmpty)
+            _buildBackendServiceMessage(
+              running ? '正在等待后台服务状态推送' : '监控已暂停',
+              cs.mutedForeground,
+            )
+          else
+            Column(
+              children: [
+                for (var i = 0; i < visibleServices.length; i++) ...[
+                  _buildBackendServiceRow(visibleServices[i]),
+                  if (i != visibleServices.length - 1)
+                    const SizedBox(height: 8),
+                ],
+              ],
+            ),
+          if ((data?.errors ?? const <String>[]).isNotEmpty) ...[
+            const SizedBox(height: 10),
+            _buildBackendServiceMessage(
+              data!.errors.first,
+              const Color(0xFFEF4444),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackendServiceSummaryPill(
+    String label,
+    String value,
+    Color color,
+  ) {
+    final cs = FTheme.of(context).colors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.12)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: cs.mutedForeground,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackendServiceRow(BackendServiceInfo service) {
+    final cs = FTheme.of(context).colors;
+    final color = _backendServiceStateColor(service.state);
+    final uptime = _formatBackendServiceUptime(service.uptime);
+    final subtitle = service.running && service.pid > 0
+        ? '运行 $uptime · pid ${service.pid}'
+        : service.description.isNotEmpty
+        ? service.description
+        : 'pid ${service.pid}';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+      decoration: BoxDecoration(
+        color: cs.muted.withValues(alpha: 0.24),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.border.withValues(alpha: 0.28)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  service.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: cs.foreground,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: cs.mutedForeground,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            service.state.isEmpty ? '-' : service.state,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackendServiceMessage(String text, Color color) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.14)),
+      ),
+      child: Text(
+        text,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  String _backendServiceStatusText(BackendServiceStatusState state) {
+    if (state.error != null) return '连接失败';
+    final data = state.data;
+    if (data == null) return state.running ? '连接中' : '已停止';
+    if (data.healthy) return '全部运行';
+    if (data.hasIssue) return '有异常';
+    return state.running ? '监控中' : '已停止';
+  }
+
+  Color _backendServiceStatusColor(BackendServiceStatusState state) {
+    final cs = FTheme.of(context).colors;
+    if (state.error != null) return const Color(0xFFEF4444);
+    final data = state.data;
+    if (data?.healthy == true) return const Color(0xFF10B981);
+    if (data?.hasIssue == true) return const Color(0xFFF59E0B);
+    return state.running ? const Color(0xFF10B981) : cs.mutedForeground;
+  }
+
+  Color _backendServiceStateColor(String state) {
+    final cs = FTheme.of(context).colors;
+    switch (state.toUpperCase()) {
+      case 'RUNNING':
+        return const Color(0xFF10B981);
+      case 'STOPPED':
+      case 'EXITED':
+        return const Color(0xFFF59E0B);
+      case 'FATAL':
+      case 'FAILED':
+      case 'BACKOFF':
+        return const Color(0xFFEF4444);
+      default:
+        return cs.mutedForeground;
+    }
+  }
+
+  String _formatBackendServiceUptime(int seconds) {
+    if (seconds <= 0) return '0s';
+    final days = seconds ~/ 86400;
+    final hours = (seconds % 86400) ~/ 3600;
+    final minutes = (seconds % 3600) ~/ 60;
+    final remainSeconds = seconds % 60;
+    if (days > 0) return '${days}d ${hours}h ${minutes}m ${remainSeconds}s';
+    if (hours > 0) return '${hours}h ${minutes}m ${remainSeconds}s';
+    if (minutes > 0) return '${minutes}m ${remainSeconds}s';
+    return '${seconds}s';
+  }
+
+  String _formatDashboardTimeToSecond(DateTime time) {
+    final local = time.toLocal();
+    return '${local.hour.toString().padLeft(2, '0')}:'
+        '${local.minute.toString().padLeft(2, '0')}:'
+        '${local.second.toString().padLeft(2, '0')}';
   }
 
   _DesignationProgress _phoneDesignationProgress(int siteCount) {

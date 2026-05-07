@@ -11,6 +11,8 @@ class API {
   static const String UPDATE_SITES = "/api/auth/update/sites";
   static const String AUTH_INFO = "/api/auth/auth_info";
   static const String AUTH_USER = "/api/auth/user";
+  static const String SERVER_STATUS = "/api/auth/server/status";
+  static const String SERVICES_STATUS = "/api/auth/services/status";
   static const String ADMIN_USER = "/api/auth/admin/users";
   static const String ADMIN_SEND_TOKEN = "/api/auth/admin/send";
   static const String ADMIN_RESET_TOKEN = "/api/auth/admin/reset/token";
@@ -19,14 +21,19 @@ class API {
 
   // 我的站点列表增删改查
   static const String DASHBOARD_DATA = "/api/mysite/dashboard";
+
   // 获取所有站点配置文件列表的接口
   static const String WEBSITE_LIST = "/api/mysite/website";
+
   // 获取未添加站点名称的接口
   static const String WEBSITE_TO_ADD = "/api/mysite/website/add";
+
   // 我的站点信息的增删改查接口
   static const String MYSITE_LIST = "/api/mysite/mysite";
+
   // 清理缓存
   static const String CLEAR_CACHE = "/api/mysite/cache/clear";
+
   // 上传单个站点配置文件的接口
   static const String Import_Custom_Site_Toml = "/api/mysite/import/toml";
 
@@ -138,7 +145,9 @@ class API {
   /// 消息记录
   static const String NOTICE_HISTORY = "/api/option/notice";
   static const String NOTICE_READ_ALL = "/api/option/notice/read";
+
   static String noticeDetail(int id) => "$NOTICE_HISTORY/$id";
+
   static String noticeRead(int id) => "$NOTICE_HISTORY/$id/read";
 
   /// 豆瓣 API

@@ -6,8 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:forui/forui.dart';
 import 'package:harvest/core/cache/session_cache.dart';
+import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/hooks.dart';
+import 'package:harvest/core/storage/hive_manager.dart';
+import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/cache_status_banner.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -17,8 +20,12 @@ import '../../shell/provider/screenshot_provider.dart';
 import '../../shell/widgets/shell_scaffold.dart';
 import '../../site/provider/site_provider.dart';
 import '../model/dashboard_data.dart';
+import '../model/server_resource_status.dart';
+import '../model/backend_service_status.dart';
+import '../provider/backend_service_status_provider.dart';
 import '../provider/dashboard_provider.dart';
 import '../provider/privacy_provider.dart';
+import '../provider/server_resource_provider.dart';
 import 'dashboard_chart_config.dart';
 import 'dashboard_chart_settings.dart';
 
@@ -26,7 +33,8 @@ class DesktopDashboardPage extends ConsumerStatefulWidget {
   const DesktopDashboardPage({super.key});
 
   @override
-  ConsumerState<DesktopDashboardPage> createState() => _DesktopDashboardPageState();
+  ConsumerState<DesktopDashboardPage> createState() =>
+      _DesktopDashboardPageState();
 }
 
 class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
@@ -75,8 +83,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     _chartVisibility = DashboardChartConfig.getVisibility();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(dashboardNotifierProvider.notifier).refresh();
+      _syncDesktopMonitorCards(_chartVisibility);
       if (mounted) {
-        ref.read(activeScrollControllerProvider.notifier).state = _scrollController;
+        ref.read(activeScrollControllerProvider.notifier).state =
+            _scrollController;
       }
     });
   }
@@ -109,13 +119,48 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         showSizingControls: false,
         title: '桌面看板显示设置',
         onSaved: (_, visibility, __, ___) {
+          ref
+              .read(serverResourceIntervalProvider.notifier)
+              .update(
+                HiveManager.get<int>(StorageKeys.serverResourceInterval) ??
+                    kDefaultServerResourceInterval,
+              );
+          ref
+              .read(serverResourceDurationProvider.notifier)
+              .update(
+                HiveManager.get<int>(StorageKeys.serverResourceDuration) ??
+                    kDefaultServerResourceDuration,
+              );
+          final autoStart =
+              HiveManager.get<bool>(StorageKeys.serverResourceAutoStart) ??
+              kDefaultServerResourceAutoStart;
+          ref.read(serverResourceAutoStartProvider.notifier).update(autoStart);
+          _syncDesktopMonitorCards(visibility);
           setState(() => _chartVisibility = visibility);
         },
       ),
     );
   }
 
-  String _taskEndpoint(String api) => api.endsWith('/') ? api.substring(0, api.length - 1) : api;
+  void _syncDesktopMonitorCards(Map<String, bool> visibility) {
+    final showServerResource = visibility['desktopServerResource'] ?? true;
+    final showServiceStatus = visibility['desktopServiceStatus'] ?? true;
+
+    if (!showServerResource) {
+      ref.read(serverResourceProvider.notifier).stop();
+    } else if (!ref.read(serverResourceProvider).running) {
+      ref.read(serverResourceProvider.notifier).start();
+    }
+
+    if (!showServiceStatus) {
+      ref.read(backendServiceStatusProvider.notifier).stop();
+    } else if (!ref.read(backendServiceStatusProvider).running) {
+      ref.read(backendServiceStatusProvider.notifier).start();
+    }
+  }
+
+  String _taskEndpoint(String api) =>
+      api.endsWith('/') ? api.substring(0, api.length - 1) : api;
 
   Future<void> _refreshDashboard() async {
     if (_busy) return;
@@ -170,6 +215,18 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return '${name[0]}*${name[name.length - 1]}';
   }
 
+  String _serverHostLabel(String server, bool privacy) {
+    final uri = Uri.tryParse(server);
+    final host = uri?.host.isNotEmpty == true ? uri!.host : server;
+    final port = uri?.hasPort == true ? ':${uri!.port}' : '';
+    if (!privacy) return '$host$port';
+    final maskedHost = host
+        .split('.')
+        .map((part) => _mask(part, true))
+        .join('.');
+    return '$maskedHost$port';
+  }
+
   String _formatCount(num value) {
     return formatCompactNumber(value);
   }
@@ -181,7 +238,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return '$month月';
   }
 
-  String _monthKey(String date) => date.length >= 7 ? date.substring(0, 7) : date;
+  String _monthKey(String date) =>
+      date.length >= 7 ? date.substring(0, 7) : date;
 
   String _formatDay(String date) {
     if (date.length >= 10) return date.substring(5, 10);
@@ -272,7 +330,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(20, 18, 20, _bottomGap + ShellBottomSpacing.value(context)),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              18,
+              20,
+              _bottomGap + ShellBottomSpacing.value(context),
+            ),
             sliver: SliverLayoutBuilder(
               builder: (context, constraints) {
                 final compact = constraints.crossAxisExtent < 1180;
@@ -281,13 +344,19 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildHeader(data, cacheInfo, privacy),
-                      CacheStatusBanner(info: cacheInfo, margin: const EdgeInsets.only(top: 10)),
+                      CacheStatusBanner(
+                        info: cacheInfo,
+                        margin: const EdgeInsets.only(top: 10),
+                      ),
                       if (_isChartVisible('desktopKpi')) ...[
                         const SizedBox(height: 14),
                         _buildKpiStrip(data, constraints.crossAxisExtent),
                       ],
                       const SizedBox(height: 14),
-                      if (compact) _buildCompactContent(data, privacy) else _buildWideContent(data, privacy),
+                      if (compact)
+                        _buildCompactContent(data, privacy)
+                      else
+                        _buildWideContent(data, privacy),
                     ],
                   ),
                 );
@@ -299,7 +368,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _buildHeader(DashboardData data, DataCacheInfo cacheInfo, bool privacy) {
+  Widget _buildHeader(
+    DashboardData data,
+    DataCacheInfo cacheInfo,
+    bool privacy,
+  ) {
     return _panelContainer(
       padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
       child: Row(
@@ -323,26 +396,51 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   'HARVEST DATA COMMAND CENTER',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: _text, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: 0),
+                  style: TextStyle(
+                    color: _text,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   '${data.siteCount.toInt()} 个站点接入 · ${_cacheText(cacheInfo, data)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: _muted, fontSize: 12, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: _muted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 10),
-          _headerAction(icon: FIcons.refreshCw, label: _refreshingDashboard ? '刷新中' : '刷新', onTap: _refreshDashboard),
+          _headerAction(
+            icon: FIcons.refreshCw,
+            label: _refreshingDashboard ? '刷新中' : '刷新',
+            onTap: _refreshDashboard,
+          ),
           const SizedBox(width: 8),
-          _headerAction(icon: FIcons.database, label: _refreshingSites ? '执行中' : '站点数据', onTap: _refreshSiteData),
+          _headerAction(
+            icon: FIcons.database,
+            label: _refreshingSites ? '执行中' : '站点数据',
+            onTap: _refreshSiteData,
+          ),
           const SizedBox(width: 8),
-          _headerAction(icon: FIcons.checkCheck, label: _signingIn ? '签到中' : '签到', onTap: _signInSites),
+          _headerAction(
+            icon: FIcons.checkCheck,
+            label: _signingIn ? '签到中' : '签到',
+            onTap: _signInSites,
+          ),
           const SizedBox(width: 8),
-          _headerAction(icon: FIcons.slidersHorizontal, label: '模块', onTap: _showChartSettings),
+          _headerAction(
+            icon: FIcons.slidersHorizontal,
+            label: '模块',
+            onTap: _showChartSettings,
+          ),
           const SizedBox(width: 8),
           _headerAction(
             icon: privacy ? FIcons.eyeOff : FIcons.eye,
@@ -354,7 +452,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _headerAction({required IconData icon, required String label, required VoidCallback onTap}) {
+  Widget _headerAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return FButton(
       style: FButtonStyle.ghost(_dashboardGhostButtonStyle),
       onPress: _busy ? null : onTap,
@@ -373,7 +475,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
             const SizedBox(width: 6),
             Text(
               label,
-              style: const TextStyle(color: _text, fontSize: 12, fontWeight: FontWeight.w800),
+              style: const TextStyle(
+                color: _text,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ],
         ),
@@ -383,7 +489,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
 
   Widget _buildKpiStrip(DashboardData data, double maxWidth) {
     final items = [
-      _Kpi('站点数', data.siteCount.toInt().toString(), '站点接入', _cyan, FIcons.globe),
+      _Kpi(
+        '站点数',
+        data.siteCount.toInt().toString(),
+        '站点接入',
+        _cyan,
+        FIcons.globe,
+      ),
       _Kpi(
         '总上传',
         formatBytes(data.totalUploaded),
@@ -398,11 +510,41 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         _red,
         FIcons.arrowDown,
       ),
-      _Kpi('做种体积', formatBytes(data.totalSeedVol), '${_formatCount(data.totalSeeding)} 个做种', _blue, FIcons.hardDrive),
-      _Kpi('做种数', _formatCount(data.totalSeeding), '活跃做种任务', const Color(0xFF5EEAD4), FIcons.database),
-      _Kpi('下载中', _formatCount(data.totalLeeching), '正在下载任务', _orange, FIcons.download),
-      _Kpi('发布总量', _formatCount(data.totalPublished), '累计发布种子', _amber, FIcons.upload),
-      _Kpi('P龄', _accountAge(data), data.earliestSite?.site ?? '暂无站点', _violet, FIcons.calendar),
+      _Kpi(
+        '做种体积',
+        formatBytes(data.totalSeedVol),
+        '${_formatCount(data.totalSeeding)} 个做种',
+        _blue,
+        FIcons.hardDrive,
+      ),
+      _Kpi(
+        '做种数',
+        _formatCount(data.totalSeeding),
+        '活跃做种任务',
+        const Color(0xFF5EEAD4),
+        FIcons.database,
+      ),
+      _Kpi(
+        '下载中',
+        _formatCount(data.totalLeeching),
+        '正在下载任务',
+        _orange,
+        FIcons.download,
+      ),
+      _Kpi(
+        '发布总量',
+        _formatCount(data.totalPublished),
+        '累计发布种子',
+        _amber,
+        FIcons.upload,
+      ),
+      _Kpi(
+        'P龄',
+        _accountAge(data),
+        data.earliestSite?.site ?? '暂无站点',
+        _violet,
+        FIcons.calendar,
+      ),
     ];
 
     Widget row(List<_Kpi> rowItems) {
@@ -413,7 +555,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
             Expanded(
               child: _buildKpiTile(
                 rowItems[i],
-                onTap: rowItems[i].label == 'P龄' ? () => setState(() => _showWeeks = !_showWeeks) : null,
+                onTap: rowItems[i].label == 'P龄'
+                    ? () => setState(() => _showWeeks = !_showWeeks)
+                    : null,
               ),
             ),
           ],
@@ -422,7 +566,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     }
 
     if (maxWidth >= 1080) {
-      return Column(children: [row(items.take(4).toList()), const SizedBox(height: 10), row(items.skip(4).toList())]);
+      return Column(
+        children: [
+          row(items.take(4).toList()),
+          const SizedBox(height: 10),
+          row(items.skip(4).toList()),
+        ],
+      );
     }
     return Column(
       children: [
@@ -453,7 +603,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   item.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: _muted, fontSize: 12, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    color: _muted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               if (onTap != null)
@@ -466,12 +620,16 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           ),
           const Spacer(),
           _kpiValue(item),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             item.caption,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: _muted, fontSize: 11, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              color: _muted,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -495,7 +653,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
             fontSize: 34,
             fontWeight: FontWeight.w900,
             height: 1,
-            shadows: [Shadow(color: item.color.withValues(alpha: 0.28), blurRadius: 12)],
+            shadows: [
+              Shadow(color: item.color.withValues(alpha: 0.28), blurRadius: 12),
+            ],
           ),
         ),
       ),
@@ -506,6 +666,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     final showTrend = _isChartVisible('desktopTrend');
     final showDesignation = _isChartVisible('desktopDesignation');
     final showResource = _isChartVisible('desktopResource');
+    final showServerResource = _isChartVisible('desktopServerResource');
+    final showServiceStatus = _isChartVisible('desktopServiceStatus');
     final showUploaded = _isChartVisible('desktopUploadShare');
     final showSeed = _isChartVisible('desktopSeedShare');
     final showAccount = _isChartVisible('desktopAccount');
@@ -519,18 +681,49 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (showTrend) Expanded(flex: 7, child: _buildTrendPanel(data, privacy)),
-              if (showTrend && (showDesignation || showResource)) const SizedBox(width: 10),
+              if (showTrend)
+                Expanded(flex: 7, child: _buildTrendPanel(data, privacy)),
+              if (showTrend && (showDesignation || showResource))
+                const SizedBox(width: 10),
               if (showDesignation || showResource)
                 Expanded(
                   flex: 4,
                   child: Column(
                     children: [
-                      if (showDesignation) _buildDesignationPanel(data, height: showResource ? 128 : 390),
-                      if (showDesignation && showResource) const SizedBox(height: 10),
-                      if (showResource) _buildResourcePanel(data, height: showDesignation ? 252 : 390),
+                      if (showDesignation)
+                        _buildDesignationPanel(
+                          data,
+                          height: showResource ? 128 : 390,
+                        ),
+                      if (showDesignation && showResource)
+                        const SizedBox(height: 10),
+                      if (showResource)
+                        _buildResourcePanel(
+                          data,
+                          height: showDesignation ? 252 : 390,
+                        ),
                     ],
                   ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+        ],
+        if (showServerResource || showServiceStatus) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showServerResource)
+                Expanded(
+                  flex: showServiceStatus ? 7 : 1,
+                  child: _buildServerResourcePanel(height: 300),
+                ),
+              if (showServerResource && showServiceStatus)
+                const SizedBox(width: 10),
+              if (showServiceStatus)
+                Expanded(
+                  flex: showServerResource ? 4 : 1,
+                  child: _buildBackendServiceStatusPanel(height: 300),
                 ),
             ],
           ),
@@ -541,9 +734,17 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (showUploaded || showSeed)
-                Expanded(flex: 7, child: _buildDistributionRow(data, privacy, stacked: false)),
-              if ((showUploaded || showSeed) && showAccount) const SizedBox(width: 10),
-              if (showAccount) Expanded(flex: 4, child: _buildAccountPanel(data, privacy, height: 300)),
+                Expanded(
+                  flex: 7,
+                  child: _buildDistributionRow(data, privacy, stacked: false),
+                ),
+              if ((showUploaded || showSeed) && showAccount)
+                const SizedBox(width: 10),
+              if (showAccount)
+                Expanded(
+                  flex: 4,
+                  child: _buildAccountPanel(data, privacy, height: 300),
+                ),
             ],
           ),
           const SizedBox(height: 10),
@@ -552,9 +753,17 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (showToday) Expanded(flex: 7, child: _buildTodayPanel(data, privacy, height: 440)),
+              if (showToday)
+                Expanded(
+                  flex: 7,
+                  child: _buildTodayPanel(data, privacy, height: 440),
+                ),
               if (showToday && showRank) const SizedBox(width: 10),
-              if (showRank) Expanded(flex: 4, child: _buildRankPanel(data, privacy, height: 440)),
+              if (showRank)
+                Expanded(
+                  flex: 4,
+                  child: _buildRankPanel(data, privacy, height: 440),
+                ),
             ],
           ),
           const SizedBox(height: 10),
@@ -567,8 +776,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   Widget _buildCompactContent(DashboardData data, bool privacy) {
     final showDesignation = _isChartVisible('desktopDesignation');
     final showTrend = _isChartVisible('desktopTrend');
-    final showDistribution = _anyChartVisible(const ['desktopUploadShare', 'desktopSeedShare']);
+    final showDistribution = _anyChartVisible(const [
+      'desktopUploadShare',
+      'desktopSeedShare',
+    ]);
     final showResource = _isChartVisible('desktopResource');
+    final showServerResource = _isChartVisible('desktopServerResource');
+    final showServiceStatus = _isChartVisible('desktopServiceStatus');
     final showRank = _isChartVisible('desktopRank');
     final showToday = _isChartVisible('desktopToday');
     final showPublished = _isChartVisible('desktopMonthlyPublish');
@@ -576,13 +790,42 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
 
     return Column(
       children: [
-        if (showDesignation) ...[_buildDesignationPanel(data), const SizedBox(height: 10)],
-        if (showTrend) ...[_buildTrendPanel(data, privacy), const SizedBox(height: 10)],
-        if (showDistribution) ...[_buildDistributionRow(data, privacy, stacked: true), const SizedBox(height: 10)],
-        if (showResource) ...[_buildResourcePanel(data), const SizedBox(height: 10)],
-        if (showRank) ...[_buildRankPanel(data, privacy), const SizedBox(height: 10)],
-        if (showToday) ...[_buildTodayPanel(data, privacy), const SizedBox(height: 10)],
-        if (showPublished) ...[_buildMonthlyPublishPanel(data, privacy), const SizedBox(height: 10)],
+        if (showDesignation) ...[
+          _buildDesignationPanel(data),
+          const SizedBox(height: 10),
+        ],
+        if (showTrend) ...[
+          _buildTrendPanel(data, privacy),
+          const SizedBox(height: 10),
+        ],
+        if (showServerResource) ...[
+          _buildServerResourcePanel(height: 320),
+          const SizedBox(height: 10),
+        ],
+        if (showServiceStatus) ...[
+          _buildBackendServiceStatusPanel(height: 250),
+          const SizedBox(height: 10),
+        ],
+        if (showDistribution) ...[
+          _buildDistributionRow(data, privacy, stacked: true),
+          const SizedBox(height: 10),
+        ],
+        if (showResource) ...[
+          _buildResourcePanel(data),
+          const SizedBox(height: 10),
+        ],
+        if (showRank) ...[
+          _buildRankPanel(data, privacy),
+          const SizedBox(height: 10),
+        ],
+        if (showToday) ...[
+          _buildTodayPanel(data, privacy),
+          const SizedBox(height: 10),
+        ],
+        if (showPublished) ...[
+          _buildMonthlyPublishPanel(data, privacy),
+          const SizedBox(height: 10),
+        ],
         if (showAccount) _buildAccountPanel(data, privacy),
       ],
     );
@@ -608,20 +851,735 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
               decoration: BoxDecoration(
                 color: const Color(0xFFE11D48).withValues(alpha: 0.16),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFE11D48).withValues(alpha: 0.42)),
+                border: Border.all(
+                  color: const Color(0xFFE11D48).withValues(alpha: 0.42),
+                ),
               ),
-              child: const Icon(FIcons.award, size: 30, color: Color(0xFFE11D48)),
+              child: const Icon(
+                FIcons.award,
+                size: 30,
+                color: Color(0xFFE11D48),
+              ),
             ),
             const SizedBox(width: 12),
-            _DesignationCard(designation: designation, siteCount: siteCount, width: 190, height: 48, fontSize: 28),
+            _DesignationCard(
+              designation: designation,
+              siteCount: siteCount,
+              width: 190,
+              height: 48,
+              fontSize: 28,
+            ),
           ],
         ),
       ),
     );
   }
 
+  Widget _buildServerResourcePanel({required double height}) {
+    final state = ref.watch(serverResourceProvider);
+    final interval = ref.watch(serverResourceIntervalProvider);
+    final duration = ref.watch(serverResourceDurationProvider);
+    final remaining = ref.watch(serverResourceRemainingProvider);
+    final privacy = ref.watch(privacyModeProvider);
+    final data = state.data;
+    final running = state.running;
+    final statusText = state.error != null
+        ? '连接失败'
+        : running
+        ? '监控中'
+        : '已停止';
+    final statusColor = state.error != null
+        ? _red
+        : running
+        ? _green
+        : _muted;
+    final remainingText = running
+        ? '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}'
+        : '${duration}min';
+    final serverHost = _serverHostLabel(AppConfig.baseUrl, privacy);
+
+    return _panelContainer(
+      height: height,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(width: 3, height: 15, color: _cyan),
+              const SizedBox(width: 8),
+              const Text(
+                '服务器状态',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: _text,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '$serverHost · ${interval}s · $remainingText',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _muted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: statusColor.withValues(alpha: 0.28),
+                  ),
+                ),
+                child: Text(
+                  statusText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              FButton.icon(
+                style: FButtonStyle.ghost(_dashboardGhostButtonStyle),
+                onPress: () =>
+                    ref.read(serverResourceProvider.notifier).toggle(),
+                child: Icon(
+                  running ? FIcons.pause : FIcons.play,
+                  size: 15,
+                  color: running ? _red : _green,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 88,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _serverResourceMetric(
+                    'CPU',
+                    '${(data?.cpu.percent ?? 0).toStringAsFixed(1)}%',
+                    '${(data?.cpu.limitCores ?? 0).toStringAsFixed(1)} 核',
+                    _blue,
+                    FIcons.cpu,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _serverResourceMetric(
+                    '内存',
+                    '${(data?.memory.percent ?? 0).toStringAsFixed(1)}%',
+                    '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)}',
+                    _violet,
+                    FIcons.memoryStick,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _serverResourceMetric(
+                    '上传',
+                    formatSpeed(data?.network.uploadSpeed ?? 0),
+                    formatBytes(data?.network.bytesSent ?? 0),
+                    _green,
+                    FIcons.arrowUp,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _serverResourceMetric(
+                    '下载',
+                    formatSpeed(data?.network.downloadSpeed ?? 0),
+                    formatBytes(data?.network.bytesRecv ?? 0),
+                    _red,
+                    FIcons.arrowDown,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: _serverResourceUsageChart(
+                    title: 'CPU 占用',
+                    value: data?.cpu.percent ?? 0,
+                    history: state.history,
+                    valueOf: (item) => item.cpu.percent,
+                    color: _blue,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _serverResourceUsageChart(
+                    title: '内存占用',
+                    value: data?.memory.percent ?? 0,
+                    displayValue:
+                        '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)} · ${(data?.memory.percent ?? 0).toStringAsFixed(1)}%',
+                    history: state.history,
+                    valueOf: (item) => item.memory.percent,
+                    color: _violet,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _serverResourceUsageChart({
+    required String title,
+    required double value,
+    required List<ServerResourceStatus> history,
+    required double Function(ServerResourceStatus item) valueOf,
+    required Color color,
+    String? displayValue,
+  }) {
+    final points = _serverResourceUsagePoints(history, valueOf);
+    final valueText = displayValue ?? '${value.toStringAsFixed(1)}%';
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 9, 10, 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _text,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    valueText,
+                    maxLines: 1,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Expanded(
+            child: points.isEmpty
+                ? const Center(
+                    child: Text(
+                      '等待数据',
+                      style: TextStyle(
+                        color: _muted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  )
+                : SfCartesianChart(
+                    plotAreaBorderWidth: 0,
+                    margin: EdgeInsets.zero,
+                    primaryXAxis: CategoryAxis(
+                      isVisible: false,
+                      majorGridLines: const MajorGridLines(width: 0),
+                    ),
+                    primaryYAxis: NumericAxis(
+                      minimum: 0,
+                      maximum: 100,
+                      interval: 50,
+                      axisLine: const AxisLine(width: 0),
+                      majorTickLines: const MajorTickLines(size: 0),
+                      majorGridLines: MajorGridLines(
+                        width: 0.6,
+                        color: _line.withValues(alpha: 0.55),
+                      ),
+                      labelStyle: _axisStyle(),
+                      axisLabelFormatter: (details) => ChartAxisLabel(
+                        '${details.value.toInt()}%',
+                        _axisStyle(),
+                      ),
+                    ),
+                    series: <CartesianSeries>[
+                      SplineAreaSeries<_ServerResourceUsagePoint, String>(
+                        dataSource: points,
+                        xValueMapper: (point, _) => point.label,
+                        yValueMapper: (point, _) => point.value,
+                        color: color.withValues(alpha: 0.18),
+                        borderColor: color,
+                        borderWidth: 2,
+                      ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<_ServerResourceUsagePoint> _serverResourceUsagePoints(
+    List<ServerResourceStatus> history,
+    double Function(ServerResourceStatus item) valueOf,
+  ) {
+    return history.asMap().entries.map((entry) {
+      final time = entry.value.timestamp;
+      final label = time == null
+          ? '${entry.key + 1}'
+          : '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
+      return _ServerResourceUsagePoint(
+        label,
+        valueOf(entry.value).clamp(0, 100).toDouble(),
+      );
+    }).toList();
+  }
+
+  Widget _serverResourceMetric(
+    String label,
+    String value,
+    String subtitle,
+    Color color,
+    IconData icon,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _muted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: _muted,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackendServiceStatusPanel({required double height}) {
+    final state = ref.watch(backendServiceStatusProvider);
+    final data = state.data;
+    final summary = data?.summary ?? BackendServiceSummary.empty;
+    final services = data?.services ?? const <BackendServiceInfo>[];
+    final running = state.running;
+    final statusText = _backendServiceStatusText(state);
+    final statusColor = _backendServiceStatusColor(state);
+    final updatedText = data?.timestamp == null
+        ? (running ? '等待状态推送' : '监控已暂停')
+        : '更新于 ${_formatDashboardTimeToSecond(data!.timestamp!)}';
+    final subtitle = [
+      if ((data?.source ?? '').isNotEmpty) data!.source,
+      updatedText,
+      if ((data?.connectionId ?? '').isNotEmpty) data!.connectionId,
+    ].join(' · ');
+
+    return _panelContainer(
+      height: height,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(width: 3, height: 15, color: _green),
+              const SizedBox(width: 8),
+              const Text(
+                '后台服务状态',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: _text,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _muted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: statusColor.withValues(alpha: 0.28),
+                  ),
+                ),
+                child: Text(
+                  statusText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              FButton.icon(
+                style: FButtonStyle.ghost(_dashboardGhostButtonStyle),
+                onPress: () =>
+                    ref.read(backendServiceStatusProvider.notifier).toggle(),
+                child: Icon(
+                  running ? FIcons.pause : FIcons.play,
+                  size: 15,
+                  color: running ? _red : _green,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _backendServiceSummaryCell('总数', summary.total, _text),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _backendServiceSummaryCell(
+                  '运行',
+                  summary.running,
+                  _green,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _backendServiceSummaryCell(
+                  '停止',
+                  summary.stopped,
+                  _amber,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _backendServiceSummaryCell('失败', summary.failed, _red),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (state.error != null) {
+                  return _backendServicePanelMessage(state.error!, _red);
+                }
+                if (services.isEmpty) {
+                  return _backendServicePanelMessage(
+                    running ? '正在等待后台服务状态推送' : '监控已暂停',
+                    _muted,
+                  );
+                }
+
+                final columns = constraints.maxWidth >= 720 ? 3 : 2;
+                final rows = math.min(
+                  3,
+                  (services.length / columns).ceil().clamp(1, 3),
+                );
+                final rowExtent = rows <= 1
+                    ? constraints.maxHeight
+                    : ((constraints.maxHeight - 8 * (rows - 1)) / rows).clamp(
+                        42.0,
+                        56.0,
+                      );
+                final visibleServices = services
+                    .take(math.min(services.length, columns * rows))
+                    .toList();
+                return GridView.builder(
+                  padding: EdgeInsets.zero,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    mainAxisExtent: rowExtent,
+                  ),
+                  itemCount: visibleServices.length,
+                  itemBuilder: (context, index) =>
+                      _backendServiceGridItem(visibleServices[index]),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _backendServiceSummaryCell(String label, int value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.20)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: _muted,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Text(
+            '$value',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _backendServiceGridItem(BackendServiceInfo service) {
+    final color = _backendServiceStateColor(service.state);
+    final uptime = _formatBackendServiceUptime(service.uptime);
+    final detail = service.running && service.pid > 0
+        ? '运行 $uptime · pid ${service.pid}'
+        : service.description.isNotEmpty
+        ? service.description
+        : 'pid ${service.pid}';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+      decoration: BoxDecoration(
+        color: _panelSoft.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _line.withValues(alpha: 0.70)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  service.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _text,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    height: 1,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  detail,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _muted,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                    height: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            service.state.isEmpty ? '-' : service.state,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 9,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _backendServicePanelMessage(String text, Color color) {
+    return Container(
+      width: double.infinity,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.20)),
+      ),
+      child: Text(
+        text,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
+  String _backendServiceStatusText(BackendServiceStatusState state) {
+    if (state.error != null) return '连接失败';
+    final data = state.data;
+    if (data == null) return state.running ? '连接中' : '已停止';
+    if (data.healthy) return '全部运行';
+    if (data.hasIssue) return '有异常';
+    return state.running ? '监控中' : '已停止';
+  }
+
+  Color _backendServiceStatusColor(BackendServiceStatusState state) {
+    if (state.error != null) return _red;
+    final data = state.data;
+    if (data?.healthy == true) return _green;
+    if (data?.hasIssue == true) return _amber;
+    return state.running ? _green : _muted;
+  }
+
+  Color _backendServiceStateColor(String state) {
+    switch (state.toUpperCase()) {
+      case 'RUNNING':
+        return _green;
+      case 'STOPPED':
+      case 'EXITED':
+        return _amber;
+      case 'FATAL':
+      case 'FAILED':
+      case 'BACKOFF':
+        return _red;
+      default:
+        return _muted;
+    }
+  }
+
+  String _formatBackendServiceUptime(int seconds) {
+    if (seconds <= 0) return '0s';
+    final days = seconds ~/ 86400;
+    final hours = (seconds % 86400) ~/ 3600;
+    final minutes = (seconds % 3600) ~/ 60;
+    final remainSeconds = seconds % 60;
+    if (days > 0) return '${days}d ${hours}h ${minutes}m ${remainSeconds}s';
+    if (hours > 0) return '${hours}h ${minutes}m ${remainSeconds}s';
+    if (minutes > 0) return '${minutes}m ${remainSeconds}s';
+    return '${seconds}s';
+  }
+
+  String _formatDashboardTimeToSecond(DateTime time) {
+    final local = time.toLocal();
+    return '${local.hour.toString().padLeft(2, '0')}:'
+        '${local.minute.toString().padLeft(2, '0')}:'
+        '${local.second.toString().padLeft(2, '0')}';
+  }
+
   _DesignationProgress _designationProgress(int siteCount) {
-    final levels = _designations.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    final levels = _designations.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
     final first = levels.first;
 
     if (siteCount < first.key) {
@@ -717,10 +1675,16 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     ),
                     primaryYAxis: NumericAxis(
                       opposedPosition: false,
-                      majorGridLines: MajorGridLines(width: 0.7, color: _line.withValues(alpha: 0.55)),
+                      majorGridLines: MajorGridLines(
+                        width: 0.7,
+                        color: _line.withValues(alpha: 0.55),
+                      ),
                       axisLine: const AxisLine(width: 0),
                       labelStyle: _axisStyle(),
-                      axisLabelFormatter: (details) => ChartAxisLabel(_formatYAxis(details.value), _axisStyle()),
+                      axisLabelFormatter: (details) => ChartAxisLabel(
+                        _formatYAxis(details.value),
+                        _axisStyle(),
+                      ),
                     ),
                     axes: [
                       NumericAxis(
@@ -729,7 +1693,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                         majorGridLines: const MajorGridLines(width: 0),
                         axisLine: const AxisLine(width: 0),
                         labelStyle: _axisStyle(),
-                        axisLabelFormatter: (details) => ChartAxisLabel(_formatYAxis(details.value), _axisStyle()),
+                        axisLabelFormatter: (details) => ChartAxisLabel(
+                          _formatYAxis(details.value),
+                          _axisStyle(),
+                        ),
                       ),
                     ],
                     legend: Legend(
@@ -747,7 +1714,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                       lineWidth: 1,
                       tooltipSettings: const InteractiveTooltip(enable: false),
                       builder: (context, details) {
-                        _scheduleTrendTooltip(details, month, daily, data, privacy);
+                        _scheduleTrendTooltip(
+                          details,
+                          month,
+                          daily,
+                          data,
+                          privacy,
+                        );
                         return const SizedBox.shrink();
                       },
                     ),
@@ -758,7 +1731,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                         xValueMapper: (p, _) => _formatMonth(p.label),
                         yValueMapper: (p, _) => p.uploaded,
                         color: _green.withValues(alpha: 0.78),
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(3),
+                        ),
                       ),
                       ColumnSeries<_TrendPoint, String>(
                         name: '月下载',
@@ -766,7 +1741,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                         xValueMapper: (p, _) => _formatMonth(p.label),
                         yValueMapper: (p, _) => p.downloaded,
                         color: _red.withValues(alpha: 0.72),
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(3),
+                        ),
                       ),
                       SplineAreaSeries<_TrendPoint, String>(
                         name: '近期上传',
@@ -822,7 +1799,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _buildDistributionRow(DashboardData data, bool privacy, {required bool stacked}) {
+  Widget _buildDistributionRow(
+    DashboardData data,
+    bool privacy, {
+    required bool stacked,
+  }) {
     final showUploaded = _isChartVisible('desktopUploadShare');
     final showSeed = _isChartVisible('desktopSeedShare');
 
@@ -838,7 +1819,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
 
     return Row(
       children: [
-        if (showUploaded) Expanded(child: _buildUploadSharePanel(data, privacy)),
+        if (showUploaded)
+          Expanded(child: _buildUploadSharePanel(data, privacy)),
         if (showUploaded && showSeed) const SizedBox(width: 10),
         if (showSeed) Expanded(child: _buildSeedSharePanel(data, privacy)),
       ],
@@ -846,7 +1828,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }
 
   Widget _buildUploadSharePanel(DashboardData data, bool privacy) {
-    final items = _topStatus(data.statusList, privacy, (record) => record.value.uploaded, limit: 8);
+    final items = _topStatus(
+      data.statusList,
+      privacy,
+      (record) => record.value.uploaded,
+      limit: 8,
+    );
     return _boardPanel(
       title: '上传占比',
       subtitle: '站点累计上传分布',
@@ -865,7 +1852,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _donutChart(List<_NameValuePoint> items, Color baseColor, {required String Function(num) formatter}) {
+  Widget _donutChart(
+    List<_NameValuePoint> items,
+    Color baseColor, {
+    required String Function(num) formatter,
+  }) {
     if (items.isEmpty) {
       return const Center(
         child: Text('暂无数据', style: TextStyle(color: _muted)),
@@ -890,7 +1881,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         opacity: 1,
         color: _panel,
         canShowMarker: false,
-        builder: (dataPoint, point, series, pointIndex, seriesIndex) => _donutTooltip(dataPoint, items, formatter),
+        builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
+            _donutTooltip(dataPoint, items, formatter),
       ),
       series: <CircularSeries>[
         DoughnutSeries<_NameValuePoint, String>(
@@ -916,9 +1908,23 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           Expanded(
             child: Row(
               children: [
-                Expanded(child: _resourceMetric('总上传', formatBytes(data.totalUploaded), _green, FIcons.arrowUp)),
+                Expanded(
+                  child: _resourceMetric(
+                    '总上传',
+                    formatBytes(data.totalUploaded),
+                    _green,
+                    FIcons.arrowUp,
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _resourceMetric('总下载', formatBytes(data.totalDownloaded), _red, FIcons.arrowDown)),
+                Expanded(
+                  child: _resourceMetric(
+                    '总下载',
+                    formatBytes(data.totalDownloaded),
+                    _red,
+                    FIcons.arrowDown,
+                  ),
+                ),
               ],
             ),
           ),
@@ -926,9 +1932,23 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           Expanded(
             child: Row(
               children: [
-                Expanded(child: _resourceMetric('做种体积', formatBytes(data.totalSeedVol), _blue, FIcons.hardDrive)),
+                Expanded(
+                  child: _resourceMetric(
+                    '做种体积',
+                    formatBytes(data.totalSeedVol),
+                    _blue,
+                    FIcons.hardDrive,
+                  ),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _resourceMetric('发布数', _formatCount(data.totalPublished), _amber, FIcons.upload)),
+                Expanded(
+                  child: _resourceMetric(
+                    '发布数',
+                    _formatCount(data.totalPublished),
+                    _amber,
+                    FIcons.upload,
+                  ),
+                ),
               ],
             ),
           ),
@@ -945,7 +1965,14 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Expanded(child: _resourceMetric('下载任务', _formatCount(data.totalLeeching), _orange, FIcons.download)),
+                Expanded(
+                  child: _resourceMetric(
+                    '下载任务',
+                    _formatCount(data.totalLeeching),
+                    _orange,
+                    FIcons.download,
+                  ),
+                ),
               ],
             ),
           ),
@@ -954,7 +1981,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _resourceMetric(String label, String value, Color color, IconData icon) {
+  Widget _resourceMetric(
+    String label,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
       decoration: BoxDecoration(
@@ -979,13 +2011,22 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     Text(
                       label,
                       maxLines: 1,
-                      style: const TextStyle(color: _muted, fontSize: 10, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        color: _muted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       value,
                       maxLines: 1,
-                      style: TextStyle(color: color, fontSize: 17, fontWeight: FontWeight.w900, height: 1),
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        height: 1,
+                      ),
                     ),
                   ],
                 ),
@@ -1020,7 +2061,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       top = cursor.dy - tooltip.height - gap;
     }
 
-    return Offset(left.clamp(0.0, maxLeft).toDouble(), top.clamp(0.0, maxTop).toDouble());
+    return Offset(
+      left.clamp(0.0, maxLeft).toDouble(),
+      top.clamp(0.0, maxTop).toDouble(),
+    );
   }
 
   void _scheduleTrendTooltip(
@@ -1114,7 +2158,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return null;
   }
 
-  Widget _monthlyTrackballTooltip(TrackballDetails details, List<_TrendPoint> items, DashboardData data, bool privacy) {
+  Widget _monthlyTrackballTooltip(
+    TrackballDetails details,
+    List<_TrendPoint> items,
+    DashboardData data,
+    bool privacy,
+  ) {
     final info = details.groupingModeInfo;
     final pointIndex = info != null && info.currentPointIndices.isNotEmpty
         ? info.currentPointIndices.first
@@ -1141,13 +2190,23 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       rows.add(_TooltipLine.rich('汇总', summary));
     }
     rows.addAll(
-      _monthlySiteRows(data, dataPoint.label, privacy, valueOf: (record) => record.published, formatter: _formatCount),
+      _monthlySiteRows(
+        data,
+        dataPoint.label,
+        privacy,
+        valueOf: (record) => record.published,
+        formatter: _formatCount,
+      ),
     );
 
     return _chartTooltip(_formatMonth(dataPoint.label), rows, width: 250);
   }
 
-  Widget _donutTooltip(dynamic dataPoint, List<_NameValuePoint> items, String Function(num) formatter) {
+  Widget _donutTooltip(
+    dynamic dataPoint,
+    List<_NameValuePoint> items,
+    String Function(num) formatter,
+  ) {
     if (dataPoint is! _NameValuePoint) {
       return const SizedBox.shrink();
     }
@@ -1179,7 +2238,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     }
     if (downloaded > 0) {
       addSpace();
-      segments.add(_TooltipSegment('↓${formatBytes(downloaded)}', downloadColor));
+      segments.add(
+        _TooltipSegment('↓${formatBytes(downloaded)}', downloadColor),
+      );
     }
     if (published > 0) {
       addSpace();
@@ -1188,7 +2249,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return segments;
   }
 
-  List<_TooltipLine> _dailySiteTransferRows(DashboardData data, String date, bool privacy, {int limit = 10}) {
+  List<_TooltipLine> _dailySiteTransferRows(
+    DashboardData data,
+    String date,
+    bool privacy, {
+    int limit = 10,
+  }) {
     final rows = <_TrendSitePoint>[];
     for (final site in data.stackChartDataList) {
       num uploaded = 0;
@@ -1200,11 +2266,16 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         }
       }
       if (uploaded > 0 || downloaded > 0) {
-        rows.add(_TrendSitePoint(_mask(site.name, privacy), uploaded, downloaded, 0));
+        rows.add(
+          _TrendSitePoint(_mask(site.name, privacy), uploaded, downloaded, 0),
+        );
       }
     }
 
-    rows.sort((a, b) => (b.uploaded + b.downloaded).compareTo(a.uploaded + a.downloaded));
+    rows.sort(
+      (a, b) =>
+          (b.uploaded + b.downloaded).compareTo(a.uploaded + a.downloaded),
+    );
     final visible = rows.length > limit ? rows.take(limit).toList() : rows;
     final hidden = rows.length - visible.length;
     return [
@@ -1221,7 +2292,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     ];
   }
 
-  List<_TooltipLine> _monthlySiteTransferRows(DashboardData data, String month, bool privacy, {int limit = 10}) {
+  List<_TooltipLine> _monthlySiteTransferRows(
+    DashboardData data,
+    String month,
+    bool privacy, {
+    int limit = 10,
+  }) {
     final rows = <_TrendSitePoint>[];
     for (final site in data.uploadMonthIncrementDataList) {
       num uploaded = 0;
@@ -1235,11 +2311,21 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         }
       }
       if (uploaded > 0 || downloaded > 0 || published > 0) {
-        rows.add(_TrendSitePoint(_mask(site.name, privacy), uploaded, downloaded, published));
+        rows.add(
+          _TrendSitePoint(
+            _mask(site.name, privacy),
+            uploaded,
+            downloaded,
+            published,
+          ),
+        );
       }
     }
 
-    rows.sort((a, b) => (b.uploaded + b.downloaded).compareTo(a.uploaded + a.downloaded));
+    rows.sort(
+      (a, b) =>
+          (b.uploaded + b.downloaded).compareTo(a.uploaded + a.downloaded),
+    );
     final visible = rows.length > limit ? rows.take(limit).toList() : rows;
     final hidden = rows.length - visible.length;
     return [
@@ -1282,12 +2368,18 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     final visible = rows.length > limit ? rows.take(limit).toList() : rows;
     final hidden = rows.length - visible.length;
     return [
-      for (final row in visible) _TooltipLine(row.name, formatter(row.value), _text),
+      for (final row in visible)
+        _TooltipLine(row.name, formatter(row.value), _text),
       if (hidden > 0) _TooltipLine('其余', '$hidden 项', _muted),
     ];
   }
 
-  Widget _chartTooltip(String title, List<_TooltipLine> rows, {double width = 220, double maxHeight = 240}) {
+  Widget _chartTooltip(
+    String title,
+    List<_TooltipLine> rows, {
+    double width = 220,
+    double maxHeight = 240,
+  }) {
     final hasSummary = rows.isNotEmpty && rows.first.label == '汇总';
     final summary = hasSummary ? rows.first : null;
     final detailRows = hasSummary ? rows.skip(1).toList() : rows;
@@ -1295,14 +2387,18 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return Container(
       width: width,
       constraints: BoxConstraints(maxHeight: maxHeight),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: _panel,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: _cyan.withValues(alpha: 0.42)),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF000000).withValues(alpha: 0.45), blurRadius: 22, offset: const Offset(0, 8)),
+          BoxShadow(
+            color: const Color(0xFF000000).withValues(alpha: 0.45),
+            blurRadius: 22,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
       child: Column(
@@ -1316,10 +2412,17 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   hasSummary ? '$title汇总' : title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: _text, fontSize: 12, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                    color: _text,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
-              if (summary != null) ...[const SizedBox(width: 12), _tooltipValue(summary, fontSize: 11)],
+              if (summary != null) ...[
+                const SizedBox(width: 12),
+                _tooltipValue(summary, fontSize: 11),
+              ],
             ],
           ),
           if (detailRows.isNotEmpty) ...[
@@ -1352,12 +2455,19 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
             row.label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: _muted, fontSize: 11, fontWeight: FontWeight.w700),
+            style: const TextStyle(
+              color: _muted,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         const SizedBox(width: 12),
         Flexible(
-          child: Align(alignment: Alignment.centerRight, child: _tooltipValue(row)),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: _tooltipValue(row),
+          ),
         ),
       ],
     );
@@ -1371,7 +2481,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           ? Text(
               row.value,
               textAlign: TextAlign.right,
-              style: TextStyle(color: row.color ?? _text, fontSize: fontSize, fontWeight: FontWeight.w900),
+              style: TextStyle(
+                color: row.color ?? _text,
+                fontSize: fontSize,
+                fontWeight: FontWeight.w900,
+              ),
             )
           : RichText(
               textAlign: TextAlign.right,
@@ -1380,7 +2494,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   for (final segment in row.segments)
                     TextSpan(
                       text: segment.text,
-                      style: TextStyle(color: segment.color, fontSize: fontSize, fontWeight: FontWeight.w900),
+                      style: TextStyle(
+                        color: segment.color,
+                        fontSize: fontSize,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                 ],
               ),
@@ -1388,9 +2506,23 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _buildRankPanel(DashboardData data, bool privacy, {double height = 440}) {
-    final uploaded = _topStatus(data.statusList, privacy, (record) => record.value.uploaded, limit: 10);
-    final downloaded = _topStatus(data.statusList, privacy, (record) => record.value.downloaded, limit: 10);
+  Widget _buildRankPanel(
+    DashboardData data,
+    bool privacy, {
+    double height = 440,
+  }) {
+    final uploaded = _topStatus(
+      data.statusList,
+      privacy,
+      (record) => record.value.uploaded,
+      limit: 10,
+    );
+    final downloaded = _topStatus(
+      data.statusList,
+      privacy,
+      (record) => record.value.downloaded,
+      limit: 10,
+    );
     return _boardPanel(
       title: '累计排行',
       subtitle: '站点上传/下载 TOP',
@@ -1398,18 +2530,36 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       child: Row(
         children: [
           Expanded(
-            child: _rankList(title: '累计上传 TOP', items: uploaded, color: _green, formatter: formatBytes),
+            child: _rankList(
+              title: '累计上传 TOP',
+              items: uploaded,
+              color: _green,
+              formatter: formatBytes,
+            ),
           ),
-          Container(width: 1, margin: const EdgeInsets.symmetric(horizontal: 12), color: _line),
+          Container(
+            width: 1,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            color: _line,
+          ),
           Expanded(
-            child: _rankList(title: '累计下载 TOP', items: downloaded, color: _red, formatter: formatBytes),
+            child: _rankList(
+              title: '累计下载 TOP',
+              items: downloaded,
+              color: _red,
+              formatter: formatBytes,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTodayPanel(DashboardData data, bool privacy, {double height = 360}) {
+  Widget _buildTodayPanel(
+    DashboardData data,
+    bool privacy, {
+    double height = 360,
+  }) {
     final upload = _topKv(data.uploadIncrementDataList, privacy, limit: 10);
     final download = _topKv(data.downloadIncrementDataList, privacy, limit: 10);
     return _boardPanel(
@@ -1419,11 +2569,25 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       child: Row(
         children: [
           Expanded(
-            child: _rankList(title: '今日上传 TOP', items: upload, color: _cyan, formatter: formatBytes),
+            child: _rankList(
+              title: '今日上传 TOP',
+              items: upload,
+              color: _cyan,
+              formatter: formatBytes,
+            ),
           ),
-          Container(width: 1, margin: const EdgeInsets.symmetric(horizontal: 12), color: _line),
+          Container(
+            width: 1,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            color: _line,
+          ),
           Expanded(
-            child: _rankList(title: '今日下载 TOP', items: download, color: _orange, formatter: formatBytes),
+            child: _rankList(
+              title: '今日下载 TOP',
+              items: download,
+              color: _orange,
+              formatter: formatBytes,
+            ),
           ),
         ],
       ),
@@ -1439,12 +2603,19 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       child: SfCartesianChart(
         plotAreaBorderWidth: 0,
         margin: EdgeInsets.zero,
-        primaryXAxis: CategoryAxis(majorGridLines: const MajorGridLines(width: 0), labelStyle: _axisStyle()),
+        primaryXAxis: CategoryAxis(
+          majorGridLines: const MajorGridLines(width: 0),
+          labelStyle: _axisStyle(),
+        ),
         primaryYAxis: NumericAxis(
-          majorGridLines: MajorGridLines(width: 0.7, color: _line.withValues(alpha: 0.55)),
+          majorGridLines: MajorGridLines(
+            width: 0.7,
+            color: _line.withValues(alpha: 0.55),
+          ),
           axisLine: const AxisLine(width: 0),
           labelStyle: _axisStyle(),
-          axisLabelFormatter: (details) => ChartAxisLabel(_formatCount(details.value), _axisStyle()),
+          axisLabelFormatter: (details) =>
+              ChartAxisLabel(_formatCount(details.value), _axisStyle()),
         ),
         trackballBehavior: TrackballBehavior(
           enable: true,
@@ -1453,7 +2624,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           lineColor: _amber.withValues(alpha: 0.58),
           lineWidth: 1,
           tooltipSettings: const InteractiveTooltip(enable: false),
-          builder: (context, details) => _monthlyTrackballTooltip(details, items, data, privacy),
+          builder: (context, details) =>
+              _monthlyTrackballTooltip(details, items, data, privacy),
         ),
         series: <CartesianSeries>[
           SplineAreaSeries<_TrendPoint, String>(
@@ -1478,7 +2650,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _buildAccountPanel(DashboardData data, bool privacy, {double height = 340}) {
+  Widget _buildAccountPanel(
+    DashboardData data,
+    bool privacy, {
+    double height = 340,
+  }) {
     final email = _topKv(data.emailCount, privacy, limit: 8);
     final username = _topKv(data.usernameCount, privacy, limit: 8);
     return _boardPanel(
@@ -1488,11 +2664,25 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       child: Row(
         children: [
           Expanded(
-            child: _rankList(title: '邮箱分布', items: email, color: _violet, formatter: _formatCount),
+            child: _rankList(
+              title: '邮箱分布',
+              items: email,
+              color: _violet,
+              formatter: _formatCount,
+            ),
           ),
-          Container(width: 1, margin: const EdgeInsets.symmetric(horizontal: 12), color: _line),
+          Container(
+            width: 1,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            color: _line,
+          ),
           Expanded(
-            child: _rankList(title: '用户名分布', items: username, color: _blue, formatter: _formatCount),
+            child: _rankList(
+              title: '用户名分布',
+              items: username,
+              color: _blue,
+              formatter: _formatCount,
+            ),
           ),
         ],
       ),
@@ -1505,13 +2695,20 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     required Color color,
     required String Function(num) formatter,
   }) {
-    final maxValue = items.fold<num>(0, (max, item) => math.max(max, item.value));
+    final maxValue = items.fold<num>(
+      0,
+      (max, item) => math.max(max, item.value),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(color: _text, fontSize: 13, fontWeight: FontWeight.w900),
+          style: const TextStyle(
+            color: _text,
+            fontSize: 13,
+            fontWeight: FontWeight.w900,
+          ),
         ),
         const SizedBox(height: 12),
         Expanded(
@@ -1547,13 +2744,21 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                                 item.name,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: _text, fontSize: 12, fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                  color: _text,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
                             Text(
                               formatter(item.value),
-                              style: const TextStyle(color: _muted, fontSize: 11, fontWeight: FontWeight.w700),
+                              style: const TextStyle(
+                                color: _muted,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ],
                         ),
@@ -1571,18 +2776,29 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   Widget _boardProgressBar(num value, Color color) {
     return Container(
       height: 4,
-      decoration: BoxDecoration(color: _line.withValues(alpha: 0.55), borderRadius: BorderRadius.circular(2)),
+      decoration: BoxDecoration(
+        color: _line.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(2),
+      ),
       alignment: Alignment.centerLeft,
       child: FractionallySizedBox(
         widthFactor: value.clamp(0.0, 1.0).toDouble(),
         child: Container(
-          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
       ),
     );
   }
 
-  Widget _boardPanel({required String title, required String subtitle, required double height, required Widget child}) {
+  Widget _boardPanel({
+    required String title,
+    required String subtitle,
+    required double height,
+    required Widget child,
+  }) {
     return _panelContainer(
       height: height,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -1598,14 +2814,22 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: _text, fontSize: 15, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                    color: _text,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
               Text(
                 subtitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: _muted, fontSize: 11, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: _muted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -1628,7 +2852,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         color: _panel.withValues(alpha: 0.86),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: _line.withValues(alpha: 0.88)),
-        boxShadow: [BoxShadow(color: _cyan.withValues(alpha: 0.05), blurRadius: 24, offset: const Offset(0, 10))],
+        boxShadow: [
+          BoxShadow(
+            color: _cyan.withValues(alpha: 0.05),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: child,
     );
@@ -1658,7 +2888,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     final map = SplayTreeMap<String, _TrendPoint>();
     for (final site in data.stackChartDataList) {
       for (final record in site.value) {
-        final old = map[record.createdAt] ?? _TrendPoint(record.createdAt, 0, 0, 0);
+        final old =
+            map[record.createdAt] ?? _TrendPoint(record.createdAt, 0, 0, 0);
         map[record.createdAt] = old.copyWith(
           uploaded: old.uploaded + record.uploaded,
           downloaded: old.downloaded + record.downloaded,
@@ -1678,7 +2909,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }) {
     final items =
         source
-            .map((record) => _NameValuePoint(_mask(record.name, privacy), valueOf(record)))
+            .map(
+              (record) =>
+                  _NameValuePoint(_mask(record.name, privacy), valueOf(record)),
+            )
             .where((item) => item.value > 0)
             .toList()
           ..sort((a, b) => b.value.compareTo(a.value));
@@ -1689,7 +2923,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   List<_NameValuePoint> _topKv(List<KV> source, bool privacy, {int limit = 8}) {
     final items =
         source
-            .map((record) => _NameValuePoint(_mask(record.name, privacy), record.value))
+            .map(
+              (record) =>
+                  _NameValuePoint(_mask(record.name, privacy), record.value),
+            )
             .where((item) => item.value > 0)
             .toList()
           ..sort((a, b) => b.value.compareTo(a.value));
@@ -1731,7 +2968,8 @@ class _DesignationCard extends StatefulWidget {
   State<_DesignationCard> createState() => _DesignationCardState();
 }
 
-class _DesignationCardState extends State<_DesignationCard> with TickerProviderStateMixin {
+class _DesignationCardState extends State<_DesignationCard>
+    with TickerProviderStateMixin {
   late FPopoverController _popoverCtrl;
   late AnimationController _animCtrl;
 
@@ -1751,17 +2989,40 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
     10: [Color(0xFF06B6D4), Color(0xFF3B82F6), Color(0xFF06B6D4)],
     20: [Color(0xFF3B82F6), Color(0xFF8B5CF6), Color(0xFF3B82F6)],
     30: [Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF8B5CF6)],
-    50: [Color(0xFF3B82F6), Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF3B82F6)],
-    100: [Color(0xFFFF6B6B), Color(0xFFFF8E53), Color(0xFFFFD93D), Color(0xFFFF6B6B)],
-    150: [Color(0xFFE11D48), Color(0xFFFF6B6B), Color(0xFFFFD93D), Color(0xFFE11D48)],
-    200: [Color(0xFFFFD700), Color(0xFFE11D48), Color(0xFF9B59B6), Color(0xFFFFD700)],
+    50: [
+      Color(0xFF3B82F6),
+      Color(0xFF8B5CF6),
+      Color(0xFFEC4899),
+      Color(0xFF3B82F6),
+    ],
+    100: [
+      Color(0xFFFF6B6B),
+      Color(0xFFFF8E53),
+      Color(0xFFFFD93D),
+      Color(0xFFFF6B6B),
+    ],
+    150: [
+      Color(0xFFE11D48),
+      Color(0xFFFF6B6B),
+      Color(0xFFFFD93D),
+      Color(0xFFE11D48),
+    ],
+    200: [
+      Color(0xFFFFD700),
+      Color(0xFFE11D48),
+      Color(0xFF9B59B6),
+      Color(0xFFFFD700),
+    ],
   };
 
   @override
   void initState() {
     super.initState();
     _popoverCtrl = FPopoverController(vsync: this);
-    _animCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
   }
 
   @override
@@ -1814,9 +3075,13 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
           child: ShaderMask(
             shaderCallback: (bounds) {
               final colors = _colors;
-              final stops = List.generate(colors.length, (i) => i / (colors.length - 1));
+              final stops = List.generate(
+                colors.length,
+                (i) => i / (colors.length - 1),
+              );
               final offset = _animCtrl.value;
-              final animatedStops = stops.map((s) => (s + offset) % 1.0).toList()..sort();
+              final animatedStops =
+                  stops.map((s) => (s + offset) % 1.0).toList()..sort();
 
               return LinearGradient(
                 colors: colors,
@@ -1829,7 +3094,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
             blendMode: BlendMode.srcIn,
             child: Stack(
               children: [
-                for (final offset in const [Offset.zero, Offset(0.45, 0), Offset(0, 0.35)])
+                for (final offset in const [
+                  Offset.zero,
+                  Offset(0.45, 0),
+                  Offset(0, 0.35),
+                ])
                   Transform.translate(
                     offset: offset,
                     child: Text(
@@ -1851,7 +3120,8 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
   }
 
   Widget _buildPopoverContent(FColors cs, FTypography typo) {
-    final entries = _designations.entries.toList()..sort((a, b) => b.key.compareTo(a.key));
+    final entries = _designations.entries.toList()
+      ..sort((a, b) => b.key.compareTo(a.key));
     final progress = _unlockProgress();
     return Container(
       width: 230,
@@ -1861,14 +3131,21 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: cs.border),
         boxShadow: [
-          BoxShadow(color: const Color(0xFF000000).withValues(alpha: 0.1), blurRadius: 12, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: const Color(0xFF000000).withValues(alpha: 0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('称号等级', style: typo.sm.copyWith(fontWeight: FontWeight.w600, fontSize: 13)),
+          Text(
+            '称号等级',
+            style: typo.sm.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
+          ),
           const SizedBox(height: 8),
           _buildUnlockProgress(cs, typo, progress),
           const SizedBox(height: 10),
@@ -1883,7 +3160,9 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                     width: 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: isCurrent ? const Color(0xFFE11D48) : (isActive ? const Color(0xFF10B981) : cs.border),
+                      color: isCurrent
+                          ? const Color(0xFFE11D48)
+                          : (isActive ? const Color(0xFF10B981) : cs.border),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -1893,7 +3172,9 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                     child: Text(
                       '${entry.key}站',
                       style: typo.xs.copyWith(
-                        color: isActive ? cs.foreground : cs.mutedForeground.withValues(alpha: 0.4),
+                        color: isActive
+                            ? cs.foreground
+                            : cs.mutedForeground.withValues(alpha: 0.4),
                         fontSize: 11,
                       ),
                     ),
@@ -1903,7 +3184,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (isCurrent) ...[
-                          Icon(FIcons.check, size: 13, color: const Color(0xFFE11D48)),
+                          Icon(
+                            FIcons.check,
+                            size: 13,
+                            color: const Color(0xFFE11D48),
+                          ),
                           const SizedBox(width: 6),
                         ],
                         Flexible(
@@ -1913,8 +3198,14 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                             style: typo.xs.copyWith(
                               color: isCurrent
                                   ? const Color(0xFFE11D48)
-                                  : (isActive ? cs.foreground : cs.mutedForeground.withValues(alpha: 0.4)),
-                              fontWeight: isCurrent ? FontWeight.w700 : FontWeight.normal,
+                                  : (isActive
+                                        ? cs.foreground
+                                        : cs.mutedForeground.withValues(
+                                            alpha: 0.4,
+                                          )),
+                              fontWeight: isCurrent
+                                  ? FontWeight.w700
+                                  : FontWeight.normal,
                               fontSize: 12,
                             ),
                           ),
@@ -1932,7 +3223,8 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
   }
 
   _DesignationProgress _unlockProgress() {
-    final levels = _designations.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    final levels = _designations.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
     var current = levels.first;
     MapEntry<int, String>? next;
 
@@ -1970,7 +3262,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
     );
   }
 
-  Widget _buildUnlockProgress(FColors cs, FTypography typo, _DesignationProgress progress) {
+  Widget _buildUnlockProgress(
+    FColors cs,
+    FTypography typo,
+    _DesignationProgress progress,
+  ) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -1986,24 +3282,39 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
             children: [
               Text(
                 '${widget.siteCount}站',
-                style: typo.sm.copyWith(color: const Color(0xFFE11D48), fontWeight: FontWeight.w800, fontSize: 13),
+                style: typo.sm.copyWith(
+                  color: const Color(0xFFE11D48),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                ),
               ),
               const Spacer(),
               Text(
-                progress.completed ? '已解锁最高称号' : '距 ${progress.nextTitle} 还差 ${progress.remaining}站',
-                style: typo.xs.copyWith(color: cs.mutedForeground, fontSize: 11),
+                progress.completed
+                    ? '已解锁最高称号'
+                    : '距 ${progress.nextTitle} 还差 ${progress.remaining}站',
+                style: typo.xs.copyWith(
+                  color: cs.mutedForeground,
+                  fontSize: 11,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Container(
             height: 5,
-            decoration: BoxDecoration(color: cs.border.withValues(alpha: 0.55), borderRadius: BorderRadius.circular(3)),
+            decoration: BoxDecoration(
+              color: cs.border.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(3),
+            ),
             alignment: Alignment.centerLeft,
             child: FractionallySizedBox(
               widthFactor: progress.ratio.clamp(0.0, 1.0).toDouble(),
               child: Container(
-                decoration: BoxDecoration(color: const Color(0xFFE11D48), borderRadius: BorderRadius.circular(3)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE11D48),
+                  borderRadius: BorderRadius.circular(3),
+                ),
               ),
             ),
           ),
@@ -2014,7 +3325,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                 : '${progress.currentLevel}站 ${progress.currentTitle} → ${progress.nextLevel}站 ${progress.nextTitle}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: typo.xs.copyWith(color: cs.foreground, fontSize: 11, fontWeight: FontWeight.w600),
+            style: typo.xs.copyWith(
+              color: cs.foreground,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -2061,8 +3376,20 @@ class _TrendPoint {
   const _TrendPoint(this.label, this.uploaded, this.downloaded, this.published);
 
   _TrendPoint copyWith({num? uploaded, num? downloaded, num? published}) {
-    return _TrendPoint(label, uploaded ?? this.uploaded, downloaded ?? this.downloaded, published ?? this.published);
+    return _TrendPoint(
+      label,
+      uploaded ?? this.uploaded,
+      downloaded ?? this.downloaded,
+      published ?? this.published,
+    );
   }
+}
+
+class _ServerResourceUsagePoint {
+  final String label;
+  final double value;
+
+  const _ServerResourceUsagePoint(this.label, this.value);
 }
 
 class _NameValuePoint {
@@ -2078,7 +3405,12 @@ class _TrendSitePoint {
   final num downloaded;
   final num published;
 
-  const _TrendSitePoint(this.name, this.uploaded, this.downloaded, this.published);
+  const _TrendSitePoint(
+    this.name,
+    this.uploaded,
+    this.downloaded,
+    this.published,
+  );
 }
 
 class _ChartTooltipData {
@@ -2094,7 +3426,8 @@ class _TooltipLine {
   final Color? color;
   final List<_TooltipSegment> segments;
 
-  const _TooltipLine(this.label, this.value, [this.color]) : segments = const [];
+  const _TooltipLine(this.label, this.value, [this.color])
+    : segments = const [];
 
   const _TooltipLine.rich(this.label, this.segments) : value = '', color = null;
 
@@ -2120,7 +3453,10 @@ class _BoardBackdropPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [const Color(0xFF12365A).withValues(alpha: 0.34), const Color(0x00000000)],
+        colors: [
+          const Color(0xFF12365A).withValues(alpha: 0.34),
+          const Color(0x00000000),
+        ],
       ).createShader(Offset.zero & size);
     canvas.drawRect(Offset.zero & size, topWash);
 

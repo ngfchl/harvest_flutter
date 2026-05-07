@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
+import 'package:harvest/core/storage/hive_manager.dart';
+import 'package:harvest/core/storage/storage_keys.dart';
+import 'package:harvest/modules/dashboard/provider/server_resource_provider.dart';
 
 import 'dashboard_chart_config.dart';
 
@@ -41,13 +44,11 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
   late Map<String, bool> _visibility;
   late double _chartHeight;
   late int _treemapCount;
+  late int _serverResourceInterval;
+  late int _serverResourceDuration;
+  late bool _serverResourceAutoStart;
 
-  late FContinuousSliderController _sliderController;
   late FContinuousSliderController _treemapSliderController;
-
-  static const _min = DashboardChartConfig.minChartHeight; // 120
-  static const _max = DashboardChartConfig.maxChartHeight; // 400
-  static const _range = _max - _min; // 280
 
   static const _tMin = DashboardChartConfig.minTreemapCount;
   static const _tMax = DashboardChartConfig.maxTreemapCount;
@@ -60,10 +61,16 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
     _visibility = Map.from(widget.visibility);
     _chartHeight = widget.chartHeight;
     _treemapCount = widget.treemapCount;
+    _serverResourceInterval =
+        HiveManager.get<int>(StorageKeys.serverResourceInterval) ??
+        kDefaultServerResourceInterval;
+    _serverResourceDuration =
+        HiveManager.get<int>(StorageKeys.serverResourceDuration) ??
+        kDefaultServerResourceDuration;
+    _serverResourceAutoStart =
+        HiveManager.get<bool>(StorageKeys.serverResourceAutoStart) ??
+        kDefaultServerResourceAutoStart;
 
-    _sliderController = FContinuousSliderController(
-      selection: FSliderSelection(max: _toPercent(_chartHeight)),
-    );
     _treemapSliderController = FContinuousSliderController(
       selection: FSliderSelection(max: _toTPercent(_treemapCount)),
     );
@@ -71,22 +78,65 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
 
   @override
   void dispose() {
-    _sliderController.dispose();
     _treemapSliderController.dispose();
 
     super.dispose();
   }
 
-  /// 实际高度 → 百分比 (0~1)
-  double _toPercent(double height) =>
-      ((height - _min) / _range).clamp(0.0, 1.0);
-
-  /// 百分比 (0~1) → 实际高度
-  double _fromPercent(double pct) => (pct * _range + _min).roundToDouble();
-
   double _toTPercent(int count) => ((count - _tMin) / _tRange).clamp(0.0, 1.0);
 
   int _fromTPercent(double p) => (p * _tRange + _tMin).round();
+
+  Widget _serverResourceSettingRow(
+    FThemeData theme, {
+    required IconData icon,
+    required String title,
+    required String value,
+    required VoidCallback onMinus,
+    required VoidCallback onPlus,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: theme.colors.mutedForeground),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              title,
+              style: theme.typography.sm.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ),
+          FButton.icon(
+            style: FButtonStyle.ghost(),
+            onPress: onMinus,
+            child: const Icon(FIcons.minus, size: 14),
+          ),
+          Container(
+            width: 74,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: theme.colors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              value,
+              style: theme.typography.xs.copyWith(
+                color: theme.colors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          FButton.icon(
+            style: FButtonStyle.ghost(),
+            onPress: onPlus,
+            child: const Icon(FIcons.plus, size: 14),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _save() {
     if (widget.allowReorder) {
@@ -99,6 +149,18 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
       DashboardChartConfig.saveChartHeight(_chartHeight);
       DashboardChartConfig.saveTreemapCount(_treemapCount);
     }
+    HiveManager.set(
+      StorageKeys.serverResourceInterval,
+      _serverResourceInterval,
+    );
+    HiveManager.set(
+      StorageKeys.serverResourceDuration,
+      _serverResourceDuration,
+    );
+    HiveManager.set(
+      StorageKeys.serverResourceAutoStart,
+      _serverResourceAutoStart,
+    );
 
     widget.onSaved(_order, _visibility, _chartHeight, _treemapCount);
     Navigator.of(context).pop();
@@ -111,12 +173,12 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
         _order = List.from(DashboardChartConfig.defaultOrder);
       }
       _visibility = {for (final id in _order) id: true};
+      _serverResourceInterval = kDefaultServerResourceInterval;
+      _serverResourceDuration = kDefaultServerResourceDuration;
+      _serverResourceAutoStart = kDefaultServerResourceAutoStart;
       if (widget.showSizingControls) {
         _chartHeight = defaultHeight;
         _treemapCount = DashboardChartConfig.defaultTreemapCount;
-        _sliderController.selection = FSliderSelection(
-          max: _toPercent(defaultHeight),
-        );
         _treemapSliderController.selection = FSliderSelection(
           max: _toTPercent(_treemapCount),
         );
@@ -165,87 +227,10 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
               ),
             ),
 
-            // ——— 图表高度 ———
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    if (widget.showSizingControls)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  FIcons.ruler,
-                                  size: 14,
-                                  color: theme.colors.mutedForeground,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '图表高度',
-                                  style: theme.typography.sm.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: theme.colors.primary.withValues(
-                                      alpha: 0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    '${_chartHeight.round()} px',
-                                    style: theme.typography.xs.copyWith(
-                                      color: theme.colors.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            FSlider(
-                              controller: _sliderController,
-                              onChange: (selection) {
-                                setState(
-                                  () => _chartHeight = _fromPercent(
-                                    selection.offset.max,
-                                  ),
-                                );
-                              },
-                              tooltipBuilder: (ctrl, value) =>
-                                  Text('${_fromPercent(value).round()} px'),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '${_min.round()}px',
-                                  style: theme.typography.xs.copyWith(
-                                    color: theme.colors.mutedForeground,
-                                  ),
-                                ),
-                                Text(
-                                  '${_max.round()}px',
-                                  style: theme.typography.xs.copyWith(
-                                    color: theme.colors.mutedForeground,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
                     // ——— 站点数量 ———
                     if (widget.showSizingControls)
                       Padding(
@@ -322,6 +307,69 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                           ],
                         ),
                       ),
+
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(2, 4, 2, 4),
+                      child: FTile(
+                        prefix: const Icon(FIcons.activity, size: 14),
+                        title: const Text('自动获取服务器状态'),
+                        subtitle: const Text('进入仪表页时自动开始监控'),
+                        suffix: FSwitch(
+                          value: _serverResourceAutoStart,
+                          onChange: (value) =>
+                              setState(() => _serverResourceAutoStart = value),
+                        ),
+                        enabled: true,
+                      ),
+                    ),
+                    _serverResourceSettingRow(
+                      theme,
+                      icon: FIcons.clock,
+                      title: '服务器状态获取间隔',
+                      value: '${_serverResourceInterval}s',
+                      onMinus: () => setState(
+                        () => _serverResourceInterval =
+                            (_serverResourceInterval - 1)
+                                .clamp(
+                                  kMinServerResourceInterval,
+                                  kMaxServerResourceInterval,
+                                )
+                                .toInt(),
+                      ),
+                      onPlus: () => setState(
+                        () => _serverResourceInterval =
+                            (_serverResourceInterval + 1)
+                                .clamp(
+                                  kMinServerResourceInterval,
+                                  kMaxServerResourceInterval,
+                                )
+                                .toInt(),
+                      ),
+                    ),
+                    _serverResourceSettingRow(
+                      theme,
+                      icon: FIcons.timer,
+                      title: '服务器状态运行时长',
+                      value: '${_serverResourceDuration}min',
+                      onMinus: () => setState(
+                        () => _serverResourceDuration =
+                            (_serverResourceDuration - 1)
+                                .clamp(
+                                  kMinServerResourceDuration,
+                                  kMaxServerResourceDuration,
+                                )
+                                .toInt(),
+                      ),
+                      onPlus: () => setState(
+                        () => _serverResourceDuration =
+                            (_serverResourceDuration + 1)
+                                .clamp(
+                                  kMinServerResourceDuration,
+                                  kMaxServerResourceDuration,
+                                )
+                                .toInt(),
+                      ),
+                    ),
 
                     // ——— 卡片排序 + 显隐 ———
                     if (widget.allowReorder)
