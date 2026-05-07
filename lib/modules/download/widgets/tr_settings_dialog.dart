@@ -328,16 +328,20 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
     final theme = FTheme.of(context);
 
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: _isMobile
+          ? const EdgeInsets.all(8)
+          : const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
-          maxWidth: _isMobile ? double.infinity : 500,
+          maxHeight: MediaQuery.of(context).size.height * (_isMobile ? 0.95 : 0.9),
+          maxWidth: _isMobile ? double.infinity : 560,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(theme),
+            Divider(height: 1, color: theme.colors.border),
             Expanded(
               child: _loading
                   ? Center(child: FProgress.circularIcon())
@@ -356,7 +360,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
 
   Widget _buildHeader(FThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
+      padding: const EdgeInsets.fromLTRB(18, 16, 10, 12),
       child: Row(
         children: [
           Container(
@@ -416,34 +420,39 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
   // ── Footer ──
 
   Widget _buildFooter(FThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Expanded(
-            child: FButton(
-              style: FButtonStyle.outline(),
-              onPress: () => Navigator.of(context).pop(),
-              child: const Text('取消'),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: theme.colors.border)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: FButton(
+                style: FButtonStyle.outline(),
+                onPress: () => Navigator.of(context).pop(),
+                child: const Text('取消'),
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: FButton(
-              onPress: _saving ? null : _save,
-              child: _saving
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text('保存'),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FButton(
+                onPress: _saving ? null : _save,
+                child: _saving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('保存'),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -456,7 +465,8 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
     // 手机端：FAccordion，可折叠展开
     if (_isMobile) {
       return SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         child: FAccordion(
           children: [
             FAccordionItem(
@@ -486,33 +496,42 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
     }
 
     // 桌面端 / 平板：FTabs，标签页切换
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: FTabs(
-        initialIndex: widget.initialIndex.clamp(0, 3).toInt(),
-        children: [
-          FTabEntry(
-            label: const Text('下载设置'),
-            child: _ScrollableSection(child: _buildDownloadSection(theme)),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableHeight = constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : MediaQuery.of(context).size.height * 0.7;
+        final bodyHeight = (availableHeight - 76).clamp(120.0, double.infinity).toDouble();
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: FTabs(
+            initialIndex: widget.initialIndex.clamp(0, 3).toInt(),
+            children: [
+              FTabEntry(
+                label: const Text('下载设置'),
+                child: _ScrollableSection(height: bodyHeight, child: _buildDownloadSection(theme)),
+              ),
+              FTabEntry(
+                label: const Text('带宽设置'),
+                child: _ScrollableSection(height: bodyHeight, child: _buildBandwidthSection(theme)),
+              ),
+              FTabEntry(
+                label: const Text('网络设置'),
+                child: _ScrollableSection(height: bodyHeight, child: _buildNetworkSection(theme)),
+              ),
+              FTabEntry(
+                label: const Text('队列设置'),
+                child: _ScrollableSection(height: bodyHeight, child: _buildQueueSection(theme)),
+              ),
+              // FTabEntry(
+              //   label: const Text('其他设置'),
+              //   child: _ScrollableSection(height: bodyHeight, child: _buildOtherSection(theme)),
+              // ),
+            ],
           ),
-          FTabEntry(
-            label: const Text('带宽设置'),
-            child: _ScrollableSection(child: _buildBandwidthSection(theme)),
-          ),
-          FTabEntry(
-            label: const Text('网络设置'),
-            child: _ScrollableSection(child: _buildNetworkSection(theme)),
-          ),
-          FTabEntry(
-            label: const Text('队列设置'),
-            child: _ScrollableSection(child: _buildQueueSection(theme)),
-          ),
-          // FTabEntry(
-          //   label: const Text('其他设置'),
-          //   child: _ScrollableSection(child: _buildOtherSection(theme)),
-          // ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -1012,15 +1031,22 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
 
 /// 桌面端 FTabs 内部可滚动容器
 class _ScrollableSection extends StatelessWidget {
+  final double height;
   final Widget child;
 
-  const _ScrollableSection({required this.child});
+  const _ScrollableSection({required this.height, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 12),
-      child: child,
+    return SizedBox(
+      height: height,
+      child: Scrollbar(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(4, 12, 4, 18),
+          child: child,
+        ),
+      ),
     );
   }
 }

@@ -1424,17 +1424,18 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       insetPadding: _isMobile
           ? const EdgeInsets.all(8)
           : const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+      clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxHeight:
-              MediaQuery.of(context).size.height * (_isMobile ? 0.95 : 0.85),
-          maxWidth: _isMobile ? double.infinity : 520,
+              MediaQuery.of(context).size.height * (_isMobile ? 0.95 : 0.9),
+          maxWidth: _isMobile ? double.infinity : 640,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
+              padding: const EdgeInsets.fromLTRB(18, 16, 10, 12),
               child: Row(
                 children: [
                   Container(
@@ -1467,6 +1468,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                 ],
               ),
             ),
+            Divider(height: 1, color: t.colors.border),
             Expanded(
               child: _loading
                   ? Center(child: FProgress.circularIcon())
@@ -1497,34 +1499,39 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                   : _buildTabs(t),
             ),
             if (!_loading && _error == null)
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: FButton(
-                        style: FButtonStyle.outline(),
-                        onPress: () => Navigator.of(context).pop(),
-                        child: const Text('取消'),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(color: t.colors.border)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: FButton(
+                          style: FButtonStyle.outline(),
+                          onPress: () => Navigator.of(context).pop(),
+                          child: const Text('取消'),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FButton(
-                        onPress: _saving ? null : _save,
-                        child: _saving
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text('保存'),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FButton(
+                          onPress: _saving ? null : _save,
+                          child: _saving
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('保存'),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
           ],
@@ -1533,25 +1540,37 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     );
   }
 
-  Widget _buildTabs(FThemeData t) => FTabs(
-    initialIndex: widget.initialIndex.clamp(0, 7).toInt(),
-    scrollable: true,
-    physics: const BouncingScrollPhysics(),
-    children: [
-      FTabEntry(label: const Text('行为'), child: _scroll(_behaviorContent(t))),
-      FTabEntry(label: const Text('下载'), child: _scroll(_downloadContent(t))),
-      FTabEntry(label: const Text('连接'), child: _scroll(_connectionContent(t))),
-      FTabEntry(label: const Text('速度'), child: _scroll(_speedContent(t))),
-      FTabEntry(label: const Text('BitTorrent'), child: _scroll(_btContent(t))),
-      FTabEntry(label: const Text('RSS'), child: _scroll(_rssContent(t))),
-      FTabEntry(label: const Text('WebUI'), child: _scroll(_webUiContent(t))),
-      FTabEntry(label: const Text('高级'), child: _scroll(_advancedContent(t))),
-    ],
+  Widget _buildTabs(FThemeData t) => LayoutBuilder(
+    builder: (context, constraints) {
+      final availableHeight = constraints.maxHeight.isFinite
+          ? constraints.maxHeight
+          : MediaQuery.of(context).size.height * 0.7;
+      final bodyHeight = (availableHeight - 76).clamp(120.0, double.infinity).toDouble();
+
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+        child: FTabs(
+          initialIndex: widget.initialIndex.clamp(0, 7).toInt(),
+          scrollable: true,
+          physics: const BouncingScrollPhysics(),
+          children: [
+            FTabEntry(label: const Text('行为'), child: _scroll(_behaviorContent(t), bodyHeight)),
+            FTabEntry(label: const Text('下载'), child: _scroll(_downloadContent(t), bodyHeight)),
+            FTabEntry(label: const Text('连接'), child: _scroll(_connectionContent(t), bodyHeight)),
+            FTabEntry(label: const Text('速度'), child: _scroll(_speedContent(t), bodyHeight)),
+            FTabEntry(label: const Text('BitTorrent'), child: _scroll(_btContent(t), bodyHeight)),
+            FTabEntry(label: const Text('RSS'), child: _scroll(_rssContent(t), bodyHeight)),
+            FTabEntry(label: const Text('WebUI'), child: _scroll(_webUiContent(t), bodyHeight)),
+            FTabEntry(label: const Text('高级'), child: _scroll(_advancedContent(t), bodyHeight)),
+          ],
+        ),
+      );
+    },
   );
 
   Widget _buildAccordion(FThemeData t) => SingleChildScrollView(
     physics: const BouncingScrollPhysics(),
-    padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+    padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
     child: FAccordion(
       children: [
         FAccordionItem(
@@ -1598,10 +1617,15 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     ),
   );
 
-  Widget _scroll(Widget child) => SingleChildScrollView(
-    padding: const EdgeInsets.all(16),
-    physics: const BouncingScrollPhysics(),
-    child: child,
+  Widget _scroll(Widget child, double height) => SizedBox(
+    height: height,
+    child: Scrollbar(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(4, 16, 4, 18),
+        physics: const BouncingScrollPhysics(),
+        child: child,
+      ),
+    ),
   );
 
   // ━━━━━━━━━━━━━ 保存 ━━━━━━━━━━━━━
