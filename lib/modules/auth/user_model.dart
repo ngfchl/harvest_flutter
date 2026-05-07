@@ -14,5 +14,14 @@ abstract class User with _$User {
     @Default('') String email,
   }) = _User;
 
-  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+  factory User.fromJson(Map<String, dynamic> json) =>
+      _$UserFromJson(_normalizeUserJson(json));
+}
+
+Map<String, dynamic> _normalizeUserJson(Map<String, dynamic> json) {
+  final normalized = Map<String, dynamic>.from(json);
+  normalized.putIfAbsent('isActive', () => json['is_active']);
+  normalized.putIfAbsent('isStaff', () => json['is_staff']);
+  normalized.putIfAbsent('isSuperuser', () => json['is_superuser']);
+  return normalized;
 }

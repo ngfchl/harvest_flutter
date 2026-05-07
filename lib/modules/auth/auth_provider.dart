@@ -56,6 +56,7 @@ class AuthNotifier extends _$AuthNotifier {
       if (restored.refreshToken != null) {
         HiveManager.set(StorageKeys.refreshToken, restored.refreshToken!);
       }
+      Future<void>.delayed(Duration.zero, getUser);
       return restored.copyWith(loading: false);
     }
     return const AuthState();
