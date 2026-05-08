@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
+import '../../download/model/downloader.dart';
 import '../model/torrent_model.dart';
 
 typedef OnTorrentAction =
     Future<bool> Function(String action, Map<String, dynamic> params);
 
-enum DownloaderType { qbittorrent, transmission }
 
 // ══════════════════════════════════════════════════════════
 //  入口
@@ -24,10 +24,8 @@ class TorrentActionMenu {
     required OnTorrentAction onAction,
     required VoidCallback onShowDetail,
   }) {
-    showFSheet(
+    showModalBottomSheet(
       context: context,
-      side: FLayout.btt,
-      mainAxisMaxRatio: 0.82,
       builder: (ctx) => _MenuBody(
         torrent: torrent,
         type: type,
@@ -63,7 +61,7 @@ class _MenuBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
 
     return SafeArea(
       child: ColoredBox(
@@ -90,7 +88,7 @@ class _MenuBody extends StatelessWidget {
     );
   }
 
-  Widget _dragHandle(FColors cs) => Container(
+  Widget _dragHandle(shadcn.ColorScheme cs) => Container(
     width: 36,
     height: 4,
     margin: const EdgeInsets.only(bottom: 12),
@@ -103,7 +101,7 @@ class _MenuBody extends StatelessWidget {
   // ────────────────── QB 菜单 ──────────────────
 
   List<Widget> _buildQBMenu(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     final isPaused = torrent.torrentStatus == TorrentStatus.stopped;
     final hash = torrent.hashString;
 
@@ -286,7 +284,7 @@ class _MenuBody extends StatelessWidget {
   // ────────────────── TR 菜单 ──────────────────
 
   List<Widget> _buildTRMenu(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     final hash = torrent.hashString;
 
     return [
@@ -427,14 +425,14 @@ class _MenuBody extends StatelessWidget {
   //  UI 工具
   // ══════════════════════════════════════════════════════════
 
-  Widget _chevron(FColors cs) => Icon(
+  Widget _chevron(shadcn.ColorScheme cs) => Icon(
     Icons.chevron_right_rounded,
     size: 16,
     color: cs.foreground.withValues(alpha: 0.3),
   );
 
   Widget _section(BuildContext context, List<Widget> children) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
@@ -458,7 +456,7 @@ class _MenuBody extends StatelessWidget {
     Widget? trailing,
     bool destructive = false,
   }) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     final fg = destructive ? const Color(0xFFEF4444) : (color ?? cs.foreground);
 
     return Material(
@@ -487,10 +485,8 @@ class _MenuBody extends StatelessWidget {
   // ══════════════════════════════════════════════════════════
 
   void _showCopyMenu(BuildContext context) {
-    showFSheet(
+    showModalBottomSheet(
       context: context,
-      side: FLayout.btt,
-      mainAxisMaxRatio: 0.65,
       builder: (ctx) => _SubMenuBody(
         title: '复制',
         items: [
@@ -505,7 +501,7 @@ class _MenuBody extends StatelessWidget {
             onTap: () => _copy(ctx, torrent.hashString, '种子哈希'),
           ),
           _SubMenuItem(
-            icon: FIcons.magnet,
+            icon: shadcn.LucideIcons.magnet,
             label: '磁力链接',
             onTap: () => _copy(ctx, torrent.magnetLink, '磁力链接'),
           ),
@@ -525,10 +521,8 @@ class _MenuBody extends StatelessWidget {
   }
 
   void _showCategoryMenu(BuildContext context, String hash) {
-    showFSheet(
+    showModalBottomSheet(
       context: context,
-      side: FLayout.btt,
-      mainAxisMaxRatio: 0.65,
       builder: (ctx) => _SubMenuBody(
         title: '分类',
         items: categories.map((cat) {
@@ -537,7 +531,7 @@ class _MenuBody extends StatelessWidget {
             icon: selected
                 ? Icons.check_box_rounded
                 : Icons.check_box_outline_blank_rounded,
-            iconColor: selected ? FTheme.of(ctx).colors.primary : null,
+            iconColor: selected ? shadcn.Theme.of(ctx).colorScheme.primary : null,
             label: cat.isEmpty ? '未分类' : cat,
             onTap: () {
               Navigator.pop(ctx);
@@ -553,10 +547,8 @@ class _MenuBody extends StatelessWidget {
   }
 
   void _showTagMenu(BuildContext context, String hash, {bool isTR = false}) {
-    showFSheet(
+    showModalBottomSheet(
       context: context,
-      side: FLayout.btt,
-      mainAxisMaxRatio: 0.65,
       builder: (ctx) => _SubMenuBody(
         title: '标签',
         items: tags.map((tag) {
@@ -565,7 +557,7 @@ class _MenuBody extends StatelessWidget {
             icon: selected
                 ? Icons.check_box_rounded
                 : Icons.check_box_outline_blank_rounded,
-            iconColor: selected ? FTheme.of(ctx).colors.primary : null,
+            iconColor: selected ? shadcn.Theme.of(ctx).colorScheme.primary : null,
             label: tag,
             onTap: () {
               Navigator.pop(ctx);
@@ -590,10 +582,8 @@ class _MenuBody extends StatelessWidget {
   }
 
   void _showQueueMenu(BuildContext context, String hash) {
-    showFSheet(
+    showModalBottomSheet(
       context: context,
-      side: FLayout.btt,
-      mainAxisMaxRatio: 0.65,
       builder: (ctx) => _SubMenuBody(
         title: '队列',
         items: [
@@ -641,7 +631,7 @@ class _MenuBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) {
-        final cs = FTheme.of(ctx).colors;
+        final cs = shadcn.Theme.of(ctx).colorScheme;
         return StatefulBuilder(
           builder: (ctx, setDialogState) => Dialog(
             backgroundColor: cs.background,
@@ -691,15 +681,13 @@ class _MenuBody extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      FButton(
-                        style: FButtonStyle.ghost(),
-                        onPress: () => Navigator.pop(ctx),
+                      shadcn.Button.ghost(
+                      onPressed: () => Navigator.pop(ctx),
                         child: const Text('取消'),
                       ),
                       const SizedBox(width: 8),
-                      FButton(
-                        style: FButtonStyle.destructive(),
-                        onPress: () {
+                      shadcn.Button.destructive(
+                      onPressed: () {
                           Navigator.pop(ctx);
                           _exec(context, isTR ? 'remove_torrent' : 'delete', {
                             if (isTR) 'ids': [hash] else 'hashes': [hash],
@@ -730,7 +718,7 @@ class _MenuBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) {
-        final cs = FTheme.of(ctx).colors;
+        final cs = shadcn.Theme.of(ctx).colorScheme;
         return Dialog(
           backgroundColor: cs.background,
           shape: RoundedRectangleBorder(
@@ -761,19 +749,18 @@ class _MenuBody extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                FTextField(controller: ctrl, hint: '新目录路径'),
+                shadcn.TextField(controller: ctrl, hintText: '下载限制 (KiB/s)，0 为不限制'),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    FButton(
-                      style: FButtonStyle.ghost(),
-                      onPress: () => Navigator.pop(ctx),
+                    shadcn.Button.ghost(
+                      onPressed: () => Navigator.pop(ctx),
                       child: const Text('取消'),
                     ),
                     const SizedBox(width: 8),
-                    FButton(
-                      onPress: () {
+                    shadcn.Button.primary(
+                      onPressed: () {
                         Navigator.pop(ctx);
                         _exec(
                           context,
@@ -808,7 +795,7 @@ class _MenuBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) {
-        final cs = FTheme.of(ctx).colors;
+        final cs = shadcn.Theme.of(ctx).colorScheme;
         return Dialog(
           backgroundColor: cs.background,
           shape: RoundedRectangleBorder(
@@ -839,19 +826,18 @@ class _MenuBody extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                FTextField(controller: ctrl, hint: '上传限制 (KiB/s)，0 为不限制'),
+                shadcn.TextField(controller: ctrl, hintText: '上传限制 (KiB/s)，0 为不限制'),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    FButton(
-                      style: FButtonStyle.ghost(),
-                      onPress: () => Navigator.pop(ctx),
+                    shadcn.Button.ghost(
+                      onPressed: () => Navigator.pop(ctx),
                       child: const Text('取消'),
                     ),
                     const SizedBox(width: 8),
-                    FButton(
-                      onPress: () {
+                    shadcn.Button.primary(
+                      onPressed: () {
                         Navigator.pop(ctx);
                         final limit = (int.tryParse(ctrl.text) ?? 0) * 1024;
                         _exec(context, 'set_upload_limit', {
@@ -887,7 +873,7 @@ class _MenuBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) {
-        final cs = FTheme.of(ctx).colors;
+        final cs = shadcn.Theme.of(ctx).colorScheme;
         return StatefulBuilder(
           builder: (ctx, setDialogState) => Dialog(
             backgroundColor: cs.background,
@@ -921,22 +907,21 @@ class _MenuBody extends StatelessWidget {
                     }),
                     if (ratioMode == 0) ...[
                       const SizedBox(height: 12),
-                      FTextField(controller: ratioCtrl, hint: '分享率 (如 2.0)'),
+                      shadcn.TextField(controller: ratioCtrl, hintText: '分享率 (如 2.0)'),
                       const SizedBox(height: 8),
-                      FTextField(controller: timeCtrl, hint: '做种时间限制 (小时)'),
+                      shadcn.TextField(controller: timeCtrl, hintText: '做种时间限制 (小时)'),
                     ],
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        FButton(
-                          style: FButtonStyle.ghost(),
-                          onPress: () => Navigator.pop(ctx),
+                        shadcn.Button.ghost(
+                      onPressed: () => Navigator.pop(ctx),
                           child: const Text('取消'),
                         ),
                         const SizedBox(width: 8),
-                        FButton(
-                          onPress: () {
+                        shadcn.Button.primary(
+                          onPressed: () {
                             Navigator.pop(ctx);
                             final rl = ratioMode < 0
                                 ? ratioMode
@@ -971,7 +956,7 @@ class _MenuBody extends StatelessWidget {
     double groupValue,
     ValueChanged<double> onChanged,
   ) {
-    final cs = FTheme.of(ctx).colors;
+    final cs = shadcn.Theme.of(ctx).colorScheme;
     final selected = value == groupValue;
     return InkWell(
       onTap: () => onChanged(value),
@@ -1018,7 +1003,7 @@ class _MenuBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) {
-        final cs = FTheme.of(ctx).colors;
+        final cs = shadcn.Theme.of(ctx).colorScheme;
         return Dialog(
           backgroundColor: cs.background,
           shape: RoundedRectangleBorder(
@@ -1049,23 +1034,22 @@ class _MenuBody extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                FTextField(
+                shadcn.TextField(
                   controller: ctrl,
-                  hint: '每行一个 Tracker 地址',
                   maxLines: 6,
+                  hintText: "",
                 ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    FButton(
-                      style: FButtonStyle.ghost(),
-                      onPress: () => Navigator.pop(ctx),
+                    shadcn.Button.ghost(
+                      onPressed: () => Navigator.pop(ctx),
                       child: const Text('取消'),
                     ),
                     const SizedBox(width: 8),
-                    FButton(
-                      onPress: () {
+                    shadcn.Button.primary(
+                      onPressed: () {
                         Navigator.pop(ctx);
                         if (isTR) {
                           _exec(context, 'change_torrent', {
@@ -1100,7 +1084,7 @@ class _MenuBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) {
-        final cs = FTheme.of(ctx).colors;
+        final cs = shadcn.Theme.of(ctx).colorScheme;
         return Dialog(
           backgroundColor: cs.background,
           shape: RoundedRectangleBorder(
@@ -1131,14 +1115,13 @@ class _MenuBody extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    FButton(
-                      style: FButtonStyle.ghost(),
-                      onPress: () => Navigator.pop(ctx),
+                    shadcn.Button.ghost(
+                      onPressed: () => Navigator.pop(ctx),
                       child: const Text('取消'),
                     ),
                     const SizedBox(width: 8),
-                    FButton(
-                      onPress: () {
+                    shadcn.Button.primary(
+                      onPressed: () {
                         Navigator.pop(ctx);
                         onConfirm();
                       },
@@ -1173,7 +1156,7 @@ class _SubMenuBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
 
     return SafeArea(
       child: ColoredBox(

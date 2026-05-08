@@ -1,4 +1,4 @@
-import '../../../site/model/site_config.dart' as site_config;
+import '../../site/model/site_config.dart' as site_config;
 import 'torrent_model.dart';
 
 class TorrentSiteMatch {

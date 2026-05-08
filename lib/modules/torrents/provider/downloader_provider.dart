@@ -10,7 +10,7 @@ import 'package:harvest/core/utils/utils.dart';
 import 'package:web_socket_channel/status.dart' as ws_status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../../../site/provider/site_provider.dart' as site_providers;
+import '../../site/provider/site_provider.dart' as site_providers;
 import '../model/torrent_model.dart';
 import '../model/torrent_site_matcher.dart';
 
