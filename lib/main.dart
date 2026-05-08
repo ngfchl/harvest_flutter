@@ -8,12 +8,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'core/storage/hive_manager.dart';
 import 'core/storage/storage_keys.dart';
+import 'core/theme/theme_storage.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'modules/auth/auth_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await HiveManager.init();
+  await ThemeStorage.init();
   // 初始化日志
   await AppLogger.init();
   // await AppLogger.init();

@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+// ignore: implementation_imports
+import 'package:shadcn_flutter/src/components/locale/shadcn_localizations_en.dart';
 
 import 'core/theme/theme_provider.dart';
 import 'router/app_router.dart';
@@ -42,7 +45,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final themeState = ref.watch(themeNotifierProvider);
 
-    return MaterialApp.router(
+    return shadcn.ShadcnApp.router(
       debugShowCheckedModeBanner: false,
 
       routerConfig: ref.watch(routerProvider),
@@ -54,30 +57,46 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
         Locale('en', 'US'),
       ],
       localizationsDelegates: const [
+        _AppShadcnLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
       ],
 
-      theme: themeState.theme.light.toApproximateMaterialTheme(),
-
-      darkTheme: themeState.theme.dark.toApproximateMaterialTheme(),
-      themeMode: themeState.mode,
-      builder: (context, child) {
-        final s = themeState;
-
-        final brightness = switch (s.mode) {
-          ThemeMode.dark => Brightness.dark,
-          ThemeMode.light => Brightness.light,
-          ThemeMode.system => _platformBrightness,
-        };
-
-        final fTheme = brightness == Brightness.dark
-            ? s.theme.dark
-            : s.theme.light;
-
-        return FTheme(data: fTheme, child: child!);
+      scaling: themeState.adaptiveScaling,
+      materialTheme: themeState.materialTheme(
+        switch (themeState.mode) {
+          shadcn.ThemeMode.dark => Brightness.dark,
+          shadcn.ThemeMode.light => Brightness.light,
+          shadcn.ThemeMode.system => _platformBrightness,
+        },
+      ),
+      theme: themeState.shadcnLight,
+      darkTheme: themeState.shadcnDark,
+      themeMode: switch (themeState.mode) {
+        shadcn.ThemeMode.dark => shadcn.ThemeMode.dark,
+        shadcn.ThemeMode.light => shadcn.ThemeMode.light,
+        shadcn.ThemeMode.system => shadcn.ThemeMode.system,
       },
     );
   }
+}
+
+class _AppShadcnLocalizationsDelegate
+    extends LocalizationsDelegate<shadcn.ShadcnLocalizations> {
+  const _AppShadcnLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) =>
+      locale.languageCode == 'zh' || locale.languageCode == 'en';
+
+  @override
+  Future<shadcn.ShadcnLocalizations> load(Locale locale) {
+    return SynchronousFuture<shadcn.ShadcnLocalizations>(
+      ShadcnLocalizationsEn(locale.toString()),
+    );
+  }
+
+  @override
+  bool shouldReload(_AppShadcnLocalizationsDelegate old) => false;
 }
