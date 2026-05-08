@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:share_plus/share_plus.dart';
 
 // ══════════════════════════════════════════════════════════
@@ -54,7 +54,6 @@ class BrowserPage extends StatefulWidget {
 
 class _BrowserPageState extends State<BrowserPage> {
   InAppWebViewController? _controller;
-  final ChromeSafariBrowser _chromeSafariBrowser = ChromeSafariBrowser();
   String _currentUrl = '';
   String _currentTitle = '';
   String? _activeUserAgent = _safariIphoneUserAgent;
@@ -149,16 +148,8 @@ class _BrowserPageState extends State<BrowserPage> {
   // ────────────────── 构建 ──────────────────
 
   @override
-  void dispose() {
-    if (_chromeSafariBrowser.isOpened()) {
-      _chromeSafariBrowser.close();
-    }
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
 
     return PopScope(
       canPop: false,
@@ -190,7 +181,7 @@ class _BrowserPageState extends State<BrowserPage> {
               Expanded(
                 child: _cookiesReady
                     ? _buildWebView()
-                    : const Center(child: CircularProgressIndicator()),
+                    : const Center(child: shadcn.CircularProgressIndicator()),
               ),
               // ── 底部工具栏 ──
               _buildBottomBar(cs),
@@ -201,7 +192,7 @@ class _BrowserPageState extends State<BrowserPage> {
     );
   }
 
-  Widget _buildTopBar(FColors cs) {
+  Widget _buildTopBar(shadcn.ColorScheme cs) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -215,7 +206,7 @@ class _BrowserPageState extends State<BrowserPage> {
             behavior: HitTestBehavior.opaque,
             child: Padding(
               padding: const EdgeInsets.all(4),
-              child: Icon(FIcons.x, size: 18, color: cs.foreground),
+              child: Icon(shadcn.LucideIcons.x, size: 18, color: cs.foreground),
             ),
           ),
           const SizedBox(width: 8),
@@ -284,7 +275,7 @@ class _BrowserPageState extends State<BrowserPage> {
             SizedBox(
               width: 14,
               height: 14,
-              child: CircularProgressIndicator(
+              child: shadcn.CircularProgressIndicator(
                 strokeWidth: 2,
                 color: cs.primary,
               ),
@@ -292,7 +283,11 @@ class _BrowserPageState extends State<BrowserPage> {
           ],
           if (_error != null) ...[
             const SizedBox(width: 8),
-            Icon(FIcons.circleAlert, size: 14, color: const Color(0xFFF85149)),
+            Icon(
+              shadcn.LucideIcons.circleAlert,
+              size: 14,
+              color: const Color(0xFFF85149),
+            ),
           ],
         ],
       ),
@@ -301,7 +296,7 @@ class _BrowserPageState extends State<BrowserPage> {
 
   // ── 底部工具栏 ──
 
-  Widget _buildBottomBar(FColors cs) {
+  Widget _buildBottomBar(shadcn.ColorScheme cs) {
     return Container(
       padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
       decoration: BoxDecoration(
@@ -311,7 +306,7 @@ class _BrowserPageState extends State<BrowserPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _bottomBtn(cs, FIcons.arrowLeft, '后退', _canGoBack, () {
+          _bottomBtn(cs, shadcn.LucideIcons.arrowLeft, '后退', _canGoBack, () {
             if (_canGoBack) {
               _controller?.goBack();
             } else {
@@ -320,31 +315,30 @@ class _BrowserPageState extends State<BrowserPage> {
           }),
           _bottomBtn(
             cs,
-            FIcons.arrowRight,
+            shadcn.LucideIcons.arrowRight,
             '前进',
             _canGoForward,
             () => _controller?.goForward(),
           ),
           _bottomBtn(
             cs,
-            FIcons.refreshCw,
+            shadcn.LucideIcons.refreshCw,
             '刷新',
             true,
             () => _controller?.reload(),
           ),
-          _bottomBtn(cs, FIcons.copy, '复制', true, () {
+          _bottomBtn(cs, shadcn.LucideIcons.copy, '复制', true, () {
             Clipboard.setData(ClipboardData(text: _currentUrl));
             Toast.success('链接已复制');
           }),
-          _bottomBtn(cs, FIcons.globe, 'UA', true, _showUserAgentPicker),
           _bottomBtn(
             cs,
-            FIcons.externalLink,
-            'CF浏览',
+            shadcn.LucideIcons.globe,
+            'UA',
             true,
-            _openChromeSafariBrowser,
+            _showUserAgentPicker,
           ),
-          _bottomBtn(cs, FIcons.share2, '分享', true, () {
+          _bottomBtn(cs, shadcn.LucideIcons.share2, '分享', true, () {
             SharePlus.instance.share(
               ShareParams(text: _currentUrl, subject: _currentTitle),
             );
@@ -355,7 +349,7 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   Widget _bottomBtn(
-    FColors cs,
+    shadcn.ColorScheme cs,
     IconData icon,
     String label,
     bool enabled,
@@ -459,37 +453,6 @@ class _BrowserPageState extends State<BrowserPage> {
     );
   }
 
-  Future<void> _openChromeSafariBrowser() async {
-    final url = _currentUrl.trim().isNotEmpty ? _currentUrl.trim() : widget.url;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      Toast.warning('当前链接无法用浏览器打开');
-      return;
-    }
-
-    final cookie = widget.cookie?.trim();
-    if (cookie != null && cookie.isNotEmpty) {
-      Toast.info('系统浏览器不共享站点 Cookie，可能需要在此窗口重新登录一次');
-    }
-
-    try {
-      await _chromeSafariBrowser.open(
-        url: WebUri(url),
-        settings: ChromeSafariBrowserSettings(
-          shareState: CustomTabsShareState.SHARE_STATE_ON,
-          showTitle: true,
-          keepAliveEnabled: true,
-          enableUrlBarHiding: true,
-          instantAppsEnabled: true,
-          dismissButtonStyle: DismissButtonStyle.CLOSE,
-          presentationStyle: ModalPresentationStyle.FULL_SCREEN,
-        ),
-      );
-    } catch (e, st) {
-      AppLogger.error('打开系统内置浏览器失败', e, st);
-      Toast.error('打开系统内置浏览器失败');
-    }
-  }
-
   List<_UserAgentPreset> get _userAgentPresets {
     final configuredUserAgent = widget.userAgent?.trim();
     return [
@@ -556,7 +519,7 @@ class _BrowserPageState extends State<BrowserPage> {
     if (_defaultUserAgent == null) await _loadDefaultUserAgent();
     if (!mounted) return;
 
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -574,7 +537,9 @@ class _BrowserPageState extends State<BrowserPage> {
                 dense: true,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                 leading: Icon(
-                  selected ? FIcons.check : FIcons.globe,
+                  selected
+                      ? shadcn.LucideIcons.check
+                      : shadcn.LucideIcons.globe,
                   size: 18,
                   color: selected
                       ? cs.primary
@@ -618,8 +583,8 @@ class _BrowserPageState extends State<BrowserPage> {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                     leading: Icon(
                       fallbackExpanded
-                          ? FIcons.chevronDown
-                          : FIcons.chevronRight,
+                          ? shadcn.LucideIcons.chevronDown
+                          : shadcn.LucideIcons.chevronRight,
                       size: 18,
                       color: cs.foreground.withValues(alpha: 0.62),
                     ),

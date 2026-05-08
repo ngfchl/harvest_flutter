@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/cache/session_cache.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class CacheStatusBanner extends StatelessWidget {
   final DataCacheInfo info;
@@ -17,41 +17,45 @@ class CacheStatusBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!info.isCached) return const SizedBox.shrink();
 
-    final cs = FTheme.of(context).colors;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
     final text = info.cachedAt == null
         ? '当前页使用缓存数据'
         : '当前页使用缓存数据 · ${formatDateTimeMinute(info.cachedAt!)}';
 
     return Padding(
       padding: margin,
-      child: Container(
+      child: SizedBox(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-        decoration: BoxDecoration(
-          color: cs.primary.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: cs.primary.withValues(alpha: 0.22),
-            width: 0.5,
+        child: shadcn.Card(
+          filled: true,
+          fillColor: cs.primary.withValues(alpha: 0.08),
+          borderColor: cs.primary.withValues(alpha: 0.22),
+          padding: EdgeInsets.symmetric(
+            horizontal: theme.density.baseGap * theme.scaling,
+            vertical: theme.density.baseGap * theme.scaling * 0.6,
           ),
-        ),
-        child: Row(
-          children: [
-            Icon(FIcons.database, size: 12, color: cs.primary),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                text,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: FTheme.of(context).typography.xs.copyWith(
-                  color: cs.primary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+          child: Row(
+            children: [
+              Icon(
+                shadcn.LucideIcons.database,
+                size: theme.scaling * 12,
+                color: cs.primary,
+              ),
+              SizedBox(width: theme.density.baseGap * theme.scaling * 0.75),
+              Expanded(
+                child: Text(
+                  text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.typography.xSmall.copyWith(
+                    color: cs.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
