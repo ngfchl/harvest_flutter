@@ -3,12 +3,7 @@ part of '../dashboard_page.dart';
 extension _DesktopDashboardView on _DashboardPageState {
   // ———————————————— 桌面布局 ————————————————
 
-  Widget _buildDesktopLayout(
-    DashboardData data,
-    bool privacy,
-    DataCacheInfo cacheInfo,
-    int refreshSerial,
-  ) {
+  Widget _buildDesktopLayout(DashboardData data, bool privacy, DataCacheInfo cacheInfo, int refreshSerial) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final padding = 8.0;
@@ -27,10 +22,7 @@ extension _DesktopDashboardView on _DashboardPageState {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     _buildServerBar(privacy),
-                    CacheStatusBanner(
-                      info: cacheInfo,
-                      margin: const EdgeInsets.only(top: 8),
-                    ),
+                    CacheStatusBanner(info: cacheInfo, margin: const EdgeInsets.only(top: 8)),
                     const SizedBox(height: 12),
                     ..._buildPolishedDesktopDashboardChildren(data, privacy),
                     SizedBox(height: _DashboardPageState._bottomSafeGap + ShellBottomSpacing.value(context)),
@@ -111,7 +103,7 @@ extension _DesktopDashboardView on _DashboardPageState {
   }
 
   Widget _buildPolishedHero(DashboardData data, bool privacy) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     final accountAge = _showAccountAgeWeeks
         ? _formatAccountAgeWeeks(data.earliestSite?.timeJoin)
         : _formatAccountAgeYears(data.earliestSite?.timeJoin);
@@ -129,7 +121,7 @@ extension _DesktopDashboardView on _DashboardPageState {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: cs.background.withValues(alpha: 0.96),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: shadcn.Theme.of(context).borderRadiusLg,
             border: Border.all(color: cs.border.withValues(alpha: 0.62)),
             gradient: LinearGradient(
               colors: [
@@ -155,20 +147,23 @@ extension _DesktopDashboardView on _DashboardPageState {
               Row(
                 children: [
                   Expanded(
-                    child: Text('数据总览', style: FTheme.of(context).typography.lg.copyWith(fontWeight: FontWeight.w900)),
+                    child: Text(
+                      '数据总览',
+                      style: shadcn.Theme.of(context).typography.large.copyWith(fontWeight: FontWeight.w900),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                     decoration: BoxDecoration(
                       color: cs.background.withValues(alpha: 0.72),
-                      borderRadius: BorderRadius.circular(999),
+                      borderRadius: shadcn.Theme.of(context).borderRadiusXl,
                       border: Border.all(color: cs.border.withValues(alpha: 0.7)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(FIcons.refreshCw, size: 12, color: cs.primary),
+                        Icon(shadcn.LucideIcons.refreshCw, size: 12, color: cs.primary),
                         const SizedBox(width: 4),
                         Text(
                           '更新于 $lastRefresh',
@@ -188,7 +183,7 @@ extension _DesktopDashboardView on _DashboardPageState {
                     '总上传',
                     formatBytes(data.totalUploaded),
                     '今日 +${formatBytes(data.todayUploadIncrement)}',
-                    FIcons.arrowUp,
+                    shadcn.LucideIcons.arrowUp,
                     const Color(0xFF10B981),
                     metricWidth,
                   ),
@@ -196,7 +191,7 @@ extension _DesktopDashboardView on _DashboardPageState {
                     '总下载',
                     formatBytes(data.totalDownloaded),
                     '今日 +${formatBytes(data.todayDownloadIncrement)}',
-                    FIcons.arrowDown,
+                    shadcn.LucideIcons.arrowDown,
                     const Color(0xFFEF4444),
                     metricWidth,
                   ),
@@ -204,7 +199,7 @@ extension _DesktopDashboardView on _DashboardPageState {
                     'P龄',
                     accountAge,
                     designation,
-                    FIcons.calendar,
+                    shadcn.LucideIcons.calendar,
                     const Color(0xFF3B82F6),
                     metricWidth,
                     onTap: () => setState(() => _showAccountAgeWeeks = !_showAccountAgeWeeks),
@@ -213,7 +208,7 @@ extension _DesktopDashboardView on _DashboardPageState {
                     '站点数',
                     '${data.siteCount.toInt()}',
                     '做种 ${data.totalSeeding}',
-                    FIcons.globe,
+                    shadcn.LucideIcons.globe,
                     const Color(0xFF8B5CF6),
                     metricWidth,
                   ),
@@ -235,7 +230,7 @@ extension _DesktopDashboardView on _DashboardPageState {
     double width, {
     VoidCallback? onTap,
   }) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return SizedBox(
       width: width,
       child: GestureDetector(
@@ -302,7 +297,7 @@ extension _DesktopDashboardView on _DashboardPageState {
             _buildPolishedActionTile(
               '刷新任务',
               _isRefreshingSiteData ? '执行中' : '一键刷新所有',
-              FIcons.refreshCw,
+              shadcn.LucideIcons.refreshCw,
               const Color(0xFF06B6D4),
               itemWidth,
               onTap: _hasRunningSummaryAction ? null : _refreshSiteData,
@@ -311,7 +306,7 @@ extension _DesktopDashboardView on _DashboardPageState {
             _buildPolishedActionTile(
               '重新拉取',
               _isRefreshingDashboardData ? '刷新中' : '更新站点数据',
-              FIcons.rotateCw,
+              shadcn.LucideIcons.rotateCw,
               const Color(0xFF3B82F6),
               itemWidth,
               onTap: _hasRunningSummaryAction ? null : _refreshDashboardData,
@@ -320,7 +315,7 @@ extension _DesktopDashboardView on _DashboardPageState {
             _buildPolishedActionTile(
               '站点签到',
               _isSigningInSites ? '执行中' : '领取每日奖励',
-              FIcons.calendarCheck,
+              shadcn.LucideIcons.calendarCheck,
               const Color(0xFFF59E0B),
               itemWidth,
               onTap: _hasRunningSummaryAction ? null : _signInSites,
@@ -329,10 +324,10 @@ extension _DesktopDashboardView on _DashboardPageState {
             _buildPolishedActionTile(
               '展示设置',
               '调整数据看板',
-              FIcons.slidersHorizontal,
+              shadcn.LucideIcons.slidersHorizontal,
               const Color(0xFF10B981),
               itemWidth,
-              onTap: _showChartSettings,
+              onTap: () => _showChartSettings(context),
               loading: false,
             ),
           ],
@@ -350,7 +345,7 @@ extension _DesktopDashboardView on _DashboardPageState {
     VoidCallback? onTap,
     required bool loading,
   }) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     final disabled = onTap == null && !loading;
 
     return SizedBox(
@@ -362,13 +357,13 @@ extension _DesktopDashboardView on _DashboardPageState {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             color: color.withValues(alpha: disabled ? 0.04 : 0.08),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: shadcn.Theme.of(context).borderRadiusMd,
             border: Border.all(color: color.withValues(alpha: disabled ? 0.10 : 0.18)),
           ),
           child: Row(
             children: [
               loading
-                  ? const SizedBox(width: 18, height: 18, child: FProgress.circularIcon())
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator())
                   : Icon(icon, size: 17, color: disabled ? color.withValues(alpha: 0.45) : color),
               const SizedBox(width: 10),
               Expanded(
@@ -396,7 +391,11 @@ extension _DesktopDashboardView on _DashboardPageState {
                   ],
                 ),
               ),
-              Icon(FIcons.chevronRight, size: 14, color: cs.mutedForeground.withValues(alpha: disabled ? 0.25 : 0.55)),
+              Icon(
+                shadcn.LucideIcons.chevronRight,
+                size: 14,
+                color: cs.mutedForeground.withValues(alpha: disabled ? 0.25 : 0.55),
+              ),
             ],
           ),
         ),
@@ -405,25 +404,30 @@ extension _DesktopDashboardView on _DashboardPageState {
   }
 
   Widget _buildPolishedMetricGrid(DashboardData data) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     final accountAge = _showAccountAgeWeeks
         ? _formatAccountAgeWeeks(data.earliestSite?.timeJoin)
         : _formatAccountAgeYears(data.earliestSite?.timeJoin);
     final items = [
-      _StatItem('做种数', '${data.totalSeeding}', FIcons.users, const Color(0xFF10B981)),
-      _StatItem('下载数', '${data.totalLeeching}', FIcons.arrowDown, const Color(0xFF3B82F6)),
-      _StatItem('做种量', formatBytes(data.totalSeedVol), FIcons.database, const Color(0xFF6366F1)),
-      _StatItem('发种数', '${_formatCount(data.totalPublished)}', FIcons.star, const Color(0xFFF59E0B)),
-      _StatItem('站点数', '${data.siteCount.toInt()}', FIcons.globe, const Color(0xFF8B5CF6)),
-      _StatItem('今日上传', formatBytes(data.todayUploadIncrement), FIcons.arrowUp, const Color(0xFF10B981)),
+      _StatItem('做种数', '${data.totalSeeding}', shadcn.LucideIcons.users, const Color(0xFF10B981)),
+      _StatItem('下载数', '${data.totalLeeching}', shadcn.LucideIcons.arrowDown, const Color(0xFF3B82F6)),
+      _StatItem('做种量', formatBytes(data.totalSeedVol), shadcn.LucideIcons.database, const Color(0xFF6366F1)),
+      _StatItem('发种数', _formatCount(data.totalPublished), shadcn.LucideIcons.star, const Color(0xFFF59E0B)),
+      _StatItem('站点数', '${data.siteCount.toInt()}', shadcn.LucideIcons.globe, const Color(0xFF8B5CF6)),
+      _StatItem('今日上传', formatBytes(data.todayUploadIncrement), shadcn.LucideIcons.arrowUp, const Color(0xFF10B981)),
       _StatItem(
         'P龄',
         accountAge,
-        FIcons.calendar,
+        shadcn.LucideIcons.calendar,
         const Color(0xFF14B8A6),
         onTap: () => setState(() => _showAccountAgeWeeks = !_showAccountAgeWeeks),
       ),
-      _StatItem('最后刷新', formatDateStringToMinute(data.updatedAt, empty: '-'), FIcons.clock, const Color(0xFF64748B)),
+      _StatItem(
+        '最后刷新',
+        formatDateStringToMinute(data.updatedAt, empty: '-'),
+        shadcn.LucideIcons.clock,
+        const Color(0xFF64748B),
+      ),
     ];
 
     return Container(
@@ -431,7 +435,7 @@ extension _DesktopDashboardView on _DashboardPageState {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: cs.background,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: cs.border.withValues(alpha: 0.76)),
       ),
       child: Column(
@@ -440,9 +444,12 @@ extension _DesktopDashboardView on _DashboardPageState {
           Row(
             children: [
               Expanded(
-                child: Text('整体数据', style: FTheme.of(context).typography.lg.copyWith(fontWeight: FontWeight.w900)),
+                child: Text(
+                  '整体数据',
+                  style: shadcn.Theme.of(context).typography.large.copyWith(fontWeight: FontWeight.w900),
+                ),
               ),
-              Icon(FIcons.chevronRight, size: 17, color: cs.mutedForeground.withValues(alpha: 0.58)),
+              Icon(shadcn.LucideIcons.chevronRight, size: 17, color: cs.mutedForeground.withValues(alpha: 0.58)),
             ],
           ),
           const SizedBox(height: 12),
@@ -467,7 +474,7 @@ extension _DesktopDashboardView on _DashboardPageState {
   }
 
   Widget _buildPolishedMetricCard(_StatItem item) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: item.onTap,
       child: Container(
@@ -475,7 +482,7 @@ extension _DesktopDashboardView on _DashboardPageState {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
           color: cs.mutedForeground.withValues(alpha: 0.025),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -508,15 +515,15 @@ extension _DesktopDashboardView on _DashboardPageState {
   }
 
   Widget _buildPolishedChartSection(DashboardData data, bool privacy, List<String> chartIds) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(FIcons.layoutDashboard, size: 16, color: cs.primary),
+            Icon(shadcn.LucideIcons.layoutDashboard, size: 16, color: cs.primary),
             const SizedBox(width: 6),
-            Text('数据看板', style: FTheme.of(context).typography.lg.copyWith(fontWeight: FontWeight.w800)),
+            Text('数据看板', style: shadcn.Theme.of(context).typography.large.copyWith(fontWeight: FontWeight.w800)),
           ],
         ),
         const SizedBox(height: 8),
@@ -537,7 +544,7 @@ extension _DesktopDashboardView on _DashboardPageState {
                 SizedBox(width: itemWidth, child: _buildMonthlyTrendPanel(data)),
                 SizedBox(
                   width: itemWidth,
-                  child: _buildDistributionPanel('账号分布', FIcons.users, const Color(0xFF8B5CF6), [
+                  child: _buildDistributionPanel('账号分布', shadcn.LucideIcons.users, const Color(0xFF8B5CF6), [
                     _DistributionGroup('邮箱', data.emailCount),
                     _DistributionGroup('用户名', data.usernameCount),
                   ], privacy),
@@ -558,13 +565,13 @@ extension _DesktopDashboardView on _DashboardPageState {
     required Widget child,
     String? subtitle,
   }) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Container(
       constraints: const BoxConstraints(minHeight: 260),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: cs.background,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: cs.border.withValues(alpha: 0.76)),
       ),
       child: Column(
@@ -575,7 +582,10 @@ extension _DesktopDashboardView on _DashboardPageState {
               Container(
                 width: 28,
                 height: 28,
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.11), borderRadius: BorderRadius.circular(7)),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.11),
+                  borderRadius: shadcn.Theme.of(context).borderRadiusSm,
+                ),
                 child: Icon(icon, size: 15, color: color),
               ),
               const SizedBox(width: 8),
@@ -621,7 +631,7 @@ extension _DesktopDashboardView on _DashboardPageState {
     return _buildInsightPanel(
       title: '流量结构',
       subtitle: '上传/下载比例 $ratioLabel',
-      icon: FIcons.arrowUpDown,
+      icon: shadcn.LucideIcons.arrowUpDown,
       color: const Color(0xFF10B981),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -647,12 +657,12 @@ extension _DesktopDashboardView on _DashboardPageState {
   }
 
   Widget _buildLargeValueBlock(String label, String value, Color color) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: color.withValues(alpha: 0.14)),
       ),
       child: Column(
@@ -673,7 +683,7 @@ extension _DesktopDashboardView on _DashboardPageState {
 
   Widget _buildSplitBar(List<_RatioSegment> segments) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: shadcn.Theme.of(context).borderRadiusXl,
       child: SizedBox(
         height: 10,
         child: Row(
@@ -690,7 +700,7 @@ extension _DesktopDashboardView on _DashboardPageState {
   }
 
   Widget _buildTinyStatLine(String label, String value) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: 7),
       child: Row(
@@ -713,7 +723,7 @@ extension _DesktopDashboardView on _DashboardPageState {
     return _buildInsightPanel(
       title: '上传量分布',
       subtitle: '按累计上传排序',
-      icon: FIcons.award,
+      icon: shadcn.LucideIcons.award,
       color: const Color(0xFFF59E0B),
       child: top.isEmpty
           ? _buildPanelEmpty()
@@ -725,7 +735,7 @@ extension _DesktopDashboardView on _DashboardPageState {
                     _mask(top[i].name, privacy),
                     formatBytes(top[i].value.uploaded),
                     maxUploaded <= 0 ? 0 : top[i].value.uploaded / maxUploaded,
-                    _DashboardPageState._colors[i % _DashboardPageState._colors.length],
+                    _colors[i % _colors.length],
                   ),
               ],
             ),
@@ -733,7 +743,7 @@ extension _DesktopDashboardView on _DashboardPageState {
   }
 
   Widget _buildRankBarRow(int rank, String name, String value, num ratio, Color color) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Column(
@@ -773,9 +783,9 @@ extension _DesktopDashboardView on _DashboardPageState {
   }
 
   Widget _buildProgressBar(double ratio, Color color) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: shadcn.Theme.of(context).borderRadiusXl,
       child: Container(
         height: 6,
         color: cs.mutedForeground.withValues(alpha: 0.08),
@@ -806,7 +816,7 @@ extension _DesktopDashboardView on _DashboardPageState {
     return _buildInsightPanel(
       title: '今日动量',
       subtitle: '上传与下载增量',
-      icon: FIcons.activity,
+      icon: shadcn.LucideIcons.activity,
       color: const Color(0xFF06B6D4),
       child: top.isEmpty
           ? _buildPanelEmpty()
@@ -823,13 +833,13 @@ extension _DesktopDashboardView on _DashboardPageState {
   }
 
   Widget _buildDualMetricRow(String name, String upload, String download) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
       decoration: BoxDecoration(
         color: cs.mutedForeground.withValues(alpha: 0.035),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: cs.border.withValues(alpha: 0.55)),
       ),
       child: Row(
@@ -843,9 +853,9 @@ extension _DesktopDashboardView on _DashboardPageState {
             ),
           ),
           const SizedBox(width: 8),
-          _buildMiniPill(FIcons.arrowUp, upload, const Color(0xFF10B981)),
+          _buildMiniPill(shadcn.LucideIcons.arrowUp, upload, const Color(0xFF10B981)),
           const SizedBox(width: 6),
-          _buildMiniPill(FIcons.arrowDown, download, const Color(0xFFEF4444)),
+          _buildMiniPill(shadcn.LucideIcons.arrowDown, download, const Color(0xFFEF4444)),
         ],
       ),
     );
@@ -854,7 +864,10 @@ extension _DesktopDashboardView on _DashboardPageState {
   Widget _buildMiniPill(IconData icon, String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.09), borderRadius: BorderRadius.circular(999)),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.09),
+        borderRadius: shadcn.Theme.of(context).borderRadiusXl,
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -883,7 +896,7 @@ extension _DesktopDashboardView on _DashboardPageState {
     return _buildInsightPanel(
       title: '月度趋势',
       subtitle: '最近 ${visible.length} 个月上传增量',
-      icon: FIcons.chartNoAxesCombined,
+      icon: shadcn.LucideIcons.chartNoAxesCombined,
       color: const Color(0xFF3B82F6),
       child: visible.isEmpty
           ? _buildPanelEmpty()
@@ -907,7 +920,7 @@ extension _DesktopDashboardView on _DashboardPageState {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF3B82F6).withValues(alpha: 0.82),
-                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(5)),
+                                    borderRadius: BorderRadius.vertical(top: shadcn.Theme.of(context).radiusSmRadius),
                                   ),
                                 ),
                               ),
@@ -918,7 +931,7 @@ extension _DesktopDashboardView on _DashboardPageState {
                             _formatMonth(entry.key),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 9, color: FTheme.of(context).colors.mutedForeground),
+                            style: TextStyle(fontSize: 9, color: shadcn.Theme.of(context).colorScheme.mutedForeground),
                           ),
                         ],
                       ),
@@ -977,7 +990,7 @@ extension _DesktopDashboardView on _DashboardPageState {
     return _buildInsightPanel(
       title: '做种分布',
       subtitle: '总做种 ${formatBytes(total)}',
-      icon: FIcons.database,
+      icon: shadcn.LucideIcons.database,
       color: const Color(0xFF6366F1),
       child: top.isEmpty
           ? _buildPanelEmpty()
@@ -997,7 +1010,7 @@ extension _DesktopDashboardView on _DashboardPageState {
   }
 
   Widget _buildPanelEmpty({bool compact = false}) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return SizedBox(
       height: compact ? 38 : 160,
       child: Center(

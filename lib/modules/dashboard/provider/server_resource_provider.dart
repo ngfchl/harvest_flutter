@@ -123,11 +123,14 @@ class ServerResourceNotifier extends StateNotifier<ServerResourceState> {
   StreamSubscription<ServerResourceStatus>? _subscription;
   Timer? _autoStopTimer;
   Timer? _countdownTimer;
+  Timer? _reconnectTimer;
   bool _stopAfterFirstData = false;
+  bool _manualRefresh = false;
+  bool _continuousRefresh = false;
 
   ServerResourceNotifier(this.ref) : super(const ServerResourceState()) {
     ref.listen<int>(serverResourceIntervalProvider, (prev, next) {
-      if (prev != next && state.running) start();
+      if (prev != next && state.running) start(manual: _manualRefresh);
     });
     ref.listen<int>(serverResourceDurationProvider, (prev, next) {
       if (prev != next && state.running && !_stopAfterFirstData) {
@@ -135,31 +138,44 @@ class ServerResourceNotifier extends StateNotifier<ServerResourceState> {
       }
     });
     ref.listen<bool>(serverResourceAutoStartProvider, (prev, next) {
-      if (prev != next && state.running) start();
+      if (prev != next && state.running) start(manual: _manualRefresh);
     });
   }
 
-  void toggle() => state.running ? stop() : start();
+  void toggle() => state.running ? stop() : start(manual: true);
 
-  void start() {
+  void start({bool manual = false}) {
     if (!HiveManager.hasAccessToken) {
       state = state.copyWith(running: false, error: '未登录');
       return;
     }
+    _manualRefresh = manual;
     _subscription?.cancel();
     _autoStopTimer?.cancel();
     _countdownTimer?.cancel();
+    _reconnectTimer?.cancel();
     final interval = ref.read(serverResourceIntervalProvider);
     final autoRefresh = ref.read(serverResourceAutoStartProvider);
-    _stopAfterFirstData = !autoRefresh;
+    _continuousRefresh = autoRefresh || _manualRefresh;
+    _stopAfterFirstData = !_continuousRefresh;
     state = state.copyWith(running: true, connected: false, clearError: true);
     final providerWatch = Stopwatch()..start();
     AppLogger.debug(
-      '[SSE] server resource provider start interval=$interval autoRefresh=$autoRefresh',
+      '[SSE] server resource provider start interval=$interval autoRefresh=$autoRefresh manual=$manual continuous=$_continuousRefresh',
     );
     if (_stopAfterFirstData) {
       ref.read(serverResourceRemainingProvider.notifier).state = 0;
     }
+    _connect(providerWatch);
+    if (_continuousRefresh) {
+      _resetAutoStop();
+    }
+  }
+
+  void _connect(Stopwatch providerWatch) {
+    _subscription?.cancel();
+    _reconnectTimer?.cancel();
+    final interval = ref.read(serverResourceIntervalProvider);
     _subscription = ServerResourceService.watch(interval: interval).listen(
       (data) {
         if (!mounted) return;
@@ -186,19 +202,48 @@ class ServerResourceNotifier extends StateNotifier<ServerResourceState> {
       },
       onError: (error) {
         if (!mounted) return;
-        state = state.copyWith(running: false, connected: false, error: '连接失败');
+        if (_continuousRefresh && state.running) {
+          state = state.copyWith(connected: false, error: '连接失败');
+          _scheduleReconnect(providerWatch);
+          return;
+        }
+        _finishStopped(error: '连接失败');
       },
       onDone: () {
         if (!mounted) return;
-        state = state.copyWith(
-          running: false,
-          connected: false,
-          error: state.data == null ? '连接失败' : null,
-        );
+        if (_continuousRefresh && state.running) {
+          state = state.copyWith(connected: false);
+          _scheduleReconnect(providerWatch);
+          return;
+        }
+        _finishStopped(error: state.data == null ? '连接失败' : null);
       },
     );
-    if (autoRefresh) {
-      _resetAutoStop();
+  }
+
+  void _scheduleReconnect(Stopwatch providerWatch) {
+    _subscription?.cancel();
+    _subscription = null;
+    _reconnectTimer?.cancel();
+    final interval = ref.read(serverResourceIntervalProvider);
+    AppLogger.debug(
+      '[SSE] server resource reconnect scheduled interval=$interval',
+    );
+    _reconnectTimer = Timer(Duration(seconds: interval), () {
+      if (!mounted || !state.running || !_continuousRefresh) return;
+      _connect(providerWatch);
+    });
+  }
+
+  void _finishStopped({String? error}) {
+    _subscription?.cancel();
+    _subscription = null;
+    _reconnectTimer?.cancel();
+    _manualRefresh = false;
+    _continuousRefresh = false;
+    _stopAfterFirstData = false;
+    if (mounted) {
+      state = state.copyWith(running: false, connected: false, error: error);
     }
   }
 
@@ -207,7 +252,10 @@ class ServerResourceNotifier extends StateNotifier<ServerResourceState> {
     _subscription = null;
     _autoStopTimer?.cancel();
     _countdownTimer?.cancel();
+    _reconnectTimer?.cancel();
     _stopAfterFirstData = false;
+    _manualRefresh = false;
+    _continuousRefresh = false;
     if (!mounted) return;
     ref.read(serverResourceRemainingProvider.notifier).state = 0;
     state = state.copyWith(running: false, connected: false);
@@ -240,6 +288,7 @@ class ServerResourceNotifier extends StateNotifier<ServerResourceState> {
     _subscription?.cancel();
     _autoStopTimer?.cancel();
     _countdownTimer?.cancel();
+    _reconnectTimer?.cancel();
     super.dispose();
   }
 }

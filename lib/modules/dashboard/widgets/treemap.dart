@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../dashboard_page.dart';
 import '../model/dashboard_data.dart';
@@ -27,11 +27,10 @@ class TreemapSection extends StatefulWidget {
   State<TreemapSection> createState() => _TreemapSectionState();
 }
 
-class _TreemapSectionState extends State<TreemapSection> with SingleTickerProviderStateMixin {
+class _TreemapSectionState extends State<TreemapSection> {
   static const _step = 15;
   late int _displayCount;
 
-  late FTooltipController _tooltipCtrl;
   String? _tooltipName;
   String? _tooltipUpload;
   String? _tooltipDownload;
@@ -48,13 +47,6 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
   void initState() {
     super.initState();
     _displayCount = widget.displayCount;
-    _tooltipCtrl = FTooltipController(vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tooltipCtrl.dispose();
-    super.dispose();
   }
 
   void _showSiteDetail(SiteStatusData item) {
@@ -64,20 +56,21 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
       _tooltipName = _mask(item.name, widget.privacy);
       _tooltipUpload = formatBytes(ul);
       _tooltipDownload = dl > 0 ? formatBytes(dl) : null;
-      _tooltipDlRatio = (dl > 0 && dl > ul) ? '(${(dl / ul * 100).toStringAsFixed(0)}%)' : null;
+      _tooltipDlRatio = (dl > 0 && dl > ul)
+          ? '(${(dl / ul * 100).toStringAsFixed(0)}%)'
+          : null;
     });
-    _tooltipCtrl.show();
   }
 
   Widget _buildTooltipContent() {
-    final theme = FTheme.of(context);
+    final theme = shadcn.Theme.of(context);
     return Container(
       constraints: const BoxConstraints(maxWidth: 280),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       // decoration: BoxDecoration(
-      //   color: theme.colors.background,
-      //   borderRadius: BorderRadius.circular(8),
-      //   border: Border.all(color: theme.colors.border),
+      //   color: theme.colorScheme.background,
+      //   borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+      //   border: Border.all(color: theme.colorScheme.border),
       //   boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.22), blurRadius: 20, offset: const Offset(0, 8))],
       // ),
       child: Row(
@@ -86,20 +79,30 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
         mainAxisSize: MainAxisSize.min,
         spacing: 8,
         children: [
-          Text(_tooltipName ?? '', style: theme.typography.sm.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            _tooltipName ?? '',
+            style: theme.typography.small.copyWith(fontWeight: FontWeight.w700),
+          ),
           // const SizedBox(height: 6),
           Row(
             spacing: 8,
             children: [
               Row(
                 children: [
-                  Icon(FIcons.arrowUp, size: 10, color: const Color(0xFF10B981)),
+                  Icon(
+                    shadcn.LucideIcons.arrowUp,
+                    size: 10,
+                    color: const Color(0xFF10B981),
+                  ),
                   const SizedBox(width: 4),
-                  // Text('上传', style: theme.typography.xs.copyWith(color: theme.colors.mutedForeground)),
+                  // Text('上传', style: theme.typography.xSmall.copyWith(color: theme.colorScheme.mutedForeground)),
                   // const SizedBox(width: 8),
                   Text(
                     _tooltipUpload ?? '',
-                    style: theme.typography.xs.copyWith(color: const Color(0xFF10B981), fontWeight: FontWeight.w600),
+                    style: theme.typography.xSmall.copyWith(
+                      color: const Color(0xFF10B981),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -107,19 +110,26 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
                 // const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(FIcons.arrowDown, size: 10, color: const Color(0xFFEF4444)),
+                    Icon(
+                      shadcn.LucideIcons.arrowDown,
+                      size: 10,
+                      color: const Color(0xFFEF4444),
+                    ),
                     const SizedBox(width: 4),
-                    // Text('下载', style: theme.typography.xs.copyWith(color: theme.colors.mutedForeground)),
+                    // Text('下载', style: theme.typography.xSmall.copyWith(color: theme.colorScheme.mutedForeground)),
                     // const SizedBox(width: 8),
                     Text(
                       _tooltipDownload!,
-                      style: theme.typography.xs.copyWith(color: const Color(0xFFEF4444), fontWeight: FontWeight.w600),
+                      style: theme.typography.xSmall.copyWith(
+                        color: const Color(0xFFEF4444),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     if (_tooltipDlRatio != null) ...[
                       const SizedBox(width: 4),
                       Text(
                         _tooltipDlRatio!,
-                        style: theme.typography.xs.copyWith(
+                        style: theme.typography.xSmall.copyWith(
                           color: const Color(0xFFEF4444),
                           fontWeight: FontWeight.w700,
                         ),
@@ -165,7 +175,9 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
               .take(_step)
               .fold<double>(0, (sum, e) => sum + e.value.uploaded.toDouble()),
           downloaded: 0,
-          color: FTheme.of(context).colors.mutedForeground.withValues(alpha: 0.3),
+          color: shadcn.Theme.of(
+            context,
+          ).colorScheme.mutedForeground.withValues(alpha: 0.3),
           isReduce: true,
         ),
       );
@@ -175,18 +187,21 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
       items.add(
         _TreemapItem(
           name: '更多',
-          uploaded: widget.data.skip(_displayCount).fold<double>(0, (sum, e) => sum + e.value.uploaded.toDouble()),
+          uploaded: widget.data
+              .skip(_displayCount)
+              .fold<double>(0, (sum, e) => sum + e.value.uploaded.toDouble()),
           downloaded: 0,
-          color: FTheme.of(context).colors.primary.withValues(alpha: 0.3),
+          color: shadcn.Theme.of(
+            context,
+          ).colorScheme.primary.withValues(alpha: 0.3),
           isLast: true,
           remainingCount: widget.data.length - _displayCount,
         ),
       );
     }
 
-    return FTooltip(
-      controller: _tooltipCtrl,
-      tipBuilder: (context, controller) => _buildTooltipContent(),
+    return shadcn.Tooltip(
+      tooltip: (_) => _buildTooltipContent(),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -196,7 +211,12 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
               builder: (context, constraints) {
                 final rects = _squarify(
                   items.map((e) => e.uploaded).toList(),
-                  Rect.fromLTWH(0, 0, constraints.maxWidth, constraints.maxHeight),
+                  Rect.fromLTWH(
+                    0,
+                    0,
+                    constraints.maxWidth,
+                    constraints.maxHeight,
+                  ),
                 );
 
                 return Stack(
@@ -214,14 +234,22 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
                         behavior: HitTestBehavior.opaque,
                         onTap: () {
                           if (item.isReduce) {
-                            setState(() => _displayCount = (_displayCount - _step).clamp(_step, widget.data.length));
+                            setState(
+                              () => _displayCount = (_displayCount - _step)
+                                  .clamp(_step, widget.data.length),
+                            );
                             return;
                           }
                           if (item.isLast) {
-                            setState(() => _displayCount = (_displayCount + _step).clamp(0, widget.data.length));
+                            setState(
+                              () => _displayCount = (_displayCount + _step)
+                                  .clamp(0, widget.data.length),
+                            );
                             return;
                           }
-                          final siteIndex = widget.data.indexWhere((e) => _mask(e.name, widget.privacy) == item.name);
+                          final siteIndex = widget.data.indexWhere(
+                            (e) => _mask(e.name, widget.privacy) == item.name,
+                          );
                           if (siteIndex >= 0) {
                             _showSiteDetail(widget.data[siteIndex]);
                           }
@@ -230,8 +258,13 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
                           margin: const EdgeInsets.all(1.5),
                           decoration: BoxDecoration(
                             color: item.color,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.22), width: 0.6),
+                            borderRadius: shadcn.Theme.of(
+                              context,
+                            ).borderRadiusSm,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.22),
+                              width: 0.6,
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.08),
@@ -241,7 +274,9 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
                             ],
                           ),
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: shadcn.Theme.of(
+                              context,
+                            ).borderRadiusSm,
                             child: Stack(
                               children: [
                                 Positioned.fill(
@@ -258,18 +293,29 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
                                     ),
                                   ),
                                 ),
-                                if (!item.isLast && !item.isReduce && item.downloaded > 0 && item.uploaded > 0)
+                                if (!item.isLast &&
+                                    !item.isReduce &&
+                                    item.downloaded > 0 &&
+                                    item.uploaded > 0)
                                   Positioned(
                                     left: 0,
                                     right: 0,
                                     bottom: 0,
-                                    height: r.height * (item.downloaded / item.uploaded).clamp(0.0, 1.0),
-                                    child: Container(color: dlColor.withValues(alpha: 0.55)),
+                                    height:
+                                        r.height *
+                                        (item.downloaded / item.uploaded).clamp(
+                                          0.0,
+                                          1.0,
+                                        ),
+                                    child: Container(
+                                      color: dlColor.withValues(alpha: 0.55),
+                                    ),
                                   ),
                                 if (item.isReduce)
                                   Center(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.remove_rounded,
@@ -291,7 +337,8 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
                                 else if (item.isLast)
                                   Center(
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.add_rounded,
@@ -321,8 +368,10 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
                                           width: max(r.width - 6, 1),
                                           height: max(r.height - 6, 1),
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               Text(
                                                 item.name,
@@ -343,8 +392,10 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
                                               ),
                                               if (r.height > 45) ...[
                                                 Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  mainAxisSize:
+                                                      MainAxisSize.max,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
                                                   children: [
                                                     Container(
                                                       width: 4,
@@ -355,41 +406,71 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
                                                       ),
                                                     ),
                                                     const SizedBox(width: 1),
-                                                    Text(
-                                                      formatBytes(item.uploaded.toInt()),
-                                                      style: const TextStyle(color: Colors.white70, fontSize: 9),
+                                                    Flexible(
+                                                      child: Text(
+                                                        formatBytes(
+                                                          item.uploaded.toInt(),
+                                                        ),
+                                                        style: const TextStyle(
+                                                          color: Colors.white70,
+                                                          fontSize: 9,
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
                                                 if (item.downloaded > 0)
                                                   Row(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
                                                     children: [
                                                       Container(
                                                         width: 4,
                                                         height: 4,
-                                                        decoration: BoxDecoration(
-                                                          color: dlColor,
-                                                          shape: BoxShape.circle,
-                                                        ),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                              color: dlColor,
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                            ),
                                                       ),
-                                                      const SizedBox(width: 2),
-                                                      Text(
-                                                        formatBytes(item.downloaded.toInt()) +
-                                                            (item.downloaded > item.uploaded
-                                                                ? ' (${(item.downloaded / item.uploaded * 100).toStringAsFixed(0)}%)'
-                                                                : ''),
-                                                        style: TextStyle(
-                                                          color: item.downloaded > item.uploaded
-                                                              ? dlColor
-                                                              : Colors.white70,
-                                                          fontSize: 9,
-                                                          fontWeight: item.downloaded > item.uploaded
-                                                              ? FontWeight.w700
-                                                              : FontWeight.w400,
+                                                      const SizedBox(width: 1),
+                                                      Flexible(
+                                                        child: Text(
+                                                          formatBytes(
+                                                                item.downloaded
+                                                                    .toInt(),
+                                                              ) +
+                                                              (item.downloaded >
+                                                                      item.uploaded
+                                                                  ? ' (${(item.downloaded / item.uploaded * 100).toStringAsFixed(0)}%)'
+                                                                  : ''),
+                                                          style: TextStyle(
+                                                            color:
+                                                                item.downloaded >
+                                                                    item.uploaded
+                                                                ? dlColor
+                                                                : Colors
+                                                                      .white70,
+                                                            fontSize: 9,
+                                                            fontWeight:
+                                                                item.downloaded >
+                                                                    item.uploaded
+                                                                ? FontWeight
+                                                                      .w700
+                                                                : FontWeight
+                                                                      .w400,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
                                                         ),
-                                                        maxLines: 1,
                                                       ),
                                                     ],
                                                   ),
@@ -450,21 +531,35 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
       final fraction = a / rowSum;
       if (w >= h) {
         final cellH = h * fraction;
-        rowRects.add(Rect.fromLTWH(rect.left, rect.top + offset, rowSum / h, cellH));
+        rowRects.add(
+          Rect.fromLTWH(rect.left, rect.top + offset, rowSum / h, cellH),
+        );
         offset += cellH;
       } else {
         final cellW = w * fraction;
-        rowRects.add(Rect.fromLTWH(rect.left + offset, rect.top, cellW, rowSum / w));
+        rowRects.add(
+          Rect.fromLTWH(rect.left + offset, rect.top, cellW, rowSum / w),
+        );
         offset += cellW;
       }
     }
     Rect remaining;
     if (w >= h) {
       final rowW = rowSum / h;
-      remaining = Rect.fromLTWH(rect.left + rowW, rect.top, max(w - rowW, 0), h);
+      remaining = Rect.fromLTWH(
+        rect.left + rowW,
+        rect.top,
+        max(w - rowW, 0),
+        h,
+      );
     } else {
       final rowH = rowSum / w;
-      remaining = Rect.fromLTWH(rect.left, rect.top + rowH, w, max(h - rowH, 0));
+      remaining = Rect.fromLTWH(
+        rect.left,
+        rect.top + rowH,
+        w,
+        max(h - rowH, 0),
+      );
     }
     return [...rowRects, ..._layout(areas.sublist(i), remaining)];
   }
@@ -479,7 +574,9 @@ class _TreemapSectionState extends State<TreemapSection> with SingleTickerProvid
     for (final a in row) {
       final cellLen = a / rowWidth;
       if (cellLen <= 0) continue;
-      final ratio = rowWidth > cellLen ? rowWidth / cellLen : cellLen / rowWidth;
+      final ratio = rowWidth > cellLen
+          ? rowWidth / cellLen
+          : cellLen / rowWidth;
       if (ratio > worst) worst = ratio;
     }
     return worst;

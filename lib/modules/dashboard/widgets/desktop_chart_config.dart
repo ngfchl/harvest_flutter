@@ -1,4 +1,4 @@
-// models/dashboard/dashboard_chart_config.dart
+// models/dashboard/desktop_chart_config.dart
 
 import '../../../core/storage/hive_manager.dart';
 import '../../../core/storage/storage_keys.dart';
@@ -29,6 +29,7 @@ class DashboardChartConfig {
     'desktopTrend',
     'desktopDesignation',
     'desktopResource',
+    'desktopStatus',
     'desktopUploadShare',
     'desktopSeedShare',
     'desktopAccount',
@@ -61,6 +62,7 @@ class DashboardChartConfig {
     'desktopTrend': '吞吐趋势',
     'desktopDesignation': '称号',
     'desktopResource': '全局资源',
+    'desktopStatus': '站点状态矩形图',
     'desktopUploadShare': '上传占比',
     'desktopSeedShare': '做种分布',
     'desktopAccount': '账号分布',
@@ -108,8 +110,9 @@ class DashboardChartConfig {
   // ———————————————— 图表高度 ————————————————
 
   static const double defaultChartHeight = 260.0;
+  static const double defaultDesktopChartHeight = 320.0;
   static const double minChartHeight = 120.0;
-  static const double maxChartHeight = 400.0;
+  static const double maxChartHeight = 480.0;
 
   static double getChartHeight() {
     return HiveManager.get<double>(StorageKeys.dashboardChartHeight) ??
@@ -126,9 +129,14 @@ class DashboardChartConfig {
       for (final id in allModuleIds) id: true,
     });
     await HiveManager.set(StorageKeys.dashboardChartHeight, defaultChartHeight);
+    await HiveManager.set(
+      StorageKeys.dashboardPhoneTrendDays,
+      defaultPhoneTrendDays,
+    );
   }
 
   static const int defaultTreemapCount = 15;
+  static const int defaultDesktopTreemapCount = 32;
   static const int minTreemapCount = 10;
   static const int maxTreemapCount = 50;
 
@@ -139,5 +147,29 @@ class DashboardChartConfig {
 
   static Future<void> saveTreemapCount(int count) async {
     await HiveManager.set(StorageKeys.dashboardTreemapCount, count);
+  }
+
+  static int getDesktopTreemapCount() {
+    return HiveManager.get<int>(StorageKeys.dashboardDesktopTreemapCount) ??
+        defaultDesktopTreemapCount;
+  }
+
+  static Future<void> saveDesktopTreemapCount(int count) async {
+    await HiveManager.set(StorageKeys.dashboardDesktopTreemapCount, count);
+  }
+
+  static const int defaultPhoneTrendDays = 7;
+  static const phoneTrendDayOptions = [1, 7, 30];
+
+  static int getPhoneTrendDays() {
+    final saved = HiveManager.get<int>(StorageKeys.dashboardPhoneTrendDays);
+    return phoneTrendDayOptions.contains(saved) ? saved! : defaultPhoneTrendDays;
+  }
+
+  static Future<void> savePhoneTrendDays(int days) async {
+    final normalized = phoneTrendDayOptions.contains(days)
+        ? days
+        : defaultPhoneTrendDays;
+    await HiveManager.set(StorageKeys.dashboardPhoneTrendDays, normalized);
   }
 }

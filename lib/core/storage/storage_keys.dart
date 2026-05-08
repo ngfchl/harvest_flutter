@@ -10,8 +10,12 @@ class StorageKeys {
       'dashboard_chart_visibility'; // ← 新增
   static const String dashboardChartHeight = 'dashboard_chart_height'; // ← 新增
   static const String dashboardTreemapCount = 'dashboard_treemap_count';
+  static const String dashboardDesktopTreemapCount =
+      'dashboard_desktop_treemap_count';
+  static const String dashboardPhoneTrendDays = 'dashboard_phone_trend_days';
 
   // ── 站点筛选 ──
+  static const String siteFilterAvailability = 'site_filter_availability';
   static const String siteFilterCondition = 'site_filter_condition';
   static const String siteFilterSortField = 'site_filter_sort_field';
   static const String siteFilterSortAscending = 'site_filter_sort_ascending';

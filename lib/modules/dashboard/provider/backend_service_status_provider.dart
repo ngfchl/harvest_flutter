@@ -48,12 +48,15 @@ class BackendServiceStatusNotifier
   final Ref ref;
   StreamSubscription<BackendServiceSnapshot>? _subscription;
   Timer? _autoStopTimer;
+  Timer? _reconnectTimer;
   bool _stopAfterFirstData = false;
+  bool _manualRefresh = false;
+  bool _continuousRefresh = false;
 
   BackendServiceStatusNotifier(this.ref)
     : super(const BackendServiceStatusState()) {
     ref.listen<int>(serverResourceIntervalProvider, (prev, next) {
-      if (prev != next && state.running) start();
+      if (prev != next && state.running) start(manual: _manualRefresh);
     });
     ref.listen<int>(serverResourceDurationProvider, (prev, next) {
       if (prev != next && state.running && !_stopAfterFirstData) {
@@ -61,13 +64,13 @@ class BackendServiceStatusNotifier
       }
     });
     ref.listen<bool>(serverResourceAutoStartProvider, (prev, next) {
-      if (prev != next && state.running) start();
+      if (prev != next && state.running) start(manual: _manualRefresh);
     });
   }
 
-  void toggle() => state.running ? stop() : start();
+  void toggle() => state.running ? stop() : start(manual: true);
 
-  void start() {
+  void start({bool manual = false}) {
     if (!mounted) return;
     if (!HiveManager.hasAccessToken) {
       state = state.copyWith(running: false, connected: false, error: '未登录');
@@ -76,14 +79,27 @@ class BackendServiceStatusNotifier
 
     _subscription?.cancel();
     _autoStopTimer?.cancel();
+    _reconnectTimer?.cancel();
     state = state.copyWith(running: true, connected: false, clearError: true);
     final interval = ref.read(serverResourceIntervalProvider);
     final autoRefresh = ref.read(serverResourceAutoStartProvider);
-    _stopAfterFirstData = !autoRefresh;
+    _manualRefresh = manual;
+    _continuousRefresh = autoRefresh || manual;
+    _stopAfterFirstData = !_continuousRefresh;
     final providerWatch = Stopwatch()..start();
     AppLogger.debug(
-      '[SSE] backend services provider start interval=$interval autoRefresh=$autoRefresh',
+      '[SSE] backend services provider start interval=$interval autoRefresh=$autoRefresh manual=$manual continuous=$_continuousRefresh',
     );
+    _connect(providerWatch);
+    if (_continuousRefresh) {
+      _resetAutoStop();
+    }
+  }
+
+  void _connect(Stopwatch providerWatch) {
+    _subscription?.cancel();
+    _reconnectTimer?.cancel();
+    final interval = ref.read(serverResourceIntervalProvider);
     _subscription = BackendServiceStatusService.watch(interval: interval).listen(
       (data) {
         if (!mounted) return;
@@ -105,19 +121,48 @@ class BackendServiceStatusNotifier
       },
       onError: (error) {
         if (!mounted) return;
-        state = state.copyWith(running: false, connected: false, error: '连接失败');
+        if (_continuousRefresh && state.running) {
+          state = state.copyWith(connected: false, error: '连接失败');
+          _scheduleReconnect(providerWatch);
+          return;
+        }
+        _finishStopped(error: '连接失败');
       },
       onDone: () {
         if (!mounted) return;
-        state = state.copyWith(
-          running: false,
-          connected: false,
-          error: state.data == null ? '连接失败' : null,
-        );
+        if (_continuousRefresh && state.running) {
+          state = state.copyWith(connected: false);
+          _scheduleReconnect(providerWatch);
+          return;
+        }
+        _finishStopped(error: state.data == null ? '连接失败' : null);
       },
     );
-    if (autoRefresh) {
-      _resetAutoStop();
+  }
+
+  void _scheduleReconnect(Stopwatch providerWatch) {
+    _subscription?.cancel();
+    _subscription = null;
+    _reconnectTimer?.cancel();
+    final interval = ref.read(serverResourceIntervalProvider);
+    AppLogger.debug(
+      '[SSE] backend services reconnect scheduled interval=$interval',
+    );
+    _reconnectTimer = Timer(Duration(seconds: interval), () {
+      if (!mounted || !state.running || !_continuousRefresh) return;
+      _connect(providerWatch);
+    });
+  }
+
+  void _finishStopped({String? error}) {
+    _subscription?.cancel();
+    _subscription = null;
+    _reconnectTimer?.cancel();
+    _manualRefresh = false;
+    _continuousRefresh = false;
+    _stopAfterFirstData = false;
+    if (mounted) {
+      state = state.copyWith(running: false, connected: false, error: error);
     }
   }
 
@@ -125,7 +170,10 @@ class BackendServiceStatusNotifier
     _subscription?.cancel();
     _subscription = null;
     _autoStopTimer?.cancel();
+    _reconnectTimer?.cancel();
     _stopAfterFirstData = false;
+    _manualRefresh = false;
+    _continuousRefresh = false;
     if (!mounted) return;
     state = state.copyWith(running: false, connected: false);
   }
@@ -140,6 +188,7 @@ class BackendServiceStatusNotifier
   void dispose() {
     _subscription?.cancel();
     _autoStopTimer?.cancel();
+    _reconnectTimer?.cancel();
     super.dispose();
   }
 }

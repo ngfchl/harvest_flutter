@@ -4,30 +4,33 @@ import 'dart:math' as math;
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/cache/session_cache.dart';
 import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/hooks.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
+import 'package:harvest/core/theme/theme_provider.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/cache_status_banner.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../models/kv/kv.dart';
 import '../../shell/provider/screenshot_provider.dart';
 import '../../shell/widgets/shell_scaffold.dart';
 import '../../site/provider/site_provider.dart';
+import '../model/backend_service_status.dart';
 import '../model/dashboard_data.dart';
 import '../model/server_resource_status.dart';
-import '../model/backend_service_status.dart';
 import '../provider/backend_service_status_provider.dart';
 import '../provider/dashboard_provider.dart';
 import '../provider/privacy_provider.dart';
 import '../provider/server_resource_provider.dart';
-import 'dashboard_chart_config.dart';
-import 'dashboard_chart_settings.dart';
+import 'dashboard_cache_clear_popover.dart';
+import 'desktop_chart_config.dart';
+import 'phone_chart_settings.dart';
+import 'treemap.dart';
 
 class DesktopDashboardPage extends ConsumerStatefulWidget {
   const DesktopDashboardPage({super.key});
@@ -39,20 +42,23 @@ class DesktopDashboardPage extends ConsumerStatefulWidget {
 
 class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     with SingleTickerProviderStateMixin {
-  static const _bg = Color(0xFF07111F);
-  static const _panel = Color(0xFF0D1B2E);
-  static const _panelSoft = Color(0xFF10243B);
-  static const _line = Color(0xFF1D3757);
-  static const _text = Color(0xFFEAF2FF);
-  static const _muted = Color(0xFF88A4C4);
-  static const _cyan = Color(0xFF22D3EE);
-  static const _green = Color(0xFF34D399);
-  static const _amber = Color(0xFFFBBF24);
-  static const _red = Color(0xFFFB7185);
-  static const _blue = Color(0xFF60A5FA);
-  static const _violet = Color(0xFFA78BFA);
-  static const _orange = Color(0xFFFB923C);
-  static const _bottomGap = 84.0;
+  _DashboardThemeTokens get _tokens => _DashboardThemeTokens.of(context);
+  Color get _panel => _tokens.panel;
+  Color get _panelSoft => _tokens.panelSoft;
+  Color get _line => _tokens.line;
+  Color get _text => _tokens.text;
+  Color get _muted => _tokens.muted;
+  bool get _isDark =>
+      shadcn.Theme.of(context).colorScheme.brightness == Brightness.dark;
+  Color get _cyan => _tokens.cyan;
+  Color get _green => _tokens.green;
+  Color get _amber => _tokens.amber;
+  Color get _red => _tokens.red;
+  Color get _blue => _tokens.blue;
+  Color get _violet => _tokens.violet;
+  Color get _orange => _tokens.orange;
+  double get _bottomGap => _tokens.bottomGap;
+  List<Color> get _treemapColors => _tokens.treemapColors;
 
   static const _designations = <int, String>{
     1: '初窥门径',
@@ -71,6 +77,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   bool _refreshingSites = false;
   bool _signingIn = false;
   bool _showWeeks = false;
+  late int _treemapCount;
   late Map<String, bool> _chartVisibility;
   late final AnimationController _backdropController;
   _ChartTooltipData? _trendTooltip;
@@ -86,6 +93,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       vsync: this,
       duration: const Duration(milliseconds: 2800),
     )..repeat();
+    _treemapCount = DashboardChartConfig.getDesktopTreemapCount();
     _chartVisibility = DashboardChartConfig.getVisibility();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(dashboardNotifierProvider.notifier).refresh();
@@ -114,18 +122,21 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
 
   bool _anyChartVisible(Iterable<String> ids) => ids.any(_isChartVisible);
 
-  void _showChartSettings() {
-    showDialog(
+  void _showChartSettings(BuildContext anchorContext) {
+    shadcn.showDialog<void>(
       context: context,
       builder: (ctx) => ChartSettingsDialog(
         order: DashboardChartConfig.desktopOrder,
         visibility: _chartVisibility,
-        chartHeight: DashboardChartConfig.defaultChartHeight,
-        treemapCount: DashboardChartConfig.defaultTreemapCount,
+        chartHeight: DashboardChartConfig.defaultDesktopChartHeight,
+        treemapCount: _treemapCount,
+        defaultTreemapCount: DashboardChartConfig.defaultDesktopTreemapCount,
         allowReorder: false,
         showSizingControls: false,
+        showTreemapCountControl: true,
         title: '桌面看板显示设置',
-        onSaved: (_, visibility, __, ___) {
+        onTreemapCountSaved: DashboardChartConfig.saveDesktopTreemapCount,
+        onSaved: (_, visibility, __, treemapCount, ___) {
           ref
               .read(serverResourceIntervalProvider.notifier)
               .update(
@@ -143,7 +154,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
               kDefaultServerResourceAutoStart;
           ref.read(serverResourceAutoStartProvider.notifier).update(autoStart);
           _syncDesktopMonitorCards(visibility);
-          setState(() => _chartVisibility = visibility);
+          setState(() {
+            _chartVisibility = visibility;
+            _treemapCount = treemapCount;
+          });
         },
       ),
     );
@@ -300,18 +314,37 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     final cacheInfo = ref.watch(dashboardCacheInfoProvider);
     final refreshSerial = ref.watch(dashboardRefreshSerialProvider);
     final privacy = ref.watch(privacyModeProvider);
+    final tokens = _tokens;
 
-    return DecoratedBox(
-      decoration: const BoxDecoration(color: _bg),
-      child: Stack(
-        children: [
-          Positioned.fill(child: _buildBackdrop()),
-          Positioned.fill(
-            child: data == null
-                ? const Center(child: FProgress.circularIcon())
-                : _buildBoard(context, data, cacheInfo, privacy, refreshSerial),
-          ),
-        ],
+    return MediaQuery(
+      data: MediaQuery.of(
+        context,
+      ).copyWith(textScaler: TextScaler.linear(tokens.textScale)),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: tokens.background,
+          gradient: tokens.pageGradient,
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(child: _buildBackdrop()),
+            Positioned.fill(
+              child: data == null
+                  ? Center(
+                      child: shadcn.CircularProgressIndicator(
+                        size: tokens.size(18),
+                      ),
+                    )
+                  : _buildBoard(
+                      context,
+                      data,
+                      cacheInfo,
+                      privacy,
+                      refreshSerial,
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -322,7 +355,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         animation: _backdropController,
         builder: (context, child) {
           return CustomPaint(
-            painter: _BoardBackdropPainter(tick: _backdropController.value),
+            painter: _BoardBackdropPainter(
+              tick: _backdropController.value,
+              tokens: _tokens,
+            ),
           );
         },
       ),
@@ -346,7 +382,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(
+            padding: _tokens.edgeLTRB(
               20,
               18,
               20,
@@ -362,13 +398,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                       _buildHeader(data, cacheInfo, privacy),
                       CacheStatusBanner(
                         info: cacheInfo,
-                        margin: const EdgeInsets.only(top: 10),
+                        margin: _tokens.edgeOnly(top: 10),
                       ),
                       if (_isChartVisible('desktopKpi')) ...[
-                        const SizedBox(height: 14),
+                        _tokens.vGap(14),
                         _buildKpiStrip(data, constraints.crossAxisExtent),
                       ],
-                      const SizedBox(height: 14),
+                      _tokens.vGap(14),
                       if (compact)
                         _buildCompactContent(data, privacy)
                       else
@@ -389,81 +425,185 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     DataCacheInfo cacheInfo,
     bool privacy,
   ) {
+    final tokens = _tokens;
     return _panelContainer(
       padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: tokens.size(44),
+            height: tokens.size(44),
             decoration: BoxDecoration(
               color: _cyan.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: shadcn.Theme.of(context).borderRadiusMd,
               border: Border.all(color: _cyan.withValues(alpha: 0.42)),
             ),
-            child: const Icon(FIcons.chartNoAxesCombined, color: _cyan),
+            child: Icon(shadcn.LucideIcons.chartNoAxesCombined, color: _cyan),
           ),
-          const SizedBox(width: 14),
+          tokens.hGap(14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'HARVEST DATA COMMAND CENTER',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: _text,
-                    fontSize: 20,
+                    fontSize: tokens.font(20),
                     fontWeight: FontWeight.w900,
                     letterSpacing: 0,
                   ),
                 ),
-                const SizedBox(height: 6),
+                tokens.vGap(6),
                 Text(
                   '${data.siteCount.toInt()} 个站点接入 · ${_cacheText(cacheInfo, data)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _muted,
-                    fontSize: 12,
+                    fontSize: tokens.font(12),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          tokens.hGap(10),
           _headerAction(
-            icon: FIcons.refreshCw,
+            icon: shadcn.LucideIcons.refreshCw,
             label: _refreshingDashboard ? '刷新中' : '刷新',
-            onTap: _refreshDashboard,
+            onTap: (_) => _refreshDashboard(),
           ),
-          const SizedBox(width: 8),
+          tokens.hGap(8),
           _headerAction(
-            icon: FIcons.database,
+            icon: shadcn.LucideIcons.database,
             label: _refreshingSites ? '执行中' : '站点数据',
-            onTap: _refreshSiteData,
+            onTap: (_) => _refreshSiteData(),
           ),
-          const SizedBox(width: 8),
+          tokens.hGap(8),
           _headerAction(
-            icon: FIcons.checkCheck,
+            icon: shadcn.LucideIcons.checkCheck,
             label: _signingIn ? '签到中' : '签到',
-            onTap: _signInSites,
+            onTap: (_) => _signInSites(),
           ),
-          const SizedBox(width: 8),
+          tokens.hGap(8),
           _headerAction(
-            icon: FIcons.slidersHorizontal,
+            icon: shadcn.LucideIcons.trash2,
+            label: '清缓存',
+            onTap: showDashboardCacheClearPopover,
+          ),
+          tokens.hGap(8),
+          _headerAction(
+            icon: shadcn.LucideIcons.slidersHorizontal,
             label: '模块',
             onTap: _showChartSettings,
           ),
-          const SizedBox(width: 8),
+          tokens.hGap(8),
           _headerAction(
-            icon: privacy ? FIcons.eyeOff : FIcons.eye,
+            icon: privacy ? shadcn.LucideIcons.eyeOff : shadcn.LucideIcons.eye,
             label: privacy ? '隐私' : '明文',
-            onTap: () => ref.read(privacyModeProvider.notifier).toggle(),
+            onTap: (_) => ref.read(privacyModeProvider.notifier).toggle(),
+          ),
+          tokens.hGap(8),
+          _themeModeSegmentedControl(),
+        ],
+      ),
+    );
+  }
+
+  Widget _themeModeSegmentedControl() {
+    final mode = ref.watch(themeNotifierProvider).mode;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final tokens = _tokens;
+
+    return Container(
+      height: tokens.size(38),
+      padding: tokens.edgeAll(2),
+      decoration: BoxDecoration(
+        color: _panelSoft.withValues(alpha: 0.86),
+        borderRadius: theme.borderRadiusMd,
+        border: Border.all(color: _line.withValues(alpha: 0.92)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _themeModeSegment(
+            mode: shadcn.ThemeMode.light,
+            current: mode,
+            icon: shadcn.LucideIcons.sun,
+            label: '明',
+            tooltip: '亮色模式',
+            colors: cs,
+          ),
+          _themeModeSegment(
+            mode: shadcn.ThemeMode.dark,
+            current: mode,
+            icon: shadcn.LucideIcons.moon,
+            label: '暗',
+            tooltip: '暗色模式',
+            colors: cs,
+          ),
+          _themeModeSegment(
+            mode: shadcn.ThemeMode.system,
+            current: mode,
+            icon: shadcn.LucideIcons.monitorCog,
+            label: '自动',
+            tooltip: '跟随系统',
+            colors: cs,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _themeModeSegment({
+    required shadcn.ThemeMode mode,
+    required shadcn.ThemeMode current,
+    required IconData icon,
+    required String label,
+    required String tooltip,
+    required shadcn.ColorScheme colors,
+  }) {
+    final tokens = _tokens;
+    final selected = current == mode;
+    final theme = shadcn.Theme.of(context);
+
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => ref.read(themeNotifierProvider.notifier).setMode(mode),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 140),
+          height: tokens.size(32),
+          padding: tokens.edgeSymmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: selected ? colors.primary : colors.background.withValues(alpha: 0),
+            borderRadius: theme.borderRadiusSm,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: tokens.size(14),
+                color: selected ? colors.primaryForeground : _cyan,
+              ),
+              tokens.hGap(4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? colors.primaryForeground : _text,
+                  fontSize: tokens.font(12),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -471,33 +611,36 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   Widget _headerAction({
     required IconData icon,
     required String label,
-    required VoidCallback onTap,
+    required ValueChanged<BuildContext> onTap,
   }) {
-    return FButton(
-      style: FButtonStyle.ghost(_dashboardGhostButtonStyle),
-      onPress: _busy ? null : onTap,
-      child: Container(
-        height: 38,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: _panelSoft.withValues(alpha: 0.86),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: _line.withValues(alpha: 0.92)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: _cyan),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                color: _text,
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
+    final tokens = _tokens;
+    return Builder(
+      builder: (buttonContext) => GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _busy ? null : () => onTap(buttonContext),
+        child: Container(
+          height: tokens.size(38),
+          padding: tokens.edgeSymmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: _panelSoft.withValues(alpha: 0.86),
+            borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+            border: Border.all(color: _line.withValues(alpha: 0.92)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: tokens.size(16), color: _cyan),
+              tokens.hGap(6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: _text,
+                  fontSize: tokens.font(12),
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -510,64 +653,65 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         data.siteCount.toInt().toString(),
         '站点接入',
         _cyan,
-        FIcons.globe,
+        shadcn.LucideIcons.globe,
       ),
       _Kpi(
         '总上传',
         formatBytes(data.totalUploaded),
         '今日 +${formatBytes(data.todayUploadIncrement)}',
         _green,
-        FIcons.arrowUp,
+        shadcn.LucideIcons.arrowUp,
       ),
       _Kpi(
         '总下载',
         formatBytes(data.totalDownloaded),
         '今日 +${formatBytes(data.todayDownloadIncrement)}',
         _red,
-        FIcons.arrowDown,
+        shadcn.LucideIcons.arrowDown,
       ),
       _Kpi(
         '做种体积',
         formatBytes(data.totalSeedVol),
         '${_formatCount(data.totalSeeding)} 个做种',
         _blue,
-        FIcons.hardDrive,
+        shadcn.LucideIcons.hardDrive,
       ),
       _Kpi(
         '做种数',
         _formatCount(data.totalSeeding),
         '活跃做种任务',
-        const Color(0xFF5EEAD4),
-        FIcons.database,
+        _tokens.treemapColors[7],
+        shadcn.LucideIcons.database,
       ),
       _Kpi(
         '下载中',
         _formatCount(data.totalLeeching),
         '正在下载任务',
         _orange,
-        FIcons.download,
+        shadcn.LucideIcons.download,
       ),
       _Kpi(
         '发布总量',
         _formatCount(data.totalPublished),
         '累计发布种子',
         _amber,
-        FIcons.upload,
+        shadcn.LucideIcons.upload,
       ),
       _Kpi(
         'P龄',
         _accountAge(data),
         data.earliestSite?.site ?? '暂无站点',
         _violet,
-        FIcons.calendar,
+        shadcn.LucideIcons.calendar,
       ),
     ];
 
     Widget row(List<_Kpi> rowItems) {
+      final tokens = _tokens;
       return Row(
         children: [
           for (var i = 0; i < rowItems.length; i++) ...[
-            if (i > 0) const SizedBox(width: 10),
+            if (i > 0) tokens.hGap(10),
             Expanded(
               child: _buildKpiTile(
                 rowItems[i],
@@ -585,7 +729,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       return Column(
         children: [
           row(items.take(4).toList()),
-          const SizedBox(height: 10),
+          _tokens.vGap(10),
           row(items.skip(4).toList()),
         ],
       );
@@ -593,17 +737,18 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     return Column(
       children: [
         row(items.take(2).toList()),
-        const SizedBox(height: 10),
+        _tokens.vGap(10),
         row(items.skip(2).take(2).toList()),
-        const SizedBox(height: 10),
+        _tokens.vGap(10),
         row(items.skip(4).take(2).toList()),
-        const SizedBox(height: 10),
+        _tokens.vGap(10),
         row(items.skip(6).toList()),
       ],
     );
   }
 
   Widget _buildKpiTile(_Kpi item, {VoidCallback? onTap}) {
+    final tokens = _tokens;
     final content = _panelContainer(
       height: 128,
       padding: const EdgeInsets.all(16),
@@ -612,38 +757,47 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         children: [
           Row(
             children: [
-              Icon(item.icon, color: item.color, size: 18),
-              const SizedBox(width: 7),
+              Icon(item.icon, color: item.color, size: tokens.size(18)),
+              tokens.hGap(7),
               Expanded(
                 child: Text(
                   item.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _muted,
-                    fontSize: 12,
+                    fontSize: tokens.font(12),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
               if (onTap != null)
-                FButton.icon(
-                  style: FButtonStyle.ghost(_dashboardGhostButtonStyle),
-                  onPress: onTap,
-                  child: Icon(FIcons.refreshCw, size: 14, color: item.color),
+                SizedBox.square(
+                  dimension: tokens.size(26),
+                  child: shadcn.IconButton.ghost(
+                    onPressed: onTap,
+                    icon: Icon(
+                      shadcn.LucideIcons.refreshCw,
+                      size: tokens.size(14),
+                      color: item.color,
+                    ),
+                  ),
                 ),
             ],
           ),
-          const Spacer(),
-          _kpiValue(item),
-          const SizedBox(height: 6),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: _kpiValue(item),
+            ),
+          ),
           Text(
             item.caption,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               color: _muted,
-              fontSize: 11,
+              fontSize: tokens.font(11),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -655,35 +809,67 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   }
 
   Widget _kpiValue(_Kpi item) {
+    final tokens = _tokens;
     return SizedBox(
-      height: 36,
       width: double.infinity,
-      child: FittedBox(
-        alignment: Alignment.centerLeft,
-        fit: BoxFit.scaleDown,
-        child: Text(
-          item.value,
-          maxLines: 1,
-          style: TextStyle(
-            color: item.color,
-            fontSize: 34,
-            fontWeight: FontWeight.w900,
-            height: 1,
-            shadows: [
-              Shadow(color: item.color.withValues(alpha: 0.28), blurRadius: 12),
+      child: AnimatedBuilder(
+        animation: _backdropController,
+        builder: (context, child) {
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              if(false)
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _KpiValuePulsePainter(
+                    tick: _backdropController.value,
+                    color: item.color,
+                    isDark: _isDark,
+                  ),
+                ),
+              ),
+              FittedBox(
+                alignment: Alignment.centerLeft,
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  item.value,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: _isDark
+                        ? item.color
+                        : Color.lerp(item.color, _text, 0.18),
+                    fontSize: tokens.font(34),
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                    shadows: [
+                      Shadow(
+                        color: item.color.withValues(alpha: _isDark ? 0.36 : 0.46),
+                        blurRadius: _isDark ? 13 : 16,
+                      ),
+                      if (!_isDark)
+                        Shadow(
+                          color: _tokens.background.withValues(alpha: 0.95),
+                          blurRadius: 2,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildWideContent(DashboardData data, bool privacy) {
+    final tokens = _tokens;
     final showTrend = _isChartVisible('desktopTrend');
     final showDesignation = _isChartVisible('desktopDesignation');
     final showResource = _isChartVisible('desktopResource');
     final showServerResource = _isChartVisible('desktopServerResource');
     final showServiceStatus = _isChartVisible('desktopServiceStatus');
+    final showStatus = _isChartVisible('desktopStatus');
     final showUploaded = _isChartVisible('desktopUploadShare');
     final showSeed = _isChartVisible('desktopSeedShare');
     final showAccount = _isChartVisible('desktopAccount');
@@ -693,14 +879,33 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
 
     return Column(
       children: [
-        if (showTrend || showDesignation || showResource) ...[
+        if (showTrend || showToday) ...[
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (showTrend)
                 Expanded(flex: 7, child: _buildTrendPanel(data, privacy)),
-              if (showTrend && (showDesignation || showResource))
-                const SizedBox(width: 10),
+              if (showTrend && showToday) tokens.hGap(10),
+              if (showToday)
+                Expanded(
+                  flex: 4,
+                  child: _buildTodayPanel(data, privacy, height: 390),
+                ),
+            ],
+          ),
+          tokens.vGap(10),
+        ],
+        if (showStatus || showDesignation || showResource) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showStatus)
+                Expanded(
+                  flex: 7,
+                  child: _buildStatusTreemapPanel(data, privacy, height: 440),
+                ),
+              if (showStatus && (showDesignation || showResource))
+                tokens.hGap(10),
               if (showDesignation || showResource)
                 Expanded(
                   flex: 4,
@@ -709,93 +914,85 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                       if (showDesignation)
                         _buildDesignationPanel(
                           data,
-                          height: showResource ? 128 : 390,
+                          height: showResource ? 128 : 440,
                         ),
                       if (showDesignation && showResource)
-                        const SizedBox(height: 10),
+                        tokens.vGap(10),
                       if (showResource)
                         _buildResourcePanel(
                           data,
-                          height: showDesignation ? 252 : 390,
+                          height: showDesignation ? 302 : 440,
                         ),
                     ],
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 10),
+          tokens.vGap(10),
         ],
-        if (showServerResource || showServiceStatus) ...[
+        if (showUploaded || showSeed) ...[
+          _buildDistributionRow(data, privacy, stacked: false),
+          tokens.vGap(10),
+        ],
+        if (showServerResource || showServiceStatus || showAccount) ...[
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (showServerResource)
+              if (showServerResource || showServiceStatus)
                 Expanded(
-                  flex: showServiceStatus ? 7 : 1,
-                  child: _buildServerResourcePanel(height: 300),
+                  flex: showAccount ? 7 : 1,
+                  child: Row(
+                    children: [
+                      if (showServerResource)
+                        Expanded(child: _buildServerResourcePanel(height: 300)),
+                      if (showServerResource && showServiceStatus)
+                        tokens.hGap(10),
+                      if (showServiceStatus)
+                        Expanded(
+                          child: _buildBackendServiceStatusPanel(height: 300),
+                        ),
+                    ],
+                  ),
                 ),
-              if (showServerResource && showServiceStatus)
-                const SizedBox(width: 10),
-              if (showServiceStatus)
-                Expanded(
-                  flex: showServerResource ? 4 : 1,
-                  child: _buildBackendServiceStatusPanel(height: 300),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-        ],
-        if (showUploaded || showSeed || showAccount) ...[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (showUploaded || showSeed)
-                Expanded(
-                  flex: 7,
-                  child: _buildDistributionRow(data, privacy, stacked: false),
-                ),
-              if ((showUploaded || showSeed) && showAccount)
-                const SizedBox(width: 10),
+              if ((showServerResource || showServiceStatus) && showAccount)
+                tokens.hGap(10),
               if (showAccount)
-                Expanded(
-                  flex: 4,
-                  child: _buildAccountPanel(data, privacy, height: 300),
-                ),
+                Expanded(flex: 4, child: _buildAccountPanel(data, privacy, height: 300)),
             ],
           ),
-          const SizedBox(height: 10),
+          tokens.vGap(10),
         ],
-        if (showToday || showRank) ...[
+        if (showRank || showPublished) ...[
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (showToday)
-                Expanded(
-                  flex: 7,
-                  child: _buildTodayPanel(data, privacy, height: 440),
-                ),
-              if (showToday && showRank) const SizedBox(width: 10),
               if (showRank)
                 Expanded(
+                  flex: 7,
+                  child: _buildRankPanel(data, privacy, height: 340),
+                ),
+              if (showRank && showPublished) tokens.hGap(10),
+              if (showPublished)
+                Expanded(
                   flex: 4,
-                  child: _buildRankPanel(data, privacy, height: 440),
+                  child: _buildMonthlyPublishPanel(data, privacy, height: 340),
                 ),
             ],
           ),
-          const SizedBox(height: 10),
         ],
-        if (showPublished) _buildMonthlyPublishPanel(data, privacy),
       ],
     );
   }
 
   Widget _buildCompactContent(DashboardData data, bool privacy) {
+    final tokens = _tokens;
     final showDesignation = _isChartVisible('desktopDesignation');
     final showTrend = _isChartVisible('desktopTrend');
     final showDistribution = _anyChartVisible(const [
       'desktopUploadShare',
       'desktopSeedShare',
     ]);
+    final showStatus = _isChartVisible('desktopStatus');
     final showResource = _isChartVisible('desktopResource');
     final showServerResource = _isChartVisible('desktopServerResource');
     final showServiceStatus = _isChartVisible('desktopServiceStatus');
@@ -808,39 +1005,43 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       children: [
         if (showDesignation) ...[
           _buildDesignationPanel(data),
-          const SizedBox(height: 10),
+          tokens.vGap(10),
         ],
         if (showTrend) ...[
           _buildTrendPanel(data, privacy),
-          const SizedBox(height: 10),
-        ],
-        if (showServerResource) ...[
-          _buildServerResourcePanel(height: 320),
-          const SizedBox(height: 10),
-        ],
-        if (showServiceStatus) ...[
-          _buildBackendServiceStatusPanel(height: 250),
-          const SizedBox(height: 10),
-        ],
-        if (showDistribution) ...[
-          _buildDistributionRow(data, privacy, stacked: true),
-          const SizedBox(height: 10),
-        ],
-        if (showResource) ...[
-          _buildResourcePanel(data),
-          const SizedBox(height: 10),
-        ],
-        if (showRank) ...[
-          _buildRankPanel(data, privacy),
-          const SizedBox(height: 10),
+          tokens.vGap(10),
         ],
         if (showToday) ...[
           _buildTodayPanel(data, privacy),
-          const SizedBox(height: 10),
+          tokens.vGap(10),
+        ],
+        if (showServerResource) ...[
+          _buildServerResourcePanel(height: 320),
+          tokens.vGap(10),
+        ],
+        if (showServiceStatus) ...[
+          _buildBackendServiceStatusPanel(height: 250),
+          tokens.vGap(10),
+        ],
+        if (showStatus) ...[
+          _buildStatusTreemapPanel(data, privacy, height: 360),
+          tokens.vGap(10),
+        ],
+        if (showDistribution) ...[
+          _buildDistributionRow(data, privacy, stacked: true),
+          tokens.vGap(10),
+        ],
+        if (showResource) ...[
+          _buildResourcePanel(data),
+          tokens.vGap(10),
+        ],
+        if (showRank) ...[
+          _buildRankPanel(data, privacy),
+          tokens.vGap(10),
         ],
         if (showPublished) ...[
           _buildMonthlyPublishPanel(data, privacy),
-          const SizedBox(height: 10),
+          tokens.vGap(10),
         ],
         if (showAccount) _buildAccountPanel(data, privacy),
       ],
@@ -848,6 +1049,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   }
 
   Widget _buildDesignationPanel(DashboardData data, {double height = 128}) {
+    final tokens = _tokens;
     final siteCount = data.siteCount.toInt();
     final designation = _getDesignation(data.siteCount);
     final progress = _designationProgress(siteCount);
@@ -862,28 +1064,28 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         child: Row(
           children: [
             Container(
-              width: 54,
-              height: 54,
+              width: tokens.size(54),
+              height: tokens.size(54),
               decoration: BoxDecoration(
-                color: const Color(0xFFE11D48).withValues(alpha: 0.16),
-                borderRadius: BorderRadius.circular(8),
+                color: _red.withValues(alpha: 0.16),
+                borderRadius: shadcn.Theme.of(context).borderRadiusMd,
                 border: Border.all(
-                  color: const Color(0xFFE11D48).withValues(alpha: 0.42),
+                  color: _red.withValues(alpha: 0.42),
                 ),
               ),
-              child: const Icon(
-                FIcons.award,
-                size: 30,
-                color: Color(0xFFE11D48),
+              child: Icon(
+                shadcn.LucideIcons.award,
+                size: tokens.size(30),
+                color: _red,
               ),
             ),
-            const SizedBox(width: 12),
+            tokens.hGap(12),
             _DesignationCard(
               designation: designation,
               siteCount: siteCount,
-              width: 190,
-              height: 48,
-              fontSize: 28,
+              width: tokens.size(190),
+              height: tokens.size(48),
+              fontSize: tokens.font(28),
             ),
           ],
         ),
@@ -892,6 +1094,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   }
 
   Widget _buildServerResourcePanel({required double height}) {
+    final tokens = _tokens;
     final state = ref.watch(serverResourceProvider);
     final interval = ref.watch(serverResourceIntervalProvider);
     final duration = ref.watch(serverResourceDurationProvider);
@@ -922,37 +1125,37 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         children: [
           Row(
             children: [
-              Container(width: 3, height: 15, color: _cyan),
-              const SizedBox(width: 8),
-              const Text(
+              Container(width: tokens.size(3), height: tokens.size(15), color: _cyan),
+              tokens.hGap(8),
+              Text(
                 '服务器状态',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: _text,
-                  fontSize: 15,
+                  fontSize: tokens.font(15),
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(width: 12),
+              tokens.hGap(12),
               Expanded(
                 child: Text(
                   '$serverHost · ${interval}s · $remainingText',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _muted,
-                    fontSize: 11,
+                    fontSize: tokens.font(11),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              tokens.hGap(10),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: tokens.edgeSymmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: shadcn.Theme.of(context).borderRadiusXl,
                   border: Border.all(
                     color: statusColor.withValues(alpha: 0.28),
                   ),
@@ -963,27 +1166,26 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 11,
+                    fontSize: tokens.font(11),
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              FButton.icon(
-                style: FButtonStyle.ghost(_dashboardGhostButtonStyle),
-                onPress: () =>
+              tokens.hGap(8),
+              shadcn.IconButton.ghost(
+                        onPressed: () =>
                     ref.read(serverResourceProvider.notifier).toggle(),
-                child: Icon(
-                  running ? FIcons.pause : FIcons.play,
-                  size: 15,
+                icon: Icon(
+                  running ? shadcn.LucideIcons.pause : shadcn.LucideIcons.play,
+                  size: tokens.size(15),
                   color: running ? _red : _green,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          tokens.vGap(10),
           SizedBox(
-            height: 88,
+            height: tokens.size(88),
             child: Row(
               children: [
                 Expanded(
@@ -992,43 +1194,43 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                     '${(data?.cpu.percent ?? 0).toStringAsFixed(1)}%',
                     '${(data?.cpu.limitCores ?? 0).toStringAsFixed(1)} 核',
                     _blue,
-                    FIcons.cpu,
+                    shadcn.LucideIcons.cpu,
                   ),
                 ),
-                const SizedBox(width: 10),
+                tokens.hGap(10),
                 Expanded(
                   child: _serverResourceMetric(
                     '内存',
                     '${(data?.memory.percent ?? 0).toStringAsFixed(1)}%',
                     '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)}',
                     _violet,
-                    FIcons.memoryStick,
+                    shadcn.LucideIcons.memoryStick,
                   ),
                 ),
-                const SizedBox(width: 10),
+                tokens.hGap(10),
                 Expanded(
                   child: _serverResourceMetric(
                     '上传',
                     formatSpeed(data?.network.uploadSpeed ?? 0),
                     formatBytes(data?.network.bytesSent ?? 0),
                     _green,
-                    FIcons.arrowUp,
+                    shadcn.LucideIcons.arrowUp,
                   ),
                 ),
-                const SizedBox(width: 10),
+                tokens.hGap(10),
                 Expanded(
                   child: _serverResourceMetric(
                     '下载',
                     formatSpeed(data?.network.downloadSpeed ?? 0),
                     formatBytes(data?.network.bytesRecv ?? 0),
                     _red,
-                    FIcons.arrowDown,
+                    shadcn.LucideIcons.arrowDown,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 10),
+          tokens.vGap(10),
           Expanded(
             child: Row(
               children: [
@@ -1041,7 +1243,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                     color: _blue,
                   ),
                 ),
-                const SizedBox(width: 10),
+                tokens.hGap(10),
                 Expanded(
                   child: _serverResourceUsageChart(
                     title: '内存占用',
@@ -1069,14 +1271,15 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     required Color color,
     String? displayValue,
   }) {
+    final tokens = _tokens;
     final points = _serverResourceUsagePoints(history, valueOf);
     final valueText = displayValue ?? '${value.toStringAsFixed(1)}%';
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 9, 10, 6),
+      padding: tokens.edgeLTRB(10, 9, 10, 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Column(
@@ -1089,14 +1292,14 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _text,
-                    fontSize: 12,
+                    fontSize: tokens.font(12),
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              tokens.hGap(8),
               Flexible(
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
@@ -1106,7 +1309,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                     maxLines: 1,
                     style: TextStyle(
                       color: color,
-                      fontSize: 12,
+                      fontSize: tokens.font(12),
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -1114,15 +1317,15 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          tokens.vGap(6),
           Expanded(
             child: points.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       '等待数据',
                       style: TextStyle(
                         color: _muted,
-                        fontSize: 11,
+                        fontSize: tokens.font(11),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1190,63 +1393,77 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     Color color,
     IconData icon,
   ) {
+    final tokens = _tokens;
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: tokens.edgeAll(8),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final showSubtitle = constraints.maxHeight >= tokens.size(58);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, size: 14, color: color),
-              const SizedBox(width: 6),
+              Row(
+                children: [
+                  Icon(icon, size: tokens.size(14), color: color),
+                  tokens.hGap(6),
+                  Expanded(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: _muted,
+                        fontSize: tokens.font(11),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: _muted,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      value,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: tokens.font(16),
+                        fontWeight: FontWeight.w900,
+                        height: 1,
+                      ),
+                    ),
                   ),
                 ),
               ),
+              if (showSubtitle)
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: _muted,
+                    fontSize: tokens.font(10),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
             ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              height: 1,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: _muted,
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildBackendServiceStatusPanel({required double height}) {
+    final tokens = _tokens;
     final state = ref.watch(backendServiceStatusProvider);
     final data = state.data;
     final summary = data?.summary ?? BackendServiceSummary.empty;
@@ -1271,37 +1488,37 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         children: [
           Row(
             children: [
-              Container(width: 3, height: 15, color: _green),
-              const SizedBox(width: 8),
-              const Text(
+              Container(width: tokens.size(3), height: tokens.size(15), color: _green),
+              tokens.hGap(8),
+              Text(
                 '后台服务状态',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: _text,
-                  fontSize: 15,
+                  fontSize: tokens.font(15),
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(width: 12),
+              tokens.hGap(12),
               Expanded(
                 child: Text(
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _muted,
-                    fontSize: 11,
+                    fontSize: tokens.font(11),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              tokens.hGap(10),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: tokens.edgeSymmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: shadcn.Theme.of(context).borderRadiusXl,
                   border: Border.all(
                     color: statusColor.withValues(alpha: 0.28),
                   ),
@@ -1312,31 +1529,30 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: statusColor,
-                    fontSize: 11,
+                    fontSize: tokens.font(11),
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              FButton.icon(
-                style: FButtonStyle.ghost(_dashboardGhostButtonStyle),
-                onPress: () =>
+              tokens.hGap(8),
+              shadcn.IconButton.ghost(
+                        onPressed: () =>
                     ref.read(backendServiceStatusProvider.notifier).toggle(),
-                child: Icon(
-                  running ? FIcons.pause : FIcons.play,
-                  size: 15,
+                icon: Icon(
+                  running ? shadcn.LucideIcons.pause : shadcn.LucideIcons.play,
+                  size: tokens.size(15),
                   color: running ? _red : _green,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          tokens.vGap(10),
           Row(
             children: [
               Expanded(
                 child: _backendServiceSummaryCell('总数', summary.total, _text),
               ),
-              const SizedBox(width: 8),
+              tokens.hGap(8),
               Expanded(
                 child: _backendServiceSummaryCell(
                   '运行',
@@ -1344,7 +1560,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                   _green,
                 ),
               ),
-              const SizedBox(width: 8),
+              tokens.hGap(8),
               Expanded(
                 child: _backendServiceSummaryCell(
                   '停止',
@@ -1352,13 +1568,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                   _amber,
                 ),
               ),
-              const SizedBox(width: 8),
+              tokens.hGap(8),
               Expanded(
                 child: _backendServiceSummaryCell('失败', summary.failed, _red),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          tokens.vGap(8),
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
@@ -1379,9 +1595,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                 );
                 final rowExtent = rows <= 1
                     ? constraints.maxHeight
-                    : ((constraints.maxHeight - 8 * (rows - 1)) / rows).clamp(
-                        42.0,
-                        56.0,
+                    : ((constraints.maxHeight - tokens.size(8) * (rows - 1)) / rows).clamp(
+                        tokens.size(42),
+                        tokens.size(56),
                       );
                 final visibleServices = services
                     .take(math.min(services.length, columns * rows))
@@ -1391,8 +1607,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: columns,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
+                    crossAxisSpacing: tokens.size(8),
+                    mainAxisSpacing: tokens.size(8),
                     mainAxisExtent: rowExtent,
                   ),
                   itemCount: visibleServices.length,
@@ -1408,11 +1624,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   }
 
   Widget _backendServiceSummaryCell(String label, int value, Color color) {
+    final tokens = _tokens;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: tokens.edgeSymmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: color.withValues(alpha: 0.20)),
       ),
       child: Row(
@@ -1422,9 +1639,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 color: _muted,
-                fontSize: 10,
+                fontSize: tokens.font(10),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -1435,7 +1652,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: color,
-              fontSize: 15,
+              fontSize: tokens.font(15),
               fontWeight: FontWeight.w900,
               height: 1,
             ),
@@ -1446,6 +1663,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   }
 
   Widget _backendServiceGridItem(BackendServiceInfo service) {
+    final tokens = _tokens;
     final color = _backendServiceStateColor(service.state);
     final uptime = _formatBackendServiceUptime(service.uptime);
     final detail = service.running && service.pid > 0
@@ -1455,59 +1673,66 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         : 'pid ${service.pid}';
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+      padding: tokens.edgeSymmetric(horizontal: 9, vertical: 7),
       decoration: BoxDecoration(
         color: _panelSoft.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: _line.withValues(alpha: 0.70)),
       ),
       child: Row(
         children: [
           Container(
-            width: 7,
-            height: 7,
+            width: tokens.size(7),
+            height: tokens.size(7),
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
-          const SizedBox(width: 8),
+          tokens.hGap(8),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  service.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: _text,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    height: 1,
-                  ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: SizedBox(
+                width: 180,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      service.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: _text,
+                        fontSize: tokens.font(11),
+                        fontWeight: FontWeight.w800,
+                        height: 1,
+                      ),
+                    ),
+                    tokens.vGap(3),
+                    Text(
+                      detail,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: _muted,
+                        fontSize: tokens.font(9),
+                        fontWeight: FontWeight.w600,
+                        height: 1,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  detail,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: _muted,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                    height: 1,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(width: 6),
+          tokens.hGap(6),
           Text(
             service.state.isEmpty ? '-' : service.state,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: color,
-              fontSize: 9,
+              fontSize: tokens.font(9),
               fontWeight: FontWeight.w900,
               height: 1,
             ),
@@ -1518,13 +1743,14 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   }
 
   Widget _backendServicePanelMessage(String text, Color color) {
+    final tokens = _tokens;
     return Container(
       width: double.infinity,
       alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: tokens.edgeSymmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: color.withValues(alpha: 0.20)),
       ),
       child: Text(
@@ -1534,7 +1760,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         textAlign: TextAlign.center,
         style: TextStyle(
           color: color,
-          fontSize: 11,
+          fontSize: tokens.font(11),
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -1718,7 +1944,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                     legend: Legend(
                       isVisible: true,
                       position: LegendPosition.bottom,
-                      textStyle: const TextStyle(color: _muted, fontSize: 11),
+                      textStyle: TextStyle(color: _muted, fontSize: _tokens.font(11)),
                       iconHeight: 8,
                       iconWidth: 8,
                     ),
@@ -1747,8 +1973,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                         xValueMapper: (p, _) => _formatMonth(p.label),
                         yValueMapper: (p, _) => p.uploaded,
                         color: _green.withValues(alpha: 0.78),
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(3),
+                        borderRadius: BorderRadius.vertical(
+                          top: shadcn.Theme.of(context).radiusXsRadius,
                         ),
                       ),
                       ColumnSeries<_TrendPoint, String>(
@@ -1757,8 +1983,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                         xValueMapper: (p, _) => _formatMonth(p.label),
                         yValueMapper: (p, _) => p.downloaded,
                         color: _red.withValues(alpha: 0.72),
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(3),
+                        borderRadius: BorderRadius.vertical(
+                          top: shadcn.Theme.of(context).radiusXsRadius,
                         ),
                       ),
                       SplineAreaSeries<_TrendPoint, String>(
@@ -1822,12 +2048,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   }) {
     final showUploaded = _isChartVisible('desktopUploadShare');
     final showSeed = _isChartVisible('desktopSeedShare');
+    final tokens = _tokens;
 
     if (stacked) {
       return Column(
         children: [
           if (showUploaded) _buildUploadSharePanel(data, privacy),
-          if (showUploaded && showSeed) const SizedBox(height: 10),
+          if (showUploaded && showSeed) tokens.vGap(10),
           if (showSeed) _buildSeedSharePanel(data, privacy),
         ],
       );
@@ -1837,9 +2064,39 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       children: [
         if (showUploaded)
           Expanded(child: _buildUploadSharePanel(data, privacy)),
-        if (showUploaded && showSeed) const SizedBox(width: 10),
+        if (showUploaded && showSeed) tokens.hGap(10),
         if (showSeed) Expanded(child: _buildSeedSharePanel(data, privacy)),
       ],
+    );
+  }
+
+  Widget _buildStatusTreemapPanel(
+    DashboardData data,
+    bool privacy, {
+    double height = 440,
+  }) {
+    final items = data.statusList
+        .where((item) => item.value.uploaded > 0)
+        .toList()
+      ..sort((a, b) => b.value.uploaded.compareTo(a.value.uploaded));
+
+    return _boardPanel(
+      title: '站点状态',
+      subtitle: '上传体积矩形图 · 下载占比叠加',
+      height: height,
+      child: items.isEmpty
+          ? _boardEmpty('暂无站点状态数据')
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                return TreemapSection(
+                  data: items,
+                  privacy: privacy,
+                  height: constraints.maxHeight,
+                  displayCount: _treemapCount,
+                  colors: _treemapColors,
+                );
+              },
+            ),
     );
   }
 
@@ -1848,23 +2105,93 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       data.statusList,
       privacy,
       (record) => record.value.uploaded,
-      limit: 8,
+      limit: 10,
     );
     return _boardPanel(
       title: '上传占比',
-      subtitle: '站点累计上传分布',
-      height: 300,
-      child: _donutChart(items, _green, formatter: formatBytes),
+      subtitle: '累计上传分布 · 前十站点',
+      height: 360,
+      child: _distributionShareContent(
+        items: items,
+        baseColor: shadcn.Theme.of(context).colorScheme.primary,
+        formatter: formatBytes,
+      ),
     );
   }
 
   Widget _buildSeedSharePanel(DashboardData data, bool privacy) {
-    final items = _topKv(data.seedDataList, privacy, limit: 8);
+    final items = _seedAverageGroups(data.seedDataList, privacy);
+    final legendItems = items.take(10).toList();
     return _boardPanel(
       title: '做种分布',
-      subtitle: '活跃做种站点结构',
-      height: 300,
-      child: _donutChart(items, _blue, formatter: _formatCount),
+      subtitle: '低于平均做种量的站点已合并',
+      height: 360,
+      child: _distributionShareContent(
+        items: items,
+        legendItems: legendItems,
+        baseColor: _green,
+        formatter: formatBytes,
+      ),
+    );
+  }
+
+  Widget _distributionShareContent({
+    required List<_NameValuePoint> items,
+    List<_NameValuePoint>? legendItems,
+    required Color baseColor,
+    required String Function(num) formatter,
+  }) {
+    final tokens = _tokens;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 560;
+        if (compact) {
+          return Column(
+            children: [
+              SizedBox(
+                height: tokens.size(150),
+                child: _donutChart(items, baseColor, formatter: formatter),
+              ),
+              Container(
+                height: tokens.size(1),
+                margin: tokens.edgeSymmetric(vertical: 10),
+                color: _line,
+              ),
+              Expanded(
+                child: _rankList(
+                  title: '图例前十',
+                  items: legendItems ?? items,
+                  color: baseColor,
+                  formatter: formatter,
+                ),
+              ),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(
+              flex: 5,
+              child: _donutChart(items, baseColor, formatter: formatter),
+            ),
+            Container(
+              width: tokens.size(1),
+              margin: tokens.edgeSymmetric(horizontal: 14),
+              color: _line,
+            ),
+            Expanded(
+              flex: 4,
+              child: _rankList(
+                title: '图例前十',
+                items: legendItems ?? items,
+                color: baseColor,
+                formatter: formatter,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -1873,21 +2200,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     Color baseColor, {
     required String Function(num) formatter,
   }) {
+    final tokens = _tokens;
     if (items.isEmpty) {
-      return const Center(
-        child: Text('暂无数据', style: TextStyle(color: _muted)),
-      );
+      return _boardEmpty('暂无数据');
     }
+    final total = items.fold<num>(0, (sum, item) => sum + item.value);
     return SfCircularChart(
       margin: EdgeInsets.zero,
-      legend: Legend(
-        isVisible: true,
-        position: LegendPosition.right,
-        overflowMode: LegendItemOverflowMode.scroll,
-        textStyle: const TextStyle(color: _muted, fontSize: 11),
-        iconHeight: 8,
-        iconWidth: 8,
-      ),
       tooltipBehavior: TooltipBehavior(
         enable: true,
         activationMode: ActivationMode.singleTap,
@@ -1900,13 +2219,41 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
             _donutTooltip(dataPoint, items, formatter),
       ),
+      annotations: [
+        CircularChartAnnotation(
+          widget: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                formatter(total),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: _text,
+                  fontSize: tokens.font(13),
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              tokens.vGap(2),
+              Text(
+                '总计',
+                style: TextStyle(
+                  color: _muted,
+                  fontSize: tokens.font(10),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
       series: <CircularSeries>[
         DoughnutSeries<_NameValuePoint, String>(
           dataSource: items,
           xValueMapper: (p, _) => p.name,
           yValueMapper: (p, _) => p.value,
           pointColorMapper: (_, index) => _palette(index, baseColor),
-          radius: '88%',
+          radius: '86%',
           innerRadius: '62%',
           dataLabelSettings: const DataLabelSettings(isVisible: false),
         ),
@@ -1915,6 +2262,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   }
 
   Widget _buildResourcePanel(DashboardData data, {double height = 300}) {
+    final tokens = _tokens;
     return _boardPanel(
       title: '全局资源',
       subtitle: '全部站点实际指标',
@@ -1929,22 +2277,22 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                     '总上传',
                     formatBytes(data.totalUploaded),
                     _green,
-                    FIcons.arrowUp,
+                    shadcn.LucideIcons.arrowUp,
                   ),
                 ),
-                const SizedBox(width: 8),
+                tokens.hGap(8),
                 Expanded(
                   child: _resourceMetric(
                     '总下载',
                     formatBytes(data.totalDownloaded),
                     _red,
-                    FIcons.arrowDown,
+                    shadcn.LucideIcons.arrowDown,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          tokens.vGap(8),
           Expanded(
             child: Row(
               children: [
@@ -1953,22 +2301,22 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                     '做种体积',
                     formatBytes(data.totalSeedVol),
                     _blue,
-                    FIcons.hardDrive,
+                    shadcn.LucideIcons.hardDrive,
                   ),
                 ),
-                const SizedBox(width: 8),
+                tokens.hGap(8),
                 Expanded(
                   child: _resourceMetric(
                     '发布数',
                     _formatCount(data.totalPublished),
                     _amber,
-                    FIcons.upload,
+                    shadcn.LucideIcons.upload,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          tokens.vGap(8),
           Expanded(
             child: Row(
               children: [
@@ -1976,17 +2324,17 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                   child: _resourceMetric(
                     '做种任务',
                     _formatCount(data.totalSeeding),
-                    const Color(0xFF5EEAD4),
-                    FIcons.database,
+                    tokens.treemapColors[7],
+                    shadcn.LucideIcons.database,
                   ),
                 ),
-                const SizedBox(width: 8),
+                tokens.hGap(8),
                 Expanded(
                   child: _resourceMetric(
                     '下载任务',
                     _formatCount(data.totalLeeching),
                     _orange,
-                    FIcons.download,
+                    shadcn.LucideIcons.download,
                   ),
                 ),
               ],
@@ -2003,17 +2351,18 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     Color color,
     IconData icon,
   ) {
+    final tokens = _tokens;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+      padding: tokens.edgeSymmetric(horizontal: 9, vertical: 7),
       decoration: BoxDecoration(
         color: _panelSoft.withValues(alpha: 0.58),
-        borderRadius: BorderRadius.circular(7),
+        borderRadius: shadcn.Theme.of(context).borderRadiusSm,
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 15, color: color),
-          const SizedBox(width: 8),
+          Icon(icon, size: tokens.size(15), color: color),
+          tokens.hGap(8),
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
@@ -2027,19 +2376,19 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                     Text(
                       label,
                       maxLines: 1,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: _muted,
-                        fontSize: 10,
+                        fontSize: tokens.font(10),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    tokens.vGap(3),
                     Text(
                       value,
                       maxLines: 1,
                       style: TextStyle(
                         color: color,
-                        fontSize: 17,
+                        fontSize: tokens.font(17),
                         fontWeight: FontWeight.w900,
                         height: 1,
                       ),
@@ -2245,7 +2594,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     final segments = <_TooltipSegment>[];
     void addSpace() {
       if (segments.isNotEmpty) {
-        segments.add(const _TooltipSegment('  ', _muted));
+        segments.add(_TooltipSegment('  ', _muted));
       }
     }
 
@@ -2396,24 +2745,26 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     double width = 220,
     double maxHeight = 240,
   }) {
+    final tokens = _tokens;
     final hasSummary = rows.isNotEmpty && rows.first.label == '汇总';
     final summary = hasSummary ? rows.first : null;
     final detailRows = hasSummary ? rows.skip(1).toList() : rows;
+    final cs = shadcn.Theme.of(context).colorScheme;
 
     return Container(
-      width: width,
-      constraints: BoxConstraints(maxHeight: maxHeight),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      width: tokens.size(width),
+      constraints: BoxConstraints(maxHeight: tokens.size(maxHeight)),
+      padding: tokens.edgeSymmetric(horizontal: 10, vertical: 8),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: _panel,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _cyan.withValues(alpha: 0.42)),
+        color: cs.popover,
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+        border: Border.all(color: cs.border.withValues(alpha: 0.72)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF000000).withValues(alpha: 0.45),
-            blurRadius: 22,
-            offset: const Offset(0, 8),
+            color: cs.foreground.withValues(alpha: 0.18),
+            blurRadius: tokens.size(22),
+            offset: Offset(0, tokens.size(8)),
           ),
         ],
       ),
@@ -2428,21 +2779,21 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                   hasSummary ? '$title汇总' : title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _text,
-                    fontSize: 12,
+                    fontSize: tokens.font(12),
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
               if (summary != null) ...[
-                const SizedBox(width: 12),
-                _tooltipValue(summary, fontSize: 11),
+                tokens.hGap(12),
+                _tooltipValue(summary, fontSize: tokens.font(11)),
               ],
             ],
           ),
           if (detailRows.isNotEmpty) ...[
-            SizedBox(height: hasSummary ? 12 : 8),
+            tokens.vGap(hasSummary ? 12 : 8),
             Flexible(
               fit: FlexFit.loose,
               child: SingleChildScrollView(
@@ -2450,7 +2801,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     for (var i = 0; i < detailRows.length; i++) ...[
-                      if (i > 0) const SizedBox(height: 5),
+                      if (i > 0) tokens.vGap(5),
                       _tooltipRow(detailRows[i]),
                     ],
                   ],
@@ -2464,6 +2815,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   }
 
   Widget _tooltipRow(_TooltipLine row) {
+    final tokens = _tokens;
     return Row(
       children: [
         Expanded(
@@ -2471,14 +2823,14 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
             row.label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               color: _muted,
-              fontSize: 11,
+              fontSize: tokens.font(11),
               fontWeight: FontWeight.w700,
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        tokens.hGap(12),
         Flexible(
           child: Align(
             alignment: Alignment.centerRight,
@@ -2527,6 +2879,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     bool privacy, {
     double height = 440,
   }) {
+    final tokens = _tokens;
     final uploaded = _topStatus(
       data.statusList,
       privacy,
@@ -2554,8 +2907,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
             ),
           ),
           Container(
-            width: 1,
-            margin: const EdgeInsets.symmetric(horizontal: 12),
+            width: tokens.size(1),
+            margin: tokens.edgeSymmetric(horizontal: 12),
             color: _line,
           ),
           Expanded(
@@ -2576,33 +2929,81 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     bool privacy, {
     double height = 360,
   }) {
+    final tokens = _tokens;
     final upload = _topKv(data.uploadIncrementDataList, privacy, limit: 10);
     final download = _topKv(data.downloadIncrementDataList, privacy, limit: 10);
+    final uploadAll = _topKv(data.uploadIncrementDataList, privacy, limit: 999);
+    final downloadAll = _topKv(
+      data.downloadIncrementDataList,
+      privacy,
+      limit: 999,
+    );
     return _boardPanel(
       title: '今日增量',
-      subtitle: '站点上传/下载变化',
+      subtitle: '上传/下载增量结构与 TOP 明细',
       height: height,
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: _rankList(
-              title: '今日上传 TOP',
-              items: upload,
-              color: _cyan,
-              formatter: formatBytes,
+          SizedBox(
+            height: tokens.size(158),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _todayIncrementDonutBlock(
+                    title: '今日上传',
+                    items: uploadAll,
+                    total: data.todayUploadIncrement,
+                    baseColor: _cyan,
+                    icon: shadcn.LucideIcons.arrowUp,
+                  ),
+                ),
+                Container(
+                  width: tokens.size(1),
+                  margin: tokens.edgeSymmetric(horizontal: 12),
+                  color: _line,
+                ),
+                Expanded(
+                  child: _todayIncrementDonutBlock(
+                    title: '今日下载',
+                    items: downloadAll,
+                    total: data.todayDownloadIncrement,
+                    baseColor: _orange,
+                    icon: shadcn.LucideIcons.arrowDown,
+                  ),
+                ),
+              ],
             ),
           ),
           Container(
-            width: 1,
-            margin: const EdgeInsets.symmetric(horizontal: 12),
+            height: tokens.size(1),
+            margin: tokens.edgeSymmetric(vertical: 12),
             color: _line,
           ),
           Expanded(
-            child: _rankList(
-              title: '今日下载 TOP',
-              items: download,
-              color: _orange,
-              formatter: formatBytes,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _rankList(
+                    title: '上传 TOP',
+                    items: upload,
+                    color: _cyan,
+                    formatter: formatBytes,
+                  ),
+                ),
+                Container(
+                  width: tokens.size(1),
+                  margin: tokens.edgeSymmetric(horizontal: 12),
+                  color: _line,
+                ),
+                Expanded(
+                  child: _rankList(
+                    title: '下载 TOP',
+                    items: download,
+                    color: _orange,
+                    formatter: formatBytes,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -2610,12 +3011,168 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     );
   }
 
-  Widget _buildMonthlyPublishPanel(DashboardData data, bool privacy) {
+  Widget _todayIncrementDonutBlock({
+    required String title,
+    required List<_NameValuePoint> items,
+    required num total,
+    required Color baseColor,
+    required IconData icon,
+  }) {
+    final tokens = _tokens;
+    final chartTotal = items.fold<num>(0, (sum, item) => sum + item.value);
+    final displayTotal = chartTotal > 0 ? chartTotal : total;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: tokens.size(14), color: baseColor),
+            tokens.hGap(6),
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: _text,
+                  fontSize: tokens.font(12),
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ],
+        ),
+        tokens.vGap(8),
+        Expanded(
+          child: _todayIncrementDonutChart(
+            items: items,
+            total: displayTotal,
+            baseColor: baseColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _todayIncrementDonutChart({
+    required List<_NameValuePoint> items,
+    required num total,
+    required Color baseColor,
+  }) {
+    final tokens = _tokens;
+    if (items.isEmpty) {
+      return Center(
+        child: SizedBox.square(
+          dimension: tokens.size(108),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: _line.withValues(alpha: 0.72),
+                    width: tokens.size(16),
+                  ),
+                ),
+              ),
+              Text(
+                '无数据',
+                style: TextStyle(
+                  color: _muted,
+                  fontSize: tokens.font(11),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SfCircularChart(
+      margin: EdgeInsets.zero,
+      tooltipBehavior: TooltipBehavior(
+        enable: true,
+        activationMode: ActivationMode.singleTap,
+        animationDuration: 0,
+        duration: 5000,
+        elevation: 24,
+        opacity: 1,
+        color: _panel,
+        canShowMarker: false,
+        builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
+            _todayIncrementDonutTooltip(dataPoint, items),
+      ),
+      annotations: [
+        CircularChartAnnotation(
+          widget: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                formatBytes(total),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: _text,
+                  fontSize: tokens.font(13),
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              tokens.vGap(2),
+              Text(
+                '总计',
+                style: TextStyle(
+                  color: _muted,
+                  fontSize: tokens.font(10),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      series: <CircularSeries>[
+        DoughnutSeries<_NameValuePoint, String>(
+          dataSource: items,
+          xValueMapper: (p, _) => p.name,
+          yValueMapper: (p, _) => p.value,
+          pointColorMapper: (_, index) => _palette(index, baseColor),
+          radius: '86%',
+          innerRadius: '62%',
+          dataLabelSettings: const DataLabelSettings(isVisible: false),
+        ),
+      ],
+    );
+  }
+
+  Widget _todayIncrementDonutTooltip(
+    dynamic dataPoint,
+    List<_NameValuePoint> items,
+  ) {
+    if (dataPoint is! _NameValuePoint) {
+      return const SizedBox.shrink();
+    }
+
+    final total = items.fold<num>(0, (sum, item) => sum + item.value);
+    final percent = total <= 0 ? 0 : dataPoint.value / total * 100;
+    return _chartTooltip(dataPoint.name, [
+      _TooltipLine('数值', formatBytes(dataPoint.value), _cyan),
+      _TooltipLine('占比', '${percent.toStringAsFixed(1)}%', _amber),
+    ]);
+  }
+
+  Widget _buildMonthlyPublishPanel(
+    DashboardData data,
+    bool privacy, {
+    double height = 300,
+  }) {
     final items = _monthTrend(data);
     return _boardPanel(
       title: '月度发布',
       subtitle: '最近 12 个月发布走势',
-      height: 300,
+      height: height,
       child: SfCartesianChart(
         plotAreaBorderWidth: 0,
         margin: EdgeInsets.zero,
@@ -2659,7 +3216,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
             xValueMapper: (p, _) => _formatMonth(p.label),
             yValueMapper: (p, _) => p.published,
             color: _amber.withValues(alpha: 0.72),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+            borderRadius: BorderRadius.vertical(top: shadcn.Theme.of(context).radiusXsRadius),
           ),
         ],
       ),
@@ -2671,6 +3228,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     bool privacy, {
     double height = 340,
   }) {
+    final tokens = _tokens;
     final email = _topKv(data.emailCount, privacy, limit: 8);
     final username = _topKv(data.usernameCount, privacy, limit: 8);
     return _boardPanel(
@@ -2688,8 +3246,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
             ),
           ),
           Container(
-            width: 1,
-            margin: const EdgeInsets.symmetric(horizontal: 12),
+            width: tokens.size(1),
+            margin: tokens.edgeSymmetric(horizontal: 12),
             color: _line,
           ),
           Expanded(
@@ -2711,6 +3269,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     required Color color,
     required String Function(num) formatter,
   }) {
+    final tokens = _tokens;
     final maxValue = items.fold<num>(
       0,
       (max, item) => math.max(max, item.value),
@@ -2720,22 +3279,22 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             color: _text,
-            fontSize: 13,
+            fontSize: tokens.font(13),
             fontWeight: FontWeight.w900,
           ),
         ),
-        const SizedBox(height: 12),
+        tokens.vGap(12),
         Expanded(
           child: items.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text('暂无数据', style: TextStyle(color: _muted)),
                 )
               : ListView.separated(
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  separatorBuilder: (_, __) => tokens.vGap(10),
                   itemBuilder: (context, index) {
                     final item = items[index];
                     final factor = maxValue > 0 ? item.value / maxValue : 0.0;
@@ -2745,12 +3304,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                         Row(
                           children: [
                             SizedBox(
-                              width: 22,
+                              width: tokens.size(22),
                               child: Text(
                                 '${index + 1}'.padLeft(2, '0'),
                                 style: TextStyle(
                                   color: index < 3 ? color : _muted,
-                                  fontSize: 12,
+                                  fontSize: tokens.font(12),
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
@@ -2760,25 +3319,25 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                                 item.name,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   color: _text,
-                                  fontSize: 12,
+                                  fontSize: tokens.font(12),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            tokens.hGap(8),
                             Text(
                               formatter(item.value),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: _muted,
-                                fontSize: 11,
+                                fontSize: tokens.font(11),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 5),
+                        tokens.vGap(5),
                         _boardProgressBar(factor, color),
                       ],
                     );
@@ -2789,12 +3348,27 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     );
   }
 
+  Widget _boardEmpty(String text) {
+    final tokens = _tokens;
+    return Center(
+      child: Text(
+        text,
+        style: TextStyle(
+          color: _muted,
+          fontSize: tokens.font(12),
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
   Widget _boardProgressBar(num value, Color color) {
+    final tokens = _tokens;
     return Container(
-      height: 4,
+      height: tokens.size(4),
       decoration: BoxDecoration(
         color: _line.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(2),
+        borderRadius: shadcn.Theme.of(context).borderRadiusXs,
       ),
       alignment: Alignment.centerLeft,
       child: FractionallySizedBox(
@@ -2802,7 +3376,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         child: Container(
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: shadcn.Theme.of(context).borderRadiusXs,
           ),
         ),
       ),
@@ -2815,6 +3389,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     required double height,
     required Widget child,
   }) {
+    final tokens = _tokens;
     return _panelContainer(
       height: height,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -2823,16 +3398,16 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         children: [
           Row(
             children: [
-              Container(width: 3, height: 15, color: _cyan),
-              const SizedBox(width: 8),
+              Container(width: tokens.size(3), height: tokens.size(15), color: _cyan),
+              tokens.hGap(8),
               Expanded(
                 child: Text(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _text,
-                    fontSize: 15,
+                    fontSize: tokens.font(15),
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -2841,15 +3416,15 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                 subtitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   color: _muted,
-                  fontSize: 11,
+                  fontSize: tokens.font(11),
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          tokens.vGap(10),
           Expanded(child: child),
         ],
       ),
@@ -2861,26 +3436,39 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     EdgeInsetsGeometry padding = const EdgeInsets.all(12),
     double? height,
   }) {
+    final tokens = _tokens;
+    final theme = shadcn.Theme.of(context);
     return Container(
-      height: height,
-      padding: padding,
+      height: height == null ? null : tokens.size(height),
+      padding: tokens.resolvePadding(padding),
       decoration: BoxDecoration(
-        color: _panel.withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _line.withValues(alpha: 0.88)),
+        color: tokens.panel,
+        gradient: tokens.panelGradient,
+        borderRadius: theme.borderRadiusMd,
+        border: Border.all(color: tokens.panelBorder),
         boxShadow: [
           BoxShadow(
-            color: _cyan.withValues(alpha: 0.05),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
+            color: tokens.panelShadow,
+            blurRadius: tokens.size(tokens.isDark ? 24 : 28),
+            offset: Offset(0, tokens.size(10)),
           ),
+          if (!tokens.isDark)
+            BoxShadow(
+              color: tokens.background.withValues(alpha: 0.80),
+              blurRadius: 0,
+              offset: Offset(0, tokens.size(1)),
+              spreadRadius: -1,
+            ),
         ],
       ),
       child: child,
     );
   }
 
-  TextStyle _axisStyle() => const TextStyle(color: _muted, fontSize: 10);
+  TextStyle _axisStyle() => TextStyle(
+    color: _muted,
+    fontSize: _tokens.font(10),
+  );
 
   List<_TrendPoint> _monthTrend(DashboardData data) {
     final map = SplayTreeMap<String, _TrendPoint>();
@@ -2950,19 +3538,37 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     return items.take(limit).toList();
   }
 
+  List<_NameValuePoint> _seedAverageGroups(List<KV> source, bool privacy) {
+    final seeds = source.where((item) => item.value > 0).toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    if (seeds.isEmpty) return const [];
+
+    final total = seeds.fold<num>(0, (sum, item) => sum + item.value);
+    final average = total / seeds.length;
+    final visible = seeds.where((item) => item.value >= average).toList();
+    final belowAverage = seeds.where((item) => item.value < average).toList();
+    final items = [
+      for (final record in visible)
+        _NameValuePoint(_mask(record.name, privacy), record.value),
+    ];
+
+    if (belowAverage.isNotEmpty) {
+      items.add(
+        _NameValuePoint(
+          '低于平均 ${belowAverage.length} 个站点',
+          belowAverage.fold<num>(0, (sum, item) => sum + item.value),
+        ),
+      );
+    }
+
+    return items;
+  }
+
   Color _palette(int index, Color base) {
-    const colors = [_cyan, _green, _amber, _red, _blue, _violet, _orange];
+    final colors = [_cyan, _green, _amber, _red, _blue, _violet, _orange];
     if (index == 0) return base;
     return colors[index % colors.length];
   }
-}
-
-FButtonStyle _dashboardGhostButtonStyle(FButtonStyle style) {
-  return style.copyWith(
-    decoration: FWidgetStateMap.all(const BoxDecoration()),
-    contentStyle: (content) => content.copyWith(padding: EdgeInsets.zero),
-    iconContentStyle: (content) => content.copyWith(padding: EdgeInsets.zero),
-  );
 }
 
 class _DesignationCard extends StatefulWidget {
@@ -2986,7 +3592,6 @@ class _DesignationCard extends StatefulWidget {
 
 class _DesignationCardState extends State<_DesignationCard>
     with TickerProviderStateMixin {
-  late FPopoverController _popoverCtrl;
   late AnimationController _animCtrl;
 
   static const _designations = <int, String>{
@@ -3000,41 +3605,9 @@ class _DesignationCardState extends State<_DesignationCard>
     200: '万界之尊',
   };
 
-  static const _gradients = <int, List<Color>>{
-    1: [Color(0xFF10B981), Color(0xFF06B6D4), Color(0xFF10B981)],
-    10: [Color(0xFF06B6D4), Color(0xFF3B82F6), Color(0xFF06B6D4)],
-    20: [Color(0xFF3B82F6), Color(0xFF8B5CF6), Color(0xFF3B82F6)],
-    30: [Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF8B5CF6)],
-    50: [
-      Color(0xFF3B82F6),
-      Color(0xFF8B5CF6),
-      Color(0xFFEC4899),
-      Color(0xFF3B82F6),
-    ],
-    100: [
-      Color(0xFFFF6B6B),
-      Color(0xFFFF8E53),
-      Color(0xFFFFD93D),
-      Color(0xFFFF6B6B),
-    ],
-    150: [
-      Color(0xFFE11D48),
-      Color(0xFFFF6B6B),
-      Color(0xFFFFD93D),
-      Color(0xFFE11D48),
-    ],
-    200: [
-      Color(0xFFFFD700),
-      Color(0xFFE11D48),
-      Color(0xFF9B59B6),
-      Color(0xFFFFD700),
-    ],
-  };
-
   @override
   void initState() {
     super.initState();
-    _popoverCtrl = FPopoverController(vsync: this);
     _animCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -3044,44 +3617,62 @@ class _DesignationCardState extends State<_DesignationCard>
   @override
   void dispose() {
     _animCtrl.dispose();
-    _popoverCtrl.dispose();
     super.dispose();
   }
 
-  List<Color> get _colors {
-    for (final key in _gradients.keys.toList().reversed) {
-      if (widget.siteCount >= key) return _gradients[key]!;
+  List<Color> _colors(_DashboardThemeTokens tokens) {
+    final palette = tokens.treemapColors;
+    if (widget.siteCount >= 200) {
+      return [tokens.amber, tokens.red, tokens.violet, tokens.amber];
     }
-    return _gradients[1]!;
+    if (widget.siteCount >= 150) {
+      return [tokens.red, tokens.orange, tokens.amber, tokens.red];
+    }
+    if (widget.siteCount >= 100) {
+      return [tokens.orange, tokens.amber, tokens.green, tokens.orange];
+    }
+    if (widget.siteCount >= 50) {
+      return [tokens.blue, tokens.violet, tokens.red, tokens.blue];
+    }
+    if (widget.siteCount >= 30) return [tokens.violet, tokens.red, tokens.violet];
+    if (widget.siteCount >= 20) return [tokens.blue, tokens.violet, tokens.blue];
+    if (widget.siteCount >= 10) return [tokens.cyan, tokens.blue, tokens.cyan];
+    return [tokens.green, tokens.cyan, palette.first];
   }
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
-    final typo = FTheme.of(context).typography;
+    final tokens = _DashboardThemeTokens.of(context);
+    final cs = tokens.cs;
+    final typo = tokens.theme.typography;
 
-    return FPopover(
-      controller: _popoverCtrl,
-      popoverBuilder: (context, _) => _buildPopoverContent(cs, typo),
-      child: FButton(
-        style: FButtonStyle.ghost(_dashboardGhostButtonStyle),
-        onPress: () => _popoverCtrl.toggle(),
-        child: Container(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => showDialog(
+        context: context,
+        builder: (_) => Dialog(child: _buildPopoverContent(tokens, cs, typo)),
+      ),
+      child: Container(
           width: widget.width,
           height: widget.height,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: tokens.edgeSymmetric(horizontal: 12),
           alignment: Alignment.centerLeft,
           child: SizedBox(
-            width: widget.width - 24,
+            width: widget.width - tokens.size(24),
             height: widget.height,
-            child: _animatedDesignationText(fontSize: widget.fontSize),
+            child: _animatedDesignationText(
+              fontSize: widget.fontSize,
+              tokens: tokens,
+            ),
           ),
         ),
-      ),
     );
   }
 
-  Widget _animatedDesignationText({required double fontSize}) {
+  Widget _animatedDesignationText({
+    required double fontSize,
+    required _DashboardThemeTokens tokens,
+  }) {
     return AnimatedBuilder(
       animation: _animCtrl,
       builder: (context, child) {
@@ -3090,7 +3681,7 @@ class _DesignationCardState extends State<_DesignationCard>
           alignment: Alignment.centerLeft,
           child: ShaderMask(
             shaderCallback: (bounds) {
-              final colors = _colors;
+              final colors = _colors(tokens);
               final stops = List.generate(
                 colors.length,
                 (i) => i / (colors.length - 1),
@@ -3135,22 +3726,26 @@ class _DesignationCardState extends State<_DesignationCard>
     );
   }
 
-  Widget _buildPopoverContent(FColors cs, FTypography typo) {
+  Widget _buildPopoverContent(
+    _DashboardThemeTokens tokens,
+    shadcn.ColorScheme cs,
+    shadcn.Typography typo,
+  ) {
     final entries = _designations.entries.toList()
       ..sort((a, b) => b.key.compareTo(a.key));
     final progress = _unlockProgress();
     return Container(
-      width: 230,
-      padding: const EdgeInsets.all(12),
+      width: tokens.size(230),
+      padding: tokens.edgeAll(12),
       decoration: BoxDecoration(
         color: cs.background,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: cs.border),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF000000).withValues(alpha: 0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: cs.foreground.withValues(alpha: 0.1),
+            blurRadius: tokens.size(12),
+            offset: Offset(0, tokens.size(4)),
           ),
         ],
       ),
@@ -3160,38 +3755,38 @@ class _DesignationCardState extends State<_DesignationCard>
         children: [
           Text(
             '称号等级',
-            style: typo.sm.copyWith(fontWeight: FontWeight.w600, fontSize: 13),
+            style: typo.small.copyWith(fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 8),
-          _buildUnlockProgress(cs, typo, progress),
-          const SizedBox(height: 10),
+          tokens.vGap(8),
+          _buildUnlockProgress(tokens, cs, typo, progress),
+          tokens.vGap(10),
           ...entries.map((entry) {
             final isActive = widget.siteCount >= entry.key;
             final isCurrent = widget.designation == entry.value;
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 3),
+              padding: tokens.edgeSymmetric(vertical: 3),
               child: Row(
                 children: [
                   Container(
-                    width: 6,
-                    height: 6,
+                    width: tokens.size(6),
+                    height: tokens.size(6),
                     decoration: BoxDecoration(
                       color: isCurrent
-                          ? const Color(0xFFE11D48)
-                          : (isActive ? const Color(0xFF10B981) : cs.border),
+                          ? tokens.red
+                          : (isActive ? tokens.green : cs.border),
                       shape: BoxShape.circle,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  tokens.hGap(8),
                   SizedBox(
-                    width: 44,
+                    width: tokens.size(44),
                     child: Text(
                       '${entry.key}站',
-                      style: typo.xs.copyWith(
+                      style: typo.xSmall.copyWith(
                         color: isActive
                             ? cs.foreground
                             : cs.mutedForeground.withValues(alpha: 0.4),
-                        fontSize: 11,
+                        fontSize: tokens.font(11),
                       ),
                     ),
                   ),
@@ -3201,19 +3796,19 @@ class _DesignationCardState extends State<_DesignationCard>
                       children: [
                         if (isCurrent) ...[
                           Icon(
-                            FIcons.check,
-                            size: 13,
-                            color: const Color(0xFFE11D48),
+                            shadcn.LucideIcons.check,
+                            size: tokens.size(13),
+                            color: tokens.red,
                           ),
-                          const SizedBox(width: 6),
+                          tokens.hGap(6),
                         ],
                         Flexible(
                           child: Text(
                             entry.value,
                             textAlign: TextAlign.right,
-                            style: typo.xs.copyWith(
+                            style: typo.xSmall.copyWith(
                               color: isCurrent
-                                  ? const Color(0xFFE11D48)
+                                  ? tokens.red
                                   : (isActive
                                         ? cs.foreground
                                         : cs.mutedForeground.withValues(
@@ -3222,7 +3817,7 @@ class _DesignationCardState extends State<_DesignationCard>
                               fontWeight: isCurrent
                                   ? FontWeight.w700
                                   : FontWeight.normal,
-                              fontSize: 12,
+                              fontSize: tokens.font(12),
                             ),
                           ),
                         ),
@@ -3279,15 +3874,16 @@ class _DesignationCardState extends State<_DesignationCard>
   }
 
   Widget _buildUnlockProgress(
-    FColors cs,
-    FTypography typo,
+    _DashboardThemeTokens tokens,
+    shadcn.ColorScheme cs,
+    shadcn.Typography typo,
     _DesignationProgress progress,
   ) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: tokens.edgeAll(10),
       decoration: BoxDecoration(
         color: cs.muted.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: cs.border.withValues(alpha: 0.6)),
       ),
       child: Column(
@@ -3298,10 +3894,10 @@ class _DesignationCardState extends State<_DesignationCard>
             children: [
               Text(
                 '${widget.siteCount}站',
-                style: typo.sm.copyWith(
-                  color: const Color(0xFFE11D48),
+                style: typo.small.copyWith(
+                  color: tokens.red,
                   fontWeight: FontWeight.w800,
-                  fontSize: 13,
+                  fontSize: tokens.font(13),
                 ),
               ),
               const Spacer(),
@@ -3309,41 +3905,41 @@ class _DesignationCardState extends State<_DesignationCard>
                 progress.completed
                     ? '已解锁最高称号'
                     : '距 ${progress.nextTitle} 还差 ${progress.remaining}站',
-                style: typo.xs.copyWith(
+                style: typo.xSmall.copyWith(
                   color: cs.mutedForeground,
-                  fontSize: 11,
+                  fontSize: tokens.font(11),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          tokens.vGap(8),
           Container(
-            height: 5,
+            height: tokens.size(5),
             decoration: BoxDecoration(
               color: cs.border.withValues(alpha: 0.55),
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: shadcn.Theme.of(context).borderRadiusXs,
             ),
             alignment: Alignment.centerLeft,
             child: FractionallySizedBox(
               widthFactor: progress.ratio.clamp(0.0, 1.0).toDouble(),
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE11D48),
-                  borderRadius: BorderRadius.circular(3),
+                  color: tokens.red,
+                  borderRadius: shadcn.Theme.of(context).borderRadiusXs,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 7),
+          tokens.vGap(7),
           Text(
             progress.completed
                 ? '当前称号：${progress.currentTitle}'
                 : '${progress.currentLevel}站 ${progress.currentTitle} → ${progress.nextLevel}站 ${progress.nextTitle}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: typo.xs.copyWith(
+            style: typo.xSmall.copyWith(
               color: cs.foreground,
-              fontSize: 11,
+              fontSize: tokens.font(11),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -3436,6 +4032,76 @@ class _ChartTooltipData {
   const _ChartTooltipData(this.title, this.rows);
 }
 
+class _KpiValuePulsePainter extends CustomPainter {
+  final double tick;
+  final Color color;
+  final bool isDark;
+
+  const _KpiValuePulsePainter({
+    required this.tick,
+    required this.color,
+    required this.isDark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final glowPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          color.withValues(alpha: isDark ? 0.00 : 0.08),
+          color.withValues(alpha: isDark ? 0.14 : 0.20),
+          color.withValues(alpha: isDark ? 0.00 : 0.05),
+        ],
+      ).createShader(Offset.zero & size);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, size.height * 0.08, size.width * 0.78, size.height * 0.84),
+        const Radius.circular(8),
+      ),
+      glowPaint,
+    );
+
+    final scanX = (tick * (size.width + 44)) - 22;
+    final scanPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          color.withValues(alpha: 0),
+          color.withValues(alpha: isDark ? 0.34 : 0.58),
+          color.withValues(alpha: isDark ? 0.12 : 0.62),
+          color.withValues(alpha: 0),
+        ],
+      ).createShader(Rect.fromLTWH(scanX - 18, 0, 36, size.height));
+    canvas.drawRect(Rect.fromLTWH(scanX - 18, 0, 36, size.height), scanPaint);
+
+    final linePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8
+      ..color = color.withValues(alpha: isDark ? 0.20 : 0.34);
+    for (double y = size.height - 3; y > 0; y -= 8) {
+      canvas.drawLine(Offset(0, y), Offset(size.width * 0.62, y), linePaint);
+    }
+
+    final dotPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = color.withValues(alpha: isDark ? 0.28 : 0.46);
+    for (var i = 0; i < 5; i++) {
+      final x = (tick * 28 + i * 27) % math.max(size.width, 1);
+      final y = 5.0 + (i % 3) * 10.0;
+      canvas.drawCircle(Offset(x, y), 1.2, dotPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _KpiValuePulsePainter oldDelegate) {
+    return oldDelegate.tick != tick ||
+        oldDelegate.color != color ||
+        oldDelegate.isDark != isDark;
+  }
+}
+
 class _TooltipLine {
   final String label;
   final String value;
@@ -3460,20 +4126,217 @@ class _TooltipSegment {
   const _TooltipSegment(this.text, this.color);
 }
 
+class _DashboardThemeTokens {
+  final shadcn.ThemeData theme;
+  final shadcn.ColorScheme cs;
+  final bool isDark;
+  final double densityScale;
+  final double textScale;
+  final Color background;
+  final Color panel;
+  final Color panelSoft;
+  final Color line;
+  final Color text;
+  final Color muted;
+  final Color cyan;
+  final Color green;
+  final Color amber;
+  final Color red;
+  final Color blue;
+  final Color violet;
+  final Color orange;
+
+  _DashboardThemeTokens._({
+    required this.theme,
+    required this.cs,
+    required this.isDark,
+    required this.densityScale,
+    required this.textScale,
+    required this.background,
+    required this.panel,
+    required this.panelSoft,
+    required this.line,
+    required this.text,
+    required this.muted,
+    required this.cyan,
+    required this.green,
+    required this.amber,
+    required this.red,
+    required this.blue,
+    required this.violet,
+    required this.orange,
+  });
+
+  factory _DashboardThemeTokens.of(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final isDark = cs.brightness == Brightness.dark;
+    final densityScale =
+        ((theme.density.baseContainerPadding / 20.0) * theme.scaling).clamp(
+          0.48,
+          1.45,
+        );
+    final textScale = theme.scaling.clamp(0.82, 1.35);
+    final accent = cs.primary;
+    final danger = cs.destructive;
+    final cool = _tone(accent, hueShift: isDark ? 18 : 10, saturationScale: 1.12);
+    final success = _tone(accent, hueShift: 120, saturationScale: 0.98);
+    final warning = _tone(accent, hueShift: 62, saturationScale: 1.08);
+    final info = _tone(accent, hueShift: -34, saturationScale: 1.04);
+    final violet = _tone(accent, hueShift: -92, saturationScale: 0.98);
+    final orange = _tone(danger, hueShift: 32, saturationScale: 1.02);
+
+    return _DashboardThemeTokens._(
+      theme: theme,
+      cs: cs,
+      isDark: isDark,
+      densityScale: densityScale.toDouble(),
+      textScale: textScale.toDouble(),
+      background: cs.background,
+      panel: cs.card.withValues(alpha: (theme.surfaceOpacity ?? 1).clamp(0.58, 1.0)),
+      panelSoft: cs.muted,
+      line: cs.border,
+      text: cs.foreground,
+      muted: cs.mutedForeground,
+      cyan: cool,
+      green: success,
+      amber: warning,
+      red: danger,
+      blue: info,
+      violet: violet,
+      orange: orange,
+    );
+  }
+
+  static Color _tone(
+    Color color, {
+    double hueShift = 0,
+    double saturationScale = 1,
+    double lightnessDelta = 0,
+  }) {
+    final hsl = HSLColor.fromColor(color);
+    return hsl
+        .withHue((hsl.hue + hueShift) % 360)
+        .withSaturation((hsl.saturation * saturationScale).clamp(0.22, 0.90))
+        .withLightness((hsl.lightness + lightnessDelta).clamp(0.30, 0.70))
+        .toColor();
+  }
+
+  double size(num value) => value * densityScale;
+
+  double font(num value) => value * textScale;
+
+  double get bottomGap => size(84);
+
+  LinearGradient get pageGradient => isDark
+      ? LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [background, Color.lerp(background, panelSoft, 0.34)!],
+        )
+      : LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.lerp(background, cyan, 0.08)!,
+            background,
+            Color.lerp(background, blue, 0.07)!,
+          ],
+        );
+
+  LinearGradient get panelGradient => LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: isDark
+            ? [
+                cs.card.withValues(alpha: (theme.surfaceOpacity ?? 1).clamp(0.70, 1.0)),
+                Color.lerp(cs.card, panelSoft, 0.30)!.withValues(
+                  alpha: (theme.surfaceOpacity ?? 1).clamp(0.62, 1.0),
+                ),
+              ]
+            : [
+                Color.lerp(cs.card, background, 0.55)!.withValues(
+                  alpha: (theme.surfaceOpacity ?? 1).clamp(0.66, 1.0),
+                ),
+                Color.lerp(cs.card, cyan, 0.08)!.withValues(
+                  alpha: (theme.surfaceOpacity ?? 1).clamp(0.62, 1.0),
+                ),
+              ],
+      );
+
+  Color get panelBorder => isDark
+      ? line.withValues(alpha: 0.82)
+      : Color.lerp(line, cyan, 0.30)!.withValues(alpha: 0.84);
+
+  Color get panelShadow => isDark
+      ? text.withValues(alpha: 0.06)
+      : cyan.withValues(alpha: 0.11);
+
+  List<Color> get treemapColors => [
+        cyan,
+        green,
+        amber,
+        red,
+        blue,
+        violet,
+        orange,
+        _tone(green, hueShift: 28),
+        _tone(violet, hueShift: 20),
+        _tone(cyan, hueShift: -18),
+        _tone(red, hueShift: -22, saturationScale: 0.9),
+        muted,
+      ];
+
+  EdgeInsets edgeAll(num value) => EdgeInsets.all(size(value));
+
+  EdgeInsets edgeLTRB(num left, num top, num right, num bottom) =>
+      EdgeInsets.fromLTRB(size(left), size(top), size(right), size(bottom));
+
+  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) =>
+      EdgeInsets.only(
+        left: size(left),
+        top: size(top),
+        right: size(right),
+        bottom: size(bottom),
+      );
+
+  EdgeInsets edgeSymmetric({num horizontal = 0, num vertical = 0}) =>
+      EdgeInsets.symmetric(
+        horizontal: size(horizontal),
+        vertical: size(vertical),
+      );
+
+  EdgeInsetsGeometry resolvePadding(EdgeInsetsGeometry padding) {
+    final resolved = padding.resolve(TextDirection.ltr);
+    return EdgeInsets.fromLTRB(
+      size(resolved.left),
+      size(resolved.top),
+      size(resolved.right),
+      size(resolved.bottom),
+    );
+  }
+
+  Widget vGap(num value) => SizedBox(height: size(value));
+
+  Widget hGap(num value) => SizedBox(width: size(value));
+}
+
 class _BoardBackdropPainter extends CustomPainter {
   final double tick;
+  final _DashboardThemeTokens tokens;
 
-  const _BoardBackdropPainter({required this.tick});
+  const _BoardBackdropPainter({required this.tick, required this.tokens});
 
   @override
   void paint(Canvas canvas, Size size) {
+    final isDark = tokens.isDark;
     final topWash = Paint()
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          const Color(0xFF12365A).withValues(alpha: 0.34),
-          const Color(0x00000000),
+          tokens.blue.withValues(alpha: isDark ? 0.34 : 0.20),
+          tokens.panelSoft.withValues(alpha: isDark ? 0 : 0.08),
         ],
       ).createShader(Offset.zero & size);
     canvas.drawRect(Offset.zero & size, topWash);
@@ -3483,17 +4346,17 @@ class _BoardBackdropPainter extends CustomPainter {
         begin: Alignment.centerLeft,
         end: Alignment.centerRight,
         colors: [
-          const Color(0xFF22D3EE).withValues(alpha: 0.08),
-          const Color(0x00000000),
-          const Color(0xFF60A5FA).withValues(alpha: 0.07),
+          tokens.cyan.withValues(alpha: isDark ? 0.08 : 0.18),
+          tokens.background.withValues(alpha: 0),
+          tokens.blue.withValues(alpha: isDark ? 0.07 : 0.15),
         ],
       ).createShader(Offset.zero & size);
     canvas.drawRect(Offset.zero & size, sideWash);
 
     final fineGridPaint = Paint()
-      ..color = const Color(0xFF12365A).withValues(alpha: 0.10)
+      ..color = tokens.blue.withValues(alpha: isDark ? 0.10 : 0.18)
       ..strokeWidth = 0.45;
-    const fineStep = 22.0;
+    final fineStep = tokens.size(22);
     for (double x = 0; x <= size.width; x += fineStep) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), fineGridPaint);
     }
@@ -3502,9 +4365,9 @@ class _BoardBackdropPainter extends CustomPainter {
     }
 
     final majorGridPaint = Paint()
-      ..color = const Color(0xFF22D3EE).withValues(alpha: 0.12)
+      ..color = tokens.cyan.withValues(alpha: isDark ? 0.12 : 0.28)
       ..strokeWidth = 0.75;
-    const majorStep = 88.0;
+    final majorStep = tokens.size(88);
     for (double x = 0; x <= size.width; x += majorStep) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), majorGridPaint);
     }
@@ -3513,9 +4376,9 @@ class _BoardBackdropPainter extends CustomPainter {
     }
 
     final scanPaint = Paint()
-      ..color = const Color(0xFFBFEFFF).withValues(alpha: 0.028)
+      ..color = tokens.cyan.withValues(alpha: isDark ? 0.028 : 0.060)
       ..strokeWidth = 0.5;
-    for (double y = 3; y <= size.height; y += 6) {
+    for (double y = tokens.size(3); y <= size.height; y += tokens.size(6)) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), scanPaint);
     }
 
@@ -3525,15 +4388,16 @@ class _BoardBackdropPainter extends CustomPainter {
   }
 
   void _drawJumpingDigits(Canvas canvas, Size size) {
-    const columnStep = 27.0;
-    const rowStep = 22.0;
-    final phase = tick * 64;
+    final isDark = tokens.isDark;
+    final columnStep = tokens.size(27);
+    final rowStep = tokens.size(22);
+    final phase = tick * tokens.size(64);
     final columns = (size.width / columnStep).ceil() + 1;
     final rows = (size.height / rowStep).ceil() + 1;
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     for (var column = 0; column < columns; column++) {
-      final x = column * columnStep + (column.isEven ? 8.0 : 18.0);
+      final x = column * columnStep + (column.isEven ? tokens.size(8) : tokens.size(18));
       final speed = 0.72 + (column % 5) * 0.18;
       final verticalShift = (phase * speed + column * 9) % rowStep;
       final columnHighlight = (phase + column * 7) % rows;
@@ -3545,19 +4409,18 @@ class _BoardBackdropPainter extends CustomPainter {
         final distance = ((row - columnHighlight).abs() % rows).toDouble();
         final pulse = math.max(0.0, 1.0 - distance / 5.5);
         final edgeFade = _edgeFade(x, size.width);
-        final baseAlpha = 0.035 + ((column + row).abs() % 4) * 0.014;
-        final alpha = (baseAlpha + pulse * 0.12) * edgeFade;
-        if (alpha <= 0.006) continue;
+        final baseAlpha = (isDark ? 0.035 : 0.075) +
+            ((column + row).abs() % 4) * (isDark ? 0.014 : 0.022);
+        final alpha = (baseAlpha + pulse * (isDark ? 0.12 : 0.22)) * edgeFade;
+        if (alpha <= (isDark ? 0.006 : 0.018)) continue;
 
         final digit = ((column * 7 + row * 3 + phase.floor()) % 10).abs();
-        final color = column.isEven
-            ? const Color(0xFF22D3EE)
-            : const Color(0xFF34D399);
+        final color = column.isEven ? tokens.cyan : tokens.green;
         textPainter.text = TextSpan(
           text: '$digit',
           style: TextStyle(
             color: color.withValues(alpha: alpha),
-            fontSize: 12 + pulse * 3,
+            fontSize: tokens.font((isDark ? 12 : 13) + pulse * (isDark ? 3 : 4)),
             fontWeight: pulse > 0.65 ? FontWeight.w800 : FontWeight.w600,
             height: 1,
           ),
@@ -3576,14 +4439,15 @@ class _BoardBackdropPainter extends CustomPainter {
   }
 
   void _drawCircuitTraces(Canvas canvas, Size size) {
+    final isDark = tokens.isDark;
     final cyanPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
-      ..color = const Color(0xFF22D3EE).withValues(alpha: 0.18);
+      ..color = tokens.cyan.withValues(alpha: isDark ? 0.18 : 0.34);
     final bluePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8
-      ..color = const Color(0xFF60A5FA).withValues(alpha: 0.15);
+      ..color = tokens.blue.withValues(alpha: isDark ? 0.15 : 0.25);
 
     final topTrace = Path()
       ..moveTo(size.width * 0.04, size.height * 0.18)
@@ -3616,7 +4480,7 @@ class _BoardBackdropPainter extends CustomPainter {
 
     final nodePaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = const Color(0xFF22D3EE).withValues(alpha: 0.44);
+      ..color = tokens.cyan.withValues(alpha: isDark ? 0.44 : 0.72);
     final nodes = [
       Offset(size.width * 0.23, size.height * 0.12),
       Offset(size.width * 0.48, size.height * 0.22),
@@ -3634,18 +4498,19 @@ class _BoardBackdropPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.7
-          ..color = const Color(0xFF22D3EE).withValues(alpha: 0.18),
+          ..color = tokens.cyan.withValues(alpha: isDark ? 0.18 : 0.36),
       );
     }
   }
 
   void _drawCornerBrackets(Canvas canvas, Size size) {
+    final isDark = tokens.isDark;
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.1
-      ..color = const Color(0xFF22D3EE).withValues(alpha: 0.24);
-    const inset = 20.0;
-    const length = 54.0;
+      ..color = tokens.cyan.withValues(alpha: isDark ? 0.24 : 0.42);
+    final inset = tokens.size(20);
+    final length = tokens.size(54);
 
     final paths = [
       Path()
@@ -3673,5 +4538,5 @@ class _BoardBackdropPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _BoardBackdropPainter oldDelegate) =>
-      oldDelegate.tick != tick;
+      oldDelegate.tick != tick || oldDelegate.tokens != tokens;
 }
