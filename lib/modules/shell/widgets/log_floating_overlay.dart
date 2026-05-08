@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:harvest/core/utils/utils.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -297,7 +297,7 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> with SingleTicke
         child: Stack(
           alignment: Alignment.center,
           children: [
-            const Icon(FIcons.terminal, size: 18, color: Color(0xFF58A6FF)),
+            const Icon(shadcn.LucideIcons.terminal, size: 18, color: Color(0xFF58A6FF)),
             Positioned(
               top: 10,
               right: 10,
@@ -355,7 +355,7 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> with SingleTicke
         ),
         child: Row(
           children: [
-            const Icon(FIcons.terminal, size: 14, color: Color(0xFF58A6FF)),
+            const Icon(shadcn.LucideIcons.terminal, size: 14, color: Color(0xFF58A6FF)),
             const SizedBox(width: 6),
             const Expanded(
               child: Text(
@@ -571,9 +571,9 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> with SingleTicke
               Container(width: 0.5, height: 14, color: const Color(0xFF21262D)),
               const SizedBox(width: 6),
               _toolBtn(icon: Icons.copy_rounded, label: '复制', onTap: _copyAll),
-              _toolBtn(icon: FIcons.share2, label: '分享', onTap: _shareLogs),
-              _toolBtn(icon: FIcons.trash2, label: '清空', onTap: _clearLogs),
-              _toolBtn(icon: FIcons.x, label: '删除文件', onTap: _confirmDeleteFiles, destructive: true),
+              _toolBtn(icon: shadcn.LucideIcons.share2, label: '分享', onTap: _shareLogs),
+              _toolBtn(icon: shadcn.LucideIcons.trash2, label: '清空', onTap: _clearLogs),
+              _toolBtn(icon: shadcn.LucideIcons.x, label: '删除文件', onTap: _confirmDeleteFiles, destructive: true),
             ],
           ),
         ),

@@ -1,53 +1,67 @@
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
-FTile inviteUserTile(BuildContext context) {
-  return FTile(
-    title: const Text('邀请试用'),
-    prefix: Icon(FIcons.userPlus, size: 18),
-    onPress: () => _showInviteDialog(context),
-  );
+Widget inviteUserTile(BuildContext context) {
+  return _InviteTile(onTap: () => _showInviteDialog(context));
+}
+
+void showInviteUserDialog(BuildContext context) {
+  _showInviteDialog(context);
+}
+
+class _InviteTile extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _InviteTile({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(children: [Icon(shadcn.LucideIcons.userPlus, size: 18), SizedBox(width: 10), Text('邀请试用')]),
+      ),
+    );
+  }
 }
 
 void _showInviteDialog(BuildContext context) {
   final emailCtrl = TextEditingController();
   bool sending = false;
 
-  showFDialog(
+  showDialog(
     context: context,
-    builder: (ctx, style, animation) => StatefulBuilder(
+    builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) {
-        return FDialog(
-          style: style
-              .copyWith(verticalStyle: (s) => s.copyWith(padding: const EdgeInsets.fromLTRB(20, 16, 20, 4)))
-              .call,
+        return AlertDialog(
           title: const Text('试用邀请'),
-          body: Column(
+          content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              FTextField(
+              shadcn.TextField(
                 controller: emailCtrl,
-                hint: '受邀人邮箱',
                 autofocus: true,
                 keyboardType: TextInputType.emailAddress,
+                hintText: "",
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
-                    child: FButton(
-                      style: FButtonStyle.ghost(),
-                      onPress: () => Navigator.pop(ctx),
-                      child: const Text('取消'),
+                    child: shadcn.Button.outline(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Center(child: const Text('取消')),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: FButton(
-                      onPress: sending
+                    child: shadcn.Button.primary(
+                      onPressed: sending
                           ? null
                           : () async {
                               final email = emailCtrl.text.trim();
@@ -61,9 +75,7 @@ void _showInviteDialog(BuildContext context) {
                                 if (ctx.mounted) Navigator.pop(ctx);
                                 Toast.success('邀请成功');
                               } catch (e) {
-                                if (ctx.mounted) {
-                                  setDialogState(() => sending = false);
-                                }
+                                if (ctx.mounted) setDialogState(() => sending = false);
                                 Toast.error('邀请失败: $e');
                               }
                             },
@@ -71,16 +83,15 @@ void _showInviteDialog(BuildContext context) {
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: shadcn.CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
-                          : const Text('邀请'),
+                          : Center(child: const Text('邀请')),
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          actions: [],
         );
       },
     ),

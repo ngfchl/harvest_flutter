@@ -2,7 +2,7 @@ import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show MaterialPageRoute;
 import 'package:flutter/widgets.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../search/unified_search_page.dart';
 import 'shell_bottom_navigation.dart';
@@ -12,7 +12,7 @@ class ShellScaffold extends StatelessWidget {
   final Widget child;
   final int index;
   final ValueChanged<int> onChange;
-  final FScaffoldStyle Function(FScaffoldStyle)? scaffoldStyle;
+  final Object? scaffoldStyle;
   final bool dashboardChrome;
 
   const ShellScaffold({
@@ -97,7 +97,7 @@ class ShellScaffold extends StatelessWidget {
     final effectiveDashboardChrome = dashboardChrome && !PlatformInfo.isIOS;
 
     if (PlatformInfo.isIOS) {
-      final colors = FTheme.of(context).colors;
+      final colors = shadcn.Theme.of(context).colorScheme;
 
       return AdaptiveScaffold(
         minimizeBehavior: TabBarMinimizeBehavior.never,
@@ -118,11 +118,11 @@ class ShellScaffold extends StatelessWidget {
               ),
           ],
         ),
-        body: FScaffold(
-          scaffoldStyle: scaffoldStyle,
-          header: header,
-          childPad: false,
-          child: child,
+        body: Column(
+          children: [
+            header,
+            Expanded(child: child),
+          ],
         ),
       );
     }
@@ -130,11 +130,11 @@ class ShellScaffold extends StatelessWidget {
     return Stack(
       children: [
         Positioned.fill(
-          child: FScaffold(
-            scaffoldStyle: scaffoldStyle,
-            header: header,
-            childPad: false,
-            child: child,
+          child: Column(
+            children: [
+              header,
+              Expanded(child: child),
+            ],
           ),
         ),
         Positioned(

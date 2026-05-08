@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
-import 'package:forui/forui.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class ShellBottomNavigation extends StatefulWidget {
   final int index;
@@ -80,11 +80,11 @@ class ShellBottomControls extends StatelessWidget {
 class _ShellBottomNavigationState extends State<ShellBottomNavigation>
     with SingleTickerProviderStateMixin {
   static const _items = [
-    _ShellNavItem(label: '资讯', icon: FIcons.newspaper),
-    _ShellNavItem(label: '站点', icon: FIcons.globe),
-    _ShellNavItem(label: '仪表', icon: FIcons.layoutDashboard),
-    _ShellNavItem(label: '下载', icon: FIcons.download),
-    _ShellNavItem(label: '任务', icon: FIcons.listTodo),
+    _ShellNavItem(label: '资讯', icon: shadcn.LucideIcons.newspaper),
+    _ShellNavItem(label: '站点', icon: shadcn.LucideIcons.globe),
+    _ShellNavItem(label: '仪表', icon: shadcn.LucideIcons.layoutDashboard),
+    _ShellNavItem(label: '下载', icon: shadcn.LucideIcons.download),
+    _ShellNavItem(label: '任务', icon: shadcn.LucideIcons.listTodo),
   ];
   static const _dragDwellDuration = Duration(milliseconds: 420);
   static const _dashboardPanel = Color(0xFF0D1B2E);
@@ -239,9 +239,7 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation>
                               saturation: 1.08,
                               color: widget.dashboardChrome
                                   ? _dashboardPanelSoft.withValues(alpha: 0.28)
-                                  : FTheme.of(
-                                      context,
-                                    ).colors.background.withValues(alpha: 0.1),
+                                  : shadcn.Theme.of(context).colorScheme.background.withValues(alpha: 0.1),
                               blur: const LiquidGlassBlur(
                                 sigmaX: 0.65,
                                 sigmaY: 0.65,
@@ -367,8 +365,7 @@ class _NavigationChrome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
-    final colors = theme.colors;
+    final colors = shadcn.Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(22);
     final background = dashboardChrome
         ? _ShellBottomNavigationState._dashboardPanel.withValues(alpha: 0.9)
@@ -446,8 +443,7 @@ class _NavigationItemButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
-    final colors = theme.colors;
+    final colors = shadcn.Theme.of(context).colorScheme;
     final activeColor = dashboardChrome
         ? _ShellBottomNavigationState._dashboardCyan
         : colors.primary;
@@ -511,7 +507,7 @@ class _NavigationItemButton extends StatelessWidget {
                   item.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.typography.xs.copyWith(
+                  style: shadcn.Theme.of(context).typography.xSmall.copyWith(
                     color: color,
                     fontSize: 10,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
@@ -589,7 +585,7 @@ class _ShellSearchButtonState extends State<ShellSearchButton>
 
   @override
   Widget build(BuildContext context) {
-    final colors = FTheme.of(context).colors;
+    final colors = shadcn.Theme.of(context).colorScheme;
     final background = widget.dashboardChrome
         ? _ShellBottomNavigationState._dashboardPanel
         : colors.background;
@@ -748,7 +744,7 @@ class _SearchButtonChrome extends StatelessWidget {
                 ),
               ],
       ),
-      child: Center(child: Icon(FIcons.search, size: 22, color: primary)),
+      child: Center(child: Icon(shadcn.LucideIcons.search, size: 22, color: primary)),
     );
   }
 }
