@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/media_item.dart';
 import '../service/tmdb_service.dart';
@@ -10,12 +11,17 @@ class MediaCard extends StatelessWidget {
   final VoidCallback? onTap;
   final double width;
 
-  const MediaCard({super.key, required this.item, this.onTap, this.width = 120});
+  const MediaCard({
+    super.key,
+    required this.item,
+    this.onTap,
+    this.width = 120,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return shadcn.Clickable(
+      onPressed: onTap,
       child: SizedBox(
         width: width,
         child: Column(
@@ -23,26 +29,40 @@ class MediaCard extends StatelessWidget {
           children: [
             _buildPoster(context),
             const SizedBox(height: 6),
-            Tooltip(
-              message: item.title,
-              waitDuration: const Duration(milliseconds: 400),
-              child: Text(
-                item.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: context.theme.typography.sm.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Row(
-              children: [
-                if (item.releaseDate.isNotEmpty)
-                  Text(
-                    item.releaseDate.length >= 4 ? item.releaseDate.substring(0, 4) : item.releaseDate,
-                    style: context.theme.typography.xs.copyWith(color: context.theme.colors.mutedForeground),
+            SizedBox(
+              height: 48,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  shadcn.Tooltip(
+                    tooltip: (_) => Text(item.title).small,
+                    child: Text(
+                      item.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ).small.semiBold,
                   ),
-                if (item.mediaType.isNotEmpty) ...[const SizedBox(width: 4), _typeBadge(context)],
-              ],
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      if (item.releaseDate.isNotEmpty)
+                        Flexible(
+                          child: Text(
+                            item.releaseDate.length >= 4
+                                ? item.releaseDate.substring(0, 4)
+                                : item.releaseDate,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ).xSmall.muted,
+                        ),
+                      if (item.mediaType.isNotEmpty) ...[
+                        const SizedBox(width: 4),
+                        _typeBadge(context),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -55,7 +75,7 @@ class MediaCard extends StatelessWidget {
     return AspectRatio(
       aspectRatio: 2 / 3,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -64,7 +84,11 @@ class MediaCard extends StatelessWidget {
                 imageUrl: url,
                 fit: BoxFit.cover,
                 placeholder: (_, __) => const Center(
-                  child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
                 errorWidget: (_, __, ___) => _posterPlaceholder(context),
               )
@@ -75,20 +99,28 @@ class MediaCard extends StatelessWidget {
                 top: 4,
                 left: 4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(4),
+                    color: shadcn.Theme.of(
+                      context,
+                    ).colorScheme.popover.withValues(alpha: 0.86),
+                    borderRadius: shadcn.Theme.of(context).borderRadiusSm,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(FIcons.star, size: 10, color: Colors.amber),
+                      Icon(
+                        shadcn.LucideIcons.star,
+                        size: 10,
+                        color: shadcn.Theme.of(context).colorScheme.chart4,
+                      ),
                       const SizedBox(width: 2),
                       Text(
                         item.voteAverage!.toStringAsFixed(1),
-                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600),
-                      ),
+                      ).xSmall.semiBold.primaryForeground,
                     ],
                   ),
                 ),
@@ -99,29 +131,23 @@ class MediaCard extends StatelessWidget {
     );
   }
 
-  Widget _posterPlaceholder(BuildContext context) => Container(
-    color: context.theme.colors.muted,
+  Widget _posterPlaceholder(BuildContext context) => ColoredBox(
+    color: shadcn.Theme.of(context).colorScheme.muted,
     child: Center(
-      child: Icon(FIcons.film, size: 32, color: context.theme.colors.mutedForeground.withValues(alpha: 0.3)),
+      child: Icon(
+        shadcn.LucideIcons.film,
+        size: 32,
+        color: shadcn.Theme.of(
+          context,
+        ).colorScheme.mutedForeground.withValues(alpha: 0.3),
+      ),
     ),
   );
 
   Widget _typeBadge(BuildContext context) {
     final isMovie = item.mediaType == 'movie';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0.5),
-      decoration: BoxDecoration(
-        color: (isMovie ? context.theme.colors.primary : context.theme.colors.destructive).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(2),
-      ),
-      child: Text(
-        isMovie ? '电影' : '剧集',
-        style: TextStyle(
-          fontSize: 8,
-          color: isMovie ? context.theme.colors.primary : context.theme.colors.destructive,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
+    return isMovie
+        ? const shadcn.SecondaryBadge(child: Text('电影'))
+        : const shadcn.OutlineBadge(child: Text('剧集'));
   }
 }

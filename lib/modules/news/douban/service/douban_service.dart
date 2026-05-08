@@ -11,24 +11,46 @@ class DoubanService {
   // ────────────────────── 搜索 ──────────────────────
 
   static Future<List<DoubanSearchResult>> search(String query) {
-    return fetchModelList(API.DOUBAN_SEARCH, DoubanSearchResult.fromJson, queryParameters: {'q': query});
+    return fetchModelList(
+      API.DOUBAN_SEARCH,
+      DoubanSearchResult.fromJson,
+      queryParameters: {'q': query},
+    );
   }
 
   // ────────────────────── 热门 ──────────────────────
 
-  static Future<List<HotMedia>> getHotMovies(String tag, {int pageStart = 0, int pageLimit = 20}) {
+  static Future<List<HotMedia>> getHotMovies(
+    String tag, {
+    int pageStart = 0,
+    int pageLimit = 20,
+  }) {
     return fetchModelList(
       API.DOUBAN_HOT,
       HotMedia.fromJson,
-      queryParameters: {'category': 'movie', 'tag': tag, 'page_start': pageStart, 'page_limit': pageLimit},
+      queryParameters: {
+        'category': 'movie',
+        'tag': tag,
+        'page_start': pageStart,
+        'page_limit': pageLimit,
+      },
     );
   }
 
-  static Future<List<HotMedia>> getHotTvs(String tag, {int pageStart = 0, int pageLimit = 20}) {
+  static Future<List<HotMedia>> getHotTvs(
+    String tag, {
+    int pageStart = 0,
+    int pageLimit = 20,
+  }) {
     return fetchModelList(
       API.DOUBAN_HOT,
       HotMedia.fromJson,
-      queryParameters: {'category': 'tv', 'tag': tag, 'page_start': pageStart, 'page_limit': pageLimit},
+      queryParameters: {
+        'category': 'tv',
+        'tag': tag,
+        'page_start': pageStart,
+        'page_limit': pageLimit,
+      },
     );
   }
 
@@ -40,7 +62,11 @@ class DoubanService {
 
   // ────────────────────── 排行榜 ──────────────────────
 
-  static Future<List<RankMovie>> getRank(int typeId, {int start = 0, int limit = 100}) {
+  static Future<List<RankMovie>> getRank(
+    int typeId, {
+    int start = 0,
+    int limit = 100,
+  }) {
     return fetchModelList(
       API.DOUBAN_RANK,
       RankMovie.fromJson,
@@ -51,7 +77,10 @@ class DoubanService {
   // ────────────────────── 标签 ──────────────────────
 
   static Future<List<String>> getTags({String category = 'movie'}) async {
-    final list = await fetchBasicList(API.DOUBAN_RANK, queryParameters: {'category': category});
+    final list = await fetchBasicList(
+      API.DOUBAN_RANK,
+      queryParameters: {'category': category},
+    );
     return list.whereType<String>().toList();
   }
 

@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 
+enum SiteAvailabilityFilter { all, alive, dead }
+
 enum FilterCondition {
   alive,
   dead,
@@ -57,6 +59,7 @@ enum SortField {
 }
 
 class SiteFilterState extends ChangeNotifier {
+  SiteAvailabilityFilter _availability = SiteAvailabilityFilter.all;
   FilterCondition _condition = FilterCondition.all;
   SortField _sortField = SortField.sortId;
   bool _sortAscending = true;
@@ -67,6 +70,8 @@ class SiteFilterState extends ChangeNotifier {
   SiteFilterState() {
     _loadFromStorage();
   }
+
+  SiteAvailabilityFilter get availability => _availability;
 
   FilterCondition get condition => _condition;
 
@@ -80,6 +85,7 @@ class SiteFilterState extends ChangeNotifier {
 
   /// 全部 + 排序 ID 正序 是默认值，不算"额外"筛选
   bool get hasActiveFilters =>
+      _availability != SiteAvailabilityFilter.all ||
       _condition != FilterCondition.all ||
       _selectedTags.isNotEmpty ||
       _sortField != SortField.sortId ||
@@ -87,9 +93,25 @@ class SiteFilterState extends ChangeNotifier {
       _siteNameQuery.isNotEmpty;
 
   void _loadFromStorage() {
+    final ai = HiveManager.get<int>(StorageKeys.siteFilterAvailability);
+    if (ai != null && ai >= 0 && ai < SiteAvailabilityFilter.values.length) {
+      _availability = SiteAvailabilityFilter.values[ai];
+    }
     final ci = HiveManager.get<int>(StorageKeys.siteFilterCondition);
     if (ci != null && ci >= 0 && ci < FilterCondition.values.length) {
       _condition = FilterCondition.values[ci];
+      if (_condition == FilterCondition.alive ||
+          _condition == FilterCondition.dead) {
+        _availability = _condition == FilterCondition.alive
+            ? SiteAvailabilityFilter.alive
+            : SiteAvailabilityFilter.dead;
+        _condition = FilterCondition.all;
+        HiveManager.set(
+          StorageKeys.siteFilterAvailability,
+          _availability.index,
+        );
+        HiveManager.delete(StorageKeys.siteFilterCondition);
+      }
     }
     final si = HiveManager.get<int>(StorageKeys.siteFilterSortField);
     if (si != null && si >= 0 && si < SortField.values.length) {
@@ -99,7 +121,26 @@ class SiteFilterState extends ChangeNotifier {
     if (asc != null) _sortAscending = asc;
   }
 
+  void setAvailability(SiteAvailabilityFilter value) {
+    if (_availability == value) return;
+    _availability = value;
+    HiveManager.set(StorageKeys.siteFilterAvailability, value.index);
+    notifyListeners();
+  }
+
   void setCondition(FilterCondition c) {
+    if (c == FilterCondition.alive || c == FilterCondition.dead) {
+      setAvailability(
+        c == FilterCondition.alive
+            ? SiteAvailabilityFilter.alive
+            : SiteAvailabilityFilter.dead,
+      );
+      if (_condition == FilterCondition.all) return;
+      _condition = FilterCondition.all;
+      HiveManager.delete(StorageKeys.siteFilterCondition);
+      notifyListeners();
+      return;
+    }
     if (_condition == c) return; // 已选中，不切换
     _condition = c;
     HiveManager.set(StorageKeys.siteFilterCondition, c.index);
@@ -148,11 +189,13 @@ class SiteFilterState extends ChangeNotifier {
 
   void clearAll() {
     _debounce?.cancel();
+    _availability = SiteAvailabilityFilter.all;
     _condition = FilterCondition.all;
     _sortField = SortField.sortId;
     _sortAscending = _defaultSortAscending(_sortField);
     _selectedTags.clear();
     _siteNameQuery = '';
+    HiveManager.delete(StorageKeys.siteFilterAvailability);
     HiveManager.delete(StorageKeys.siteFilterCondition);
     HiveManager.delete(StorageKeys.siteFilterSortField);
     HiveManager.delete(StorageKeys.siteFilterSortAscending);

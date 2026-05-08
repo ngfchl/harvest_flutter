@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+
 
 class SiteErrorView extends StatelessWidget {
   final Object error;
@@ -9,20 +10,26 @@ class SiteErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(FIcons.triangleAlert, size: 48, color: context.theme.colors.mutedForeground),
+          Icon(
+            shadcn.LucideIcons.triangleAlert,
+            size: 48,
+            color: cs.mutedForeground,
+          ),
           const SizedBox(height: 16),
-          Text('加载失败', style: context.theme.typography.lg),
+          Text('加载失败', style: theme.typography.large),
           const SizedBox(height: 8),
           Text(
             '请检查网络或登录状态',
-            style: context.theme.typography.sm.copyWith(color: context.theme.colors.mutedForeground),
+            style: theme.typography.small.copyWith(color: cs.mutedForeground),
           ),
           const SizedBox(height: 24),
-          FButton(onPress: onRetry, child: const Text('重试')),
+          shadcn.Button.primary(onPressed: onRetry, child: const Text('重试')),
         ],
       ),
     );

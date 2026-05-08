@@ -14,13 +14,17 @@ abstract class TvShowDetail with _$TvShowDetail {
     @Default(false) bool adult,
     @JsonKey(name: 'backdrop_path') String? backdropPath,
     @Default([]) @JsonKey(name: 'created_by') List<dynamic> createdBy,
-    @Default([]) @JsonKey(name: 'episode_run_time') List<dynamic> episodeRunTime,
+    @Default([])
+    @JsonKey(name: 'episode_run_time')
+    List<dynamic> episodeRunTime,
     @Default('') @JsonKey(name: 'first_air_date') String? releaseDate,
     @Default([]) List<Genre> genres,
     String? homepage,
     @Default(0) int id,
     String? imdbId,
-    @Default('tv') @JsonKey(includeFromJson: false, includeToJson: false) String mediaType,
+    @Default('tv')
+    @JsonKey(includeFromJson: false, includeToJson: false)
+    String mediaType,
     @Default(false) @JsonKey(name: 'in_production') bool inProduction,
     @Default([]) List<dynamic> languages,
     @JsonKey(name: 'last_air_date') String? lastAirDate,
@@ -36,10 +40,16 @@ abstract class TvShowDetail with _$TvShowDetail {
     @Default('') String overview,
     @Default(0.0) double popularity,
     @Default('') @JsonKey(name: 'poster_path') String? posterPath,
-    @Default([]) @JsonKey(name: 'production_companies') List<ProductionCompany> productionCompanies,
-    @Default([]) @JsonKey(name: 'production_countries') List<ProductionCountry> productionCountries,
+    @Default([])
+    @JsonKey(name: 'production_companies')
+    List<ProductionCompany> productionCompanies,
+    @Default([])
+    @JsonKey(name: 'production_countries')
+    List<ProductionCountry> productionCountries,
     @Default([]) List<Season> seasons,
-    @Default([]) @JsonKey(name: 'spoken_languages') List<dynamic> spokenLanguages,
+    @Default([])
+    @JsonKey(name: 'spoken_languages')
+    List<dynamic> spokenLanguages,
     @Default('') String status,
     @Default('') String tagline,
     @Default('') String type,
@@ -47,7 +57,8 @@ abstract class TvShowDetail with _$TvShowDetail {
     @Default(0) @JsonKey(name: 'vote_count') int voteCount,
   }) = _TvShowDetail;
 
-  factory TvShowDetail.fromJson(Map<String, dynamic> json) => _$TvShowDetailFromJson(json);
+  factory TvShowDetail.fromJson(Map<String, dynamic> json) =>
+      _$TvShowDetailFromJson(json);
 
   /// seasonNumber 最大的一季
   Season? get latestSeason {
@@ -90,5 +101,6 @@ abstract class LastEpisodeToAir with _$LastEpisodeToAir {
     @JsonKey(name: 'still_path') dynamic stillPath,
   }) = _LastEpisodeToAir;
 
-  factory LastEpisodeToAir.fromJson(Map<String, dynamic> json) => _$LastEpisodeToAirFromJson(json);
+  factory LastEpisodeToAir.fromJson(Map<String, dynamic> json) =>
+      _$LastEpisodeToAirFromJson(json);
 }

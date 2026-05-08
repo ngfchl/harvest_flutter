@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import 'package:harvest/core/cache/session_cache.dart';
 import 'package:harvest/core/utils/utils.dart';
@@ -16,6 +16,44 @@ class NewsPage extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<NewsPage> createState() => _NewsPageState();
+}
+
+class _NewsToolbar extends StatelessWidget {
+  final bool mobile;
+  final int tabIndex;
+  final DataCacheInfo cacheInfo;
+  final ValueChanged<int> onTabChanged;
+
+  const _NewsToolbar({
+    required this.mobile,
+    required this.tabIndex,
+    required this.cacheInfo,
+    required this.onTabChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final horizontal = mobile ? 12.0 : 16.0;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(horizontal, 6, horizontal, 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          shadcn.Tabs(
+            index: tabIndex,
+            onChanged: onTabChanged,
+            children: const [
+              shadcn.TabItem(child: Text('TMDB')),
+              shadcn.TabItem(child: Text('豆瓣')),
+            ],
+          ),
+          const SizedBox(height: 6),
+          CacheStatusBanner(info: cacheInfo, margin: EdgeInsets.zero),
+        ],
+      ),
+    );
+  }
 }
 
 class _NewsPageState extends ConsumerState<NewsPage> {
@@ -62,72 +100,27 @@ class _NewsPageState extends ConsumerState<NewsPage> {
           });
     _refreshCachedTabOnce(cacheInfo);
 
-    return Column(
-      children: [
-        // Tab 切换
-        Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: mobile ? 12 : 16,
-            vertical: 4,
-          ),
-          child: Row(
-            children: [
-              _tabBtn('TMDB', 0),
-              const SizedBox(width: 4),
-              _tabBtn('豆瓣', 1),
-            ],
-          ),
-        ),
-        CacheStatusBanner(
-          info: cacheInfo,
-          margin: EdgeInsets.fromLTRB(mobile ? 12 : 16, 0, mobile ? 12 : 16, 6),
-        ),
+    final cs = shadcn.Theme.of(context).colorScheme;
 
-        // 内容
-        Expanded(
-          child: IndexedStack(
-            index: _tabIndex,
-            children: [
-              TmdbPage(
-                scrollController: _tabIndex == 0 ? _scrollController : null,
-              ),
-              DoubanPage(
-                scrollController: _tabIndex == 1 ? _scrollController : null,
-              ),
-            ],
-          ),
+    return shadcn.Scaffold(
+      backgroundColor: cs.background,
+      headerBackgroundColor: cs.background,
+      headers: [
+        _NewsToolbar(
+          mobile: mobile,
+          tabIndex: _tabIndex,
+          cacheInfo: cacheInfo,
+          onTabChanged: (index) => setState(() => _tabIndex = index),
         ),
       ],
-    );
-  }
-
-  Widget _tabBtn(String label, int index) {
-    final active = index == _tabIndex;
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
-
-    return GestureDetector(
-      onTap: () => setState(() => _tabIndex = index),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: active
-              ? cs.primary.withValues(alpha: 0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: active
-                ? cs.primary.withValues(alpha: 0.3)
-                : cs.border.withValues(alpha: 0.3),
+      child: IndexedStack(
+        index: _tabIndex,
+        children: [
+          TmdbPage(scrollController: _tabIndex == 0 ? _scrollController : null),
+          DoubanPage(
+            scrollController: _tabIndex == 1 ? _scrollController : null,
           ),
-        ),
-        child: Text(
-          label,
-          style: typo.sm.copyWith(
-            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-            color: active ? cs.primary : cs.mutedForeground,
-          ),
-        ),
+        ],
       ),
     );
   }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:collection/collection.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/browser_page.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+
+import 'site_theme.dart';
 
 import '../model/site_info.dart';
 import '../provider/site_provider.dart';
@@ -14,20 +16,24 @@ import 'site_sign_details.dart';
 
 void openDetail(BuildContext context, SiteInfo site) {
   if (context.isMobile) {
-    showFSheet(
+    showModalBottomSheet<void>(
       context: context,
-      side: FLayout.btt,
-      mainAxisMaxRatio: 0.9,
-      builder: (_) => SiteDetailSheet(site: site),
+      isScrollControlled: true,
+      backgroundColor: siteTransparent(context),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        maxChildSize: 0.95,
+        minChildSize: 0.45,
+        expand: false,
+        builder: (ctx, scrollCtrl) =>
+            SiteDetailSheet(site: site, scrollController: scrollCtrl),
+      ),
     );
   } else {
-    showFSheet(
+    showDialog<void>(
       context: context,
-      side: FLayout.btt,
-      mainAxisMaxRatio: 1,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: ConstrainedBox(
+      builder: (_) => shadcn.AlertDialog(
+        content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520, maxHeight: 700),
           child: SiteDetailSheet(site: site),
         ),
@@ -40,8 +46,9 @@ void openDetail(BuildContext context, SiteInfo site) {
 
 class SiteDetailSheet extends ConsumerWidget {
   final SiteInfo site;
+  final ScrollController? scrollController;
 
-  const SiteDetailSheet({super.key, required this.site});
+  const SiteDetailSheet({super.key, required this.site, this.scrollController});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,92 +56,112 @@ class SiteDetailSheet extends ConsumerWidget {
     final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
     final config = configs.firstWhereOrNull((c) => c.name == site.site);
     final spFull = _numVal(config?.spFull);
-    final cs = FTheme.of(context).colors;
-    final typo = FTheme.of(context).typography;
+    final cs = shadcn.Theme.of(context).colorScheme;
 
     return PopScope(
       canPop: true,
-      child: FScaffold(
-        childPad: false,
-        header: _buildHeader(context, cs),
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            16,
-            16,
-            MediaQuery.of(context).padding.bottom + 24,
-          ),
+      child: Material(
+        color: cs.background,
+        borderRadius: context.isMobile
+            ? BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft)
+            : siteRadius(context, size: "xl"),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
           children: [
-            // ── 用户信息卡片 ──
-            _buildUserCard(context, cs, typo, spFull),
-            const SizedBox(height: 12),
-            // ── 功能开关 ──
-            _section(context, '功能开关', FIcons.settings, [
-              _buildFlagsGrid(context, cs),
-            ]),
-            // ── 站点状态详情 ──
-            if (status != null) ...[
-              const SizedBox(height: 12),
-              _buildDetailStats(context, cs, status, spFull),
-            ],
-            const SizedBox(height: 12),
-            // ── 基本信息 ──
-            _section(context, '基本信息', FIcons.info, [
-              _row(context, '站点名称', site.site),
-              _row(context, '昵称', site.nickname.isEmpty ? '-' : site.nickname),
-              _row(context, '排序 ID', '${site.sortId}'),
-              _row(
-                context,
-                '标签',
-                site.tags.isEmpty ? '-' : site.tags.join(', '),
+            _buildHeader(context, cs),
+            Expanded(
+              child: ListView(
+                controller: scrollController,
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  16,
+                  16,
+                  MediaQuery.of(context).padding.bottom + 24,
+                ),
+                children: [
+                  // ── 用户信息卡片 ──
+                  _buildUserCard(context, cs, spFull),
+                  const SizedBox(height: 12),
+                  // ── 功能开关 ──
+                  _section(context, '功能开关', shadcn.LucideIcons.settings, [
+                    _buildFlagsGrid(context, cs),
+                  ]),
+                  // ── 站点状态详情 ──
+                  if (status != null) ...[
+                    const SizedBox(height: 12),
+                    _buildDetailStats(context, cs, status, spFull),
+                  ],
+                  const SizedBox(height: 12),
+                  // ── 基本信息 ──
+                  _section(context, '基本信息', shadcn.LucideIcons.info, [
+                    _row(context, '站点名称', site.site),
+                    _row(
+                      context,
+                      '昵称',
+                      site.nickname.isEmpty ? '-' : site.nickname,
+                    ),
+                    _row(context, '排序 ID', '${site.sortId}'),
+                    _row(
+                      context,
+                      '标签',
+                      site.tags.isEmpty ? '-' : site.tags.join(', '),
+                    ),
+                    if (site.durationText.isNotEmpty)
+                      _row(context, '注册时长', site.durationText),
+                  ]),
+                  const SizedBox(height: 12),
+
+                  // ── 用户信息 ──
+                  _section(context, '账号信息', shadcn.LucideIcons.user, [
+                    _row(context, '用户 ID', site.userId ?? '-'),
+                    _row(context, '用户名', site.username ?? '-'),
+                    _row(context, '邮箱', site.email ?? '-'),
+                    _row(context, 'Passkey', maskKey(site.passkey)),
+                    _row(context, 'Authkey', maskKey(site.authkey)),
+                  ]),
+                  const SizedBox(height: 12),
+
+                  // ── 连接设置 ──
+                  _section(context, '连接设置', shadcn.LucideIcons.link, [
+                    _row(context, '代理', site.proxy ?? '-'),
+                    _row(context, '镜像', site.mirror ?? '-'),
+                    _row(
+                      context,
+                      'RSS',
+                      site.rss?.isEmpty ?? true ? '-' : site.rss!,
+                    ),
+                    _row(
+                      context,
+                      '种子地址',
+                      site.torrents?.isEmpty ?? true ? '-' : site.torrents!,
+                    ),
+                    _row(context, 'Cookie', _truncate(site.cookie, 40)),
+                    _row(context, 'User-Agent', _truncate(site.userAgent, 50)),
+                  ]),
+                  const SizedBox(height: 12),
+
+                  // ── 数据统计 ──
+                  _section(context, '数据统计', shadcn.LucideIcons.chartBar, [
+                    _row(context, '注册时间', fmtDate(site.timeJoin)),
+                    _row(
+                      context,
+                      '最后访问',
+                      site.latestActiveText.isEmpty
+                          ? '-'
+                          : site.latestActiveText,
+                    ),
+                    _row(context, '短消息', '${site.mail}'),
+                    _row(context, '公告', '${site.notice}'),
+                  ]),
+
+                  // ── 签到信息 ──
+                  if (site.signInText != null) ...[
+                    const SizedBox(height: 12),
+                    _buildSignInSection(context, cs),
+                  ],
+                ],
               ),
-              if (site.durationText.isNotEmpty)
-                _row(context, '注册时长', site.durationText),
-            ]),
-            const SizedBox(height: 12),
-
-            // ── 用户信息 ──
-            _section(context, '账号信息', FIcons.user, [
-              _row(context, '用户 ID', site.userId ?? '-'),
-              _row(context, '用户名', site.username ?? '-'),
-              _row(context, '邮箱', site.email ?? '-'),
-              _row(context, 'Passkey', maskKey(site.passkey)),
-              _row(context, 'Authkey', maskKey(site.authkey)),
-            ]),
-            const SizedBox(height: 12),
-
-            // ── 连接设置 ──
-            _section(context, '连接设置', FIcons.link, [
-              _row(context, '代理', site.proxy ?? '-'),
-              _row(context, '镜像', site.mirror ?? '-'),
-              _row(context, 'RSS', site.rss?.isEmpty ?? true ? '-' : site.rss!),
-              _row(
-                context,
-                '种子地址',
-                site.torrents?.isEmpty ?? true ? '-' : site.torrents!,
-              ),
-              _row(context, 'Cookie', _truncate(site.cookie, 40)),
-              _row(context, 'User-Agent', _truncate(site.userAgent, 50)),
-            ]),
-            const SizedBox(height: 12),
-
-            // ── 数据统计 ──
-            _section(context, '数据统计', FIcons.chartBar, [
-              _row(context, '注册时间', fmtDate(site.timeJoin)),
-              _row(
-                context,
-                '最后访问',
-                site.latestActiveText.isEmpty ? '-' : site.latestActiveText,
-              ),
-              _row(context, '短消息', '${site.mail}'),
-              _row(context, '公告', '${site.notice}'),
-            ]),
-
-            // ── 签到信息 ──
-            if (site.signInText != null) ...[
-              const SizedBox(height: 12),
-              _buildSignInSection(context, cs),
-            ],
+            ),
           ],
         ),
       ),
@@ -145,7 +172,7 @@ class SiteDetailSheet extends ConsumerWidget {
 
   Widget _buildDetailStats(
     BuildContext context,
-    FColors cs,
+    shadcn.ColorScheme cs,
     SiteDailyStatus status,
     double spFull,
   ) {
@@ -156,9 +183,9 @@ class SiteDetailSheet extends ConsumerWidget {
         Row(
           children: [
             Icon(
-              FIcons.activity,
+              shadcn.LucideIcons.activity,
               size: 14,
-              color: cs.foreground.withOpacity(0.4),
+              color: cs.foreground.withValues(alpha: 0.4),
             ),
             const SizedBox(width: 6),
             Text(
@@ -166,7 +193,7 @@ class SiteDetailSheet extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: cs.foreground.withOpacity(0.6),
+                color: cs.foreground.withValues(alpha: 0.6),
               ),
             ),
             const Spacer(),
@@ -175,7 +202,7 @@ class SiteDetailSheet extends ConsumerWidget {
                 formatTime(status.updated_at),
                 style: TextStyle(
                   fontSize: 10,
-                  color: cs.foreground.withOpacity(0.3),
+                  color: cs.foreground.withValues(alpha: 0.3),
                 ),
               ),
           ],
@@ -190,7 +217,7 @@ class SiteDetailSheet extends ConsumerWidget {
               context,
               '等级',
               status.myLevel.isEmpty ? '-' : status.myLevel,
-              FIcons.award,
+              shadcn.LucideIcons.award,
               levelColor(status.myLevel),
             ),
             const SizedBox(width: 6),
@@ -198,16 +225,16 @@ class SiteDetailSheet extends ConsumerWidget {
               context,
               '发布',
               '${status.publish}',
-              FIcons.fileText,
-              const Color(0xFF6366F1),
+              shadcn.LucideIcons.fileText,
+              siteAccent(context, 2),
             ),
             const SizedBox(width: 6),
             _statCard(
               context,
               '邀请',
               '${status.invitation}',
-              FIcons.userPlus,
-              const Color(0xFFEC4899),
+              shadcn.LucideIcons.userPlus,
+              siteAccent(context, 3),
             ),
           ],
         ),
@@ -222,24 +249,24 @@ class SiteDetailSheet extends ConsumerWidget {
               context,
               '上传量',
               fmtBytes(status.uploaded),
-              FIcons.arrowUp,
-              const Color(0xFF10B981),
+              shadcn.LucideIcons.arrowUp,
+              siteSuccess(context),
             ),
             const SizedBox(width: 6),
             _statCard(
               context,
               '下载量',
               fmtBytes(status.downloaded),
-              FIcons.arrowDown,
-              const Color(0xFF3B82F6),
+              shadcn.LucideIcons.arrowDown,
+              siteInfo(context),
             ),
             const SizedBox(width: 6),
             _statCard(
               context,
               '分享率',
               status.ratio.toStringAsFixed(2),
-              FIcons.scale,
-              _ratioColor(status.ratio),
+              shadcn.LucideIcons.scale,
+              _ratioColor(context, status.ratio),
             ),
           ],
         ),
@@ -254,24 +281,24 @@ class SiteDetailSheet extends ConsumerWidget {
               context,
               '做种数',
               '${status.seed}',
-              FIcons.leaf,
-              const Color(0xFF10B981),
+              shadcn.LucideIcons.leaf,
+              siteSuccess(context),
             ),
             const SizedBox(width: 6),
             _statCard(
               context,
               '下载数',
               '${status.leech}',
-              FIcons.arrowDown,
-              const Color(0xFFEF4444),
+              shadcn.LucideIcons.arrowDown,
+              siteDanger(context),
             ),
             const SizedBox(width: 6),
             _statCard(
               context,
               '做种量',
               fmtBytes(status.seedVolume),
-              FIcons.hardDrive,
-              const Color(0xFF8B5CF6),
+              shadcn.LucideIcons.hardDrive,
+              siteAccent(context, 4),
             ),
           ],
         ),
@@ -286,24 +313,24 @@ class SiteDetailSheet extends ConsumerWidget {
               context,
               '魔力值',
               fmtCompact(status.myBonus),
-              FIcons.diamond,
-              const Color(0xFFF59E0B),
+              shadcn.LucideIcons.diamond,
+              siteWarning(context),
             ),
             const SizedBox(width: 6),
             _statCard(
               context,
               '做种积分',
               fmtCompact(status.myScore),
-              FIcons.star,
-              const Color(0xFFF59E0B),
+              shadcn.LucideIcons.star,
+              siteWarning(context),
             ),
             const SizedBox(width: 6),
             _statCard(
               context,
               '时魔',
               _fmtMagicWithRatio(status.bonusHour, spFull),
-              FIcons.zap,
-              const Color(0xFFEF4444),
+              shadcn.LucideIcons.zap,
+              siteDanger(context),
             ),
           ],
         ),
@@ -317,7 +344,9 @@ class SiteDetailSheet extends ConsumerWidget {
       style: TextStyle(
         fontSize: 10,
         fontWeight: FontWeight.w500,
-        color: FTheme.of(context).colors.foreground.withOpacity(0.35),
+        color: shadcn.Theme.of(
+          context,
+        ).colorScheme.foreground.withValues(alpha: 0.35),
       ),
     );
   }
@@ -329,13 +358,13 @@ class SiteDetailSheet extends ConsumerWidget {
     IconData icon,
     Color color,
   ) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
           color: cs.background,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: siteRadius(context, size: "md"),
           border: Border.all(color: cs.border, width: 0.5),
         ),
         child: Column(
@@ -343,13 +372,13 @@ class SiteDetailSheet extends ConsumerWidget {
           children: [
             Row(
               children: [
-                Icon(icon, size: 10, color: color.withOpacity(0.7)),
+                Icon(icon, size: 10, color: color.withValues(alpha: 0.7)),
                 const SizedBox(width: 3),
                 Text(
                   label,
                   style: TextStyle(
                     fontSize: 9,
-                    color: cs.foreground.withOpacity(0.4),
+                    color: cs.foreground.withValues(alpha: 0.4),
                   ),
                 ),
               ],
@@ -371,7 +400,7 @@ class SiteDetailSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildSignInSection(BuildContext context, FColors cs) {
+  Widget _buildSignInSection(BuildContext context, shadcn.ColorScheme cs) {
     final today = DateTime.now();
     final todayKey =
         '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
@@ -396,9 +425,9 @@ class SiteDetailSheet extends ConsumerWidget {
         Row(
           children: [
             Icon(
-              FIcons.calendarCheck,
+              shadcn.LucideIcons.calendarCheck,
               size: 14,
-              color: cs.foreground.withOpacity(0.4),
+              color: cs.foreground.withValues(alpha: 0.4),
             ),
             const SizedBox(width: 6),
             Text(
@@ -406,7 +435,7 @@ class SiteDetailSheet extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: cs.foreground.withOpacity(0.6),
+                color: cs.foreground.withValues(alpha: 0.6),
               ),
             ),
             const Spacer(),
@@ -416,13 +445,17 @@ class SiteDetailSheet extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: cs.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(6),
+                  color: cs.primary.withValues(alpha: 0.08),
+                  borderRadius: siteRadius(context, size: "sm"),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(FIcons.history, size: 12, color: cs.primary),
+                    Icon(
+                      shadcn.LucideIcons.history,
+                      size: 12,
+                      color: cs.primary,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '签到历史',
@@ -445,11 +478,11 @@ class SiteDetailSheet extends ConsumerWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: cs.background,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: siteRadius(context, size: "md"),
             border: Border.all(color: cs.border, width: 0.5),
           ),
           child: signed
-              ? _buildSignedDetail(cs, displayText, todayTime)
+              ? _buildSignedDetail(context, cs, displayText, todayTime)
               : _buildNotSigned(cs, context),
         ),
       ],
@@ -458,7 +491,7 @@ class SiteDetailSheet extends ConsumerWidget {
 
   // ── 已签到：显示签到详情 ──
 
-  Widget _buildSignedDetail(FColors cs, String text, String time) {
+  Widget _buildSignedDetail(BuildContext context, shadcn.ColorScheme cs, String text, String time) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -469,26 +502,30 @@ class SiteDetailSheet extends ConsumerWidget {
                 formatTime(time),
                 style: TextStyle(
                   fontSize: 10,
-                  color: cs.foreground.withOpacity(0.35),
+                  color: cs.foreground.withValues(alpha: 0.35),
                 ),
               ),
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4),
+                color: siteSuccess(context).withValues(alpha: 0.1),
+                borderRadius: siteRadius(context, size: "xs"),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(FIcons.check, size: 11, color: Colors.green.shade700),
+                  Icon(
+                    shadcn.LucideIcons.check,
+                    size: 11,
+                    color: siteSuccess(context),
+                  ),
                   const SizedBox(width: 3),
                   Text(
                     '今日已签到',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.green.shade700,
+                      color: siteSuccess(context),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -503,7 +540,7 @@ class SiteDetailSheet extends ConsumerWidget {
             text,
             style: TextStyle(
               fontSize: 11,
-              color: cs.foreground.withOpacity(0.65),
+              color: cs.foreground.withValues(alpha: 0.65),
               height: 1.5,
             ),
           ),
@@ -514,25 +551,29 @@ class SiteDetailSheet extends ConsumerWidget {
 
   // ── 未签到：显示签到按钮 ──
 
-  Widget _buildNotSigned(FColors cs, BuildContext context) {
+  Widget _buildNotSigned(shadcn.ColorScheme cs, BuildContext context) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: Colors.orange.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(4),
+            color: siteWarning(context).withValues(alpha: 0.1),
+            borderRadius: siteRadius(context, size: "xs"),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(FIcons.x, size: 11, color: Colors.orange.shade700),
+              Icon(
+                shadcn.LucideIcons.x,
+                size: 11,
+                color: siteWarning(context),
+              ),
               const SizedBox(width: 3),
               Text(
                 '今日未签到',
                 style: TextStyle(
                   fontSize: 11,
-                  color: Colors.orange.shade700,
+                  color: siteWarning(context),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -540,13 +581,12 @@ class SiteDetailSheet extends ConsumerWidget {
           ),
         ),
         const Spacer(),
-        FButton(
-          style: FButtonStyle.outline(),
-          onPress: site.signIn ? () => _doSignIn(context) : null,
+        shadcn.Button.outline(
+          onPressed: site.signIn ? () => _doSignIn(context) : null,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(FIcons.check, size: 14),
+              Icon(shadcn.LucideIcons.check, size: 14),
               const SizedBox(width: 4),
               const Text('签到'),
             ],
@@ -577,20 +617,20 @@ class SiteDetailSheet extends ConsumerWidget {
     final mobile = MediaQuery.of(context).size.width < 600;
 
     if (mobile) {
-      showFSheet(
+      showModalBottomSheet<void>(
         context: context,
-        side: FLayout.btt,
-        builder: (ctx) => SignInHistorySheet(siteId: site.id),
+        isScrollControlled: true,
+        backgroundColor: siteTransparent(context),
+        builder: (ctx) => SizedBox(
+          height: MediaQuery.of(ctx).size.height * 0.75,
+          child: SignInHistorySheet(siteId: site.id),
+        ),
       );
     } else {
-      showDialog(
+      shadcn.showDialog(
         context: context,
-        builder: (ctx) => Dialog(
-          backgroundColor: FTheme.of(ctx).colors.background,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: SizedBox(
+        builder: (ctx) => shadcn.AlertDialog(
+          content: SizedBox(
             width: 480,
             height: MediaQuery.of(ctx).size.height * 0.6,
             child: SignInHistorySheet(siteId: site.id),
@@ -602,7 +642,10 @@ class SiteDetailSheet extends ConsumerWidget {
 
   // ────────────────── Header ──────────────────
 
-  PreferredSizeWidget _buildHeader(BuildContext context, FColors cs) {
+  PreferredSizeWidget _buildHeader(
+    BuildContext context,
+    shadcn.ColorScheme cs,
+  ) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(52),
       child: Container(
@@ -618,7 +661,11 @@ class SiteDetailSheet extends ConsumerWidget {
               behavior: HitTestBehavior.opaque,
               child: Padding(
                 padding: const EdgeInsets.all(4),
-                child: Icon(FIcons.arrowLeft, size: 20, color: cs.foreground),
+                child: Icon(
+                  shadcn.LucideIcons.arrowLeft,
+                  size: 20,
+                  color: cs.foreground,
+                ),
               ),
             ),
             const SizedBox(width: 10),
@@ -628,8 +675,8 @@ class SiteDetailSheet extends ConsumerWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: site.available
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFEF4444),
+                    ? siteSuccess(context)
+                    : siteDanger(context),
               ),
             ),
             const SizedBox(width: 10),
@@ -650,7 +697,7 @@ class SiteDetailSheet extends ConsumerWidget {
                     Text(
                       site.nickname,
                       style: TextStyle(
-                        color: cs.foreground.withOpacity(0.4),
+                        color: cs.foreground.withValues(alpha: 0.4),
                         fontSize: 11,
                       ),
                     ),
@@ -669,10 +716,14 @@ class SiteDetailSheet extends ConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: cs.primary.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(8),
+                    color: cs.primary.withValues(alpha: 0.08),
+                    borderRadius: siteRadius(context, size: "md"),
                   ),
-                  child: Icon(FIcons.globe, size: 16, color: cs.primary),
+                  child: Icon(
+                    shadcn.LucideIcons.globe,
+                    size: 16,
+                    color: cs.primary,
+                  ),
                 ),
               ),
           ],
@@ -685,8 +736,7 @@ class SiteDetailSheet extends ConsumerWidget {
 
   Widget _buildUserCard(
     BuildContext context,
-    FColors cs,
-    dynamic typo,
+    shadcn.ColorScheme cs,
     double spFull,
   ) {
     final status = site.latestStatus;
@@ -696,7 +746,7 @@ class SiteDetailSheet extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cs.background,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: siteRadius(context, size: "lg"),
         border: Border.all(color: cs.border, width: 0.5),
       ),
       child: Column(
@@ -708,8 +758,8 @@ class SiteDetailSheet extends ConsumerWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: cs.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  color: cs.primary.withValues(alpha: 0.1),
+                  borderRadius: siteRadius(context, size: "md"),
                 ),
                 child: Center(
                   child: Text(
@@ -739,7 +789,7 @@ class SiteDetailSheet extends ConsumerWidget {
                     Text(
                       site.email ?? '-',
                       style: TextStyle(
-                        color: cs.foreground.withOpacity(0.4),
+                        color: cs.foreground.withValues(alpha: 0.4),
                         fontSize: 12,
                       ),
                     ),
@@ -756,8 +806,8 @@ class SiteDetailSheet extends ConsumerWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: levelColor(status.myLevel).withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(6),
+                      color: levelColor(status.myLevel).withValues(alpha: 0.12),
+                      borderRadius: siteRadius(context, size: "sm"),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -774,7 +824,9 @@ class SiteDetailSheet extends ConsumerWidget {
                         Icon(
                           Icons.keyboard_arrow_right_rounded,
                           size: 14,
-                          color: levelColor(status.myLevel).withOpacity(0.6),
+                          color: levelColor(
+                            status.myLevel,
+                          ).withValues(alpha: 0.6),
                         ),
                       ],
                     ),
@@ -792,9 +844,10 @@ class SiteDetailSheet extends ConsumerWidget {
                     status.myHr != '0/0/0' &&
                     status.myHr != '0') ...[
                   _miniBadge(
-                    FIcons.triangleAlert,
+                    context,
+                    shadcn.LucideIcons.triangleAlert,
                     'HR ${status.myHr}',
-                    const Color(0xFFF85149),
+                    siteDanger(context),
                   ),
                   if (site.signInText != null || status.bonusHour > 0)
                     const SizedBox(width: 8),
@@ -802,19 +855,23 @@ class SiteDetailSheet extends ConsumerWidget {
                 // 签到状态
                 if (site.signInText != null)
                   _miniBadge(
-                    site.signInText == '已签到' ? FIcons.check : FIcons.x,
+                    context,
+                    site.signInText == '已签到'
+                        ? shadcn.LucideIcons.check
+                        : shadcn.LucideIcons.x,
                     site.signInText!,
                     site.signInText == '已签到'
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFEF4444),
+                        ? siteSuccess(context)
+                        : siteDanger(context),
                   ),
                 // 时魔
                 if (status != null) ...[
                   if (site.signInText != null) const SizedBox(width: 8),
                   _miniBadge(
-                    FIcons.zap,
+                    context,
+                    shadcn.LucideIcons.zap,
                     '${_fmtMagicWithRatio(status.bonusHour, spFull)}/h',
-                    const Color(0xFFF59E0B),
+                    siteWarning(context),
                   ),
                 ],
               ],
@@ -825,12 +882,12 @@ class SiteDetailSheet extends ConsumerWidget {
     );
   }
 
-  Widget _miniBadge(IconData icon, String text, Color color) {
+  Widget _miniBadge(BuildContext context, IconData icon, String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(6),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: siteRadius(context, size: "sm"),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -850,11 +907,11 @@ class SiteDetailSheet extends ConsumerWidget {
     );
   }
 
-  Color _ratioColor(double ratio) {
-    if (ratio >= 2.0) return const Color(0xFF10B981);
-    if (ratio >= 1.0) return const Color(0xFF3B82F6);
-    if (ratio >= 0.5) return const Color(0xFFF59E0B);
-    return const Color(0xFFEF4444);
+  Color _ratioColor(BuildContext context, double ratio) {
+    if (ratio >= 2.0) return siteSuccess(context);
+    if (ratio >= 1.0) return siteInfo(context);
+    if (ratio >= 0.5) return siteWarning(context);
+    return siteDanger(context);
   }
 
   // ────────────────── Section ──────────────────
@@ -865,7 +922,7 @@ class SiteDetailSheet extends ConsumerWidget {
     IconData icon,
     List<Widget> children,
   ) {
-    final cs = FTheme.of(ctx).colors;
+    final cs = shadcn.Theme.of(ctx).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -873,14 +930,14 @@ class SiteDetailSheet extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: 8),
           child: Row(
             children: [
-              Icon(icon, size: 14, color: cs.foreground.withOpacity(0.4)),
+              Icon(icon, size: 14, color: cs.foreground.withValues(alpha: 0.4)),
               const SizedBox(width: 6),
               Text(
                 title,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: cs.foreground.withOpacity(0.6),
+                  color: cs.foreground.withValues(alpha: 0.6),
                 ),
               ),
             ],
@@ -889,11 +946,11 @@ class SiteDetailSheet extends ConsumerWidget {
         Container(
           decoration: BoxDecoration(
             color: cs.background,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: siteRadius(ctx, size: "md"),
             border: Border.all(color: cs.border, width: 0.5),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: siteRadius(ctx, size: "md"),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: List.generate(children.length * 2 - 1, (i) {
@@ -917,7 +974,7 @@ class SiteDetailSheet extends ConsumerWidget {
   // ────────────────── 行 ──────────────────
 
   Widget _row(BuildContext context, String label, String value) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       child: Row(
@@ -927,7 +984,7 @@ class SiteDetailSheet extends ConsumerWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: cs.foreground.withOpacity(0.45),
+                color: cs.foreground.withValues(alpha: 0.45),
                 fontSize: 13,
               ),
             ),
@@ -951,18 +1008,18 @@ class SiteDetailSheet extends ConsumerWidget {
 
   // ────────────────── 功能开关网格 ──────────────────
 
-  Widget _buildFlagsGrid(BuildContext context, FColors cs) {
+  Widget _buildFlagsGrid(BuildContext context, shadcn.ColorScheme cs) {
     final flags = [
-      _FlagItem('可用', site.available, FIcons.check),
-      _FlagItem('签到', site.signIn, FIcons.calendarCheck),
-      _FlagItem('信息', site.getInfo, FIcons.info),
-      _FlagItem('辅种', site.repeatTorrents, FIcons.copy),
-      _FlagItem('刷流', site.brushFree, FIcons.download),
-      _FlagItem('RSS', site.brushRss, FIcons.rss),
-      _FlagItem('拆包', site.packageFile, FIcons.package),
-      _FlagItem('HR', site.hrDiscern, FIcons.triangleAlert),
-      _FlagItem('搜索', site.searchTorrents, FIcons.search),
-      _FlagItem('首页', site.showInDash, FIcons.layoutDashboard),
+      _FlagItem('可用', site.available, shadcn.LucideIcons.check),
+      _FlagItem('签到', site.signIn, shadcn.LucideIcons.calendarCheck),
+      _FlagItem('信息', site.getInfo, shadcn.LucideIcons.info),
+      _FlagItem('辅种', site.repeatTorrents, shadcn.LucideIcons.copy),
+      _FlagItem('刷流', site.brushFree, shadcn.LucideIcons.download),
+      _FlagItem('RSS', site.brushRss, shadcn.LucideIcons.rss),
+      _FlagItem('拆包', site.packageFile, shadcn.LucideIcons.package),
+      _FlagItem('HR', site.hrDiscern, shadcn.LucideIcons.triangleAlert),
+      _FlagItem('搜索', site.searchTorrents, shadcn.LucideIcons.search),
+      _FlagItem('首页', site.showInDash, shadcn.LucideIcons.layoutDashboard),
     ];
 
     return Padding(
@@ -976,12 +1033,12 @@ class SiteDetailSheet extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: f.on
-                  ? const Color(0xFF10B981).withOpacity(0.08)
-                  : cs.foreground.withOpacity(0.03),
-              borderRadius: BorderRadius.circular(8),
+                  ? siteSuccess(context).withValues(alpha: 0.08)
+                  : cs.foreground.withValues(alpha: 0.03),
+              borderRadius: siteRadius(context, size: "md"),
               border: Border.all(
                 color: f.on
-                    ? const Color(0xFF10B981).withOpacity(0.2)
+                    ? siteSuccess(context).withValues(alpha: 0.2)
                     : cs.border,
               ),
             ),
@@ -992,8 +1049,8 @@ class SiteDetailSheet extends ConsumerWidget {
                   f.icon,
                   size: 12,
                   color: f.on
-                      ? const Color(0xFF10B981)
-                      : cs.foreground.withOpacity(0.25),
+                      ? siteSuccess(context)
+                      : cs.foreground.withValues(alpha: 0.25),
                 ),
                 const SizedBox(width: 5),
                 Text(
@@ -1001,8 +1058,8 @@ class SiteDetailSheet extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 11,
                     color: f.on
-                        ? const Color(0xFF10B981)
-                        : cs.foreground.withOpacity(0.4),
+                        ? siteSuccess(context)
+                        : cs.foreground.withValues(alpha: 0.4),
                     fontWeight: f.on ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),

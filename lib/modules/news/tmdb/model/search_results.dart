@@ -38,7 +38,9 @@ abstract class SearchResults with _$SearchResults {
       totalResults: json['total_results'] as int? ?? 0,
       results: resultsList,
       id: json['id'] as int?,
-      dates: json['dates'] != null ? Map<String, dynamic>.from(json['dates'] as Map) : null,
+      dates: json['dates'] != null
+          ? Map<String, dynamic>.from(json['dates'] as Map)
+          : null,
     );
   }
 }

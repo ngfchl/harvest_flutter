@@ -1,8 +1,8 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../widgets/cache_status_banner.dart';
 import '../shell/provider/screenshot_provider.dart';
@@ -35,8 +35,7 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      ref.read(activeScrollControllerProvider.notifier).state =
-          _scrollController;
+      ref.read(activeScrollControllerProvider.notifier).state = _scrollController;
     });
   }
 
@@ -45,262 +44,158 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
     ref.watch(downloaderSpeedProvider);
 
     final asyncList = ref.watch(downloaderListProvider);
-    final cs = FTheme.of(context).colors;
-    final typo = FTheme.of(context).typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
     final mobile = context.isMobile;
     final cacheInfo = ref.watch(downloaderListCacheInfoProvider);
     final refreshHeader = appRefreshHeader(context);
+    final tokens = _DownloaderPageTokens.of(context);
+    final horizontalInset = mobile ? tokens.size(12) : tokens.size(24);
 
-    return Stack(
-      children: [
-        asyncList.when(
-          loading: () => Center(child: FProgress.circularIcon()),
-          error: (e, _) =>
-              _DownloaderErrorView(error: e, onRetry: _refreshDownloaders),
-          data: (list) {
-            if (list.isEmpty) {
-              return Column(
-                children: [
-                  CacheStatusBanner(
-                    info: cacheInfo,
-                    margin: EdgeInsets.fromLTRB(
-                      mobile ? 12 : 24,
-                      8,
-                      mobile ? 12 : 24,
-                      6,
-                    ),
-                  ),
-                  Expanded(
-                    child: EasyRefresh(
-                      onRefresh: _refreshDownloaders,
-                      header: refreshHeader,
-                      child: ListView(
-                        controller: _scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: EdgeInsets.only(
-                          bottom: 16 + ShellBottomSpacing.value(context),
+    return shadcn.Scaffold(
+      backgroundColor: cs.background,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ColoredBox(
+              color: cs.background,
+              child: asyncList.when(
+                loading: () => Center(child: shadcn.CircularProgressIndicator(strokeWidth: tokens.size(2))),
+                error: (e, _) => _DownloaderErrorView(error: e, onRetry: _refreshDownloaders),
+                data: (list) {
+                  if (list.isEmpty) {
+                    return Column(
+                      children: [
+                        CacheStatusBanner(
+                          info: cacheInfo,
+                          margin: EdgeInsets.fromLTRB(horizontalInset, tokens.size(8), horizontalInset, tokens.size(6)),
                         ),
-                        children: [
-                          SizedBox(
-                            height: MediaQuery.sizeOf(context).height * 0.28,
-                          ),
-                          Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
+                        _buildStatusBar(horizontalInset),
+                        Expanded(
+                          child: EasyRefresh(
+                            onRefresh: _refreshDownloaders,
+                            header: refreshHeader,
+                            child: ListView(
+                              controller: _scrollController,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: EdgeInsets.only(bottom: tokens.size(16) + ShellBottomSpacing.value(context)),
                               children: [
-                                Icon(
-                                  FIcons.hardDrive,
-                                  size: 48,
-                                  color: cs.mutedForeground.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  '暂无下载器',
-                                  style: typo.lg.copyWith(
-                                    color: cs.mutedForeground,
+                                SizedBox(height: MediaQuery.sizeOf(context).height * 0.28),
+                                Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        shadcn.LucideIcons.hardDrive,
+                                        size: tokens.font(48),
+                                        color: cs.mutedForeground.withValues(alpha: 0.3),
+                                      ),
+                                      _DownloaderPageTokens.of(context).vGap(12),
+                                      Text('暂无下载器', style: typo.large.copyWith(color: cs.mutedForeground)),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
+                        ),
+                      ],
+                    );
+                  }
+                  return Column(
+                    children: [
+                      CacheStatusBanner(
+                        info: cacheInfo,
+                        margin: EdgeInsets.fromLTRB(horizontalInset, tokens.size(8), horizontalInset, tokens.size(2)),
                       ),
-                    ),
-                  ),
-                ],
-              );
-            }
-            return Column(
-              children: [
-                CacheStatusBanner(
-                  info: cacheInfo,
-                  margin: EdgeInsets.fromLTRB(
-                    mobile ? 12 : 24,
-                    8,
-                    mobile ? 12 : 24,
-                    2,
-                  ),
-                ),
-                // ── 顶部状态栏 ──
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    mobile ? 12 : 24,
-                    12,
-                    mobile ? 12 : 24,
-                    4,
-                  ),
-                  child: Consumer(
-                    builder: (context, ref, _) {
-                      final cs = FTheme.of(context).colors;
-                      final paused = ref.watch(speedPausedProvider);
-                      final remaining = ref.watch(speedRemainingProvider);
+                      _buildStatusBar(horizontalInset),
+                      // ── 列表 / 网格 ──
+                      Expanded(
+                        child: EasyRefresh(
+                          onRefresh: _refreshDownloaders,
+                          header: refreshHeader,
+                          child: mobile ? _buildMobileList(list) : _buildDesktopGrid(list),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                      // 格式化倒计时
-                      final min = remaining ~/ 60;
-                      final sec = remaining % 60;
-                      final countdown = remaining > 0
-                          ? '$min:${sec.toString().padLeft(2, '0')}'
-                          : '';
+  Widget _buildStatusBar(double horizontalInset) {
+    final theme = shadcn.Theme.of(context);
+    final typo = theme.typography;
+    final tokens = _DownloaderPageTokens.of(context);
 
-                      return Row(
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: paused
-                                  ? const Color(0xFFF59E0B)
-                                  : const Color(0xFF10B981),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            paused ? '实时数据已暂停' : '实时数据接收中',
-                            style: typo.xs.copyWith(
-                              color: cs.mutedForeground.withValues(alpha: 0.5),
-                              fontSize: 11,
-                            ),
-                          ),
-                          // ── 倒计时 ──
-                          if (!paused && remaining > 0) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: remaining <= 60
-                                    ? const Color(
-                                        0xFFF59E0B,
-                                      ).withValues(alpha: 0.1)
-                                    : cs.foreground.withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    FIcons.timer,
-                                    size: 10,
-                                    color: remaining <= 60
-                                        ? const Color(0xFFF59E0B)
-                                        : cs.mutedForeground.withValues(
-                                            alpha: 0.5,
-                                          ),
-                                  ),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    countdown,
-                                    style: typo.xs.copyWith(
-                                      fontSize: 10,
-                                      color: remaining <= 60
-                                          ? const Color(0xFFF59E0B)
-                                          : cs.mutedForeground.withValues(
-                                              alpha: 0.5,
-                                            ),
-                                      fontFeatures: const [
-                                        FontFeature.tabularFigures(),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                          const Spacer(),
-                          // ── 设置齿轮 ──
-                          GestureDetector(
-                            onTap: () => showSpeedSettings(context, ref),
-                            behavior: HitTestBehavior.opaque,
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: Icon(
-                                FIcons.settings,
-                                size: 14,
-                                color: cs.mutedForeground.withValues(
-                                  alpha: 0.4,
-                                ),
-                              ),
-                            ),
-                          ),
-                          // ── 暂停/恢复 ──
-                          GestureDetector(
-                            onTap: () {
-                              ref.read(speedPausedProvider.notifier).state =
-                                  !paused;
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: paused
-                                    ? const Color(
-                                        0xFF10B981,
-                                      ).withValues(alpha: 0.1)
-                                    : const Color(
-                                        0xFFF59E0B,
-                                      ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    paused ? FIcons.play : FIcons.pause,
-                                    size: 12,
-                                    color: paused
-                                        ? const Color(0xFF10B981)
-                                        : const Color(0xFFF59E0B),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    paused ? '恢复' : '暂停',
-                                    style: typo.xs.copyWith(
-                                      color: paused
-                                          ? const Color(0xFF10B981)
-                                          : const Color(0xFFF59E0B),
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                // ── 列表 / 网格 ──
-                Expanded(
-                  child: EasyRefresh(
-                    onRefresh: _refreshDownloaders,
-                    header: refreshHeader,
-                    child: mobile
-                        ? _buildMobileList(list)
-                        : _buildDesktopGrid(list),
-                  ),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(horizontalInset, tokens.size(12), horizontalInset, tokens.size(4)),
+      child: Consumer(
+        builder: (context, ref, _) {
+          final cs = shadcn.Theme.of(context).colorScheme;
+          final paused = ref.watch(speedPausedProvider);
+          final remaining = ref.watch(speedRemainingProvider);
+
+          final min = remaining ~/ 60;
+          final sec = remaining % 60;
+          final countdown = remaining > 0 ? '$min:${sec.toString().padLeft(2, '0')}' : '';
+
+          return Row(
+            children: [
+              Icon(
+                shadcn.LucideIcons.circle,
+                size: tokens.iconXs,
+                color: paused ? cs.destructive : cs.primary,
+              ),
+              tokens.hGap(6),
+              Text(
+                paused ? '实时数据已暂停' : '实时数据接收中',
+                style: typo.xSmall.copyWith(color: cs.mutedForeground),
+              ),
+              if (!paused && remaining > 0) ...[
+                tokens.hGap(8),
+                shadcn.SecondaryBadge(
+                  leading: Icon(shadcn.LucideIcons.timer, size: tokens.iconXs),
+                  child: Text(countdown),
                 ),
               ],
-            );
-          },
-        ),
-        Positioned(
-          right: 16,
-          bottom: 16 + ShellBottomSpacing.value(context),
-          child: FButton.icon(
-            onPress: () => _showEditor(),
-            child: const Icon(FIcons.plus, size: 20),
-          ),
-        ),
-      ],
+              const Spacer(),
+              shadcn.IconButton.ghost(
+                onPressed: () => showSpeedSettings(context, ref),
+                icon: Icon(
+                  shadcn.LucideIcons.settings,
+                  size: tokens.iconLg,
+                  color: cs.foreground,
+                ),
+              ),
+              shadcn.IconButton.ghost(
+                onPressed: () {
+                  ref.read(speedPausedProvider.notifier).state = !paused;
+                },
+                icon: Icon(
+                  paused ? shadcn.LucideIcons.play : shadcn.LucideIcons.pause,
+                  size: tokens.iconLg,
+                  color: cs.foreground,
+                ),
+              ),
+              shadcn.IconButton.ghost(
+                onPressed: () => _showEditor(),
+                icon: Icon(
+                  shadcn.LucideIcons.plus,
+                  size: tokens.iconLg,
+                  color: cs.foreground,
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -311,10 +206,12 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
 
   // ── 手机端：单列列表 ──
   Widget _buildMobileList(List<Downloader> list) {
-    return ListView.builder(
+    final tokens = _DownloaderPageTokens.of(context);
+    return ListView.separated(
       controller: _scrollController,
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+      padding: tokens.edgeFromLTRB(12, 10, 12, 0),
       itemCount: list.length + 1,
+      separatorBuilder: (context, i) => i >= list.length - 1 ? const SizedBox.shrink() : tokens.vGap(12),
       itemBuilder: (context, i) {
         if (i == list.length) {
           return SizedBox(height: 72 + ShellBottomSpacing.value(context));
@@ -331,6 +228,7 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
   }
 
   Widget _buildDesktopGrid(List<Downloader> list) {
+    final tokens = _DownloaderPageTokens.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
@@ -347,13 +245,13 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
           controller: _scrollController,
           slivers: [
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+              padding: tokens.edgeFromLTRB(24, 8, 24, 0),
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  mainAxisExtent: 220, // 固定高度
+                  mainAxisSpacing: tokens.size(12),
+                  crossAxisSpacing: tokens.size(12),
+                  mainAxisExtent: tokens.size(220),
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, i) => DownloaderCard(
@@ -367,9 +265,7 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
                 ),
               ),
             ),
-            SliverToBoxAdapter(
-              child: SizedBox(height: 72 + ShellBottomSpacing.value(context)),
-            ),
+            SliverToBoxAdapter(child: SizedBox(height: 72 + ShellBottomSpacing.value(context))),
           ],
         );
       },
@@ -377,7 +273,7 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
   }
 
   void _showEditor({Downloader? downloader}) {
-    showDialog(
+    shadcn.showDialog(
       context: context,
       builder: (_) => DownloaderEditorDialog(
         downloader: downloader,
@@ -393,20 +289,15 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
   }
 
   void _confirmDelete(Downloader d) {
-    showDialog(
+    shadcn.showDialog(
       context: context,
-      builder: (ctx) => FDialog(
+      builder: (ctx) => shadcn.AlertDialog(
         title: const Text('删除下载器'),
-        body: Text('确定删除「${d.name}」吗？此操作不可撤销。'),
+        content: Text('确定删除「${d.name}」吗？此操作不可撤销。'),
         actions: [
-          FButton(
-            style: FButtonStyle.outline(),
-            onPress: () => Navigator.of(ctx).pop(),
-            child: const Text('取消'),
-          ),
-          FButton(
-            style: FButtonStyle.destructive(),
-            onPress: () {
+          shadcn.Button.outline(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
+          shadcn.Button.destructive(
+            onPressed: () {
               Navigator.of(ctx).pop();
               ref.read(downloaderListProvider.notifier).remove(d.id);
             },
@@ -418,14 +309,48 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
   }
 
   void _toggleActive(Downloader d) {
-    ref
-        .read(downloaderListProvider.notifier)
-        .edit(d.copyWith(isActive: !d.isActive));
+    ref.read(downloaderListProvider.notifier).edit(d.copyWith(isActive: !d.isActive));
   }
 
   void _toggleBrush(Downloader d) {
     ref.read(downloaderListProvider.notifier).edit(d.copyWith(brush: !d.brush));
   }
+}
+
+class _DownloaderPageTokens {
+  final shadcn.ThemeData theme;
+  final double densityScale;
+  final double textScale;
+
+  _DownloaderPageTokens._({required this.theme, required this.densityScale, required this.textScale});
+
+  factory _DownloaderPageTokens.of(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.55, 1.45);
+    final textScale = theme.scaling.clamp(0.86, 1.30);
+    return _DownloaderPageTokens._(
+      theme: theme,
+      densityScale: densityScale.toDouble(),
+      textScale: textScale.toDouble(),
+    );
+  }
+
+  double size(num value) => value * densityScale;
+
+  double font(num value) => value * textScale;
+
+  double get iconXs => font(12);
+
+  double get iconSm => font(14);
+
+  double get iconLg => font(20);
+
+  EdgeInsets edgeFromLTRB(num left, num top, num right, num bottom) =>
+      EdgeInsets.fromLTRB(size(left), size(top), size(right), size(bottom));
+
+  SizedBox hGap(num value) => SizedBox(width: size(value));
+
+  SizedBox vGap(num value) => SizedBox(height: size(value));
 }
 
 class _DownloaderErrorView extends StatelessWidget {
@@ -436,41 +361,38 @@ class _DownloaderErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
+    final tokens = _DownloaderPageTokens.of(context);
 
     return EasyRefresh(
       onRefresh: onRetry,
       header: appRefreshHeader(context),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.only(
-          bottom: 16 + ShellBottomSpacing.value(context),
-        ),
+        padding: EdgeInsets.only(bottom: tokens.size(16) + ShellBottomSpacing.value(context)),
         children: [
           SizedBox(height: MediaQuery.sizeOf(context).height * 0.28),
           Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: EdgeInsets.symmetric(horizontal: tokens.size(24)),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(FIcons.circleAlert, size: 44, color: cs.destructive),
-                  const SizedBox(height: 12),
-                  Text(
-                    '下载器加载失败',
-                    style: typo.lg.copyWith(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 6),
+                  Icon(shadcn.LucideIcons.circleAlert, size: tokens.font(44), color: cs.destructive),
+                  tokens.vGap(12),
+                  Text('下载器加载失败', style: typo.large.copyWith(fontWeight: FontWeight.w600)),
+                  tokens.vGap(6),
                   Text(
                     '$error',
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: typo.xs.copyWith(color: cs.mutedForeground),
+                    style: typo.xSmall.copyWith(color: cs.mutedForeground),
                   ),
-                  const SizedBox(height: 16),
-                  FButton(onPress: onRetry, child: const Text('重新加载')),
+                  tokens.vGap(16),
+                  shadcn.Button.primary(onPressed: onRetry, child: const Text('重新加载')),
                 ],
               ),
             ),

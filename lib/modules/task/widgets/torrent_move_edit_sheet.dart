@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../download/model/downloader.dart';
 import '../../download/provider/downloader_provider.dart';
@@ -194,7 +194,7 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
             Container(
               width: 36,
               height: 4,
-              decoration: BoxDecoration(color: context.theme.colors.border, borderRadius: BorderRadius.circular(99)),
+              decoration: BoxDecoration(color: shadcn.Theme.of(context).colorScheme.border, borderRadius: BorderRadius.circular(99)),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -202,17 +202,18 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
             ),
             Flexible(
               child: SingleChildScrollView(
-                child: FTileGroup(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Column(
                   children: options
                       .map(
-                        (t) => FTile(
+                        (t) => _SheetTile(
                           title: Text(labelBuilder(t)),
-                          onPress: () {
+                          onTap: () {
                             onSelected(t);
                             Navigator.pop(ctx);
                           },
-                          suffix: t == selected
-                              ? Icon(FIcons.check, size: 18, color: context.theme.colors.primary)
+                          trailing: t == selected
+                              ? Icon(shadcn.LucideIcons.check, size: 18, color: shadcn.Theme.of(context).colorScheme.primary)
                               : null,
                         ),
                       )
@@ -239,7 +240,7 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
         children: [
           _buildHeader(),
           Flexible(child: _buildForm(downloadersAsync)),
-          const FDivider(),
+          const Divider(height: 1),
           _buildButtons(),
         ],
       ),
@@ -257,7 +258,7 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
             children: [
               const Text('高级', style: TextStyle(fontSize: 13)),
               const SizedBox(width: 4),
-              FSwitch(value: _advance, onChange: (v) => setState(() => _advance = v)),
+              Switch(value: _advance, onChanged: (v) => setState(() => _advance = v)),
             ],
           ),
         ],
@@ -267,7 +268,7 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
 
   Widget _buildForm(AsyncValue<List<Downloader>> downloadersAsync) {
     return downloadersAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: shadcn.CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('加载下载器失败: $e')),
       data: (downloaders) {
         _initDownloaders(downloaders);
@@ -280,16 +281,16 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: Column(
             children: [
-              FTextField(controller: _nameCtrl, label: const Text('任务名称')),
+              shadcn.TextField(controller: _nameCtrl, hintText: '任务名称'),
               const SizedBox(height: 12),
 
-              FTileGroup(
+              Column(
                 children: [
-                  FTile(
+                  _SheetTile(
                     title: const Text('选择源下载器'),
                     subtitle: Text(_sourceDownloader?.name ?? '请选择'),
-                    suffix: const Icon(FIcons.chevronRight, size: 18),
-                    onPress: () => _showSelectSheet<Downloader>(
+                    trailing: const Icon(shadcn.LucideIcons.chevronRight, size: 18),
+                    onTap: () => _showSelectSheet<Downloader>(
                       title: '选择源下载器',
                       options: downloaders,
                       selected: _sourceDownloader,
@@ -297,11 +298,11 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
                       onSelected: (v) => _onSourceChanged(downloaders, v),
                     ),
                   ),
-                  FTile(
+                  _SheetTile(
                     title: const Text('选择目标下载器'),
                     subtitle: Text(_distDownloader?.name ?? '请选择'),
-                    suffix: const Icon(FIcons.chevronRight, size: 18),
-                    onPress: () => _showSelectSheet<Downloader>(
+                    trailing: const Icon(shadcn.LucideIcons.chevronRight, size: 18),
+                    onTap: () => _showSelectSheet<Downloader>(
                       title: '选择目标下载器',
                       options: distOptions,
                       selected: _distDownloader,
@@ -313,53 +314,47 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
               ),
               const SizedBox(height: 12),
 
-              FTextField(
+              shadcn.TextField(
                 controller: _folderMapCtrl,
-                label: const Text('文件夹映射'),
+                hintText: '文件夹映射',
                 maxLines: 3,
-                description: const Text(
-                  '1. 格式：源文件夹->目标文件夹，多个映射请换行。\n'
-                  '2. 只有匹配上箭头前面的源文件夹才会被转移到目标文件夹。\n'
-                  '   留空表示转移全部种子。\n'
-                  '3. 未完成的种子会被忽略',
-                ),
               ),
               const SizedBox(height: 8),
 
-              FTileGroup(
+              Column(
                 children: [
-                  FTile(
+                  _SheetTile(
                     title: const Text('开启任务'),
-                    suffix: FSwitch(value: _enabled, onChange: (v) => setState(() => _enabled = v)),
+                    trailing: Switch(value: _enabled, onChanged: (v) => setState(() => _enabled = v)),
                   ),
-                  FTile(
+                  _SheetTile(
                     title: const Text('跳过校验'),
                     subtitle: const Text('仅目标为qBittorrent下载器时生效'),
-                    suffix: FSwitch(value: _skipChecking, onChange: (v) => setState(() => _skipChecking = v)),
+                    trailing: Switch(value: _skipChecking, onChanged: (v) => setState(() => _skipChecking = v)),
                   ),
-                  FTile(
+                  _SheetTile(
                     title: const Text('删除源种子'),
                     subtitle: const Text('种子迁移任务完成是否删除源种子'),
-                    suffix: FSwitch(
+                    trailing: Switch(
                       value: _removeSourceTorrents,
-                      onChange: (v) => setState(() => _removeSourceTorrents = v),
+                      onChanged: (v) => setState(() => _removeSourceTorrents = v),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
 
-              FTextField(controller: _minuteCtrl, label: const Text('分钟')),
+              shadcn.TextField(controller: _minuteCtrl, hintText: '分钟'),
               const SizedBox(height: 12),
-              FTextField(controller: _hourCtrl, label: const Text('小时')),
+              shadcn.TextField(controller: _hourCtrl, hintText: '小时'),
 
               if (_advance) ...[
                 const SizedBox(height: 12),
-                FTextField(controller: _dayOfWeekCtrl, label: const Text('周几')),
+                shadcn.TextField(controller: _dayOfWeekCtrl, hintText: '周几'),
                 const SizedBox(height: 12),
-                FTextField(controller: _dayOfMonthCtrl, label: const Text('几号')),
+                shadcn.TextField(controller: _dayOfMonthCtrl, hintText: '几号'),
                 const SizedBox(height: 12),
-                FTextField(controller: _monthOfYearCtrl, label: const Text('几月')),
+                shadcn.TextField(controller: _monthOfYearCtrl, hintText: '几月'),
               ],
             ],
           ),
@@ -374,22 +369,108 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
       child: Row(
         children: [
           Expanded(
-            child: FButton(
-              style: FButtonStyle.outline(),
-              onPress: () => Navigator.pop(context),
-              child: const Text('取消'),
+            child: shadcn.Button.outline(
+              onPressed: () => Navigator.pop(context),
+              child: Center(child: const Text('取消')),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: FButton(
-              onPress: _saving ? null : _save,
+            child: shadcn.Button.primary(
+              onPressed: _saving ? null : _save,
               child: _saving
-                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('保存'),
+                  ? const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(strokeWidth: 2))
+                  : Center(child: const Text('保存')),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+
+class _SheetTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final int? maxLines;
+  final String? helperText;
+
+  const _SheetTextField({
+    required this.controller,
+    required this.label,
+    this.maxLines,
+    this.helperText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return shadcn.TextField(
+      controller: controller,
+      maxLines: maxLines,
+      hintText: label,
+    );
+  }
+}
+
+class _SheetGroup extends StatelessWidget {
+  final List<Widget> children;
+
+  const _SheetGroup({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: cs.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(children: children),
+    );
+  }
+}
+
+class _SheetTile extends StatelessWidget {
+  final Widget title;
+  final Widget? subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+
+  const _SheetTile({
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DefaultTextStyle.merge(style: const TextStyle(fontSize: 14), child: title),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    DefaultTextStyle.merge(
+                      style: TextStyle(fontSize: 12, color: cs.mutedForeground),
+                      child: subtitle!,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (trailing != null) trailing!,
+          ],
+        ),
       ),
     );
   }

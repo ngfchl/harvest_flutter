@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+
+import 'site_theme.dart';
 
 import '../provider/site_filter_state.dart';
 import '../provider/site_filtered_provider.dart';
@@ -12,15 +14,16 @@ class SiteFilterPanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final filter = ref.watch(siteFilterStateProvider);
     final tags = ref.watch(availableTagsProvider);
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
 
     return Container(
       decoration: BoxDecoration(
         color: cs.background,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: siteShadow(context, alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -36,14 +39,14 @@ class SiteFilterPanel extends ConsumerWidget {
             child: Row(
               children: [
                 Icon(
-                  FIcons.slidersHorizontal,
+                  shadcn.LucideIcons.slidersHorizontal,
                   size: 15,
                   color: cs.mutedForeground,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   '筛选与排序',
-                  style: typo.sm.copyWith(
+                  style: typo.small.copyWith(
                     fontWeight: FontWeight.w600,
                     color: cs.foreground,
                   ),
@@ -57,17 +60,63 @@ class SiteFilterPanel extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(FIcons.x, size: 12, color: cs.mutedForeground),
+                          Icon(
+                            shadcn.LucideIcons.x,
+                            size: 12,
+                            color: cs.mutedForeground,
+                          ),
                           const SizedBox(width: 3),
                           Text(
                             '清除全部',
-                            style: typo.xs.copyWith(color: cs.mutedForeground),
+                            style: typo.xSmall.copyWith(
+                              color: cs.mutedForeground,
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ),
               ],
+            ),
+          ),
+
+          // ── 站点状态 ──
+          _section(
+            context,
+            '站点状态',
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children:
+                  [
+                    SiteAvailabilityFilter.all,
+                    SiteAvailabilityFilter.alive,
+                    SiteAvailabilityFilter.dead,
+                  ].map((value) {
+                    final active = filter.availability == value;
+                    return FilterChip(
+                      label: Text(
+                        _availabilityLabel(value),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      selected: active,
+                      showCheckmark: false,
+                      onSelected: (_) => filter.setAvailability(value),
+                      selectedColor: cs.primary.withValues(alpha: 0.15),
+                      side: BorderSide(
+                        color: active
+                            ? cs.primary
+                            : cs.border.withValues(alpha: 0.5),
+                      ),
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: active ? cs.primary : cs.foreground,
+                        fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      visualDensity: VisualDensity.compact,
+                    );
+                  }).toList(),
             ),
           ),
 
@@ -82,7 +131,10 @@ class SiteFilterPanel extends ConsumerWidget {
                   [
                     FilterCondition.all,
                     ...FilterCondition.values.where(
-                      (c) => c != FilterCondition.all,
+                      (c) =>
+                          c != FilterCondition.all &&
+                          c != FilterCondition.alive &&
+                          c != FilterCondition.dead,
                     ),
                   ].map((c) {
                     return FilterChip(
@@ -140,8 +192,8 @@ class SiteFilterPanel extends ConsumerWidget {
                             const SizedBox(width: 3),
                             Icon(
                               filter.sortAscending
-                                  ? FIcons.arrowUp
-                                  : FIcons.arrowDown,
+                                  ? shadcn.LucideIcons.arrowUp
+                                  : shadcn.LucideIcons.arrowDown,
                               size: 11,
                               color: cs.primary,
                             ),
@@ -237,6 +289,7 @@ class SiteFilterPanel extends ConsumerWidget {
   }
 
   Widget _section(BuildContext context, String label, Widget child) {
+    final theme = shadcn.Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
       child: Column(
@@ -244,8 +297,8 @@ class SiteFilterPanel extends ConsumerWidget {
         children: [
           Text(
             label,
-            style: context.theme.typography.xs.copyWith(
-              color: context.theme.colors.mutedForeground,
+            style: theme.typography.xSmall.copyWith(
+              color: theme.colorScheme.mutedForeground,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -257,6 +310,17 @@ class SiteFilterPanel extends ConsumerWidget {
   }
 
   // ── labels（不变） ──
+
+  static String _availabilityLabel(SiteAvailabilityFilter value) {
+    switch (value) {
+      case SiteAvailabilityFilter.all:
+        return '全部';
+      case SiteAvailabilityFilter.alive:
+        return '存活';
+      case SiteAvailabilityFilter.dead:
+        return '死亡';
+    }
+  }
 
   static String _conditionLabel(FilterCondition c) {
     switch (c) {

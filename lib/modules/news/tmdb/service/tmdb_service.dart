@@ -1,4 +1,5 @@
 import 'package:harvest/core/http/api.dart';
+import 'package:harvest/core/utils/utils.dart';
 
 import '../../../../core/http/hooks.dart';
 import '../model/media_item.dart';
@@ -18,7 +19,47 @@ class TmdbService {
   // ────────────────────── 搜索 ──────────────────────
 
   static Future<List<MediaItem>> search(String query) async {
-    return await fetchModelList('${API.TMDB_SEARCH}/$query', MediaItem.fromJson);
+    final endpoint = '${API.TMDB_SEARCH}/$query';
+    AppLogger.debug('[TMDB][search] request query="$query" endpoint=$endpoint');
+
+    final list = await fetchBasicList(endpoint);
+    AppLogger.debug('[TMDB][search] raw items=${list.length} query="$query"');
+
+    for (var i = 0; i < list.length && i < 8; i++) {
+      final raw = list[i];
+      if (raw is Map<String, dynamic>) {
+        AppLogger.debug(
+          '[TMDB][search][raw#$i] '
+          'keys=${raw.keys.toList()} '
+          'id=${raw['id']} media_type=${raw['media_type']} '
+          'title=${raw['title']} name=${raw['name']} '
+          'release_date=${raw['release_date']} first_air_date=${raw['first_air_date']} '
+          'poster=${raw['poster_path']} vote=${raw['vote_average']} '
+          'overview_len=${(raw['overview'] as String?)?.length ?? 0}',
+        );
+      } else {
+        AppLogger.debug('[TMDB][search][raw#$i] unexpected=${raw.runtimeType}');
+      }
+    }
+
+    final results = list
+        .whereType<Map<String, dynamic>>()
+        .map(MediaItem.fromTmdbJson)
+        .toList();
+
+    AppLogger.debug('[TMDB][search] parsed items=${results.length} query="$query"');
+    for (var i = 0; i < results.length && i < 8; i++) {
+      final item = results[i];
+      AppLogger.debug(
+        '[TMDB][search][parsed#$i] '
+        'id=${item.id} mediaType=${item.mediaType} '
+        'title="${item.title}" original="${item.originalTitle}" '
+        'releaseDate="${item.releaseDate}" poster=${item.posterPath.isNotEmpty} '
+        'vote=${item.voteAverage} overview_len=${item.overview.length}',
+      );
+    }
+
+    return results;
   }
 
   // ────────────────────── 电影 ──────────────────────
@@ -38,7 +79,8 @@ class TmdbService {
   static Future<SearchResults> getLatestMovies({int page = 1}) =>
       _fetchList('/api/tmdb/latest/movies', page: page, mediaType: 'movie');
 
-  static Future<MovieDetail?> getMovieDetail(int id) => fetchModel('/api/tmdb/movie/$id', MovieDetail.fromJson);
+  static Future<MovieDetail?> getMovieDetail(int id) =>
+      fetchModel('/api/tmdb/movie/$id', MovieDetail.fromJson);
 
   // ────────────────────── 剧集 ──────────────────────
 
@@ -57,18 +99,28 @@ class TmdbService {
   static Future<SearchResults> getLatestTv({int page = 1}) =>
       _fetchList('/api/tmdb/latest/tv', page: page, mediaType: 'tv');
 
-  static Future<TvShowDetail?> getTvShowDetail(int id) => fetchModel('/api/tmdb/tv/$id', TvShowDetail.fromJson);
+  static Future<TvShowDetail?> getTvShowDetail(int id) =>
+      fetchModel('/api/tmdb/tv/$id', TvShowDetail.fromJson);
 
   // ────────────────────── 人物 ──────────────────────
 
-  static Future<Person?> getPerson(int id) => fetchModel('/api/tmdb/person/$id', Person.fromJson);
+  static Future<Person?> getPerson(int id) =>
+      fetchModel('/api/tmdb/person/$id', Person.fromJson);
 
   // ────────────────────── 内部 ──────────────────────
 
-  static Future<SearchResults> _fetchList(String path, {required int page, required String mediaType}) async {
+  static Future<SearchResults> _fetchList(
+    String path, {
+    required int page,
+    required String mediaType,
+  }) async {
     final json = await fetchBasic(path, queryParameters: {'page': page});
     var results = SearchResults.fromJson(json ?? {});
-    results = results.copyWith(results: results.results.map((e) => e.copyWith(mediaType: mediaType)).toList());
+    results = results.copyWith(
+      results: results.results
+          .map((e) => e.copyWith(mediaType: mediaType))
+          .toList(),
+    );
     return results;
   }
 }

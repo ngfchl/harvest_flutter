@@ -24,7 +24,8 @@ abstract class MediaItem with _$MediaItem {
     @Default([]) @JsonKey(name: 'origin_country') List<String>? originCountry,
   }) = _MediaItem;
 
-  factory MediaItem.fromJson(Map<String, dynamic> json) => _$MediaItemFromJson(json);
+  factory MediaItem.fromJson(Map<String, dynamic> json) =>
+      _$MediaItemFromJson(json);
 
   /// movie → title/original_title/release_date/video
   /// tv    → name/original_name/first_air_date/origin_country

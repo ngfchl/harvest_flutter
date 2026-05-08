@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class UnifiedSearchBar extends StatefulWidget {
   final TextEditingController controller;
@@ -16,13 +16,12 @@ class UnifiedSearchBar extends StatefulWidget {
     required this.onChanged,
     required this.onSubmit,
     required this.onClear,
-    required this.hint,
+    this.hint = '搜索电影、剧集',
   });
 
   @override
   State<UnifiedSearchBar> createState() => _UnifiedSearchBarState();
 }
-
 
 class _UnifiedSearchBarState extends State<UnifiedSearchBar> {
   @override
@@ -34,7 +33,10 @@ class _UnifiedSearchBarState extends State<UnifiedSearchBar> {
   @override
   void didUpdateWidget(covariant UnifiedSearchBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.hint != widget.hint) setState(() {});
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_onListen);
+      widget.controller.addListener(_onListen);
+    }
   }
 
   @override
@@ -49,49 +51,36 @@ class _UnifiedSearchBarState extends State<UnifiedSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.theme.colors;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final hasText = widget.controller.text.isNotEmpty;
 
-    return Container(
+    return shadcn.AnimatedContainer(
       height: 38,
-      decoration: BoxDecoration(
-        color: cs.mutedForeground.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(10),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      duration: Duration(milliseconds: 100),
       child: Row(
         children: [
-          const SizedBox(width: 10),
-          Icon(FIcons.search,
-              size: 16, color: cs.mutedForeground.withValues(alpha: 0.5)),
-          const SizedBox(width: 8),
           Expanded(
-            child: TextField(
+            child: shadcn.TextField(
               controller: widget.controller,
               focusNode: widget.focusNode,
               onChanged: widget.onChanged,
               onSubmitted: widget.onSubmit,
-              style: context.theme.typography.sm.copyWith(color: cs.foreground),
-              decoration: InputDecoration(
-                hintText: widget.hint,
-                hintStyle: context.theme.typography.sm.copyWith(
-                  color: cs.mutedForeground.withValues(alpha: 0.5),
-                ),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
+              placeholder: Text(widget.hint),
+              style: theme.typography.small,
+              features: [
+                shadcn.InputFeature.leading(Icon(shadcn.LucideIcons.search, size: 16, color: cs.mutedForeground)),
+                // shadcn.InputFeature.clear(visibility: shadcn.InputFeatureVisibility.textNotEmpty,),
+              ],
             ),
           ),
-          if (widget.controller.text.isNotEmpty)
-            GestureDetector(
-              onTap: widget.onClear,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Icon(FIcons.x,
-                    size: 14,
-                    color: cs.mutedForeground.withValues(alpha: 0.5)),
-              ),
+          if (hasText)
+            shadcn.IconButton.ghost(
+              size: shadcn.ButtonSize.small,
+              onPressed: widget.onClear,
+              icon: Icon(shadcn.LucideIcons.x, size: 14),
             ),
-          const SizedBox(width: 4),
         ],
       ),
     );

@@ -1,58 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../provider/downloader_speed_provider.dart';
 
 void showSpeedSettings(BuildContext context, WidgetRef ref) {
-  final cs = FTheme.of(context).colors;
+  final theme = shadcn.Theme.of(context);
+  final cs = shadcn.Theme.of(context).colorScheme;
 
-  showFSheet(
+  showModalBottomSheet<void>(
     context: context,
-    side: FLayout.btt,
+    backgroundColor: cs.background,
+    isScrollControlled: true,
     builder: (ctx) => SafeArea(
-      child: Container(
-        padding: const EdgeInsets.only(top: 8, bottom: 16),
-        decoration: BoxDecoration(
-          color: cs.background,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      child: shadcn.Card(
+        filled: true,
+        fillColor: cs.background,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(theme.radiusLg),
+        ),
+        padding: EdgeInsets.fromLTRB(
+          theme.density.baseContentPadding * theme.scaling,
+          theme.density.baseGap * theme.scaling,
+          theme.density.baseContentPadding * theme.scaling,
+          theme.density.baseContentPadding * theme.scaling,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // 拖拽条
-            Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: cs.foreground.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(2),
+            shadcn.SecondaryBadge(
+              child: SizedBox(
+                width: theme.scaling * 28,
+                height: theme.scaling * 2,
               ),
             ),
+            SizedBox(height: theme.density.baseGap * theme.scaling),
             // 标题
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding: EdgeInsets.symmetric(
+                vertical: theme.density.baseGap * theme.scaling * 0.5,
+              ),
               child: Row(
                 children: [
                   Icon(
-                    FIcons.settings,
-                    size: 16,
-                    color: cs.foreground.withValues(alpha: 0.6),
+                    shadcn.LucideIcons.settings,
+                    size: theme.scaling * 16,
+                    color: cs.mutedForeground,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: theme.density.baseGap * theme.scaling),
                   Text(
                     '刷新设置',
-                    style: TextStyle(
+                    style: theme.typography.small.copyWith(
                       color: cs.foreground,
-                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: theme.density.baseGap * theme.scaling),
             // 设置内容
             const DownloaderSpeedSettings(),
           ],
@@ -70,29 +77,33 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     final interval = ref.watch(speedIntervalProvider);
     final duration = ref.watch(speedDurationProvider);
     final enabled = ref.watch(speedEnabledProvider);
+    final theme = shadcn.Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        vertical: theme.density.baseGap * theme.scaling,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // ── 自动刷新开关 ──
           _settingRow(
             context,
-            icon: FIcons.refreshCw,
+            icon: shadcn.LucideIcons.refreshCw,
             label: '自动刷新数据',
-            trailing: FSwitch(
+            trailing: shadcn.Switch(
               value: enabled,
-              onChange: (v) => ref.read(speedEnabledProvider.notifier).set(v),
+              enabled: true,
+              onChanged: (v) => ref.read(speedEnabledProvider.notifier).set(v),
             ),
           ),
 
           if (enabled) ...[
             // ── 刷新间隔 ──
-            const SizedBox(height: 12),
+            SizedBox(height: theme.density.baseGap * theme.scaling * 1.5),
             _settingRow(
               context,
-              icon: FIcons.timer,
+              icon: shadcn.LucideIcons.timer,
               label: '刷新间隔',
               trailing: _NumberPicker(
                 value: interval,
@@ -107,7 +118,7 @@ class DownloaderSpeedSettings extends ConsumerWidget {
                     .update(interval + 1),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: theme.density.baseGap * theme.scaling),
             _presetChips(
               context,
               ref,
@@ -118,10 +129,10 @@ class DownloaderSpeedSettings extends ConsumerWidget {
             ),
 
             // ── 自动停止时长 ──
-            const SizedBox(height: 16),
+            SizedBox(height: theme.density.baseGap * theme.scaling * 2),
             _settingRow(
               context,
-              icon: FIcons.clock,
+              icon: shadcn.LucideIcons.clock,
               label: '自动停止',
               trailing: _NumberPicker(
                 value: duration,
@@ -136,7 +147,7 @@ class DownloaderSpeedSettings extends ConsumerWidget {
                     .update(duration + 1),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: theme.density.baseGap * theme.scaling),
             _presetChips(
               context,
               ref,
@@ -146,7 +157,7 @@ class DownloaderSpeedSettings extends ConsumerWidget {
               onTap: (v) => ref.read(speedDurationProvider.notifier).update(v),
             ),
           ],
-          const SizedBox(height: 8),
+          SizedBox(height: theme.density.baseGap * theme.scaling),
         ],
       ),
     );
@@ -158,17 +169,17 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     required String label,
     required Widget trailing,
   }) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final theme = shadcn.Theme.of(context);
     return Row(
       children: [
-        Icon(icon, size: 16, color: cs.foreground.withValues(alpha: 0.6)),
-        const SizedBox(width: 10),
+        Icon(icon, size: theme.scaling * 16, color: cs.mutedForeground),
+        SizedBox(width: theme.density.baseGap * theme.scaling),
         Expanded(
           child: Text(
             label,
-            style: TextStyle(
+            style: theme.typography.xSmall.copyWith(
               color: cs.foreground,
-              fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -186,44 +197,24 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     required String unit,
     required ValueChanged<int> onTap,
   }) {
-    final cs = FTheme.of(context).colors;
+    final theme = shadcn.Theme.of(context);
     return Row(
       children: [
-        const SizedBox(width: 26),
+        SizedBox(width: theme.scaling * 26),
         ...presets.map(
           (v) => Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: GestureDetector(
-              onTap: () => onTap(v),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: current == v
-                      ? cs.primary.withValues(alpha: 0.15)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: current == v ? cs.primary : cs.border,
-                  ),
-                ),
-                child: Text(
-                  '$v$unit',
-                  style: TextStyle(
-                    color: current == v
-                        ? cs.primary
-                        : cs.foreground.withValues(alpha: 0.5),
-                    fontSize: 12,
-                    fontWeight: current == v
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
-                ),
-              ),
+            padding: EdgeInsets.only(
+              right: theme.density.baseGap * theme.scaling,
             ),
+            child: current == v
+                ? shadcn.Button.secondary(
+                    onPressed: () => onTap(v),
+                    child: Text('$v$unit'),
+                  )
+                : shadcn.Button.outline(
+                    onPressed: () => onTap(v),
+                    child: Text('$v$unit'),
+                  ),
           ),
         ),
       ],
@@ -252,25 +243,25 @@ class _NumberPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final theme = shadcn.Theme.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _btn(context, FIcons.minus, value > min, onMinus),
-        Container(
-          width: 52,
-          alignment: Alignment.center,
+        _btn(context, shadcn.LucideIcons.minus, value > min, onMinus),
+        SizedBox(
+          width: theme.scaling * 52,
           child: Text(
             '$value$unit',
-            style: TextStyle(
+            textAlign: TextAlign.center,
+            style: theme.typography.small.copyWith(
               color: cs.foreground,
-              fontSize: 14,
               fontWeight: FontWeight.w600,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
         ),
-        _btn(context, FIcons.plus, value < max, onPlus),
+        _btn(context, shadcn.LucideIcons.plus, value < max, onPlus),
       ],
     );
   }
@@ -281,25 +272,16 @@ class _NumberPicker extends StatelessWidget {
     bool enabled,
     VoidCallback onTap,
   ) {
-    final cs = FTheme.of(context).colors;
-    return GestureDetector(
-      onTap: enabled ? onTap : null,
-      child: Container(
-        width: 30,
-        height: 30,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: cs.background,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: cs.border),
-        ),
-        child: Icon(
-          icon,
-          size: 14,
-          color: enabled
-              ? cs.foreground.withValues(alpha: 0.7)
-              : cs.foreground.withValues(alpha: 0.2),
-        ),
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final theme = shadcn.Theme.of(context);
+    return shadcn.IconButton.outline(
+      onPressed: enabled ? onTap : null,
+      icon: Icon(
+        icon,
+        size: theme.scaling * 14,
+        color: enabled
+            ? cs.foreground.withValues(alpha: 0.7)
+            : cs.foreground.withValues(alpha: 0.2),
       ),
     );
   }

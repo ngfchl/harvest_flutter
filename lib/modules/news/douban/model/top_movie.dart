@@ -19,5 +19,6 @@ abstract class TopMovie with _$TopMovie {
     @Default('') String cookie,
   }) = _TopMovie;
 
-  factory TopMovie.fromJson(Map<String, dynamic> json) => _$TopMovieFromJson(json);
+  factory TopMovie.fromJson(Map<String, dynamic> json) =>
+      _$TopMovieFromJson(json);
 }

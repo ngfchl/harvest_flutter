@@ -11,7 +11,31 @@ class DownloaderService {
 
   static Future<List<String>> fetchPaths() async {
     final list = await fetchBasicList(API.DOWNLOADER_PATHS);
-    return list.map((e) => e.toString()).toList();
+    return list
+        .map(_pathFromDynamic)
+        .where((path) => path.isNotEmpty)
+        .toSet()
+        .toList();
+  }
+
+  static String _pathFromDynamic(dynamic value) {
+    if (value is Map) {
+      final map = Map<String, dynamic>.from(value);
+      for (final key in const [
+        'path',
+        'save_path',
+        'savePath',
+        'download_dir',
+        'downloadDir',
+        'value',
+        'name',
+      ]) {
+        final path = map[key]?.toString().trim();
+        if (path != null && path.isNotEmpty) return path;
+      }
+      return '';
+    }
+    return value?.toString().trim() ?? '';
   }
 
   /// 获取下载器 prefs（带 with_status=true 返回 prefs）

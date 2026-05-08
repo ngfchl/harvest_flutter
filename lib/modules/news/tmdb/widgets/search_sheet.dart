@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/media_item.dart';
 import '../service/tmdb_service.dart';
@@ -15,14 +16,18 @@ void openTmdbSearch(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: RoundedRectangleBorder(
+        borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+      ),
       builder: (_) => _SearchSheet(ref: ref),
     );
   } else {
     showDialog(
       context: context,
       builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+        ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480, maxHeight: 600),
           child: _SearchSheet(ref: ref),
@@ -85,39 +90,52 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
   @override
   Widget build(BuildContext context) {
     final mobile = context.isMobile;
+    final cs = shadcn.Theme.of(context).colorScheme;
     final bottom = MediaQuery.of(context).viewInsets.bottom;
 
     final content = Padding(
-      padding: EdgeInsets.only(bottom: bottom),  // ← 键盘高度
+      padding: EdgeInsets.only(bottom: bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (mobile) ...[const SizedBox(height: 12), buildHandle(context), const SizedBox(height: 12)],
+          if (mobile) ...[
+            const SizedBox(height: 12),
+            buildHandle(context),
+            const SizedBox(height: 12),
+          ],
 
           // 搜索输入框
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: FTextField(
+            child: shadcn.TextField(
               controller: _ctrl,
-              hint: '搜索电影、剧集...',
-              onChange: _onChanged,
+              hintText: '搜索电影、剧集...',
+              onChanged: _onChanged,
               autofocus: true,
-              prefixBuilder: (ctx, styles, child) => Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: Icon(FIcons.search, size: 16, color: ctx.theme.colors.mutedForeground),
-              ),
-              suffixBuilder: _query.isNotEmpty
-                  ? (ctx, styles, child) => GestureDetector(
-                onTap: () {
-                  _ctrl.clear();
-                  setState(() { _query = ''; _results = []; });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Icon(FIcons.x, size: 14, color: ctx.theme.colors.mutedForeground),
+              features: [
+                shadcn.InputFeature.leading(
+                  Icon(
+                    shadcn.LucideIcons.search,
+                    size: 16,
+                    color: cs.mutedForeground,
+                  ),
                 ),
-              )
-                  : null,
+                if (_query.isNotEmpty)
+                  shadcn.InputFeature.trailing(
+                    shadcn.IconButton.ghost(
+                      size: shadcn.ButtonSize.small,
+                      density: shadcn.ButtonDensity.iconDense,
+                      onPressed: () {
+                        _ctrl.clear();
+                        setState(() {
+                          _query = '';
+                          _results = [];
+                        });
+                      },
+                      icon: const Icon(shadcn.LucideIcons.x, size: 14),
+                    ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(height: 12),
@@ -126,111 +144,135 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
           if (_loading)
             const Padding(
               padding: EdgeInsets.all(24),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: shadcn.CircularProgressIndicator()),
             )
           else if (_query.isNotEmpty && _results.isEmpty)
             Padding(
               padding: const EdgeInsets.all(24),
-              child: Text(
-                '没有找到「$_query」',
-                style: context.theme.typography.sm.copyWith(color: context.theme.colors.mutedForeground),
-              ),
+              child: Text('没有找到「$_query」').small.muted,
             )
           else if (_results.isNotEmpty)
-              Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: _results.length,
-                  separatorBuilder: (_, __) => FDivider(
-                    style: FDividerStyle(color: context.theme.colors.border, padding: EdgeInsets.zero, width: 0.5),
-                  ),
-                  itemBuilder: (_, i) => _buildResultTile(context, _results[i]),
-                ),
-              )
-            else
-              Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(FIcons.search, size: 40, color: context.theme.colors.mutedForeground.withValues(alpha: 0.3)),
-                    const SizedBox(height: 12),
-                    Text(
-                      '输入关键词开始搜索',
-                      style: context.theme.typography.sm.copyWith(color: context.theme.colors.mutedForeground),
-                    ),
-                  ],
-                ),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: _results.length,
+                separatorBuilder: (_, __) => const shadcn.Divider(),
+                itemBuilder: (_, i) => _buildResultTile(context, _results[i]),
               ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    shadcn.LucideIcons.search,
+                    size: 40,
+                    color: cs.mutedForeground.withValues(alpha: 0.3),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('输入关键词开始搜索').small.muted,
+                ],
+              ),
+            ),
           const SizedBox(height: 16),
         ],
       ),
     );
 
     if (mobile) return SafeArea(child: content);
-    return Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: content);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: content,
+    );
   }
 
   Widget _buildResultTile(BuildContext context, MediaItem item) {
     final posterUrl = TmdbService.imageUrl(item.posterPath, size: 'w92');
+    final cs = shadcn.Theme.of(context).colorScheme;
 
-    return FTile(
-      onPress: () {
+    return shadcn.Clickable(
+      onPressed: () {
         Navigator.pop(context);
         openTmdbDetail(context, item);
       },
-      prefix: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: SizedBox(
-          width: 46,
-          height: 69,
-          child: posterUrl.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl: posterUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (_, __) => const Center(
-                    child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 1.5)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: shadcn.Theme.of(context).borderRadiusSm,
+              child: SizedBox(
+                width: 46,
+                height: 69,
+                child: posterUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: posterUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => const Center(
+                          child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: shadcn.CircularProgressIndicator(
+                              strokeWidth: 1.5,
+                            ),
+                          ),
+                        ),
+                        errorWidget: (_, __, ___) => _ph(context),
+                      )
+                    : _ph(context),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.title).small.semiBold,
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      if (item.releaseDate.isNotEmpty)
+                        Text(item.releaseDate).xSmall.muted,
+                      if (item.voteAverage != null &&
+                          item.voteAverage! > 0) ...[
+                        const SizedBox(width: 8),
+                        Icon(
+                          shadcn.LucideIcons.star,
+                          size: 12,
+                          color: cs.chart4,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(item.voteAverage!.toStringAsFixed(1)).xSmall.muted,
+                      ],
+                      if (item.mediaType.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        item.mediaType == 'movie'
+                            ? const shadcn.SecondaryBadge(child: Text('电影'))
+                            : const shadcn.OutlineBadge(child: Text('剧集')),
+                      ],
+                    ],
                   ),
-                  errorWidget: (_, __, ___) => _ph(context),
-                )
-              : _ph(context),
-        ),
-      ),
-      title: Text(item.title, style: context.theme.typography.sm.copyWith(fontWeight: FontWeight.w600)),
-      subtitle: Row(
-        children: [
-          if (item.releaseDate.isNotEmpty)
-            Text(
-              item.releaseDate,
-              style: context.theme.typography.xs.copyWith(color: context.theme.colors.mutedForeground),
-            ),
-          if (item.voteAverage != null && item.voteAverage! > 0) ...[
-            const SizedBox(width: 8),
-            Icon(FIcons.star, size: 12, color: Colors.amber),
-            const SizedBox(width: 2),
-            Text(
-              item.voteAverage!.toStringAsFixed(1),
-              style: context.theme.typography.xs.copyWith(color: context.theme.colors.mutedForeground),
-            ),
-          ],
-          if (item.mediaType.isNotEmpty) ...[
-            const SizedBox(width: 8),
-            Text(
-              item.mediaType == 'movie' ? '电影' : '剧集',
-              style: TextStyle(
-                fontSize: 10,
-                color: item.mediaType == 'movie' ? context.theme.colors.primary : context.theme.colors.destructive,
-                fontWeight: FontWeight.w600,
+                ],
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
 
-  Widget _ph(BuildContext ctx) => Container(
-    color: ctx.theme.colors.muted,
-    child: Center(child: Icon(FIcons.film, size: 20, color: ctx.theme.colors.mutedForeground.withValues(alpha: 0.3))),
+  Widget _ph(BuildContext ctx) => ColoredBox(
+    color: shadcn.Theme.of(ctx).colorScheme.muted,
+    child: Center(
+      child: Icon(
+        shadcn.LucideIcons.film,
+        size: 20,
+        color: shadcn.Theme.of(
+          ctx,
+        ).colorScheme.mutedForeground.withValues(alpha: 0.3),
+      ),
+    ),
   );
 }

@@ -23,7 +23,9 @@ abstract class Person with _$Person {
     @Default('') @JsonKey(name: 'media_type') String mediaType,
     @Default('') @JsonKey(name: 'profile_path') String profilePath,
     @Default([]) @JsonKey(name: 'known_for') List<KnownFor> knownFor,
-    @Default('') @JsonKey(name: 'known_for_department') String knownForDepartment,
+    @Default('')
+    @JsonKey(name: 'known_for_department')
+    String knownForDepartment,
     @Default(0) int gender,
   }) = _Person;
 
@@ -54,5 +56,6 @@ abstract class KnownFor with _$KnownFor {
     @Default(false) bool video,
   }) = _KnownFor;
 
-  factory KnownFor.fromJson(Map<String, dynamic> json) => _$KnownForFromJson(json);
+  factory KnownFor.fromJson(Map<String, dynamic> json) =>
+      _$KnownForFromJson(json);
 }

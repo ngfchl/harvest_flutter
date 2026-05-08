@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class DoubanCard extends StatelessWidget {
   final String title;
@@ -34,8 +35,8 @@ class DoubanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return shadcn.Clickable(
+      onPressed: onTap,
       child: SizedBox(
         width: width,
         child: Column(
@@ -48,40 +49,37 @@ class DoubanCard extends StatelessWidget {
             const SizedBox(height: 6),
 
             // 标题
-            Tooltip(
-              message: title.isEmpty ? '-' : title,
-              waitDuration: const Duration(milliseconds: 400),
+            shadcn.Tooltip(
+              tooltip: (_) => Text(title.isEmpty ? '-' : title).small,
               child: SizedBox(
                 height: 16,
                 child: Text(
                   title.isEmpty ? '-' : title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: context.theme.typography.sm.copyWith(fontWeight: FontWeight.w600),
-                ),
+                ).small.semiBold,
               ),
             ),
 
             // 副标题
             if (subtitle != null && subtitle!.isNotEmpty) ...[
               const SizedBox(height: 2),
-              Tooltip(
-                message: subtitle!,
-                waitDuration: const Duration(milliseconds: 400),
+              shadcn.Tooltip(
+                tooltip: (_) => Text(subtitle!).small,
                 child: SizedBox(
                   height: 14,
                   child: Text(
                     subtitle!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: context.theme.typography.xs.copyWith(color: context.theme.colors.mutedForeground),
-                  ),
+                  ).xSmall.muted,
                 ),
               ),
             ],
 
             // 无副标题时补一个占位，保证对齐
-            if (subtitle == null || subtitle!.isEmpty) const SizedBox(height: 16),
+            if (subtitle == null || subtitle!.isEmpty)
+              const SizedBox(height: 16),
           ],
         ),
       ),
@@ -92,7 +90,7 @@ class DoubanCard extends StatelessWidget {
     return AspectRatio(
       aspectRatio: 2 / 3,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -102,20 +100,26 @@ class DoubanCard extends StatelessWidget {
                 top: 4,
                 left: 4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.7),
-                    borderRadius: BorderRadius.circular(4),
+                    color: shadcn.Theme.of(
+                      context,
+                    ).colorScheme.popover.withValues(alpha: 0.86),
+                    borderRadius: shadcn.Theme.of(context).borderRadiusSm,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(FIcons.star, size: 10, color: Colors.amber),
-                      const SizedBox(width: 2),
-                      Text(
-                        rating!,
-                        style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.w600),
+                      Icon(
+                        shadcn.LucideIcons.star,
+                        size: 10,
+                        color: shadcn.Theme.of(context).colorScheme.chart4,
                       ),
+                      const SizedBox(width: 2),
+                      Text(rating!).xSmall.semiBold.primaryForeground,
                     ],
                   ),
                 ),
@@ -125,15 +129,11 @@ class DoubanCard extends StatelessWidget {
                 top: 4,
                 right: 4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: context.theme.colors.primary.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
                   ),
-                  child: Text(
-                    badge!,
-                    style: const TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w700),
-                  ),
+                  child: shadcn.PrimaryBadge(child: Text(badge!)),
                 ),
               ),
           ],
@@ -149,16 +149,27 @@ class DoubanCard extends StatelessWidget {
       imageUrl: posterUrl,
       httpHeaders: _buildHeaders(),
       fit: BoxFit.cover,
-      placeholder: (_, __) =>
-          const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+      placeholder: (_, __) => const Center(
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
       errorWidget: (_, __, ___) => _placeholder(context),
     );
   }
 
-  Widget _placeholder(BuildContext context) => Container(
-    color: context.theme.colors.muted,
+  Widget _placeholder(BuildContext context) => ColoredBox(
+    color: shadcn.Theme.of(context).colorScheme.muted,
     child: Center(
-      child: Icon(FIcons.film, size: 32, color: context.theme.colors.mutedForeground.withValues(alpha: 0.3)),
+      child: Icon(
+        shadcn.LucideIcons.film,
+        size: 32,
+        color: shadcn.Theme.of(
+          context,
+        ).colorScheme.mutedForeground.withValues(alpha: 0.3),
+      ),
     ),
   );
 }

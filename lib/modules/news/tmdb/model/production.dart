@@ -12,7 +12,8 @@ abstract class ProductionCompany with _$ProductionCompany {
     @Default('') @JsonKey(name: 'origin_country') String originCountry,
   }) = _ProductionCompany;
 
-  factory ProductionCompany.fromJson(Map<String, dynamic> json) => _$ProductionCompanyFromJson(json);
+  factory ProductionCompany.fromJson(Map<String, dynamic> json) =>
+      _$ProductionCompanyFromJson(json);
 }
 
 @freezed
@@ -22,7 +23,8 @@ abstract class ProductionCountry with _$ProductionCountry {
     @Default('') String name,
   }) = _ProductionCountry;
 
-  factory ProductionCountry.fromJson(Map<String, dynamic> json) => _$ProductionCountryFromJson(json);
+  factory ProductionCountry.fromJson(Map<String, dynamic> json) =>
+      _$ProductionCountryFromJson(json);
 }
 
 @freezed
@@ -33,7 +35,8 @@ abstract class SpokenLanguage with _$SpokenLanguage {
     @Default('') String name,
   }) = _SpokenLanguage;
 
-  factory SpokenLanguage.fromJson(Map<String, dynamic> json) => _$SpokenLanguageFromJson(json);
+  factory SpokenLanguage.fromJson(Map<String, dynamic> json) =>
+      _$SpokenLanguageFromJson(json);
 }
 
 @freezed
@@ -45,5 +48,6 @@ abstract class Network with _$Network {
     @Default('') @JsonKey(name: 'origin_country') String originCountry,
   }) = _Network;
 
-  factory Network.fromJson(Map<String, dynamic> json) => _$NetworkFromJson(json);
+  factory Network.fromJson(Map<String, dynamic> json) =>
+      _$NetworkFromJson(json);
 }

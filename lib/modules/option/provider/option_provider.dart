@@ -105,4 +105,16 @@ class OptionNotifier extends StateNotifier<OptionState> {
       return false;
     }
   }
+
+  Future<bool> bulkUpgrade({
+    required String key,
+    required dynamic value,
+  }) async {
+    try {
+      await ref.read(optionServiceProvider).bulkUpgrade(key: key, value: value);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

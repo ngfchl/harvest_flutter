@@ -111,4 +111,16 @@ class OptionService {
     await fetchBasic(API.SPEED_TEST);
     AppLogger.info('测速任务已提交');
   }
+
+  /// 批量更新站点配置字段
+  Future<void> bulkUpgrade({
+    required String key,
+    required dynamic value,
+  }) async {
+    await Http.post<dynamic>(
+      API.Bulk_UPGRADE_API,
+      data: {'key': key, 'value': value},
+    );
+    AppLogger.info('[Option] 批量更新已提交 key=$key valueType=${value.runtimeType}');
+  }
 }

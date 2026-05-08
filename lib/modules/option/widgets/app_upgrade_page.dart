@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/browser_page.dart';
@@ -17,6 +16,9 @@ import 'package:install_plugin_v3/install_plugin_v3.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart'
+    show IconExtension, TextExtension;
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -76,11 +78,7 @@ class AppUpgradeSummaryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final status = ref.watch(appUpgradeStatusProvider);
     final data = status.valueOrNull;
-    final cs = FTheme.of(context).colors;
     final hasUpdate = data?.shouldPrompt == true;
-    final accent = hasUpdate
-        ? const Color(0xFFF59E0B)
-        : cs.foreground.withOpacity(0.55);
     final summary = status.isLoading
         ? '正在检查 APP 版本'
         : hasUpdate
@@ -93,22 +91,15 @@ class AppUpgradeSummaryCard extends ConsumerWidget {
 
     return ExpandableCard(
       title: 'APP更新',
-      leading: Icon(
-        hasUpdate ? FIcons.circleAlert : FIcons.circleArrowUp,
-        size: 18,
-        color: accent,
-      ),
+      leading: hasUpdate
+          ? const Icon(shadcn.LucideIcons.circleAlert).iconSmall.iconPrimary
+          : const Icon(
+              shadcn.LucideIcons.circleArrowUp,
+            ).iconSmall.iconMutedForeground,
       builder: (_) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            summary,
-            style: TextStyle(
-              color: hasUpdate ? accent : cs.foreground.withOpacity(0.62),
-              fontSize: 13,
-              fontWeight: hasUpdate ? FontWeight.w700 : FontWeight.w500,
-            ),
-          ),
+          hasUpdate ? Text(summary).small.bold : Text(summary).small.muted,
           const SizedBox(height: 12),
           const AppUpgradeEmbeddedPanel(),
         ],
@@ -168,6 +159,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
   bool _useGithubProxy = false;
   bool _testingGithubProxy = false;
   bool _autoPromptOpen = false;
+  int _dialogTabIndex = 0;
   double _progress = 0;
   String? _error;
   ResponseInfo? _githubProxy;
@@ -207,8 +199,9 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
   void didUpdateWidget(covariant AppUpgradePage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
-      if (oldWidget.controller?._state == this)
+      if (oldWidget.controller?._state == this) {
         oldWidget.controller?._state = null;
+      }
       widget.controller?._state = this;
     }
   }
@@ -302,10 +295,11 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     if (_versions.isEmpty) unawaited(_loadVersions());
     if (!mounted) return;
 
+    _dialogTabIndex = 0;
     if (autoPrompt) _autoPromptOpen = true;
-    await showFDialog<void>(
+    await shadcn.showDialog<void>(
       context: context,
-      builder: (ctx, style, animation) {
+      builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             _dialogSetState = setDialogState;
@@ -315,10 +309,8 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
               horizontal: isCompactDialog ? 8 : 12,
               vertical: 24,
             );
-            const dialogContentPadding = EdgeInsets.symmetric(
-              horizontal: 25,
-              vertical: 25,
-            );
+            final cs = shadcn.Theme.of(context).colorScheme;
+            final success = cs.chart2;
             final dialogWidth = isCompactDialog
                 ? (size.width - dialogInsetPadding.horizontal)
                       .clamp(320.0, size.width)
@@ -327,41 +319,33 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
             final dialogHeight = isCompactDialog
                 ? (size.height * 0.48).clamp(180.0, 360.0).toDouble()
                 : (size.height - 230).clamp(180.0, 520.0).toDouble();
-            return FDialog.raw(
-              constraints: BoxConstraints(
-                minWidth: 280,
-                maxWidth: isCompactDialog ? dialogWidth : 560,
-              ),
-              style: (_) => isCompactDialog
-                  ? style.copyWith(insetPadding: dialogInsetPadding)
-                  : style,
-              animation: animation,
-              builder: (_, _) => Padding(
-                padding: dialogContentPadding,
-                child: SizedBox(
+            return Padding(
+              padding: dialogInsetPadding,
+              child: shadcn.AlertDialog(
+                title: SizedBox(
+                  width: dialogWidth,
+                  child: Row(
+                    children: [
+                      Icon(
+                        _hasNewVersion
+                            ? shadcn.LucideIcons.circleArrowUp
+                            : shadcn.LucideIcons.badgeCheck,
+                        size: 18,
+                        color: _hasNewVersion ? cs.primary : success,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(_hasNewVersion ? '发现新版本' : 'APP 更新'),
+                      ),
+                    ],
+                  ),
+                ),
+                content: SizedBox(
                   width: dialogWidth,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Icon(
-                            _hasNewVersion
-                                ? FIcons.circleArrowUp
-                                : FIcons.badgeCheck,
-                            size: 18,
-                            color: _hasNewVersion
-                                ? FTheme.of(context).colors.destructive
-                                : FTheme.of(context).colors.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(_hasNewVersion ? '发现新版本' : 'APP 更新'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
                       SizedBox(
                         height: dialogHeight,
                         child: _buildDialogBody(context),
@@ -416,21 +400,29 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
         final contentHeight = (constraints.maxHeight - 56)
             .clamp(120.0, constraints.maxHeight)
             .toDouble();
-        return FTabs(
-          physics: const BouncingScrollPhysics(),
+        return Column(
           children: [
-            FTabEntry(
-              label: const Text('最新版本'),
-              child: SizedBox(
-                height: contentHeight,
-                child: _buildLatestTab(context),
-              ),
+            shadcn.Tabs(
+              index: _dialogTabIndex,
+              expand: true,
+              onChanged: (index) {
+                _dialogTabIndex = index;
+                _refreshUi();
+              },
+              children: const [
+                shadcn.TabItem(child: Text('最新版本')),
+                shadcn.TabItem(child: Text('历史版本')),
+              ],
             ),
-            FTabEntry(
-              label: const Text('历史版本'),
-              child: SizedBox(
-                height: contentHeight,
-                child: _buildVersionsTab(context),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: contentHeight,
+              child: IndexedStack(
+                index: _dialogTabIndex,
+                children: [
+                  _buildLatestTab(context),
+                  _buildVersionsTab(context),
+                ],
               ),
             ),
           ],
@@ -469,7 +461,9 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
               _SectionTitle('更新日志'),
               SizedBox(height: compact ? 5 : 8),
               if (_loadingLatest && latest == null)
-                const Center(child: FProgress.circularIcon())
+                const Center(
+                  child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+                )
               else
                 _ChangeLog(text: latest?.changelog, compact: compact),
             ],
@@ -510,9 +504,8 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
           Row(
             children: [
               Expanded(child: _SectionTitle('版本列表')),
-              FButton(
-                style: FButtonStyle.outline(),
-                onPress: _loadingVersions ? null : _loadVersions,
+              shadcn.Button.outline(
+                onPressed: _loadingVersions ? null : _loadVersions,
                 child: _loadingVersions
                     ? const _SmallProgress(label: '加载中')
                     : const Text('刷新'),
@@ -521,7 +514,9 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
           ),
           const SizedBox(height: 12),
           if (_loadingVersions && _versions.isEmpty)
-            const Center(child: FProgress.circularIcon())
+            const Center(
+              child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+            )
           else if (_versions.isEmpty)
             const _MessageBox(message: '暂无版本记录')
           else
@@ -981,27 +976,34 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
 
     final child = widget.child;
     if (child != null) {
-      return GestureDetector(
+      return shadcn.Clickable(
         behavior: HitTestBehavior.opaque,
-        onTap: _handleOpenUpgradeDialog,
+        onPressed: _handleOpenUpgradeDialog,
         child: child,
       );
     }
 
-    return FButton.icon(
-      style: _hasNewVersion ? FButtonStyle.destructive() : FButtonStyle.ghost(),
-      onPress: _handleOpenUpgradeDialog,
-      child: _loadingLatest
-          ? const SizedBox(
-              width: 18,
-              height: 18,
-              child: FProgress.circularIcon(),
-            )
-          : Icon(
-              _hasNewVersion ? FIcons.circleArrowUp : FIcons.refreshCw,
-              size: 20,
-            ),
-    );
+    final icon = _loadingLatest
+        ? const SizedBox(
+            width: 18,
+            height: 18,
+            child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+          )
+        : Icon(
+            _hasNewVersion
+                ? shadcn.LucideIcons.circleArrowUp
+                : shadcn.LucideIcons.refreshCw,
+            size: 20,
+          );
+    return _hasNewVersion
+        ? shadcn.IconButton.destructive(
+            onPressed: _handleOpenUpgradeDialog,
+            icon: icon,
+          )
+        : shadcn.IconButton.ghost(
+            onPressed: _handleOpenUpgradeDialog,
+            icon: icon,
+          );
   }
 
   Widget _buildEmbeddedPanel(BuildContext context) {
@@ -1096,8 +1098,9 @@ class AppUpdateInfo {
 
   factory AppUpdateInfo.fromApiResponse(Map<String, dynamic>? response) {
     final data = _unwrapData(response);
-    if (data is Map)
+    if (data is Map) {
       return AppUpdateInfo.fromJson(Map<String, dynamic>.from(data));
+    }
     return const AppUpdateInfo(version: '', changelog: '', downloadLinks: {});
   }
 
@@ -1158,67 +1161,48 @@ class _VersionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
-    final accent = hasNewVersion ? const Color(0xFFF59E0B) : cs.primary;
-    return Container(
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final accent = hasNewVersion ? cs.primary : cs.chart2;
+    return SizedBox(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: hasNewVersion
-            ? accent.withValues(alpha: 0.10)
-            : cs.muted.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: hasNewVersion ? accent.withValues(alpha: 0.35) : cs.border,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              hasNewVersion ? FIcons.circleArrowUp : FIcons.badgeCheck,
-              size: 20,
+      child: shadcn.Card(
+        padding: const EdgeInsets.all(14),
+        filled: true,
+        fillColor: accent.withValues(alpha: 0.08),
+        borderColor: accent.withValues(alpha: hasNewVersion ? 0.24 : 0.22),
+        child: Row(
+          children: [
+            Icon(
+              hasNewVersion
+                  ? shadcn.LucideIcons.circleArrowUp
+                  : shadcn.LucideIcons.badgeCheck,
               color: accent,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  hasNewVersion ? '发现可用新版本' : '已是最新版本',
-                  style: TextStyle(
-                    color: cs.foreground,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _InfoLine(label: '当前', value: 'v$currentVersion'),
-                if (hasNewVersion) ...[
-                  const SizedBox(height: 4),
-                  _InfoLine(
-                    label: '最新',
-                    value: latestVersion?.isNotEmpty == true
-                        ? 'v$latestVersion'
-                        : '-',
-                  ),
-                ] else ...[
-                  const SizedBox(height: 4),
-                  const _InfoLine(label: '状态', value: '无需更新'),
+            ).iconMedium(),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(hasNewVersion ? '发现可用新版本' : '已是最新版本').base.bold,
+                  const SizedBox(height: 8),
+                  _InfoLine(label: '当前', value: 'v$currentVersion'),
+                  if (hasNewVersion) ...[
+                    const SizedBox(height: 4),
+                    _InfoLine(
+                      label: '最新',
+                      value: latestVersion?.isNotEmpty == true
+                          ? 'v$latestVersion'
+                          : '-',
+                    ),
+                  ] else ...[
+                    const SizedBox(height: 4),
+                    const _InfoLine(label: '状态', value: '无需更新'),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1231,16 +1215,9 @@ class _PanelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.background,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: cs.border, width: 0.5),
-      ),
-      child: child,
+      child: shadcn.Card(padding: const EdgeInsets.all(12), child: child),
     );
   }
 }
@@ -1268,8 +1245,7 @@ class _UpgradeOptionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
-    final dense = MediaQuery.sizeOf(context).width < 568;
+    final compact = MediaQuery.sizeOf(context).width < 568;
     final proxySubtitle = proxyTesting
         ? '正在测速 GitHub 加速地址'
         : proxyEnabled && proxy != null
@@ -1278,72 +1254,70 @@ class _UpgradeOptionRow extends StatelessWidget {
         ? '下载前自动测速'
         : '原始下载地址';
 
-    final ignoreOption = _InlineSwitchOption(
-      icon: FIcons.circleAlert,
+    final ignoreOption = _SwitchOptionCard(
+      icon: shadcn.LucideIcons.bellOff,
       title: '不再提醒',
       subtitle: ignored ? '已忽略当前版本' : '打开后忽略当前版本',
       tooltip: ignored ? '当前版本已被忽略，关闭后恢复更新提醒' : '打开后将忽略当前版本，不再自动弹出更新提醒',
-      dense: dense,
       value: ignored,
       enabled: ignoreEnabled,
       onChanged: onIgnoreChanged,
     );
-    final proxyOption = _InlineSwitchOption(
-      icon: FIcons.gauge,
+    final proxyOption = _SwitchOptionCard(
+      icon: shadcn.LucideIcons.gauge,
       title: 'GitHub 加速',
       subtitle: proxySubtitle,
       tooltip: proxyEnabled
           ? '下载 GitHub Release 资源前自动测速并使用可用加速地址'
           : '关闭后直接使用原始下载地址',
-      dense: dense,
       value: proxyEnabled,
       enabled: !proxyTesting,
       onChanged: onProxyChanged,
       trailing: proxyEnabled
-          ? FButton(
-              style: FButtonStyle.ghost(_tinyAppUpgradeButtonStyle),
-              onPress: onProxyTest,
-              child: proxyTesting
+          ? shadcn.IconButton.ghost(
+              size: shadcn.ButtonSize.small,
+              density: shadcn.ButtonDensity.iconDense,
+              onPressed: onProxyTest,
+              icon: proxyTesting
                   ? const SizedBox(
                       width: 14,
                       height: 14,
-                      child: FProgress.circularIcon(),
+                      child: shadcn.CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(FIcons.refreshCw, size: 14),
+                  : const Icon(shadcn.LucideIcons.refreshCw, size: 14),
             )
           : null,
     );
 
-    return _PanelCard(
-      child: Row(
-        children: [
-          Expanded(child: ignoreOption),
-          Container(width: 0.5, height: 42, color: cs.border),
-          SizedBox(width: dense ? 6 : 10),
-          Expanded(child: proxyOption),
-        ],
-      ),
-    );
+    return compact
+        ? Column(
+            children: [ignoreOption, const SizedBox(height: 8), proxyOption],
+          )
+        : Row(
+            children: [
+              Expanded(child: ignoreOption),
+              const SizedBox(width: 8),
+              Expanded(child: proxyOption),
+            ],
+          );
   }
 }
 
-class _InlineSwitchOption extends StatelessWidget {
+class _SwitchOptionCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
   final String tooltip;
-  final bool dense;
   final bool value;
   final bool enabled;
   final ValueChanged<bool>? onChanged;
   final Widget? trailing;
 
-  const _InlineSwitchOption({
+  const _SwitchOptionCard({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.tooltip,
-    this.dense = false,
     required this.value,
     required this.enabled,
     required this.onChanged,
@@ -1352,74 +1326,79 @@ class _InlineSwitchOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
-    return FTooltip(
-      tipBuilder: (_, _) => Text(tooltip),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  size: dense ? 13 : 15,
-                  color: enabled ? cs.primary : cs.mutedForeground,
-                ),
-                SizedBox(width: dense ? 4 : 7),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: cs.foreground,
-                          fontSize: dense ? 10.5 : 12,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      SizedBox(height: dense ? 1 : 2),
-                      Text(
-                        subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: cs.mutedForeground,
-                          fontSize: dense ? 8.5 : 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final effectiveEnabled = enabled && onChanged != null;
+    final accent = effectiveEnabled ? cs.primary : cs.mutedForeground;
+    final tooltipText = subtitle.trim().isEmpty ? tooltip : '$subtitle\n$tooltip';
+
+    return shadcn.Tooltip(
+      tooltip: (_) => ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 260),
+        child: Text(
+          tooltipText,
+          style: theme.typography.xSmall.copyWith(
+            color: cs.popoverForeground,
+            height: 1.35,
+          ),
+        ),
+      ),
+      child: shadcn.Card(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        filled: true,
+        fillColor: value
+            ? cs.primary.withValues(alpha: 0.08)
+            : cs.muted.withValues(alpha: 0.14),
+        borderColor: value
+            ? cs.primary.withValues(alpha: 0.24)
+            : cs.border.withValues(alpha: 0.48),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            shadcn.Card(
+              padding: const EdgeInsets.all(7),
+              filled: true,
+              fillColor: value
+                  ? cs.primary.withValues(alpha: 0.12)
+                  : cs.background.withValues(alpha: 0.72),
+              borderColor: value
+                  ? cs.primary.withValues(alpha: 0.18)
+                  : cs.border.withValues(alpha: 0.36),
+              child: Icon(icon, size: 16, color: accent),
             ),
-          ),
-          SizedBox(width: dense ? 4 : 8),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (trailing != null) ...[
-                SizedBox(
-                  width: dense ? 20 : 24,
-                  height: dense ? 24 : 28,
-                  child: trailing!,
-                ),
-                SizedBox(width: dense ? 1 : 3),
-              ],
-              Transform.scale(
-                scale: dense ? 0.66 : 0.78,
-                child: FSwitch(
-                  value: value,
-                  enabled: enabled && onChanged != null,
-                  onChange: onChanged,
-                ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.typography.small.copyWith(
+                        color: cs.foreground,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    shadcn.LucideIcons.info,
+                    size: 13,
+                    color: cs.mutedForeground,
+                  ),
+                ],
               ),
-            ],
-          ),
-        ],
+            ),
+            if (trailing != null) ...[const SizedBox(width: 8), trailing!],
+            const SizedBox(width: 8),
+            shadcn.Switch(
+              value: value,
+              enabled: effectiveEnabled,
+              onChanged: effectiveEnabled ? onChanged : null,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1441,40 +1420,22 @@ class _VersionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     final current = _compareVersions(info.version, currentVersion) == 0;
-    return Container(
+    return shadcn.Card(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.background,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: current ? cs.primary.withValues(alpha: 0.5) : cs.border,
-        ),
-      ),
+      borderColor: current ? cs.primary.withValues(alpha: 0.5) : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Expanded(
-                child: Text(
-                  'v${info.version}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    color: current ? cs.primary : cs.foreground,
-                  ),
-                ),
+                child: current
+                    ? Text('v${info.version}').base.bold(color: cs.primary)
+                    : Text('v${info.version}').base.bold,
               ),
-              if (current)
-                Text(
-                  '当前版本',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: cs.primary,
-                  ),
-                ),
+              if (current) shadcn.PrimaryBadge(child: const Text('当前版本')),
             ],
           ),
           const SizedBox(height: 8),
@@ -1555,14 +1516,16 @@ class _DownloadLinksState extends State<_DownloadLinks> {
         if (widget.onOpenPage != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: FButton(
-              style: FButtonStyle.outline(_compactAppUpgradeButtonStyle),
-              onPress: widget.onOpenPage,
+            child: shadcn.Button.outline(
+              style: const shadcn.ButtonStyle.outline(
+                density: shadcn.ButtonDensity.dense,
+              ),
+              onPressed: widget.onOpenPage,
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(FIcons.externalLink, size: 15),
+                  Icon(shadcn.LucideIcons.externalLink, size: 15),
                   SizedBox(width: 6),
                   Text('打开下载页'),
                 ],
@@ -1596,69 +1559,53 @@ class _DownloadLinksState extends State<_DownloadLinks> {
     AppUpdateInfo current,
     MapEntry<String, String> entry,
   ) {
-    final cs = FTheme.of(context).colors;
-    return Container(
-      margin: EdgeInsets.only(bottom: widget.compact ? 6 : 8),
-      padding: EdgeInsets.symmetric(
-        horizontal: 9,
-        vertical: widget.compact ? 6 : 8,
-      ),
-      decoration: BoxDecoration(
-        color: cs.muted.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(9),
-        border: Border.all(color: cs.border, width: 0.5),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: cs.primary.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(8),
+    final cs = shadcn.Theme.of(context).colorScheme;
+    return Padding(
+      padding: EdgeInsets.only(bottom: widget.compact ? 6 : 8),
+      child: shadcn.Card(
+        padding: EdgeInsets.symmetric(
+          horizontal: 9,
+          vertical: widget.compact ? 6 : 8,
+        ),
+        filled: true,
+        fillColor: cs.muted.withValues(alpha: 0.16),
+        child: Row(
+          children: [
+            const Icon(shadcn.LucideIcons.package).iconSmall.iconPrimary,
+            const SizedBox(width: 9),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry.key,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ).small.bold,
+                  const SizedBox(height: 2),
+                  Text(
+                    _downloadHost(entry.value),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ).xSmall.muted,
+                ],
+              ),
             ),
-            alignment: Alignment.center,
-            child: Icon(FIcons.package, size: 15, color: cs.primary),
-          ),
-          const SizedBox(width: 9),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  entry.key,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: cs.foreground,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  _downloadHost(entry.value),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: cs.mutedForeground, fontSize: 11),
-                ),
-              ],
+            const SizedBox(width: 6),
+            _MiniActionButton(
+              icon: shadcn.LucideIcons.copy,
+              tip: '复制链接',
+              onPress: () => widget.onCopy(current, entry),
             ),
-          ),
-          const SizedBox(width: 6),
-          _MiniActionButton(
-            icon: FIcons.copy,
-            tip: '复制链接',
-            onPress: () => widget.onCopy(current, entry),
-          ),
-          const SizedBox(width: 4),
-          _MiniActionButton(
-            icon: FIcons.download,
-            tip: '下载',
-            onPress: () => widget.onDownload(current, entry),
-            outlined: true,
-          ),
-        ],
+            const SizedBox(width: 4),
+            _MiniActionButton(
+              icon: shadcn.LucideIcons.download,
+              tip: '下载',
+              onPress: () => widget.onDownload(current, entry),
+              outlined: true,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1675,19 +1622,23 @@ class _DownloadLinksState extends State<_DownloadLinks> {
     final hasX64 = any(['x86_64', 'x64', 'amd64']);
 
     if (kIsWeb) return any(['web']);
-    if (Platform.isWindows)
+    if (Platform.isWindows) {
       return isWindows && !isMacos && !isLinux && !isAndroid && !isIos;
+    }
     if (Platform.isMacOS) {
       if (!isMacos || isWindows || isLinux || isAndroid || isIos) return false;
       if (_macosArch == 'arm64') return hasArm64 || (!hasX64 && !hasArm64);
       return hasX64 || (!hasX64 && !hasArm64);
     }
-    if (Platform.isLinux)
+    if (Platform.isLinux) {
       return isLinux && !isWindows && !isMacos && !isAndroid && !isIos;
-    if (Platform.isAndroid)
+    }
+    if (Platform.isAndroid) {
       return isAndroid && !isWindows && !isMacos && !isLinux && !isIos;
-    if (Platform.isIOS)
+    }
+    if (Platform.isIOS) {
       return isIos && !isWindows && !isMacos && !isLinux && !isAndroid;
+    }
     return false;
   }
 
@@ -1711,29 +1662,20 @@ class _OtherPlatformsToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
-    return GestureDetector(
+    final cs = shadcn.Theme.of(context).colorScheme;
+    return shadcn.Clickable(
       behavior: HitTestBehavior.opaque,
-      onTap: onTap,
+      onPressed: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 7),
         child: Row(
           children: [
-            Expanded(
-              child: Text(
-                '其他平台安装包 $count 个',
-                style: TextStyle(
-                  color: cs.mutedForeground,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
+            Expanded(child: Text('其他平台安装包 $count 个').small.semiBold.muted),
             AnimatedRotation(
               turns: expanded ? 0.5 : 0,
               duration: const Duration(milliseconds: 180),
               child: Icon(
-                FIcons.chevronDown,
+                shadcn.LucideIcons.chevronDown,
                 size: 15,
                 color: cs.mutedForeground,
               ),
@@ -1779,40 +1721,50 @@ MarkdownStyleSheet _changeLogMarkdownStyleSheet(
   BuildContext context, {
   required bool compact,
 }) {
-  final cs = FTheme.of(context).colors;
-  final body = TextStyle(
-    fontSize: compact ? 12 : 13,
-    height: 1.45,
-    color: cs.foreground,
-  );
-  final code = TextStyle(
-    fontSize: compact ? 11 : 12,
-    height: 1.35,
-    color: cs.foreground,
-    backgroundColor: cs.muted.withValues(alpha: 0.65),
-  );
+  final theme = shadcn.Theme.of(context);
+  final cs = theme.colorScheme;
+  final typography = theme.typography;
+  final body = (compact ? typography.xSmall : typography.small)
+      .merge(typography.sans)
+      .copyWith(height: 1.45, color: cs.foreground);
+  final code = (compact ? typography.xSmall : typography.small)
+      .merge(typography.mono)
+      .copyWith(
+        height: 1.35,
+        color: cs.foreground,
+        backgroundColor: cs.muted.withValues(alpha: 0.65),
+      );
+  final h1 = (compact ? typography.large : typography.xLarge)
+      .merge(typography.black)
+      .copyWith(height: 1.25, color: cs.foreground);
+  final h2 = (compact ? typography.small : typography.large)
+      .merge(typography.black)
+      .copyWith(height: 1.25, color: cs.foreground);
+  final h3 = (compact ? typography.xSmall : typography.small)
+      .merge(typography.black)
+      .copyWith(height: 1.25, color: cs.foreground);
 
   return MarkdownStyleSheet(
-    a: body.copyWith(color: cs.primary, fontWeight: FontWeight.w700),
+    a: body.merge(typography.bold).copyWith(color: cs.primary),
     p: body,
     pPadding: EdgeInsets.only(bottom: compact ? 6 : 8),
-    h1: body.copyWith(fontSize: compact ? 16 : 18, fontWeight: FontWeight.w900),
+    h1: h1,
     h1Padding: EdgeInsets.only(bottom: compact ? 8 : 10),
-    h2: body.copyWith(fontSize: compact ? 15 : 16, fontWeight: FontWeight.w900),
+    h2: h2,
     h2Padding: EdgeInsets.only(bottom: compact ? 6 : 8),
-    h3: body.copyWith(fontSize: compact ? 13 : 14, fontWeight: FontWeight.w900),
+    h3: h3,
     h3Padding: EdgeInsets.only(bottom: compact ? 6 : 8),
     listBullet: body.copyWith(color: cs.mutedForeground),
     blockquote: body.copyWith(color: cs.mutedForeground),
     blockquoteDecoration: BoxDecoration(
       color: cs.muted.withValues(alpha: 0.5),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: theme.borderRadiusSm,
       border: Border(left: BorderSide(color: cs.border, width: 3)),
     ),
     code: code,
     codeblockDecoration: BoxDecoration(
       color: cs.muted.withValues(alpha: 0.65),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: theme.borderRadiusSm,
     ),
   );
 }
@@ -1824,27 +1776,13 @@ class _DownloadProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
     final pct = (progress * 100).clamp(0, 100).toStringAsFixed(1);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '下载进度 $pct%',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: cs.mutedForeground,
-          ),
-        ),
+        Text('下载进度 $pct%').small.bold.muted,
         const SizedBox(height: 6),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: LinearProgressIndicator(
-            value: progress <= 0 ? null : progress,
-            minHeight: 6,
-          ),
-        ),
+        shadcn.LinearProgressIndicator(value: progress <= 0 ? null : progress),
       ],
     );
   }
@@ -1858,26 +1796,10 @@ class _InfoLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
     return Row(
       children: [
-        SizedBox(
-          width: 72,
-          child: Text(
-            label,
-            style: TextStyle(fontSize: 12, color: cs.mutedForeground),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: cs.foreground,
-            ),
-          ),
-        ),
+        SizedBox(width: 72, child: Text(label).small.muted),
+        Expanded(child: Text(value).small.bold),
       ],
     );
   }
@@ -1891,23 +1813,11 @@ class _MessageBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: (destructive ? cs.destructive : cs.mutedForeground).withValues(
-          alpha: 0.08,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(
-          fontSize: 12,
-          color: destructive ? cs.destructive : cs.mutedForeground,
-        ),
-      ),
+      child: destructive
+          ? shadcn.Alert.destructive(content: Text(message).small)
+          : shadcn.Alert(content: Text(message).small.muted),
     );
   }
 }
@@ -1919,14 +1829,7 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w900,
-        color: FTheme.of(context).colors.foreground,
-      ),
-    );
+    return Text(text).small.bold;
   }
 }
 
@@ -1940,7 +1843,11 @@ class _SmallProgress extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(width: 14, height: 14, child: FProgress.circularIcon()),
+        const SizedBox(
+          width: 14,
+          height: 14,
+          child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+        ),
         const SizedBox(width: 6),
         Text(label),
       ],
@@ -1970,9 +1877,9 @@ class _DialogActionBar extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: FButton(
-            style: FButtonStyle.ghost(_compactAppUpgradeButtonStyle),
-            onPress: onCheck,
+          child: shadcn.Button.outline(
+            onPressed: onCheck,
+            alignment: Alignment.center,
             child: loadingLatest
                 ? const _SmallProgress(label: '检查')
                 : const Text('检查'),
@@ -1981,18 +1888,18 @@ class _DialogActionBar extends StatelessWidget {
         if (onTestFlight != null) ...[
           const SizedBox(width: 8),
           Expanded(
-            child: FButton(
-              style: FButtonStyle.outline(_compactAppUpgradeButtonStyle),
-              onPress: onTestFlight,
+            child: shadcn.Button.outline(
+              onPressed: onTestFlight,
+              alignment: Alignment.center,
               child: const Text('TF跳转'),
             ),
           ),
         ],
         const SizedBox(width: 8),
         Expanded(
-          child: FButton(
-            style: FButtonStyle.primary(_compactAppUpgradeButtonStyle),
-            onPress: onDownload,
+          child: shadcn.Button.primary(
+            onPressed: onDownload,
+            alignment: Alignment.center,
             child: downloading
                 ? const Text('取消')
                 : Text(hasNewVersion ? '更新' : '重装'),
@@ -2018,36 +1925,27 @@ class _MiniActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FTooltip(
-      tipBuilder: (_, _) => Text(tip),
+    return shadcn.Tooltip(
+      tooltip: (_) => Text(tip),
       child: SizedBox(
         width: 30,
         height: 38,
-        child: FButton(
-          style: outlined
-              ? FButtonStyle.outline(_tinyAppUpgradeButtonStyle)
-              : FButtonStyle.ghost(_tinyAppUpgradeButtonStyle),
-          onPress: onPress,
-          child: Icon(icon, size: 14),
-        ),
+        child: outlined
+            ? shadcn.IconButton.outline(
+                size: shadcn.ButtonSize.small,
+                density: shadcn.ButtonDensity.iconDense,
+                onPressed: onPress,
+                icon: Icon(icon, size: 14),
+              )
+            : shadcn.IconButton.ghost(
+                size: shadcn.ButtonSize.small,
+                density: shadcn.ButtonDensity.iconDense,
+                onPressed: onPress,
+                icon: Icon(icon, size: 14),
+              ),
       ),
     );
   }
-}
-
-FButtonStyle _compactAppUpgradeButtonStyle(FButtonStyle style) {
-  return style.copyWith(
-    contentStyle: (content) => content.copyWith(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-    ),
-  );
-}
-
-FButtonStyle _tinyAppUpgradeButtonStyle(FButtonStyle style) {
-  return style.copyWith(
-    contentStyle: (content) => content.copyWith(padding: EdgeInsets.zero),
-    iconContentStyle: (content) => content.copyWith(padding: EdgeInsets.zero),
-  );
 }
 
 int _compareVersions(String a, String b) {

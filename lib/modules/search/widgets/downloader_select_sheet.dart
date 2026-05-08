@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/modules/download/model/downloader.dart';
 import 'package:harvest/modules/download/provider/downloader_provider.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class DownloaderSelectSheet extends ConsumerWidget {
   final ValueChanged<Downloader> onSelected;
@@ -12,8 +12,9 @@ class DownloaderSelectSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(downloaderListProvider);
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
 
     return Container(
       decoration: BoxDecoration(
@@ -30,23 +31,26 @@ class DownloaderSelectSheet extends ConsumerWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                  color: cs.border, borderRadius: BorderRadius.circular(2)),
+                color: cs.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
           const SizedBox(height: 16),
-          Text('选择下载器',
-              style: typo.base.copyWith(fontWeight: FontWeight.w600)),
+          Text('选择下载器', style: typo.base.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           async.when(
             loading: () => const Padding(
               padding: EdgeInsets.all(24),
-              child: Center(child: FProgress.circularIcon()),
+              child: Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
             ),
             error: (e, _) => Padding(
               padding: const EdgeInsets.all(24),
               child: Center(
-                child: Text('加载失败',
-                    style: typo.sm.copyWith(color: cs.mutedForeground)),
+                child: Text(
+                  '加载失败',
+                  style: typo.small.copyWith(color: cs.mutedForeground),
+                ),
               ),
             ),
             data: (downloaders) {
@@ -56,12 +60,16 @@ class DownloaderSelectSheet extends ConsumerWidget {
                   child: Center(
                     child: Column(
                       children: [
-                        Icon(FIcons.cloudOff,
-                            size: 32,
-                            color: cs.mutedForeground.withValues(alpha: 0.3)),
+                        Icon(
+                          shadcn.LucideIcons.cloudOff,
+                          size: 32,
+                          color: cs.mutedForeground.withValues(alpha: 0.3),
+                        ),
                         const SizedBox(height: 8),
-                        Text('暂无可用下载器',
-                            style: typo.sm.copyWith(color: cs.mutedForeground)),
+                        Text(
+                          '暂无可用下载器',
+                          style: typo.small.copyWith(color: cs.mutedForeground),
+                        ),
                       ],
                     ),
                   ),
@@ -72,29 +80,65 @@ class DownloaderSelectSheet extends ConsumerWidget {
                 children: downloaders.map((d) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 4),
-                    child: FTile(
-                      title: Text(d.name,
-                          style: typo.sm.copyWith(fontWeight: FontWeight.w500)),
-                      subtitle: Text(
-                        d.isQb
-                            ? 'qBittorrent'
-                            : d.isTr
-                            ? 'Transmission'
-                            : d.category,
-                        style: typo.xs.copyWith(color: cs.mutedForeground),
-                      ),
-                      prefix: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: cs.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => onSelected(d),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: cs.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  shadcn.LucideIcons.download,
+                                  size: 18,
+                                  color: cs.primary,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      d.name,
+                                      style: typo.small.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      d.isQb
+                                          ? 'qBittorrent'
+                                          : d.isTr
+                                          ? 'Transmission'
+                                          : d.category,
+                                      style: typo.xSmall.copyWith(
+                                        color: cs.mutedForeground,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(
+                                shadcn.LucideIcons.chevronRight,
+                                size: 16,
+                                color: cs.mutedForeground,
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Icon(FIcons.download, size: 18, color: cs.primary),
                       ),
-                      suffix: Icon(FIcons.chevronRight,
-                          size: 16, color: cs.mutedForeground),
-                      onPress: () => onSelected(d),
                     ),
                   );
                 }).toList(),
@@ -104,9 +148,8 @@ class DownloaderSelectSheet extends ConsumerWidget {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: FButton(
-              style: FButtonStyle.outline(),
-              onPress: () => Navigator.pop(context),
+            child: shadcn.Button.outline(
+              onPressed: () => Navigator.pop(context),
               child: const Text('取消'),
             ),
           ),

@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../site/model/site_info.dart';
 import '../../site/provider/site_provider.dart';
@@ -34,8 +34,9 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     final availableSites = _availableSearchSites();
     final availableSiteKeys = availableSites.map(_siteKey).toSet();
@@ -70,12 +71,15 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
             children: [
               Text(
                 '搜索设置',
-                style: typo.base.copyWith(fontWeight: FontWeight.w600),
+                style: typo.normal.copyWith(fontWeight: FontWeight.w600),
               ),
               const Spacer(),
               GestureDetector(
                 onTap: () => Navigator.pop(context),
-                child: Text('完成', style: typo.sm.copyWith(color: cs.primary)),
+                child: Text(
+                  '完成',
+                  style: typo.small.copyWith(color: cs.primary),
+                ),
               ),
             ],
           ),
@@ -88,11 +92,11 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                   children: [
                     Text(
                       '最大站点数',
-                      style: typo.sm.copyWith(fontWeight: FontWeight.w500),
+                      style: typo.small.copyWith(fontWeight: FontWeight.w500),
                     ),
                     Text(
                       '从多少个站点搜索，默认 5，0 表示全部',
-                      style: typo.xs.copyWith(
+                      style: typo.xSmall.copyWith(
                         color: cs.mutedForeground,
                         fontSize: 11,
                       ),
@@ -132,7 +136,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                           children: [
                             Text(
                               '指定站点',
-                              style: typo.sm.copyWith(
+                              style: typo.small.copyWith(
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -141,7 +145,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                               _sitesEnabled
                                   ? '仅显示存活且可搜索的站点'
                                   : '已关闭，搜索时 sites 参数为空',
-                              style: typo.xs.copyWith(
+                              style: typo.xSmall.copyWith(
                                 color: cs.mutedForeground,
                                 fontSize: 11,
                               ),
@@ -151,10 +155,13 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                       ),
                       Text(
                         _sitesEnabled ? '$selectedCount 个站点' : '关闭',
-                        style: typo.xs.copyWith(color: cs.primary),
+                        style: typo.xSmall.copyWith(color: cs.primary),
                       ),
                       const SizedBox(width: 10),
-                      FSwitch(value: _sitesEnabled, onChange: _setSitesEnabled),
+                      Switch(
+                        value: _sitesEnabled,
+                        onChanged: _setSitesEnabled,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -162,7 +169,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                     children: [
                       Expanded(
                         child: _buildActionButton(
-                          icon: FIcons.refreshCw,
+                          icon: shadcn.LucideIcons.refreshCw,
                           label: '加载',
                           color: Colors.blue,
                           onPress: availableSites.isEmpty
@@ -173,7 +180,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _buildActionButton(
-                          icon: FIcons.checkCheck,
+                          icon: shadcn.LucideIcons.checkCheck,
                           label: '全部',
                           color: Colors.green,
                           onPress: availableSites.isEmpty
@@ -184,7 +191,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _buildActionButton(
-                          icon: FIcons.dices,
+                          icon: shadcn.LucideIcons.dices,
                           label: '随机',
                           color: Colors.orange,
                           onPress: availableSites.isEmpty
@@ -202,7 +209,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                             child: Center(
                               child: Text(
                                 '没有可搜索的存活站点',
-                                style: typo.sm.copyWith(
+                                style: typo.small.copyWith(
                                   color: cs.mutedForeground,
                                 ),
                               ),
@@ -247,8 +254,9 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   }
 
   Widget _buildStepper() {
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
 
     return Container(
       decoration: BoxDecoration(
@@ -263,7 +271,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: Icon(
-                FIcons.minus,
+                shadcn.LucideIcons.minus,
                 size: 16,
                 color: _maxCount > 0
                     ? cs.foreground
@@ -276,14 +284,18 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
             alignment: Alignment.center,
             child: Text(
               _maxCount == 0 ? '全部' : '$_maxCount',
-              style: typo.sm.copyWith(fontWeight: FontWeight.w600),
+              style: typo.small.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           GestureDetector(
             onTap: () => _setMaxCount(_maxCount + 1),
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: Icon(FIcons.plus, size: 16, color: cs.foreground),
+              child: Icon(
+                shadcn.LucideIcons.plus,
+                size: 16,
+                color: cs.foreground,
+              ),
             ),
           ),
         ],
@@ -292,7 +304,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   }
 
   Widget _buildUnlimitedButton() {
-    final typo = context.theme.typography;
+    final typo = shadcn.Theme.of(context).typography;
     final active = _maxCount == 0;
     const color = Colors.teal;
 
@@ -312,7 +324,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
         ),
         child: Text(
           '不限',
-          style: typo.xs.copyWith(
+          style: typo.xSmall.copyWith(
             color: active ? color : color.withValues(alpha: 0.82),
             fontWeight: FontWeight.w700,
           ),
@@ -327,8 +339,9 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
     required Color color,
     required VoidCallback? onPress,
   }) {
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
     final enabled = onPress != null;
     final effectiveColor = enabled ? color : cs.mutedForeground;
 
@@ -357,7 +370,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: typo.xs.copyWith(
+                  style: typo.xSmall.copyWith(
                     color: effectiveColor,
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -372,8 +385,9 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   }
 
   Widget _buildSiteChip(SiteInfo site) {
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
     final key = _siteKey(site);
     final selected = _selectedSites.contains(key);
 
@@ -404,7 +418,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                 _siteLabel(site),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: typo.xs.copyWith(
+                style: typo.xSmall.copyWith(
                   color: selected ? cs.primary : cs.foreground,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                 ),
@@ -412,7 +426,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
             ),
             if (selected) ...[
               const SizedBox(width: 5),
-              Icon(FIcons.check, size: 12, color: cs.primary),
+              Icon(shadcn.LucideIcons.check, size: 12, color: cs.primary),
             ],
           ],
         ),

@@ -24,5 +24,6 @@ abstract class RankMovie with _$RankMovie {
     @Default(false) @JsonKey(name: 'is_watched') bool isWatched,
   }) = _RankMovie;
 
-  factory RankMovie.fromJson(Map<String, dynamic> json) => _$RankMovieFromJson(json);
+  factory RankMovie.fromJson(Map<String, dynamic> json) =>
+      _$RankMovieFromJson(json);
 }

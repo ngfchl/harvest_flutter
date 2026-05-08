@@ -19,5 +19,6 @@ abstract class HotMedia with _$HotMedia {
     @Default('') String cookie,
   }) = _HotMedia;
 
-  factory HotMedia.fromJson(Map<String, dynamic> json) => _$HotMediaFromJson(json);
+  factory HotMedia.fromJson(Map<String, dynamic> json) =>
+      _$HotMediaFromJson(json);
 }

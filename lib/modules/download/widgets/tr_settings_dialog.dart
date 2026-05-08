@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/downloader.dart';
 import '../model/transmission_preferences.dart';
@@ -27,6 +27,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
   bool _saving = false;
   String? _error;
   TransmissionPreferences? _prefs;
+  int _tabIndex = 0;
 
   // ── 存储 ──
   final _downloadDirCtrl = TextEditingController();
@@ -96,6 +97,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
   @override
   void initState() {
     super.initState();
+    _tabIndex = widget.initialIndex.clamp(0, 3).toInt();
     _loadPrefs();
   }
 
@@ -325,7 +327,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
+    final theme = shadcn.Theme.of(context);
 
     return Dialog(
       insetPadding: _isMobile
@@ -341,10 +343,10 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(theme),
-            Divider(height: 1, color: theme.colors.border),
+            Divider(height: 1, color: theme.colorScheme.border),
             Expanded(
               child: _loading
-                  ? Center(child: FProgress.circularIcon())
+                  ? const Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2))
                   : _error != null
                   ? _buildError(theme)
                   : _buildTabbedBody(theme),
@@ -358,7 +360,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
 
   // ── Header ──
 
-  Widget _buildHeader(FThemeData theme) {
+  Widget _buildHeader(shadcn.ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 16, 10, 12),
       child: Row(
@@ -371,7 +373,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Icon(
-              FIcons.arrowUpDown,
+              shadcn.LucideIcons.arrowUpDown,
               size: 14,
               color: Color(0xFFEF4444),
             ),
@@ -380,13 +382,12 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
           Expanded(
             child: Text(
               '${d.name} · 参数设置',
-              style: theme.typography.sm.copyWith(fontWeight: FontWeight.w700),
+              style: theme.typography.small.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
-          FButton.icon(
-            style: FButtonStyle.ghost(),
-            onPress: () => Navigator.of(context).pop(),
-            child: const Icon(FIcons.x, size: 16),
+          shadcn.IconButton.ghost(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(shadcn.LucideIcons.x, size: 16),
           ),
         ],
       ),
@@ -395,21 +396,21 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
 
   // ── Error ──
 
-  Widget _buildError(FThemeData theme) {
+  Widget _buildError(shadcn.ThemeData theme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            FIcons.info,
+            shadcn.LucideIcons.info,
             size: 32,
-            color: theme.colors.mutedForeground.withValues(alpha: 0.3),
+            color: theme.colorScheme.mutedForeground.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 8),
           Text(
             _error!,
-            style: theme.typography.sm.copyWith(
-              color: theme.colors.mutedForeground,
+            style: theme.typography.small.copyWith(
+              color: theme.colorScheme.mutedForeground,
             ),
           ),
         ],
@@ -419,31 +420,30 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
 
   // ── Footer ──
 
-  Widget _buildFooter(FThemeData theme) {
+  Widget _buildFooter(shadcn.ThemeData theme) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: theme.colors.border)),
+        border: Border(top: BorderSide(color: theme.colorScheme.border)),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
         child: Row(
           children: [
             Expanded(
-              child: FButton(
-                style: FButtonStyle.outline(),
-                onPress: () => Navigator.of(context).pop(),
+              child: shadcn.Button.outline(
+                onPressed: () => Navigator.of(context).pop(),
                 child: const Text('取消'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: FButton(
-                onPress: _saving ? null : _save,
+              child: shadcn.Button.primary(
+                onPressed: _saving ? null : _save,
                 child: _saving
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(
+                        child: shadcn.CircularProgressIndicator(
                           strokeWidth: 2,
                           color: Colors.white,
                         ),
@@ -458,76 +458,85 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
   }
 
   // ═══════════════════════════════════════════
-  //  标签页主体 — 手机用 FAccordion / 其他用 FTabs
+  //  标签页主体
   // ═══════════════════════════════════════════
 
-  Widget _buildTabbedBody(FThemeData theme) {
-    // 手机端：FAccordion，可折叠展开
+  Widget _buildTabbedBody(shadcn.ThemeData theme) {
     if (_isMobile) {
       return SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        child: FAccordion(
-          children: [
-            FAccordionItem(
-              title: const Text('下载设置'),
-              initiallyExpanded: widget.initialIndex == 0,
-              child: _buildDownloadSection(theme),
+        child: shadcn.Accordion(
+          items: [
+            shadcn.AccordionItem(
+              expanded: widget.initialIndex == 0,
+              trigger: const shadcn.AccordionTrigger(child: Text('下载设置')),
+              content: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildDownloadSection(theme),
+              ),
             ),
-            FAccordionItem(
-              title: const Text('带宽设置'),
-              initiallyExpanded: widget.initialIndex == 1,
-              child: _buildBandwidthSection(theme),
+            shadcn.AccordionItem(
+              expanded: widget.initialIndex == 1,
+              trigger: const shadcn.AccordionTrigger(child: Text('带宽设置')),
+              content: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildBandwidthSection(theme),
+              ),
             ),
-            FAccordionItem(
-              title: const Text('网络设置'),
-              initiallyExpanded: widget.initialIndex == 2,
-              child: _buildNetworkSection(theme),
+            shadcn.AccordionItem(
+              expanded: widget.initialIndex == 2,
+              trigger: const shadcn.AccordionTrigger(child: Text('网络设置')),
+              content: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildNetworkSection(theme),
+              ),
             ),
-            FAccordionItem(
-              title: const Text('队列设置'),
-              initiallyExpanded: widget.initialIndex == 3,
-              child: _buildQueueSection(theme),
+            shadcn.AccordionItem(
+              expanded: widget.initialIndex == 3,
+              trigger: const shadcn.AccordionTrigger(child: Text('队列设置')),
+              content: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildQueueSection(theme),
+              ),
             ),
-            // FAccordionItem(title: const Text('其他设置'), child: _buildOtherSection(theme)),
           ],
         ),
       );
     }
 
-    // 桌面端 / 平板：FTabs，标签页切换
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableHeight = constraints.maxHeight.isFinite
             ? constraints.maxHeight
             : MediaQuery.of(context).size.height * 0.7;
         final bodyHeight = (availableHeight - 76).clamp(120.0, double.infinity).toDouble();
+        final pages = [
+          _ScrollableSection(height: bodyHeight, child: _buildDownloadSection(theme)),
+          _ScrollableSection(height: bodyHeight, child: _buildBandwidthSection(theme)),
+          _ScrollableSection(height: bodyHeight, child: _buildNetworkSection(theme)),
+          _ScrollableSection(height: bodyHeight, child: _buildQueueSection(theme)),
+        ];
 
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: FTabs(
-            initialIndex: widget.initialIndex.clamp(0, 3).toInt(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FTabEntry(
-                label: const Text('下载设置'),
-                child: _ScrollableSection(height: bodyHeight, child: _buildDownloadSection(theme)),
+              shadcn.Tabs(
+                index: _tabIndex,
+                onChanged: (index) => setState(() => _tabIndex = index),
+                children: const [
+                  shadcn.TabItem(child: Text('下载设置')),
+                  shadcn.TabItem(child: Text('带宽设置')),
+                  shadcn. TabItem(child: Text('网络设置')),
+                  shadcn. TabItem(child: Text('队列设置')),
+                ],
               ),
-              FTabEntry(
-                label: const Text('带宽设置'),
-                child: _ScrollableSection(height: bodyHeight, child: _buildBandwidthSection(theme)),
+              const SizedBox(height: 8),
+              Expanded(
+                child: IndexedStack(index: _tabIndex, children: pages),
               ),
-              FTabEntry(
-                label: const Text('网络设置'),
-                child: _ScrollableSection(height: bodyHeight, child: _buildNetworkSection(theme)),
-              ),
-              FTabEntry(
-                label: const Text('队列设置'),
-                child: _ScrollableSection(height: bodyHeight, child: _buildQueueSection(theme)),
-              ),
-              // FTabEntry(
-              //   label: const Text('其他设置'),
-              //   child: _ScrollableSection(height: bodyHeight, child: _buildOtherSection(theme)),
-              // ),
             ],
           ),
         );
@@ -541,11 +550,11 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
 
   // ── 下载设置 ──
 
-  Widget _buildDownloadSection(FThemeData theme) {
+  Widget _buildDownloadSection(shadcn.ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FTextFormField(
+        _DialogTextField(
           controller: _downloadDirCtrl,
           label: const Text('默认保存目录'),
           hint: '/downloads/complete',
@@ -553,7 +562,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 10),
         _switchTile(
           theme,
-          FIcons.fileText,
+          shadcn.LucideIcons.fileText,
           '在未完成的文件名后加上 ".part" 后缀',
           _renamePartial,
           (v) => setState(() => _renamePartial = v),
@@ -561,14 +570,14 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 4),
         _switchTile(
           theme,
-          FIcons.folderOpen,
+          shadcn.LucideIcons.folderOpen,
           '启用临时目录',
           _incompleteDirEnabled,
           (v) => setState(() => _incompleteDirEnabled = v),
         ),
         if (_incompleteDirEnabled) ...[
           const SizedBox(height: 6),
-          FTextFormField(
+          _DialogTextField(
             controller: _incompleteDirCtrl,
             label: const Text('临时目录'),
             hint: '/downloads/incomplete',
@@ -577,7 +586,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 10),
         _switchTile(
           theme,
-          FIcons.play,
+          shadcn.LucideIcons.play,
           '自动开始添加的种子',
           _startAddedTorrents,
           (v) => setState(() => _startAddedTorrents = v),
@@ -585,7 +594,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 4),
         _switchTile(
           theme,
-          FIcons.trash2,
+          shadcn.LucideIcons.trash2,
           '完成后删除原始种子文件',
           _trashOriginal,
           (v) => setState(() => _trashOriginal = v),
@@ -593,14 +602,14 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         _sectionLabel(theme, '做种限制'),
         _switchTile(
           theme,
-          FIcons.ratio,
+          shadcn.LucideIcons.ratio,
           '限制分享率',
           _seedRatioLimited,
           (v) => setState(() => _seedRatioLimited = v),
         ),
         if (_seedRatioLimited) ...[
           const SizedBox(height: 6),
-          FTextFormField(
+          _DialogTextField(
             controller: _seedRatioLimitCtrl,
             label: const Text('默认分享率上限'),
             hint: '2.00',
@@ -610,14 +619,14 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 4),
         _switchTile(
           theme,
-          FIcons.clock,
+          shadcn.LucideIcons.clock,
           '限制空闲做种时间',
           _idleSeedingLimitEnabled,
           (v) => setState(() => _idleSeedingLimitEnabled = v),
         ),
         if (_idleSeedingLimitEnabled) ...[
           const SizedBox(height: 6),
-          FTextFormField(
+          _DialogTextField(
             controller: _idleSeedingLimitCtrl,
             label: const Text('默认停止无流量种子持续时间 (分钟)'),
             hint: '30',
@@ -631,7 +640,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 12),
 
         _sectionLabel(theme, '磁盘'),
-        FTextFormField(
+        _DialogTextField(
           controller: _cacheSizeCtrl,
           label: const Text('磁盘缓存大小 (MB)'),
           hint: '4',
@@ -644,7 +653,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
 
   // ── 带宽设置 ──
 
-  Widget _buildBandwidthSection(FThemeData theme) {
+  Widget _buildBandwidthSection(shadcn.ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -652,14 +661,14 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         _sectionLabel(theme, '正常限速'),
         _switchTile(
           theme,
-          FIcons.arrowDown,
+          shadcn.LucideIcons.arrowDown,
           '启用下载限速',
           _speedDownEnabled,
           (v) => setState(() => _speedDownEnabled = v),
         ),
         if (_speedDownEnabled) ...[
           const SizedBox(height: 6),
-          FTextFormField(
+          _DialogTextField(
             controller: _speedDownCtrl,
             label: const Text('最大下载速度 (KB/s)'),
             hint: '100',
@@ -670,14 +679,14 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 4),
         _switchTile(
           theme,
-          FIcons.arrowUp,
+          shadcn.LucideIcons.arrowUp,
           '启用上传限速',
           _speedUpEnabled,
           (v) => setState(() => _speedUpEnabled = v),
         ),
         if (_speedUpEnabled) ...[
           const SizedBox(height: 6),
-          FTextFormField(
+          _DialogTextField(
             controller: _speedUpCtrl,
             label: const Text('最大上传速度 (KB/s)'),
             hint: '100',
@@ -694,7 +703,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         _sectionLabel(theme, '备用限速'),
         _switchTile(
           theme,
-          FIcons.zap,
+          shadcn.LucideIcons.zap,
           '启用备用带宽',
           _altSpeedEnabled,
           (v) => setState(() => _altSpeedEnabled = v),
@@ -704,7 +713,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
           Row(
             children: [
               Expanded(
-                child: FTextFormField(
+                child: _DialogTextField(
                   controller: _altSpeedDownCtrl,
                   label: const Text('备用下载 (KB/s)'),
                   hint: '50',
@@ -714,7 +723,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: FTextFormField(
+                child: _DialogTextField(
                   controller: _altSpeedUpCtrl,
                   label: const Text('备用上传 (KB/s)'),
                   hint: '50',
@@ -733,7 +742,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         // 自动调度
         _switchTile(
           theme,
-          FIcons.calendar,
+          shadcn.LucideIcons.calendar,
           '自动启用备用带宽设置 (时间段内)',
           _altSpeedTimeEnabled,
           (v) => setState(() => _altSpeedTimeEnabled = v),
@@ -743,7 +752,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
           Row(
             children: [
               Expanded(
-                child: FTextFormField(
+                child: _DialogTextField(
                   controller: _altTimeBeginCtrl,
                   label: const Text('从'),
                   hint: '09:00',
@@ -752,7 +761,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: FTextFormField(
+                child: _DialogTextField(
                   controller: _altTimeEndCtrl,
                   label: const Text('到'),
                   hint: '17:00',
@@ -764,8 +773,8 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
           const SizedBox(height: 8),
           Text(
             '启用日期',
-            style: theme.typography.xs.copyWith(
-              color: theme.colors.mutedForeground,
+            style: theme.typography.xSmall.copyWith(
+              color: theme.colorScheme.mutedForeground,
             ),
           ),
           const SizedBox(height: 4),
@@ -776,9 +785,9 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
               const labels = ['星期天', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
               return SizedBox(
                 width: 100,
-                child: FTile(
-                  title: Text(labels[i], style: theme.typography.xs),
-                  suffix: FSwitch(
+                child: _SettingTile(
+                  title: Text(labels[i], style: theme.typography.xSmall),
+                  suffix: _SettingSwitch(
                     value: _isDaySelected(i),
                     onChange: (v) => _toggleDay(i, v),
                   ),
@@ -793,11 +802,11 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
 
   // ── 网络设置 ──
 
-  Widget _buildNetworkSection(FThemeData theme) {
+  Widget _buildNetworkSection(shadcn.ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FTextFormField(
+        _DialogTextField(
           controller: _peerPortCtrl,
           label: Padding(
             padding: const EdgeInsets.only(left: 8.0),
@@ -809,14 +818,14 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 4),
         _switchTile(
           theme,
-          FIcons.dices,
+          shadcn.LucideIcons.dices,
           '启用随机端口',
           _peerPortRandomOnStart,
           (v) => setState(() => _peerPortRandomOnStart = v),
         ),
         _switchTile(
           theme,
-          FIcons.router,
+          shadcn.LucideIcons.router,
           '启用端口转发 (UPnP)',
           _portForwarding,
           (v) => setState(() => _portForwarding = v),
@@ -829,7 +838,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         Row(
           children: [
             Expanded(
-              child: FTextFormField(
+              child: _DialogTextField(
                 controller: _peerLimitGlobalCtrl,
                 label: Padding(
                   padding: const EdgeInsets.only(left: 8.0),
@@ -841,7 +850,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: FTextFormField(
+              child: _DialogTextField(
                 controller: _peerLimitPerTorrentCtrl,
                 label: Padding(
                   padding: const EdgeInsets.only(left: 8.0),
@@ -857,35 +866,35 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 10),
         _switchTile(
           theme,
-          FIcons.share2,
+          shadcn.LucideIcons.share2,
           '启用用户交换 (PEX)',
           _pex,
           (v) => setState(() => _pex = v),
         ),
         _switchTile(
           theme,
-          FIcons.network,
+          shadcn.LucideIcons.network,
           '启用分布式哈希表 (DHT)',
           _dht,
           (v) => setState(() => _dht = v),
         ),
         _switchTile(
           theme,
-          FIcons.radio,
+          shadcn.LucideIcons.radio,
           '启用本地用户发现 (LPD)',
           _lpd,
           (v) => setState(() => _lpd = v),
         ),
         _switchTile(
           theme,
-          FIcons.zap,
+          shadcn.LucideIcons.zap,
           '启用带宽管理 (μTP)',
           _utp,
           (v) => setState(() => _utp = v),
         ),
         _switchTile(
           theme,
-          FIcons.globe,
+          shadcn.LucideIcons.globe,
           '启用 TCP',
           _tcpEnabled,
           (v) => setState(() => _tcpEnabled = v),
@@ -894,14 +903,14 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 10),
         _switchTile(
           theme,
-          FIcons.shieldBan,
+          shadcn.LucideIcons.shieldBan,
           '启用黑名单列表',
           _blocklistEnabled,
           (v) => setState(() => _blocklistEnabled = v),
         ),
         if (_blocklistEnabled) ...[
           const SizedBox(height: 6),
-          FTextFormField(
+          _DialogTextField(
             controller: _blocklistUrlCtrl,
             label: const Text('黑名单 URL'),
             hint: 'http://www.example.com/blocklist',
@@ -913,20 +922,20 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
 
   // ── 队列设置 ──
 
-  Widget _buildQueueSection(FThemeData theme) {
+  Widget _buildQueueSection(shadcn.ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _switchTile(
           theme,
-          FIcons.download,
+          shadcn.LucideIcons.download,
           '启用下载队列',
           _downloadQueueEnabled,
           (v) => setState(() => _downloadQueueEnabled = v),
         ),
         if (_downloadQueueEnabled) ...[
           const SizedBox(height: 6),
-          FTextFormField(
+          _DialogTextField(
             controller: _downloadQueueSizeCtrl,
             label: const Text('最大同时下载数'),
             keyboardType: TextInputType.number,
@@ -936,14 +945,14 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 4),
         _switchTile(
           theme,
-          FIcons.upload,
+          shadcn.LucideIcons.upload,
           '启用上传队列',
           _seedQueueEnabled,
           (v) => setState(() => _seedQueueEnabled = v),
         ),
         if (_seedQueueEnabled) ...[
           const SizedBox(height: 6),
-          FTextFormField(
+          _DialogTextField(
             controller: _seedQueueSizeCtrl,
             label: const Text('最大同时上传数'),
             keyboardType: TextInputType.number,
@@ -953,14 +962,14 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         const SizedBox(height: 10),
         _switchTile(
           theme,
-          FIcons.clock,
+          shadcn.LucideIcons.clock,
           '启用停滞判定',
           _queueStalledEnabled,
           (v) => setState(() => _queueStalledEnabled = v),
         ),
         if (_queueStalledEnabled) ...[
           const SizedBox(height: 6),
-          FTextFormField(
+          _DialogTextField(
             controller: _queueStalledMinutesCtrl,
             label: const Text('种子超过该时间无流量，移出队列 (分钟)'),
             hint: '30',
@@ -976,60 +985,54 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
   //  公共组件
   // ═══════════════════════════════════════════
 
-  Widget _encryptionSelect(FThemeData theme) {
-    return FTile(
-      prefix: const Icon(FIcons.lock, size: 14),
+  Widget _encryptionSelect(shadcn.ThemeData theme) {
+    return _SettingTile(
+      prefix: const Icon(shadcn.LucideIcons.lock, size: 14),
       title: const Text('加密'),
-      suffix: FSelect<String>(
-        initialValue: _encryption,
-        format: (v) {
-          switch (v) {
-            case 'required':
-              return '强制加密';
-            case 'preferred':
-              return '优先加密';
-            default:
-              return '允许明文';
-          }
-        },
-        onChange: (v) {
-          if (v != null) setState(() => _encryption = v);
-        },
-        children: [
-          FSelectItem('允许明文', 'tolerated'),
-          FSelectItem('优先加密', 'preferred'),
-          FSelectItem('强制加密', 'required'),
-        ],
+      suffix: SizedBox(
+        width: 132,
+        child: DropdownButtonFormField<String>(
+          value: _encryption,
+          decoration: const InputDecoration(isDense: true),
+          items: const [
+            DropdownMenuItem(value: 'tolerated', child: Text('允许明文')),
+            DropdownMenuItem(value: 'preferred', child: Text('优先加密')),
+            DropdownMenuItem(value: 'required', child: Text('强制加密')),
+          ],
+          onChanged: (v) {
+            if (v != null) setState(() => _encryption = v);
+          },
+        ),
       ),
     );
   }
 
-  Widget _sectionLabel(FThemeData theme, String title) {
+  Widget _sectionLabel(shadcn.ThemeData theme, String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: theme.typography.sm.copyWith(fontWeight: FontWeight.w700),
+        style: theme.typography.small.copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }
 
   Widget _switchTile(
-    FThemeData theme,
+    shadcn.ThemeData theme,
     IconData icon,
     String title,
     bool value,
     ValueChanged<bool> onChange,
   ) {
-    return FTile(
+    return _SettingTile(
       prefix: Icon(icon, size: 14),
       title: Text(title),
-      suffix: FSwitch(value: value, onChange: onChange),
+      suffix: _SettingSwitch(value: value, onChange: onChange),
     );
   }
 }
 
-/// 桌面端 FTabs 内部可滚动容器
+/// 桌面端标签页内部可滚动容器
 class _ScrollableSection extends StatelessWidget {
   final double height;
   final Widget child;
@@ -1048,5 +1051,84 @@ class _ScrollableSection extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _DialogTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final Widget label;
+  final String? hint;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
+
+  const _DialogTextField({
+    required this.controller,
+    required this.label,
+    this.hint,
+    this.keyboardType,
+    this.inputFormatters,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      decoration: InputDecoration(
+        label: label,
+        hintText: hint,
+      ),
+    );
+  }
+}
+
+class _SettingTile extends StatelessWidget {
+  final Widget? prefix;
+  final Widget title;
+  final Widget? suffix;
+
+  const _SettingTile({
+    this.prefix,
+    required this.title,
+    this.suffix,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        border: Border.all(color: cs.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          if (prefix != null) ...[
+            prefix!,
+            const SizedBox(width: 10),
+          ],
+          Expanded(child: DefaultTextStyle.merge(style: const TextStyle(fontSize: 13), child: title)),
+          if (suffix != null) ...[
+            const SizedBox(width: 12),
+            suffix!,
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingSwitch extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChange;
+
+  const _SettingSwitch({required this.value, required this.onChange});
+
+  @override
+  Widget build(BuildContext context) {
+    return Switch(value: value, onChanged: onChange);
   }
 }

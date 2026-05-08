@@ -1,8 +1,10 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+
+import 'site_theme.dart';
 
 import '../model/site_config.dart';
 import '../model/site_info.dart';
@@ -14,10 +16,10 @@ import '../provider/site_provider.dart';
 
 void openLevelInfo(BuildContext context, {required SiteInfo site}) {
   if (context.isMobile) {
-    showFSheet(
+    showModalBottomSheet<void>(
       context: context,
-      side: FLayout.btt,
-      mainAxisMaxRatio: 1,
+      isScrollControlled: true,
+      backgroundColor: siteTransparent(context),
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.85,
         maxChildSize: 0.95,
@@ -28,13 +30,10 @@ void openLevelInfo(BuildContext context, {required SiteInfo site}) {
       ),
     );
   } else {
-    showFSheet(
+    showDialog<void>(
       context: context,
-      side: FLayout.btt,
-      mainAxisMaxRatio: 1,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: ConstrainedBox(
+      builder: (_) => shadcn.AlertDialog(
+        content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480, maxHeight: 700),
           child: _LevelInfoSheet(site: site),
         ),
@@ -76,7 +75,7 @@ class _LevelInfoSheet extends ConsumerWidget {
     final hasNext = currentIdx > 0;
     final nextEntry = hasNext ? levels[currentIdx - 1] : null;
 
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
 
     // ── Header ──
     final header = Container(
@@ -92,7 +91,11 @@ class _LevelInfoSheet extends ConsumerWidget {
             behavior: HitTestBehavior.opaque,
             child: Padding(
               padding: const EdgeInsets.all(4),
-              child: Icon(FIcons.arrowLeft, size: 20, color: cs.foreground),
+              child: Icon(
+                shadcn.LucideIcons.arrowLeft,
+                size: 20,
+                color: cs.foreground,
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -112,7 +115,7 @@ class _LevelInfoSheet extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: levelColor(status.myLevel).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(5),
+                borderRadius: siteRadius(context, size: "xs"),
               ),
               child: Text(
                 status.myLevel,
@@ -161,7 +164,15 @@ class _LevelInfoSheet extends ConsumerWidget {
 
     return PopScope(
       canPop: true,
-      child: FScaffold(header: header, childPad: false, child: content),
+      child: Material(
+        color: cs.background,
+        child: Column(
+          children: [
+            header,
+            Expanded(child: content),
+          ],
+        ),
+      ),
     );
   }
 
@@ -179,12 +190,14 @@ class _LevelInfoSheet extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(
-          color: context.theme.colors.border.withValues(alpha: 0.4),
+          color: shadcn.Theme.of(
+            context,
+          ).colorScheme.border.withValues(alpha: 0.4),
         ),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: siteRadius(context, size: "md"),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: siteRadius(context, size: "md"),
         child: Column(
           children: List.generate(levels.length, (i) {
             final entry = levels[i];
@@ -215,15 +228,17 @@ class _LevelInfoSheet extends ConsumerWidget {
                 color: isCurrent
                     ? color.withValues(alpha: 0.08)
                     : isNext
-                    ? context.theme.colors.muted.withValues(alpha: 0.08)
+                    ? shadcn.Theme.of(
+                        context,
+                      ).colorScheme.muted.withValues(alpha: 0.08)
                     : null,
                 border: isLast
                     ? null
                     : Border(
                         bottom: BorderSide(
-                          color: context.theme.colors.border.withValues(
-                            alpha: 0.2,
-                          ),
+                          color: shadcn.Theme.of(
+                            context,
+                          ).colorScheme.border.withValues(alpha: 0.2),
                           width: 0.5,
                         ),
                       ),
@@ -246,7 +261,7 @@ class _LevelInfoSheet extends ConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             color: color.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(5),
+                            borderRadius: siteRadius(context, size: "xs"),
                           ),
                           child: Text(
                             name,
@@ -259,27 +274,27 @@ class _LevelInfoSheet extends ConsumerWidget {
                         ),
                         const SizedBox(width: 8),
                         if (isCurrent)
-                          _statusTag('当前', color, true)
+                          _statusTag(context, '当前', color, true)
                         else if (isNext)
-                          _statusTag('下一个', Colors.orange, false)
+                          _statusTag(context, '下一个', siteWarning(context), false)
                         else if (isBelowCurrent)
-                          _statusTag('已解锁', Colors.green, false)
+                          _statusTag(context, '已解锁', siteSuccess(context), false)
                         else if (currentIdx >= 0 && i < currentIdx)
                           _statusTag(
+                            context,
                             '未解锁',
-                            context.theme.colors.mutedForeground.withOpacity(
-                              0.4,
-                            ),
+                            shadcn.Theme.of(context).colorScheme.mutedForeground
+                                .withValues(alpha: 0.4),
                             false,
                           ),
 
                         const SizedBox(width: 8),
                         if (isVip)
-                          _statusTag('无需求', Colors.amber, false)
+                          _statusTag(context, '无需求', siteWarning(context), false)
                         else
                           Flexible(
-                            child: FTooltip(
-                              tipBuilder: (_, _) => Text(_levelSummary(lv)),
+                            child: shadcn.Tooltip(
+                              tooltip: (_) => Text(_levelSummary(lv)),
                               child: Text(
                                 _levelSummary(lv),
                                 maxLines: 1,
@@ -287,7 +302,9 @@ class _LevelInfoSheet extends ConsumerWidget {
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: context.theme.colors.mutedForeground,
+                                  color: shadcn.Theme.of(
+                                    context,
+                                  ).colorScheme.mutedForeground,
                                 ),
                               ),
                             ),
@@ -305,10 +322,10 @@ class _LevelInfoSheet extends ConsumerWidget {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.amber.withValues(alpha: 0.06),
-                          borderRadius: BorderRadius.circular(6),
+                          color: siteWarning(context).withValues(alpha: 0.06),
+                          borderRadius: siteRadius(context, size: "sm"),
                           border: Border.all(
-                            color: Colors.amber.withValues(alpha: 0.15),
+                            color: siteWarning(context).withValues(alpha: 0.15),
                           ),
                         ),
                         child: Row(
@@ -316,7 +333,7 @@ class _LevelInfoSheet extends ConsumerWidget {
                             Icon(
                               Icons.star_rounded,
                               size: 14,
-                              color: Colors.amber.shade700,
+                              color: siteWarning(context),
                             ),
                             const SizedBox(width: 6),
                             Expanded(
@@ -324,7 +341,7 @@ class _LevelInfoSheet extends ConsumerWidget {
                                 isCurrent ? 'VIP 等级，享有全部权限' : 'VIP 等级，可享有全部权限',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Colors.amber.shade800,
+                                  color: siteWarning(context),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -361,12 +378,12 @@ class _LevelInfoSheet extends ConsumerWidget {
     );
   }
 
-  Widget _statusTag(String text, Color color, bool bold) {
+  Widget _statusTag(BuildContext context, String text, Color color, bool bold) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: siteRadius(context, size: "xs"),
       ),
       child: Text(
         text,
@@ -384,6 +401,7 @@ class _LevelInfoSheet extends ConsumerWidget {
     SiteDailyStatus status,
     SiteLevel nextLevel,
   ) {
+    final cs = shadcn.Theme.of(context).colorScheme;
     final cfgUp = parseSize(nextLevel.uploaded);
     final cfgDl = parseSize(nextLevel.downloaded);
     final ratio = nextLevel.ratio;
@@ -402,8 +420,9 @@ class _LevelInfoSheet extends ConsumerWidget {
 
     final progressItems = <Widget>[];
     void addProgressItem(Widget item) {
-      if (progressItems.isNotEmpty)
+      if (progressItems.isNotEmpty) {
         progressItems.add(const SizedBox(height: 8));
+      }
       progressItems.add(item);
     }
 
@@ -472,8 +491,8 @@ class _LevelInfoSheet extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: context.theme.colors.muted.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
+        color: cs.muted.withValues(alpha: 0.15),
+        borderRadius: siteRadius(context, size: "md"),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -483,7 +502,7 @@ class _LevelInfoSheet extends ConsumerWidget {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: context.theme.colors.foreground.withValues(alpha: 0.7),
+              color: cs.foreground.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 8),
@@ -504,6 +523,7 @@ class _LevelInfoSheet extends ConsumerWidget {
       if (_hasEffectiveRight(r)) rights.add(r.trim());
     }
     if (rights.isEmpty) return const SizedBox.shrink();
+    final cs = shadcn.Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,11 +533,11 @@ class _LevelInfoSheet extends ConsumerWidget {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: context.theme.colors.foreground.withValues(alpha: 0.7),
+            color: cs.foreground.withValues(alpha: 0.7),
           ),
         ),
         const SizedBox(height: 6),
-        ..._buildRightsRows(context, rights, Colors.green),
+        ..._buildRightsRows(context, rights, siteSuccess(context)),
       ],
     );
   }
@@ -532,7 +552,7 @@ class _LevelInfoSheet extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: levelColor.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: siteRadius(context, size: "sm"),
         border: Border.all(color: levelColor.withValues(alpha: 0.16)),
       ),
       child: Column(
@@ -556,6 +576,7 @@ class _LevelInfoSheet extends ConsumerWidget {
   // ────────────── 小标题 ──────────────
 
   Widget _sectionTitle(BuildContext context, String title) {
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
@@ -563,7 +584,7 @@ class _LevelInfoSheet extends ConsumerWidget {
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: context.theme.colors.foreground,
+          color: cs.foreground,
         ),
       ),
     );
@@ -578,9 +599,10 @@ class _LevelInfoSheet extends ConsumerWidget {
     num required,
     String Function(num) fmt,
   ) {
+    final cs = shadcn.Theme.of(context).colorScheme;
     final met = current >= required;
     final ratio = required > 0 ? (current / required).clamp(0.0, 1.0) : 1.0;
-    final barColor = met ? Colors.green : Colors.orange;
+    final barColor = met ? siteSuccess(context) : siteWarning(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -589,10 +611,7 @@ class _LevelInfoSheet extends ConsumerWidget {
           children: [
             Text(
               label,
-              style: TextStyle(
-                fontSize: 11,
-                color: context.theme.colors.mutedForeground,
-              ),
+              style: TextStyle(fontSize: 11, color: cs.mutedForeground),
             ),
             const Spacer(),
             Text(
@@ -600,16 +619,14 @@ class _LevelInfoSheet extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: met
-                    ? context.theme.colors.foreground
-                    : Colors.orange.shade700,
+                color: met ? cs.foreground : siteWarning(context),
               ),
             ),
             const SizedBox(width: 4),
             Icon(
               met ? Icons.check_circle_outline : Icons.warning_amber_rounded,
               size: 13,
-              color: met ? Colors.green : Colors.orange.shade700,
+              color: met ? siteSuccess(context) : siteWarning(context),
             ),
           ],
         ),
@@ -617,8 +634,8 @@ class _LevelInfoSheet extends ConsumerWidget {
         Container(
           height: 5,
           decoration: BoxDecoration(
-            color: context.theme.colors.muted.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(3),
+            color: cs.muted.withValues(alpha: 0.4),
+            borderRadius: siteRadius(context, size: "xs"),
           ),
           child: FractionallySizedBox(
             alignment: Alignment.centerLeft,
@@ -626,7 +643,7 @@ class _LevelInfoSheet extends ConsumerWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: barColor,
-                borderRadius: BorderRadius.circular(3),
+                borderRadius: siteRadius(context, size: "xs"),
               ),
             ),
           ),
@@ -638,35 +655,28 @@ class _LevelInfoSheet extends ConsumerWidget {
   // ────────────── 时间要求 ──────────────
 
   Widget _timeItem(BuildContext context, int requiredWeeks) {
+    final cs = shadcn.Theme.of(context).colorScheme;
     final durationText = site.durationText;
     final currentWeeks = _parseDurationWeeks(durationText);
     final met = currentWeeks >= requiredWeeks;
 
     return Row(
       children: [
-        Text(
-          '注册时长',
-          style: TextStyle(
-            fontSize: 11,
-            color: context.theme.colors.mutedForeground,
-          ),
-        ),
+        Text('注册时长', style: TextStyle(fontSize: 11, color: cs.mutedForeground)),
         const Spacer(),
         Text(
           '$durationText / $requiredWeeks周',
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: met
-                ? context.theme.colors.foreground
-                : Colors.orange.shade700,
+            color: met ? cs.foreground : siteWarning(context),
           ),
         ),
         const SizedBox(width: 4),
         Icon(
           met ? Icons.check_circle_outline : Icons.warning_amber_rounded,
           size: 13,
-          color: met ? Colors.green : Colors.orange.shade700,
+          color: met ? siteSuccess(context) : siteWarning(context),
         ),
       ],
     );
@@ -683,32 +693,25 @@ class _LevelInfoSheet extends ConsumerWidget {
   // ────────────── 分享率要求 ──────────────
 
   Widget _ratioItem(BuildContext context, double current, double required) {
+    final cs = shadcn.Theme.of(context).colorScheme;
     final met = current >= required;
     return Row(
       children: [
-        Text(
-          '分享率',
-          style: TextStyle(
-            fontSize: 11,
-            color: context.theme.colors.mutedForeground,
-          ),
-        ),
+        Text('分享率', style: TextStyle(fontSize: 11, color: cs.mutedForeground)),
         const Spacer(),
         Text(
           '${current.toStringAsFixed(2)} / ${required.toStringAsFixed(1)}',
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: met
-                ? context.theme.colors.foreground
-                : Colors.orange.shade700,
+            color: met ? cs.foreground : siteWarning(context),
           ),
         ),
         const SizedBox(width: 4),
         Icon(
           met ? Icons.check_circle_outline : Icons.warning_amber_rounded,
           size: 13,
-          color: met ? Colors.green : Colors.orange.shade700,
+          color: met ? siteSuccess(context) : siteWarning(context),
         ),
       ],
     );
@@ -721,6 +724,7 @@ class _LevelInfoSheet extends ConsumerWidget {
     List<String> rights,
     Color markerColor,
   ) {
+    final cs = shadcn.Theme.of(context).colorScheme;
     return rights
         .map(
           (r) => Padding(
@@ -745,9 +749,7 @@ class _LevelInfoSheet extends ConsumerWidget {
                     r,
                     style: TextStyle(
                       fontSize: 12,
-                      color: context.theme.colors.foreground.withValues(
-                        alpha: 0.7,
-                      ),
+                      color: cs.foreground.withValues(alpha: 0.7),
                       height: 1.4,
                     ),
                   ),

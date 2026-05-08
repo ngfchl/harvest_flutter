@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
-
+import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class DoubanSection extends StatelessWidget {
   final String title;
@@ -31,12 +31,12 @@ class DoubanSection extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: mobile ? 12 : 16),
           child: Row(
             children: [
-              Text(title, style: context.theme.typography.base.copyWith(fontWeight: FontWeight.w700)),
+              Text(title).base.bold,
               const Spacer(),
               if (onSeeAll != null)
-                GestureDetector(
-                  onTap: onSeeAll,
-                  child: Text('查看全部', style: context.theme.typography.sm.copyWith(color: context.theme.colors.primary)),
+                shadcn.Button.link(
+                  onPressed: onSeeAll,
+                  child: const Text('查看全部'),
                 ),
             ],
           ),
@@ -45,14 +45,12 @@ class DoubanSection extends StatelessWidget {
         if (isLoading)
           SizedBox(
             height: cardHeight,
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: shadcn.CircularProgressIndicator()),
           )
         else if (items.isEmpty)
           SizedBox(
             height: 80,
-            child: Center(
-              child: Text('暂无数据', style: context.theme.typography.sm.copyWith(color: context.theme.colors.mutedForeground)),
-            ),
+            child: Center(child: const Text('暂无数据').small.muted),
           )
         else
           SizedBox(

@@ -8,6 +8,9 @@ import '../../models/qbittorrent.dart';
 part 'downloader.freezed.dart';
 part 'downloader.g.dart';
 
+enum DownloaderType { qbittorrent, transmission }
+
+
 @freezed
 abstract class Downloader with _$Downloader {
   const Downloader._();

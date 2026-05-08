@@ -12,7 +12,8 @@ abstract class DoubanRating with _$DoubanRating {
     @Default(0.0) double value,
   }) = _DoubanRating;
 
-  factory DoubanRating.fromJson(Map<String, dynamic> json) => _$DoubanRatingFromJson(json);
+  factory DoubanRating.fromJson(Map<String, dynamic> json) =>
+      _$DoubanRatingFromJson(json);
 }
 
 @freezed
@@ -31,7 +32,8 @@ abstract class SearchTarget with _$SearchTarget {
     @Default('') String year,
   }) = _SearchTarget;
 
-  factory SearchTarget.fromJson(Map<String, dynamic> json) => _$SearchTargetFromJson(json);
+  factory SearchTarget.fromJson(Map<String, dynamic> json) =>
+      _$SearchTargetFromJson(json);
 }
 
 @freezed
@@ -44,5 +46,6 @@ abstract class DoubanSearchResult with _$DoubanSearchResult {
     @Default('') @JsonKey(name: 'type_name') String typeName,
   }) = _DoubanSearchResult;
 
-  factory DoubanSearchResult.fromJson(Map<String, dynamic> json) => _$DoubanSearchResultFromJson(json);
+  factory DoubanSearchResult.fromJson(Map<String, dynamic> json) =>
+      _$DoubanSearchResultFromJson(json);
 }

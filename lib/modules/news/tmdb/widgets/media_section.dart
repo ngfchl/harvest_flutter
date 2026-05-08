@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/media_item.dart';
 import 'media_card.dart';
@@ -25,6 +26,7 @@ class MediaSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final mobile = context.isMobile;
     final cardWidth = mobile ? 110.0 : 140.0;
+    final cardHeight = cardWidth * 1.5 + 56;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,12 +36,12 @@ class MediaSection extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: mobile ? 12 : 16),
           child: Row(
             children: [
-              Text(title, style: context.theme.typography.base.copyWith(fontWeight: FontWeight.w700)),
+              Text(title).base.bold,
               const Spacer(),
               if (onSeeAll != null)
-                GestureDetector(
-                  onTap: onSeeAll,
-                  child: Text('查看全部', style: context.theme.typography.sm.copyWith(color: context.theme.colors.primary)),
+                shadcn.Button.link(
+                  onPressed: onSeeAll,
+                  child: const Text('查看全部'),
                 ),
             ],
           ),
@@ -49,19 +51,17 @@ class MediaSection extends StatelessWidget {
         // 内容
         if (isLoading)
           SizedBox(
-            height: cardWidth * 1.5 + 40,
-            child: const Center(child: CircularProgressIndicator()),
+            height: cardHeight,
+            child: const Center(child: shadcn.CircularProgressIndicator()),
           )
         else if (items.isEmpty)
           SizedBox(
             height: 80,
-            child: Center(
-              child: Text('暂无数据', style: context.theme.typography.sm.copyWith(color: context.theme.colors.mutedForeground)),
-            ),
+            child: Center(child: const Text('暂无数据').small.muted),
           )
         else
           SizedBox(
-            height: cardWidth * 1.5 + 40,
+            height: cardHeight,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.symmetric(horizontal: mobile ? 12 : 16),

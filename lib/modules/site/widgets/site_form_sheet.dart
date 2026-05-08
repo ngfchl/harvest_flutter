@@ -1,12 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/site_config.dart';
 import '../model/site_info.dart';
 import '../provider/site_provider.dart';
+import 'site_theme.dart';
 
 // ═══════════════════════════════════════════════════
 //  公共入口
@@ -15,13 +16,24 @@ import '../provider/site_provider.dart';
 void showAddSiteSheet(BuildContext context) {
   const sheet = AddSiteSheet();
   if (context.isMobile) {
-    showFSheet(context: context, side: FLayout.btt, builder: (_) => sheet);
-  } else {
-    showDialog(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 480, maxHeight: 600), child: sheet),
+      isScrollControlled: true,
+      backgroundColor: siteTransparent(context),
+      builder: (ctx) {
+        final media = MediaQuery.of(ctx);
+        final maxHeight = (media.size.height - media.padding.top - media.viewInsets.bottom) * 0.66;
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxHeight),
+          child: sheet,
+        );
+      },
+    );
+  } else {
+    shadcn.showDialog(
+      context: context,
+      builder: (_) => shadcn.AlertDialog(
+        content: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 480, maxHeight: 600), child: sheet),
       ),
     );
   }
@@ -42,7 +54,7 @@ class _SwitchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.theme.colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     final active = option.value;
 
     return Container(
@@ -50,7 +62,7 @@ class _SwitchCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: active ? cs.primary.withValues(alpha: 0.08) : cs.muted.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: siteRadius(context, size: "md"),
         border: Border.all(
           color: active ? cs.primary.withValues(alpha: 0.28) : cs.border.withValues(alpha: 0.55),
           width: 0.5,
@@ -71,7 +83,7 @@ class _SwitchCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 6),
-          FSwitch(value: active, onChange: option.onChange),
+          shadcn.Switch(value: active, onChanged: option.onChange),
         ],
       ),
     );
@@ -89,7 +101,7 @@ void showSiteForm(
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      backgroundColor: siteTransparent(context),
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.85,
         maxChildSize: 0.95,
@@ -100,11 +112,10 @@ void showSiteForm(
       ),
     );
   } else {
-    showDialog(
+    shadcn.showDialog(
       context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: ConstrainedBox(
+      builder: (_) => shadcn.AlertDialog(
+        content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520, maxHeight: 720),
           child: SiteFormSheet(site: site, siteName: siteName, showBackToList: showBackToList),
         ),
@@ -124,11 +135,12 @@ class AddSiteSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final unaddedAsync = ref.watch(unaddedSitesProvider);
     final mobile = context.isMobile;
-    final cs = context.theme.colors;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
 
     final content = unaddedAsync.when(
       loading: () => const Center(
-        child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()),
+        child: Padding(padding: EdgeInsets.all(32), child: shadcn.CircularProgressIndicator()),
       ),
       error: (e, _) => Padding(
         padding: const EdgeInsets.all(24),
@@ -137,7 +149,7 @@ class AddSiteSheet extends ConsumerWidget {
           children: [
             Text('加载失败: $e'),
             const SizedBox(height: 16),
-            FButton(onPress: () => ref.invalidate(unaddedSitesProvider), child: const Text('重试')),
+            shadcn.Button.primary(onPressed: () => ref.invalidate(unaddedSitesProvider), child: const Text('重试')),
           ],
         ),
       ),
@@ -148,9 +160,9 @@ class AddSiteSheet extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(FIcons.check, size: 48, color: context.theme.colors.mutedForeground),
+                Icon(shadcn.LucideIcons.check, size: 48, color: cs.mutedForeground),
                 const SizedBox(height: 16),
-                Text('所有站点已添加', style: context.theme.typography.lg),
+                Text('所有站点已添加', style: theme.typography.large),
               ],
             ),
           );
@@ -173,13 +185,14 @@ class AddSiteSheet extends ConsumerWidget {
                 itemBuilder: (_, i) => DecoratedBox(
                   decoration: BoxDecoration(
                     color: cs.muted.withValues(alpha: 0.28),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: siteRadius(context, size: "md"),
                     border: Border.all(color: cs.border.withValues(alpha: 0.45), width: 0.5),
                   ),
-                  child: FTile(
+                  child: ListTile(
+                    dense: true,
                     title: Text(names[i]),
-                    suffix: Icon(FIcons.chevronRight, size: 16, color: context.theme.colors.mutedForeground),
-                    onPress: () => _openAddForm(context, ref, names[i]),
+                    trailing: Icon(shadcn.LucideIcons.chevronRight, size: 16, color: cs.mutedForeground),
+                    onTap: () => _openAddForm(context, ref, names[i]),
                   ),
                 ),
               ),
@@ -193,7 +206,9 @@ class AddSiteSheet extends ConsumerWidget {
       padding: EdgeInsets.fromLTRB(mobile ? 12 : 16, mobile ? 0 : 16, mobile ? 12 : 16, mobile ? 12 : 16),
       decoration: BoxDecoration(
         color: cs.background,
-        borderRadius: mobile ? const BorderRadius.vertical(top: Radius.circular(16)) : BorderRadius.circular(16),
+        borderRadius: mobile
+            ? BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft)
+            : siteRadius(context, size: "xl"),
       ),
       child: content,
     );
@@ -207,10 +222,10 @@ class AddSiteSheet extends ConsumerWidget {
     final config = configs.firstWhereOrNull((c) => c.name == siteName);
     final rootContext = navigatorKey.currentContext ?? Navigator.of(context).context;
     Navigator.pop(context);
-    Future<void>.delayed(
-      const Duration(milliseconds: 180),
-      () => showSiteForm(rootContext, siteName: siteName, config: config, showBackToList: true),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!rootContext.mounted) return;
+      showSiteForm(rootContext, siteName: siteName, config: config, showBackToList: true);
+    });
   }
 }
 
@@ -307,40 +322,42 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     _configApplied = true;
     if (_mirrorCtrl.text.isEmpty) _mirrorCtrl.text = c.url.firstOrNull ?? '';
     if (!_isEdit) {
-      _signIn = c.signIn ?? true;
-      _getInfo = c.getInfo ?? true;
-      _repeatTorrents = c.repeatTorrents ?? true;
-      _brushFree = c.brushFree ?? true;
-      _brushRss = c.brushRss ?? false;
-      _hrDiscern = c.hrDiscern ?? false;
-      _searchTorrents = c.searchTorrents ?? true;
+      _signIn = c.signIn;
+      _getInfo = c.getInfo;
+      _repeatTorrents = c.repeatTorrents;
+      _brushFree = c.brushFree;
+      _brushRss = c.brushRss;
+      _hrDiscern = c.hrDiscern;
+      _searchTorrents = c.searchTorrents;
     }
   }
 
   void _backToAddList() {
     final rootContext = navigatorKey.currentContext ?? Navigator.of(context).context;
     Navigator.of(context).pop();
-    Future<void>.delayed(const Duration(milliseconds: 180), () => showAddSiteSheet(rootContext));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!rootContext.mounted) return;
+      showAddSiteSheet(rootContext);
+    });
   }
 
   Widget _buildHeader(BuildContext context) {
-    final cs = context.theme.colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     final showBack = widget.showBackToList && !_isEdit;
 
     return Row(
       children: [
         if (showBack)
-          FButton.icon(
-            style: FButtonStyle.ghost(),
-            onPress: _backToAddList,
-            child: const Icon(FIcons.chevronLeft, size: 18),
-          )
+          shadcn.IconButton.ghost(onPressed: _backToAddList, icon: const Icon(shadcn.LucideIcons.chevronLeft, size: 18))
         else
           Container(
             width: 32,
             height: 32,
-            decoration: BoxDecoration(color: cs.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-            child: Icon(FIcons.globe, size: 18, color: cs.primary),
+            decoration: BoxDecoration(
+              color: cs.primary.withValues(alpha: 0.1),
+              borderRadius: siteRadius(context, size: "md"),
+            ),
+            child: Icon(shadcn.LucideIcons.globe, size: 18, color: cs.primary),
           ),
         const SizedBox(width: 10),
         Expanded(
@@ -358,7 +375,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: cs.primary.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: siteRadius(context, size: "md"),
               border: Border.all(color: cs.primary.withValues(alpha: 0.2), width: 0.5),
             ),
             child: Text(
@@ -392,7 +409,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
         .when(
           loading: () => const Padding(
             padding: EdgeInsets.all(48),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: shadcn.CircularProgressIndicator()),
           ),
           error: (e, _) => Padding(
             padding: const EdgeInsets.all(48),
@@ -416,6 +433,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     final mobile = context.isMobile;
     final configUrls = config?.url ?? [];
     final configTags = config?.tagList ?? [];
+    final cs = shadcn.Theme.of(context).colorScheme;
 
     final form = Padding(
       padding: EdgeInsets.fromLTRB(16, mobile ? 0 : 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
@@ -423,207 +441,58 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
         children: [
           if (mobile) ...[const SizedBox(height: 12), buildHandle(context), const SizedBox(height: 16)],
 
-          // 头部
           _buildHeader(context),
-          const FDivider(),
+          Divider(height: 24, thickness: 0.6, color: cs.border),
           Expanded(
             child: ListView(
               controller: widget.scrollController,
               children: [
-                // 启用
-                FTileGroup(
-                  divider: FItemDivider.full,
-                  children: [
-                    FTile(
-                      title: const Text('启用站点'),
-                      subtitle: Text(
-                        _available ? '站点正常运行中' : '站点已停用',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: _available ? context.theme.colors.primary : context.theme.colors.mutedForeground,
-                        ),
-                      ),
-                      suffix: FSwitch(value: _available, onChange: (v) => setState(() => _available = v)),
-                    ),
-                  ],
-                ),
+                _availabilitySection(context),
                 const SizedBox(height: 16),
-
-                // 基本信息
-                FTileGroup(
-                  divider: FItemDivider.full,
-                  label: const Text('基本信息'),
-                  children: [
-                    FTile(
-                      title: const Text('昵称'),
-                      subtitle: FTextField(controller: _nicknameCtrl),
-                    ),
-                    FTile(
-                      title: const Text('排序'),
-                      subtitle: FTextField(controller: _sortIdCtrl),
-                    ),
-                    FTile(
-                      title: const Text('标签'),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (configTags.isNotEmpty)
-                              Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: configTags.map((tag) {
-                                  final sel = _selectedTags.contains(tag);
-                                  return FilterChip(
-                                    label: Text(tag, style: TextStyle(fontSize: 12, color: sel ? Colors.white : null)),
-                                    selected: sel,
-                                    selectedColor: context.theme.colors.primary,
-                                    onSelected: (v) =>
-                                        setState(() => v ? _selectedTags.add(tag) : _selectedTags.remove(tag)),
-                                  );
-                                }).toList(),
-                              ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: FTextField(controller: _tagInputCtrl, hint: '自定义标签'),
-                                ),
-                                const SizedBox(width: 8),
-                                FButton(style: FButtonStyle.outline(), onPress: _addCustomTag, child: const Text('添加')),
-                              ],
-                            ),
-                            if (_selectedTags.where((t) => !configTags.contains(t)).isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: _selectedTags
-                                    .where((t) => !configTags.contains(t))
-                                    .map(
-                                      (tag) => Chip(
-                                        label: Text(tag, style: const TextStyle(fontSize: 12)),
-                                        deleteIcon: const Icon(Icons.close, size: 16),
-                                        onDeleted: () => setState(() => _selectedTags.remove(tag)),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                _formSection(context, '基本信息', [
+                  _formField('昵称', _nicknameCtrl),
+                  _formField('排序', _sortIdCtrl),
+                  _tagEditor(context, configTags),
+                ]),
                 const SizedBox(height: 16),
-
-                // 用户信息
-                FTileGroup(
-                  divider: FItemDivider.full,
-                  label: const Text('用户信息'),
-                  children: [
-                    FTile(
-                      title: const Text('用户ID'),
-                      subtitle: FTextField(controller: _userIdCtrl),
-                    ),
-                    FTile(
-                      title: const Text('用户名'),
-                      subtitle: FTextField(controller: _usernameCtrl),
-                    ),
-                    FTile(
-                      title: const Text('邮箱'),
-                      subtitle: FTextField(controller: _emailCtrl),
-                    ),
-                    FTile(
-                      title: const Text('Passkey'),
-                      subtitle: FTextField(controller: _passkeyCtrl),
-                    ),
-                    FTile(
-                      title: const Text('Authkey'),
-                      subtitle: FTextField(controller: _authkeyCtrl),
-                    ),
-                  ],
-                ),
+                _formSection(context, '用户信息', [
+                  _formField('用户ID', _userIdCtrl),
+                  _formField('用户名', _usernameCtrl),
+                  _formField('邮箱', _emailCtrl),
+                  _formField('Passkey', _passkeyCtrl),
+                  _formField('Authkey', _authkeyCtrl),
+                ]),
                 const SizedBox(height: 16),
-
-                // 账号信息
-                FTileGroup(
-                  divider: FItemDivider.full,
-                  label: const Text('账号信息'),
-                  children: [
-                    FTile(
-                      title: const Text('Cookie'),
-                      subtitle: FTextField(controller: _cookieCtrl, maxLines: 3),
-                    ),
-                    FTile(
-                      title: const Text('User Agent'),
-                      subtitle: FTextField(controller: _uaCtrl),
-                    ),
-                  ],
-                ),
+                _formSection(context, '账号信息', [
+                  _formField('Cookie', _cookieCtrl, maxLines: 3),
+                  _formField('User Agent', _uaCtrl),
+                ]),
                 const SizedBox(height: 16),
-
-                // 连接设置
-                FTileGroup(
-                  divider: FItemDivider.full,
-                  label: const Text('连接设置'),
-                  children: [
-                    FTile(
-                      title: const Text('代理'),
-                      subtitle: FTextField(controller: _proxyCtrl, hint: 'http://ip:port'),
-                    ),
-                    FTile(
-                      title: const Text('镜像'),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (configUrls.isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            FSelect<String>(
-                              format: (v) => v,
-                              initialValue: configUrls.contains(_mirrorCtrl.text) ? _mirrorCtrl.text : null,
-                              onChange: (value) {
-                                if (value != null) setState(() => _mirrorCtrl.text = value);
-                              },
-                              hint: '选择镜像地址',
-                              children: configUrls.map((url) => FSelectItem(url, url)).toList(),
-                            ),
-                            const SizedBox(height: 8),
-                          ],
-                          FTextField(controller: _mirrorCtrl, hint: 'https://mirror.example.com'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                _formSection(context, '连接设置', [
+                  _formField('代理', _proxyCtrl, hint: 'http://ip:port'),
+                  _mirrorEditor(context, configUrls),
+                ]),
                 const SizedBox(height: 16),
-
-                // 功能开关
                 _buildSwitchGrid(context),
                 const SizedBox(height: 24),
               ],
             ),
           ),
-
-          // 按钮
           Row(
             children: [
               Expanded(
-                child: FButton(
-                  style: FButtonStyle.outline(),
-                  onPress: () => Navigator.pop(context),
-                  child: const Text('取消'),
+                child: shadcn.Button.outline(
+                  onPressed: () => Navigator.pop(context),
+                  child: Center(child: const Text('取消')),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: FButton(
-                  onPress: _saving ? null : _save,
+                child: shadcn.Button.primary(
+                  onPressed: _saving ? null : _save,
                   child: _saving
-                      ? const SizedBox(width: 16, height: 16, child: FProgress.circularIcon())
-                      : const Text('保存'),
+                      ? const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(strokeWidth: 2.2))
+                      : Center(child: const Text('保存')),
                 ),
               ),
             ],
@@ -632,11 +501,194 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
       ),
     );
 
-    if (mobile) return SafeArea(child: form);
-    return Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: form);
+    final wrapped = Material(
+      color: cs.background,
+      borderRadius: mobile
+          ? BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft)
+          : siteRadius(context, size: "xl"),
+      clipBehavior: Clip.antiAlias,
+      child: form,
+    );
+
+    final layered = shadcn.OverlayManagerLayer(
+      popoverHandler: const shadcn.PopoverOverlayHandler(),
+      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+      menuHandler: const shadcn.PopoverOverlayHandler(),
+      child: wrapped,
+    );
+
+    if (mobile) return SafeArea(child: layered);
+    return Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: layered);
   }
 
   // ────────────── 辅助 ──────────────
+
+  Widget _availabilitySection(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return _formSection(context, null, [
+      Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('启用站点'),
+                const SizedBox(height: 3),
+                Text(
+                  _available ? '站点正常运行中' : '站点已停用',
+                  style: theme.typography.xSmall.copyWith(color: _available ? cs.primary : cs.mutedForeground),
+                ),
+              ],
+            ),
+          ),
+          shadcn.Switch(value: _available, onChanged: (v) => setState(() => _available = v)),
+        ],
+      ),
+    ]);
+  }
+
+  Widget _formSection(BuildContext context, String? title, List<Widget> children) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (title != null) ...[
+          Text(
+            title,
+            style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+        ],
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: cs.background,
+            borderRadius: siteRadius(context, size: "md"),
+            border: Border.all(color: cs.border, width: 0.6),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                children[i],
+                if (i != children.length - 1)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Divider(height: 1, color: cs.border),
+                  ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _formField(String label, TextEditingController controller, {String? hint, int maxLines = 1}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        shadcn.TextField(controller: controller, hintText: hint, maxLines: maxLines),
+      ],
+    );
+  }
+
+  Widget _tagEditor(BuildContext context, List<String> configTags) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final customTags = _selectedTags.where((t) => !configTags.contains(t));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text('标签', style: TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        if (configTags.isNotEmpty)
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: configTags.map((tag) {
+              final selected = _selectedTags.contains(tag);
+              return FilterChip(
+                label: Text(
+                  tag,
+                  style: TextStyle(fontSize: 12, color: selected ? siteColors(context).background : null),
+                ),
+                selected: selected,
+                selectedColor: cs.primary,
+                onSelected: (value) => setState(() => value ? _selectedTags.add(tag) : _selectedTags.remove(tag)),
+              );
+            }).toList(),
+          ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: shadcn.TextField(controller: _tagInputCtrl, hintText: '自定义标签'),
+            ),
+            const SizedBox(width: 8),
+            shadcn.Button.outline(onPressed: _addCustomTag, child: const Text('添加')),
+          ],
+        ),
+        if (customTags.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: customTags
+                .map(
+                  (tag) => Chip(
+                    label: Text(tag, style: const TextStyle(fontSize: 12)),
+                    deleteIcon: const Icon(Icons.close, size: 16),
+                    onDeleted: () => setState(() => _selectedTags.remove(tag)),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _mirrorEditor(BuildContext context, List<String> configUrls) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final selected = configUrls.contains(_mirrorCtrl.text) ? _mirrorCtrl.text : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '镜像',
+          style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        if (configUrls.isNotEmpty) ...[
+          shadcn.Select<String>(
+            value: selected,
+            placeholder: const Text('选择镜像地址'),
+            itemBuilder: (_, value) => Text(value),
+            popupConstraints: const BoxConstraints(maxHeight: 300),
+            popup: shadcn.SelectPopup<String>(
+              items: shadcn.SelectItemList(
+                children: [for (final url in configUrls) shadcn.SelectItemButton<String>(value: url, child: Text(url))],
+              ),
+            ).call,
+            onChanged: (value) {
+              if (value != null) setState(() => _mirrorCtrl.text = value);
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
+        shadcn.TextField(controller: _mirrorCtrl, hintText: 'https://mirror.example.com'),
+      ],
+    );
+  }
 
   Widget _buildSwitchGrid(BuildContext context) {
     final options = [
@@ -651,32 +703,27 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
       _SiteSwitchOption('拆包刷流', _packageFile, (v) => setState(() => _packageFile = v)),
     ];
 
-    return FTileGroup(
-      label: const Text('功能开关'),
-      children: [
-        FTile(
-          title: LayoutBuilder(
-            builder: (context, constraints) {
-              const spacing = 8.0;
-              final columns = constraints.maxWidth >= 520 ? 3 : (constraints.maxWidth >= 300 ? 2 : 1);
-              final itemWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+    return _formSection(context, '功能开关', [
+      LayoutBuilder(
+        builder: (context, constraints) {
+          const spacing = 8.0;
+          final columns = constraints.maxWidth >= 520 ? 3 : (constraints.maxWidth >= 300 ? 2 : 1);
+          final itemWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
 
-              return Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: [
-                  for (final option in options)
-                    SizedBox(
-                      width: itemWidth,
-                      child: _SwitchCard(option: option),
-                    ),
-                ],
-              );
-            },
-          ),
-        ),
-      ],
-    );
+          return Wrap(
+            spacing: spacing,
+            runSpacing: spacing,
+            children: [
+              for (final option in options)
+                SizedBox(
+                  width: itemWidth,
+                  child: _SwitchCard(option: option),
+                ),
+            ],
+          );
+        },
+      ),
+    ]);
   }
 
   String? _opt(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();

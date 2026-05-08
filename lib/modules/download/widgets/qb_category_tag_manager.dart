@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/downloader.dart';
 import '../model/downloader_category.dart';
@@ -22,12 +22,12 @@ class QbCategoryManagerSheet extends ConsumerWidget {
     return _ManagerScaffold(
       title: '分类管理',
       subtitle: downloader.name,
-      icon: FIcons.tags,
+      icon: shadcn.LucideIcons.tags,
       onAdd: () => _showCategoryEditor(context, ref),
       onRefresh: () =>
           ref.invalidate(downloaderCategoriesProvider(downloader.id)),
       child: asyncCategories.when(
-        loading: () => const Center(child: FProgress.circularIcon()),
+        loading: () => const Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
         error: (error, _) => _ManagerError(
           message: '加载分类失败',
           onRetry: () =>
@@ -141,11 +141,11 @@ class QbTagManagerSheet extends ConsumerWidget {
     return _ManagerScaffold(
       title: '标签管理',
       subtitle: downloader.name,
-      icon: FIcons.tag,
+      icon: shadcn.LucideIcons.tag,
       onAdd: () => _showTagEditor(context, ref),
       onRefresh: () => ref.invalidate(downloaderTagsProvider(downloader.id)),
       child: asyncTags.when(
-        loading: () => const Center(child: FProgress.circularIcon()),
+        loading: () => const Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
         error: (error, _) => _ManagerError(
           message: '加载标签失败',
           onRetry: () => ref.invalidate(downloaderTagsProvider(downloader.id)),
@@ -237,7 +237,7 @@ class _ManagerScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return SafeArea(
       child: ColoredBox(
         color: cs.background,
@@ -285,14 +285,13 @@ class _ManagerScaffold extends StatelessWidget {
                         ],
                       ),
                     ),
-                    FButton.icon(
-                      style: FButtonStyle.ghost(),
-                      onPress: onRefresh,
-                      child: const Icon(FIcons.refreshCw, size: 16),
+                    shadcn.IconButton.ghost(
+                      onPressed: onRefresh,
+                      icon: const Icon(shadcn.LucideIcons.refreshCw, size: 16),
                     ),
-                    FButton.icon(
-                      onPress: onAdd,
-                      child: const Icon(FIcons.plus, size: 16),
+                    shadcn.IconButton.primary(
+                      onPressed: onAdd,
+                      icon: const Icon(shadcn.LucideIcons.plus, size: 16),
                     ),
                   ],
                 ),
@@ -320,7 +319,7 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
       decoration: BoxDecoration(
@@ -330,7 +329,7 @@ class _CategoryCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(FIcons.folder, size: 18, color: cs.primary),
+          Icon(shadcn.LucideIcons.folder, size: 18, color: cs.primary),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -356,15 +355,13 @@ class _CategoryCard extends StatelessWidget {
               ],
             ),
           ),
-          FButton.icon(
-            style: FButtonStyle.ghost(),
-            onPress: onEdit,
-            child: const Icon(FIcons.pencil, size: 15),
+          shadcn.IconButton.ghost(
+            onPressed: onEdit,
+            icon: const Icon(shadcn.LucideIcons.pencil, size: 15),
           ),
-          FButton.icon(
-            style: FButtonStyle.ghost(),
-            onPress: onDelete,
-            child: Icon(FIcons.trash2, size: 15, color: cs.destructive),
+          shadcn.IconButton.ghost(
+            onPressed: onDelete,
+            icon: Icon(shadcn.LucideIcons.trash2, size: 15, color: cs.destructive),
           ),
         ],
       ),
@@ -380,7 +377,7 @@ class _TagCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
       decoration: BoxDecoration(
@@ -390,7 +387,7 @@ class _TagCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(FIcons.tag, size: 18, color: const Color(0xFF14B8A6)),
+          Icon(shadcn.LucideIcons.tag, size: 18, color: const Color(0xFF14B8A6)),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -404,10 +401,9 @@ class _TagCard extends StatelessWidget {
               ),
             ),
           ),
-          FButton.icon(
-            style: FButtonStyle.ghost(),
-            onPress: onDelete,
-            child: Icon(FIcons.trash2, size: 15, color: cs.destructive),
+          shadcn.IconButton.ghost(
+            onPressed: onDelete,
+            icon: Icon(shadcn.LucideIcons.trash2, size: 15, color: cs.destructive),
           ),
         ],
       ),
@@ -436,7 +432,7 @@ class _InputDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Dialog(
       backgroundColor: cs.background,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -455,29 +451,28 @@ class _InputDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-            FTextField(
+            shadcn.TextField(
               controller: primaryController,
               enabled: primaryEnabled,
-              label: Text(primaryLabel),
+              hintText: "",
             ),
             if (secondaryController != null && secondaryLabel != null) ...[
               const SizedBox(height: 12),
-              FTextField(
+              shadcn.TextField(
                 controller: secondaryController!,
-                label: Text(secondaryLabel!),
+                hintText: "",
               ),
             ],
             const SizedBox(height: 18),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                FButton(
-                  style: FButtonStyle.ghost(),
-                  onPress: () => Navigator.pop(context),
+                shadcn.Button.ghost(
+                  onPressed: () => Navigator.pop(context),
                   child: const Text('取消'),
                 ),
                 const SizedBox(width: 8),
-                FButton(onPress: onSubmit, child: const Text('保存')),
+                shadcn.Button.primary(onPressed: onSubmit, child: const Text('保存')),
               ],
             ),
           ],
@@ -495,16 +490,16 @@ class _ManagerError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(FIcons.cloudOff, size: 32, color: cs.mutedForeground),
+          Icon(shadcn.LucideIcons.cloudOff, size: 32, color: cs.mutedForeground),
           const SizedBox(height: 8),
           Text(message, style: TextStyle(color: cs.mutedForeground)),
           const SizedBox(height: 12),
-          FButton(onPress: onRetry, child: const Text('重试')),
+          shadcn.Button.primary(onPressed: onRetry, child: const Text('重试')),
         ],
       ),
     );
@@ -518,12 +513,12 @@ class _ManagerEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = FTheme.of(context).colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(FIcons.inbox, size: 32, color: cs.mutedForeground),
+          Icon(shadcn.LucideIcons.inbox, size: 32, color: cs.mutedForeground),
           const SizedBox(height: 8),
           Text(text, style: TextStyle(color: cs.mutedForeground)),
         ],
@@ -542,7 +537,7 @@ void _showConfirmDialog(
   showDialog(
     context: context,
     builder: (ctx) {
-      final cs = FTheme.of(ctx).colors;
+      final cs = shadcn.Theme.of(ctx).colorScheme;
       return Dialog(
         backgroundColor: cs.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -569,17 +564,21 @@ void _showConfirmDialog(
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  FButton(
-                    style: FButtonStyle.ghost(),
-                    onPress: () => Navigator.pop(ctx),
+                  shadcn.Button.ghost(
+                    onPressed: () => Navigator.pop(ctx),
                     child: const Text('取消'),
                   ),
                   const SizedBox(width: 8),
-                  FButton(
-                    style: destructive
-                        ? FButtonStyle.destructive()
-                        : FButtonStyle.primary(),
-                    onPress: () async {
+                  destructive
+                      ? shadcn.Button.destructive(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      await onConfirm();
+                    },
+                    child: const Text('确认'),
+                  )
+                      : shadcn.Button.primary(
+                    onPressed: () async {
                       Navigator.pop(ctx);
                       await onConfirm();
                     },

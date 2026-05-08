@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
+import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../provider/update_provider.dart';
 import 'update_panel.dart';
@@ -11,56 +12,80 @@ class UpdatePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = FTheme.of(context).colors;
-    final state = ref.watch(updateProvider);
+    final tokens = _UpdatePageThemeTokens.of(context);
+    final theme = tokens.theme;
+    final cs = tokens.cs;
 
     return EscapeBackScope(
       onBack: () => Navigator.of(context).pop(),
-      child: Scaffold(
+      child: shadcn.Scaffold(
         backgroundColor: cs.background,
-        appBar: AppBar(
-          backgroundColor: cs.background,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(FIcons.arrowLeft, size: 20, color: cs.foreground),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          title: Text(
-            '程序更新',
-            style: TextStyle(
-              color: cs.foreground,
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
+        headers: [
+          shadcn.AppBar(
+            backgroundColor: cs.background,
+            title: Text(
+              '程序更新',
+              style: theme.typography.large.copyWith(
+                color: cs.foreground,
+                fontWeight: FontWeight.w600,
+              ),
             ),
+            leading: [
+              shadcn.IconButton.ghost(
+                icon: Icon(shadcn.LucideIcons.arrowLeft, size: tokens.iconSm),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+            trailing: const [DebugThemeButton.shadcn()],
           ),
-          actions: [
-            IconButton(
-              tooltip: '检查全部',
-              icon: state.isLoading
-                  ? SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: cs.foreground.withOpacity(0.55),
-                      ),
-                    )
-                  : Icon(FIcons.refreshCw, size: 18, color: cs.foreground),
-              onPressed: state.isLoading || state.isUpdating
-                  ? null
-                  : () => ref.read(updateProvider.notifier).refresh(),
-            ),
-          ],
-        ),
-        body: RefreshIndicator(
+        ],
+        child: shadcn.RefreshTrigger(
           onRefresh: () => ref.read(updateProvider.notifier).refresh(),
           child: ListView(
-            padding: const EdgeInsets.only(top: 8, bottom: 24),
+            padding: tokens.edgeOnly(top: 8, bottom: 24),
             children: const [UpdatePanel(maxCommitCount: 12)],
           ),
         ),
       ),
     );
   }
+}
+
+class _UpdatePageThemeTokens {
+  final shadcn.ThemeData theme;
+  final shadcn.ColorScheme cs;
+  final double densityScale;
+  final double textScale;
+
+  _UpdatePageThemeTokens._({
+    required this.theme,
+    required this.cs,
+    required this.densityScale,
+    required this.textScale,
+  });
+
+  factory _UpdatePageThemeTokens.of(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.55, 1.45);
+    final textScale = theme.scaling.clamp(0.86, 1.30);
+    return _UpdatePageThemeTokens._(
+      theme: theme,
+      cs: theme.colorScheme,
+      densityScale: densityScale.toDouble(),
+      textScale: textScale.toDouble(),
+    );
+  }
+
+  double size(num value) => value * densityScale;
+
+  double font(num value) => value * textScale;
+
+  double get iconSm => font(16);
+
+  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) => EdgeInsets.only(
+        left: size(left),
+        top: size(top),
+        right: size(right),
+        bottom: size(bottom),
+      );
 }

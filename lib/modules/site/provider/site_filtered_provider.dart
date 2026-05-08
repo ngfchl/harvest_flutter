@@ -33,11 +33,13 @@ List<SiteInfo> _applyFilter(
   SiteFilterState filter,
   List<WebSite> configs,
 ) {
+  final availability = filter.availability;
   final condition = filter.condition;
   final query = filter.siteNameQuery.toLowerCase();
 
   List<SiteInfo> result;
-  if (condition == FilterCondition.all &&
+  if (availability == SiteAvailabilityFilter.all &&
+      condition == FilterCondition.all &&
       filter.selectedTags.isEmpty &&
       query.isEmpty) {
     result = List.of(sites);
@@ -48,6 +50,10 @@ List<SiteInfo> _applyFilter(
             !s.nickname.toLowerCase().contains(query)) {
           return false;
         }
+      }
+      if (availability != SiteAvailabilityFilter.all &&
+          !_matchAvailability(s, availability)) {
+        return false;
       }
       if (condition != FilterCondition.all &&
           !_matchCondition(s, condition, _siteConfigFor(configs, s.site))) {
@@ -80,6 +86,14 @@ List<SiteInfo> _applyFilter(
 }
 
 int _noticeCount(SiteInfo s) => s.mail + s.notice;
+
+bool _matchAvailability(SiteInfo s, SiteAvailabilityFilter filter) {
+  return switch (filter) {
+    SiteAvailabilityFilter.all => true,
+    SiteAvailabilityFilter.alive => s.available,
+    SiteAvailabilityFilter.dead => !s.available,
+  };
+}
 
 WebSite? _siteConfigFor(List<WebSite> configs, String siteName) {
   for (final config in configs) {

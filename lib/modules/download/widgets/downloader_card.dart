@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
-import 'package:harvest/common/style.dart';
-import 'package:harvest/modules/torrents/qbittorrent/widgets/torrent_action_menu.dart';
-import 'package:harvest/modules/torrents/qbittorrent/widgets/torrent_list_page.dart';
+import 'package:harvest/core/utils/ui/responsive.dart';
+import 'package:harvest/modules/torrents/torrent_list_page.dart';
+import 'package:harvest/widgets/app_menu.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/downloader.dart';
 import '../model/downloader_speed.dart';
@@ -31,34 +31,19 @@ class DownloaderCard extends ConsumerStatefulWidget {
   ConsumerState<DownloaderCard> createState() => _DownloaderCardState();
 }
 
-class _DownloaderCardState extends ConsumerState<DownloaderCard>
-    with TickerProviderStateMixin {
-  late FPopoverController _popoverCtrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _popoverCtrl = FPopoverController(vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _popoverCtrl.dispose();
-    super.dispose();
-  }
-
+class _DownloaderCardState extends ConsumerState<DownloaderCard> {
   Downloader get d => widget.downloader;
 
   bool get isQb => d.isQb;
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
-    final cs = theme.colors;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
     final typo = theme.typography;
-    final categoryColor = isQb
-        ? const Color(0xFF3B82F6)
-        : const Color(0xFFEF4444);
+    final categoryColor = isQb ? cs.primary : cs.destructive;
+    final successColor = cs.primary;
+    final inactiveColor = cs.destructive;
 
     // 实时数据
     final speedMap = ref.watch(downloaderSpeedProvider);
@@ -73,220 +58,183 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard>
 
     final menu = DownloaderCardMenu(
       downloader: d,
-      hideMenu: _popoverCtrl.hide,
       onEdit: widget.onEdit,
       onDelete: widget.onDelete,
       onToggleActive: widget.onToggleActive,
       onToggleBrush: widget.onToggleBrush,
     );
 
-    return FPopoverMenu.tiles(
-      popoverController: _popoverCtrl,
-      style: fPopoverMenuStyle(context).call,
-      spacing: FPortalSpacing.zero,
-      menu: menu.build(context),
+    final card = AppContextMenu(
+      items: menu.buildContextMenuItems(context),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onDoubleTap: _openTorrentList,
-        onLongPress: () => _popoverCtrl.toggle(),
-        onSecondaryTap: () => _popoverCtrl.toggle(),
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          decoration: BoxDecoration(
-            color: cs.background,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: cs.border, width: 1),
-            boxShadow: [
-              // 主阴影：更大的扩散和偏移
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.10),
-                blurRadius: 20,
-                offset: const Offset(0, 6),
-                spreadRadius: -2,
-              ),
-              // 边缘光：让卡片底部有微妙的深色边缘
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-                spreadRadius: 0,
-              ),
-            ],
-          ),
+        child: shadcn.Card(
+          padding: EdgeInsets.zero,
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(
+              theme.density.baseContentPadding * theme.scaling * 0.85,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── 顶部：图标 + 名称 + 状态标签 ──
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: categoryColor.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(10),
+              // ── 顶部：图标 + 名称 + 状态标签 ──
+              Row(
+                children: [
+                  shadcn.SecondaryBadge(
+                    child: Text(
+                      isQb ? 'QB' : 'TR',
+                      style: typo.xSmall.copyWith(
+                        color: categoryColor,
+                        fontWeight: FontWeight.w800,
                       ),
-                      child: Center(
-                        child: Text(
-                          isQb ? 'QB' : 'TR',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: categoryColor,
-                            letterSpacing: 0.5,
+                    ),
+                  ),
+                  SizedBox(width: theme.density.baseGap * theme.scaling),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          d.name,
+                          style: typo.small.copyWith(
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            d.name,
-                            style: typo.sm.copyWith(
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.2,
+                        SizedBox(
+                          height: theme.density.baseGap * theme.scaling * 0.35,
+                        ),
+                        Row(
+                          children: [
+                            // 连接状态
+                            _statusDot(
+                              active: liveInfo != null,
+                              color: liveInfo != null
+                                  ? successColor
+                                  : inactiveColor,
                             ),
-                          ),
-                          const SizedBox(height: 3),
-                          Row(
-                            children: [
-                              // 连接状态
-                              _statusDot(
-                                active: liveInfo != null,
+                            SizedBox(
+                              width:
+                                  theme.density.baseGap * theme.scaling * 0.5,
+                            ),
+                            Text(
+                              liveInfo != null ? '已连接' : '未连接',
+                              style: typo.xSmall.copyWith(
                                 color: liveInfo != null
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFFEF4444),
+                                    ? successColor
+                                    : inactiveColor,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                liveInfo != null ? '已连接' : '未连接',
-                                style: typo.xs.copyWith(
-                                  fontSize: 10,
-                                  color: liveInfo != null
-                                      ? const Color(0xFF10B981)
-                                      : const Color(0xFFEF4444),
-                                ),
-                              ),
-                              // 启用状态
-                              const SizedBox(width: 8),
-                              _statusDot(
-                                active: d.isActive,
+                            ),
+                            // 启用状态
+                            SizedBox(
+                              width: theme.density.baseGap * theme.scaling,
+                            ),
+                            _statusDot(
+                              active: d.isActive,
+                              color: d.isActive ? successColor : inactiveColor,
+                            ),
+                            SizedBox(
+                              width:
+                                  theme.density.baseGap * theme.scaling * 0.5,
+                            ),
+                            Text(
+                              d.isActive ? '运行中' : '已停用',
+                              style: typo.xSmall.copyWith(
                                 color: d.isActive
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFFEF4444),
+                                    ? successColor
+                                    : inactiveColor,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                d.isActive ? '运行中' : '已停用',
-                                style: typo.xs.copyWith(
-                                  fontSize: 10,
-                                  color: d.isActive
-                                      ? const Color(0xFF10B981)
-                                      : const Color(0xFFEF4444),
-                                ),
+                            ),
+                            // 辅种标签
+                            if (!d.brush) ...[
+                              SizedBox(
+                                width: theme.density.baseGap * theme.scaling,
                               ),
-                              // 辅种标签
-                              if (!d.brush) ...[
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 5,
-                                    vertical: 1.5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFFF59E0B,
-                                    ).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    '辅种',
-                                    style: typo.xs.copyWith(
-                                      fontSize: 9,
-                                      color: const Color(0xFFF59E0B),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              const shadcn.OutlineBadge(child: Text('辅种')),
                             ],
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
 
-                // ── 连接信息 ──
-                const SizedBox(height: 10),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
+              // ── 连接信息 ──
+              SizedBox(height: theme.density.baseGap * theme.scaling),
+              SizedBox(
+                width: double.infinity,
+                child: shadcn.Card(
+                  padding: EdgeInsets.symmetric(
+                    horizontal:
+                        theme.density.baseContentPadding * theme.scaling * 0.65,
+                    vertical: theme.density.baseGap * theme.scaling * 0.75,
                   ),
-                  decoration: BoxDecoration(
-                    color: cs.mutedForeground.withValues(alpha: 0.03),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
+                  filled: true,
+                  fillColor: cs.muted.withValues(alpha: 0.35),
                   child: Row(
                     children: [
                       Icon(
-                        FIcons.globe,
-                        size: 11,
-                        color: cs.mutedForeground.withValues(alpha: 0.4),
+                        shadcn.LucideIcons.globe,
+                        size: theme.scaling * 12,
+                        color: cs.mutedForeground,
                       ),
-                      const SizedBox(width: 6),
+                      SizedBox(
+                        width: theme.density.baseGap * theme.scaling * 0.75,
+                      ),
                       Expanded(
                         child: Text(
                           '${d.protocol}://${d.host}:${d.port}',
-                          style: typo.xs.copyWith(
-                            color: cs.mutedForeground.withValues(alpha: 0.6),
-                            fontSize: 11,
+                          style: typo.xSmall.copyWith(
+                            color: cs.mutedForeground,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Icon(
-                        FIcons.folder,
-                        size: 11,
-                        color: cs.mutedForeground.withValues(alpha: 0.4),
+                        shadcn.LucideIcons.folder,
+                        size: theme.scaling * 12,
+                        color: cs.mutedForeground,
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(
+                        width: theme.density.baseGap * theme.scaling * 0.5,
+                      ),
                       Text(
                         d.torrentPath,
-                        style: typo.xs.copyWith(
-                          color: cs.mutedForeground.withValues(alpha: 0.5),
-                          fontSize: 10,
-                        ),
+                        style: typo.xSmall.copyWith(color: cs.mutedForeground),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
+              ),
 
-                // ── 实时数据 ──
-                if (liveInfo != null) ...[
-                  const SizedBox(height: 10),
-                  DownloaderLiveInfo(info: liveInfo, isQb: isQb),
-                ],
+              // ── 实时数据 ──
+              if (liveInfo != null) ...[
+                SizedBox(height: theme.density.baseGap * theme.scaling),
+                DownloaderLiveInfo(info: liveInfo, isQb: isQb),
+              ],
               ],
             ),
           ),
         ),
       ),
     );
+
+    if (!context.isMobile) return card;
+
+    return shadcn.OverlayManagerLayer(
+      popoverHandler: const shadcn.PopoverOverlayHandler(),
+      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+      menuHandler: const shadcn.PopoverOverlayHandler(),
+      child: card,
+    );
   }
 
   Future<void> _openTorrentList() async {
-    await _popoverCtrl.hide();
     if (!mounted) return;
     await Navigator.push(
       context,
@@ -303,13 +251,11 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard>
   }
 
   Widget _statusDot({required bool active, required Color color}) {
-    return Container(
-      width: 5,
-      height: 5,
-      decoration: BoxDecoration(
-        color: active ? color : color.withValues(alpha: 0.4),
-        shape: BoxShape.circle,
-      ),
+    final size = shadcn.Theme.of(context).scaling * 7;
+    return Icon(
+      shadcn.LucideIcons.circle,
+      size: size,
+      color: active ? color : color.withValues(alpha: 0.4),
     );
   }
 }

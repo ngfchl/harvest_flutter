@@ -8,10 +8,10 @@ import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
-import 'package:harvest/common/style.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/download/provider/downloader_provider.dart';
+import 'package:harvest/widgets/app_menu.dart';
 
 import '../../widgets/cache_status_banner.dart';
 import '../shell/provider/screenshot_provider.dart';
@@ -28,57 +28,59 @@ class TaskPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tasksAsync = ref.watch(scheduleProvider);
+    final theme = shadcn.Theme.of(context);
 
-    return Stack(
-      children: [
-        FScaffold(
-          childPad: false,
-          child: tasksAsync.when(
-            loading: () => const Center(child: FProgress.circularIcon()),
-            error: (e, _) => _ErrorView(
-              error: e,
-              onRetry: () => ref.invalidate(scheduleProvider),
-            ),
-            data: (tasks) => _TaskListView(tasks: tasks),
-          ),
+    return shadcn.Scaffold(
+      backgroundColor: theme.colorScheme.background,
+      child: tasksAsync.when(
+        loading: () => const Center(
+          child: shadcn.CircularProgressIndicator(strokeWidth: 2),
         ),
-        Positioned(
-          right: context.isMobile ? 16 : 24,
-          bottom:
-              (context.isMobile ? 24 : 32) + ShellBottomSpacing.value(context),
-          child: FButton.icon(
-            onPress: () => _openAdd(context, ref),
-            child: Icon(FIcons.plus, size: context.isMobile ? 22 : 24),
-          ),
+        error: (e, _) => _ErrorView(
+          error: e,
+          onRetry: () => ref.invalidate(scheduleProvider),
         ),
-      ],
+        data: (tasks) => _TaskListView(
+          tasks: tasks,
+          onAdd: (buttonContext) => _openAdd(buttonContext, ref),
+        ),
+      ),
     );
   }
 
   void _openAdd(BuildContext context, WidgetRef ref) {
-    final isMobile = context.isMobile;
-    final content = _AddChoiceSheet(
-      onNormal: () {
-        if (isMobile) Navigator.pop(context);
-        _openEdit(context, ref, null, isTorrentMove: false);
-      },
-      onTorrent: () {
-        if (isMobile) Navigator.pop(context);
-        _openEdit(context, ref, null, isTorrentMove: true);
-      },
+    shadcn.showDropdown<void>(
+      context: context,
+      alignment: Alignment.topCenter,
+      offset: const Offset(0, 8),
+      widthConstraint: shadcn.PopoverConstraint.intrinsic,
+      heightConstraint: shadcn.PopoverConstraint.intrinsic,
+      consumeOutsideTaps: false,
+      builder: (_) => shadcn.DropdownMenu(
+        children: [
+          shadcn.MenuLabel(child: const Text('添加任务')),
+          const shadcn.MenuDivider(),
+          shadcn.MenuButton(
+            leading: const Icon(shadcn.LucideIcons.calendarClock),
+            onPressed: (overlayContext) async {
+              await shadcn.closeOverlay(overlayContext);
+              if (!context.mounted) return;
+              _openEdit(context, ref, null, isTorrentMove: false);
+            },
+            child: const Text('普通任务'),
+          ),
+          shadcn.MenuButton(
+            leading: const Icon(shadcn.LucideIcons.arrowRightLeft),
+            onPressed: (overlayContext) async {
+              await shadcn.closeOverlay(overlayContext);
+              if (!context.mounted) return;
+              _openEdit(context, ref, null, isTorrentMove: true);
+            },
+            child: const Text('种子迁移任务'),
+          ),
+        ],
+      ),
     );
-
-    if (isMobile) {
-      showModalBottomSheet(
-        context: context,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        builder: (_) => content,
-      );
-    } else {
-      showDialog(context: context, builder: (_) => content);
-    }
   }
 }
 
@@ -100,93 +102,20 @@ void _openEdit(
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: shadcn.Theme.of(context).colorScheme.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (_) => sheet,
     );
   } else {
-    showDialog(
+    shadcn.showDialog(
       context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      builder: (_) => shadcn.ModalContainer(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480, maxHeight: 640),
           child: sheet,
         ),
-      ),
-    );
-  }
-}
-
-// ==================== 新增选择 ====================
-class _AddChoiceSheet extends StatelessWidget {
-  final VoidCallback onNormal;
-  final VoidCallback onTorrent;
-
-  const _AddChoiceSheet({required this.onNormal, required this.onTorrent});
-
-  @override
-  Widget build(BuildContext context) {
-    final tiles = FTileGroup(
-      children: [
-        FTile(
-          prefix: const Icon(FIcons.calendarClock, size: 20),
-          title: const Text('普通任务'),
-          onPress: onNormal,
-        ),
-        FTile(
-          prefix: const Icon(FIcons.arrowRightLeft, size: 20),
-          title: const Text('种子迁移任务'),
-          onPress: onTorrent,
-        ),
-      ],
-    );
-
-    if (context.isMobile) {
-      return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            _handle(context),
-            const SizedBox(height: 16),
-            tiles,
-            const SizedBox(height: 16),
-          ],
-        ),
-      );
-    }
-
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                '添加任务',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 16),
-              tiles,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  static Widget _handle(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 4,
-      decoration: BoxDecoration(
-        color: context.theme.colors.border,
-        borderRadius: BorderRadius.circular(99),
       ),
     );
   }
@@ -206,21 +135,21 @@ class _ErrorView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            FIcons.triangleAlert,
+            shadcn.LucideIcons.triangleAlert,
             size: 48,
-            color: context.theme.colors.destructive,
+            color: shadcn.Theme.of(context).colorScheme.destructive,
           ),
           const SizedBox(height: 16),
-          Text('加载失败', style: context.theme.typography.lg),
+          Text('加载失败', style: shadcn.Theme.of(context).typography.large),
           const SizedBox(height: 8),
           Text(
             '$error',
-            style: context.theme.typography.sm.copyWith(
-              color: context.theme.colors.mutedForeground,
+            style: shadcn.Theme.of(context).typography.small.copyWith(
+              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
             ),
           ),
           const SizedBox(height: 24),
-          FButton(onPress: onRetry, child: const Text('重试')),
+          shadcn.Button.primary(onPressed: onRetry, child: const Text('重试')),
         ],
       ),
     );
@@ -230,11 +159,73 @@ class _ErrorView extends StatelessWidget {
 // ==================== 列表视图 ====================
 class _TaskListView extends ConsumerStatefulWidget {
   final List<Schedule> tasks;
+  final ValueChanged<BuildContext> onAdd;
 
-  const _TaskListView({required this.tasks});
+  const _TaskListView({required this.tasks, required this.onAdd});
 
   @override
   ConsumerState<_TaskListView> createState() => _TaskListViewState();
+}
+
+class _TaskStatusBar extends StatelessWidget {
+  final int enabledCount;
+  final int disabledCount;
+  final ValueChanged<BuildContext> onAdd;
+
+  const _TaskStatusBar({
+    required this.enabledCount,
+    required this.disabledCount,
+    required this.onAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final horizontalInset = context.isMobile ? 12.0 : 16.0;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(horizontalInset, 10, horizontalInset, 4),
+      child: Row(
+        children: [
+          Icon(
+            shadcn.LucideIcons.circle,
+            size: 8,
+            color: enabledCount > 0 ? cs.primary : cs.mutedForeground,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '任务状态',
+            style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+          ),
+          const SizedBox(width: 8),
+          shadcn.SecondaryBadge(
+            child: Text('启用 $enabledCount'),
+          ),
+          const SizedBox(width: 6),
+          shadcn.OutlineBadge(
+            child: Text('禁用 $disabledCount'),
+          ),
+          const Spacer(),
+          shadcn.OverlayManagerLayer(
+            popoverHandler: const shadcn.PopoverOverlayHandler(),
+            tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+            menuHandler: const shadcn.PopoverOverlayHandler(),
+            child: Builder(
+              builder: (buttonContext) => shadcn.IconButton.ghost(
+                onPressed: () => onAdd(buttonContext),
+                icon: Icon(
+                  shadcn.LucideIcons.plus,
+                  size: context.isMobile ? 22 : 24,
+                  color: cs.foreground,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _TaskListViewState extends ConsumerState<_TaskListView> {
@@ -258,6 +249,8 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
 
   Widget build(BuildContext context) {
     final cacheInfo = ref.watch(scheduleCacheInfoProvider);
+    final enabledCount = widget.tasks.where((task) => task.enabled).length;
+    final disabledCount = widget.tasks.length - enabledCount;
 
     if (widget.tasks.isEmpty) {
       return Column(
@@ -270,6 +263,11 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
               context.isMobile ? 12 : 16,
               6,
             ),
+          ),
+          _TaskStatusBar(
+            enabledCount: enabledCount,
+            disabledCount: disabledCount,
+            onAdd: widget.onAdd,
           ),
           Expanded(
             child: EasyRefresh(
@@ -288,12 +286,12 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          FIcons.calendarOff,
+                          shadcn.LucideIcons.calendarOff,
                           size: 48,
-                          color: context.theme.colors.mutedForeground,
+                          color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                         ),
                         const SizedBox(height: 16),
-                        Text('暂无计划任务', style: context.theme.typography.lg),
+                        Text('暂无计划任务', style: shadcn.Theme.of(context).typography.large),
                       ],
                     ),
                   ),
@@ -315,6 +313,11 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
             context.isMobile ? 12 : 16,
             2,
           ),
+        ),
+        _TaskStatusBar(
+          enabledCount: enabledCount,
+          disabledCount: disabledCount,
+          onAdd: widget.onAdd,
         ),
         Expanded(
           child: EasyRefresh(
@@ -391,112 +394,142 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
         crontabList.firstWhereOrNull((c) => c.id == task.crontabId)?.express ??
         '';
 
-    final (icon, color) = _taskIcon(task.task);
+    final icon = _taskIcon(task.task);
     final isMobile = context.isMobile;
     final hasKwargs = task.kwargs.isNotEmpty && task.kwargs != '{}';
-    final cs = FTheme.of(context).colors;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
 
-    final cardRadius = BorderRadius.circular(12);
-    final anchorContext = context;
-
-    return FPopoverMenu.tiles(
-      style: fPopoverMenuStyle(context).call,
-      spacing: FPortalSpacing.zero,
-      menuBuilder: (_, controller, _) =>
-          _buildActionGroups(anchorContext, ref, task, controller),
-      builder: (context, controller, _) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: cs.background,
-          borderRadius: cardRadius,
-          border: Border.all(color: cs.border, width: 1),
-          boxShadow: [
-            // 主阴影：更大的扩散和偏移
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.10),
-              blurRadius: 20,
-              offset: const Offset(0, 6),
-              spreadRadius: -2,
-            ),
-            // 边缘光：让卡片底部有微妙的深色边缘
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: cardRadius,
-          child: FTile(
-            style: (style) => style.copyWith(
-              backgroundColor: FWidgetStateMap<Color?>.all(Colors.transparent),
-              decoration: FWidgetStateMap<BoxDecoration?>({
-                WidgetState.hovered | WidgetState.pressed: BoxDecoration(
-                  color: cs.secondary.withValues(alpha: 0.55),
-                  borderRadius: cardRadius,
-                ),
-                WidgetState.any: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: cardRadius,
-                ),
-              }),
-            ),
-            title: Text(
-              task.name,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: isMobile ? 14 : 15,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 第一行：图标 + 任务类型 + cron 表达式
-                Row(
+    return AppContextMenu(
+      items: _taskMenuItems(context, task),
+      child: shadcn.Card(
+        filled: true,
+        fillColor: cs.card,
+        borderColor: cs.border,
+        borderRadius: BorderRadius.circular(theme.radiusLg),
+        padding: EdgeInsets.zero,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            theme.density.baseContentPadding * theme.scaling,
+            theme.density.baseGap * theme.scaling,
+            theme.density.baseContentPadding * theme.scaling,
+            theme.density.baseGap * theme.scaling,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon, size: isMobile ? 14 : 15, color: color),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        task.task,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.theme.typography.xs.copyWith(
-                          color: context.theme.colors.mutedForeground,
-                          fontSize: isMobile ? null : 13,
-                        ),
+                    Text(
+                      task.name,
+                      style: typo.small.copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    if (express.isNotEmpty)
-                      Text(
-                        express,
-                        style: context.theme.typography.xs.copyWith(
-                          color: context.theme.colors.primary,
-                          fontFamily: 'monospace',
-                          fontWeight: FontWeight.w500,
-                          fontSize: isMobile ? null : 13,
+                    SizedBox(height: theme.density.baseGap * theme.scaling * 0.5),
+                    Row(
+                      children: [
+                        Icon(icon, size: isMobile ? 14 : 15, color: cs.primary),
+                        SizedBox(width: theme.density.baseGap * theme.scaling * 0.5),
+                        Expanded(
+                          child: Text(
+                            task.task,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: typo.xSmall.copyWith(
+                              color: cs.mutedForeground,
+                              fontSize: isMobile ? null : 13,
+                            ),
+                          ),
                         ),
-                      ),
+                        if (express.isNotEmpty)
+                          Text(
+                            express,
+                            style: typo.xSmall.copyWith(
+                              color: cs.primary,
+                              fontFamily: 'monospace',
+                              fontWeight: FontWeight.w500,
+                              fontSize: isMobile ? null : 13,
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (hasKwargs) _buildKwargsBadge(context, task),
                   ],
                 ),
-                if (hasKwargs) _buildKwargsBadge(context, task),
-              ],
-            ),
-            suffix: FSwitch(
-              value: task.enabled,
-              onChange: (v) =>
-                  ref.read(scheduleProvider.notifier).toggle(task.id, v),
-            ),
-            onPress: () => controller.toggle(),
-            onSecondaryPress: () => controller.toggle(),
+              ),
+              SizedBox(width: theme.density.baseGap * theme.scaling),
+              shadcn.Switch(
+                value: task.enabled,
+                onChanged: (v) =>
+                    ref.read(scheduleProvider.notifier).toggle(task.id, v),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  List<shadcn.MenuItem> _taskMenuItems(BuildContext context, Schedule task) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+
+    shadcn.MenuButton item({
+      required IconData icon,
+      required String title,
+      required Future<void> Function(BuildContext overlayContext) onPressed,
+      bool destructive = false,
+    }) {
+      final color = destructive ? cs.destructive : cs.foreground;
+      return shadcn.MenuButton(
+        leading: Icon(icon, size: theme.scaling * 15, color: color),
+        onPressed: onPressed,
+        child: SizedBox(
+          width: 140,
+          child: Text(
+            title,
+            style: theme.typography.small.copyWith(color: color),
+          ),
+        ),
+      );
+    }
+
+    return [
+      item(
+        icon: shadcn.LucideIcons.play,
+        title: '立即执行',
+        onPressed: (ctx) async {
+          await shadcn.closeOverlay(ctx);
+          await ref.read(scheduleProvider.notifier).runOnce(task.id);
+        },
+      ),
+      item(
+        icon: shadcn.LucideIcons.pencil,
+        title: '编辑',
+        onPressed: (ctx) async {
+          await shadcn.closeOverlay(ctx);
+          if (!context.mounted) return;
+          _openEdit(context, ref, task);
+        },
+      ),
+      const shadcn.MenuDivider(),
+      item(
+        icon: shadcn.LucideIcons.trash2,
+        title: '删除',
+        destructive: true,
+        onPressed: (ctx) async {
+          await shadcn.closeOverlay(ctx);
+          if (!context.mounted) return;
+          _DeleteConfirmDialog.show(context, ref, task);
+        },
+      ),
+    ];
   }
 
   Widget _buildKwargsBadge(BuildContext context, Schedule task) {
@@ -527,14 +560,20 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
       if (parts.isEmpty) return const SizedBox.shrink();
 
       return Padding(
-        padding: const EdgeInsets.only(top: 2),
-        child: Text(
-          parts.join(' · '),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: context.theme.typography.xs.copyWith(
-            color: context.theme.colors.mutedForeground,
-            fontSize: context.isMobile ? 11 : 12,
+        padding: EdgeInsets.only(
+          top: shadcn.Theme.of(context).density.baseGap *
+              shadcn.Theme.of(context).scaling *
+              0.4,
+        ),
+        child: shadcn.SecondaryBadge(
+          child: Text(
+            parts.join(' · '),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: shadcn.Theme.of(context).typography.xSmall.copyWith(
+              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+              fontSize: context.isMobile ? 11 : 12,
+            ),
           ),
         ),
       );
@@ -543,85 +582,35 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
     }
   }
 
-  (IconData, Color) _taskIcon(String type) {
+  IconData _taskIcon(String type) {
     return switch (type) {
-      '自动签到任务' || '阿里云签到' => (FIcons.check, Colors.green),
-      '批量抓取站点信息' => (FIcons.globe, Colors.blue),
-      'RSS订阅' => (FIcons.rss, Colors.orange),
-      '下载器辅种任务' => (FIcons.copy, Colors.purple),
-      '种子迁移任务' => (FIcons.arrowRightLeft, Colors.indigo),
-      '自动清理内存' => (FIcons.trash2, Colors.teal),
-      _ => (FIcons.calendarClock, Colors.grey),
+      '自动签到任务' || '阿里云签到' => shadcn.LucideIcons.check,
+      '批量抓取站点信息' => shadcn.LucideIcons.globe,
+      'RSS订阅' => shadcn.LucideIcons.rss,
+      '下载器辅种任务' => shadcn.LucideIcons.copy,
+      '种子迁移任务' => shadcn.LucideIcons.arrowRightLeft,
+      '自动清理内存' => shadcn.LucideIcons.trash2,
+      _ => shadcn.LucideIcons.calendarClock,
     };
   }
-}
-
-// ==================== 共用操作列表 ====================
-List<FTileGroupMixin> _buildActionGroups(
-  BuildContext context,
-  WidgetRef ref,
-  Schedule task,
-  FPopoverController controller,
-) {
-  return [
-    FTileGroup(
-      children: [
-        FTile(
-          prefix: const Icon(FIcons.play, size: 14),
-          title: const Text('立即执行'),
-          onPress: () async {
-            final notifier = ref.read(scheduleProvider.notifier);
-            await controller.hide();
-            await notifier.runOnce(task.id);
-          },
-        ),
-        FTile(
-          prefix: const Icon(FIcons.pencil, size: 14),
-          title: const Text('编辑'),
-          onPress: () async {
-            await controller.hide();
-            if (!context.mounted) return;
-            _openEdit(context, ref, task);
-          },
-        ),
-        FTile(
-          prefix: Icon(
-            FIcons.trash2,
-            size: 14,
-            color: context.theme.colors.destructive,
-          ),
-          title: Text(
-            '删除',
-            style: TextStyle(color: context.theme.colors.destructive),
-          ),
-          onPress: () async {
-            await controller.hide();
-            if (!context.mounted) return;
-            _DeleteConfirmDialog.show(context, ref, task);
-          },
-        ),
-      ],
-    ),
-  ];
 }
 
 // ==================== 删除确认 ====================
 class _DeleteConfirmDialog {
   static void show(BuildContext context, WidgetRef ref, Schedule task) {
-    showDialog(
+    shadcn.showDialog(
       context: context,
-      builder: (ctx) => FDialog(
+      builder: (ctx) => shadcn.AlertDialog(
+        leading: const Icon(shadcn.LucideIcons.trash2),
         title: const Text('确认删除'),
-        body: Text('确定要删除任务「${task.name}」吗？'),
+        content: Text('确定要删除任务「${task.name}」吗？'),
         actions: [
-          FButton(
-            style: FButtonStyle.outline(),
-            onPress: () => Navigator.of(ctx).pop(),
+          shadcn.Button.outline(
+            onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('取消'),
           ),
-          FButton(
-            style: FButtonStyle.destructive(),
-            onPress: () async {
+          shadcn.Button.destructive(
+            onPressed: () async {
               Navigator.of(ctx).pop();
               await ref.read(scheduleProvider.notifier).delete(task.id);
             },

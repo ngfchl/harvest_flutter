@@ -1,17 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:forui/forui.dart';
-import 'package:harvest/common/style.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+
+import 'site_theme.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../model/site_config.dart';
@@ -21,19 +21,18 @@ import '../service/site_service.dart';
 void showSiteConfigGenerator(BuildContext context) {
   final dialog = const SiteConfigGeneratorDialog();
   if (context.isMobile) {
-    showFSheet(
+    showModalBottomSheet<void>(
       context: context,
-      side: FLayout.btt,
-      mainAxisMaxRatio: 0.9,
+      isScrollControlled: true,
+      backgroundColor: siteTransparent(context),
       builder: (ctx) =>
           SizedBox(height: MediaQuery.sizeOf(ctx).height * 0.92, child: dialog),
     );
   } else {
-    showDialog(
+    shadcn.showDialog(
       context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: ConstrainedBox(
+      builder: (_) => shadcn.AlertDialog(
+        content: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: 920,
             maxHeight: MediaQuery.sizeOf(context).height * 0.92,
@@ -239,22 +238,22 @@ class _SiteConfigGeneratorDialogState
   Future<bool?> _confirmUploadOverwrite(String configName) {
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => FDialog(
+      builder: (ctx) => shadcn.AlertDialog(
         title: const Text('保存站点配置'),
-        body: Text('将以「${_safeFileName(configName)}.toml」保存到服务器。若存在同名配置，是否覆盖？'),
+        content: Text(
+          '将以「${_safeFileName(configName)}.toml」保存到服务器。若存在同名配置，是否覆盖？',
+        ),
         actions: [
-          FButton(
-            style: FButtonStyle.ghost(),
-            onPress: () => Navigator.of(ctx).pop(null),
+          shadcn.Button.ghost(
+            onPressed: () => Navigator.of(ctx).pop(null),
             child: const Text('取消'),
           ),
-          FButton(
-            style: FButtonStyle.outline(),
-            onPress: () => Navigator.of(ctx).pop(false),
+          shadcn.Button.outline(
+            onPressed: () => Navigator.of(ctx).pop(false),
             child: const Text('不覆盖'),
           ),
-          FButton(
-            onPress: () => Navigator.of(ctx).pop(true),
+          shadcn.Button.primary(
+            onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('覆盖'),
           ),
         ],
@@ -297,18 +296,20 @@ class _SiteConfigGeneratorDialogState
   Widget build(BuildContext context) {
     final configsAsync = ref.watch(websiteListProvider);
     final mobile = context.isMobile;
-    final cs = context.theme.colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
 
     return Container(
       padding: EdgeInsets.fromLTRB(16, mobile ? 8 : 16, 16, 16),
       decoration: BoxDecoration(
         color: cs.background,
         borderRadius: mobile
-            ? const BorderRadius.vertical(top: Radius.circular(16))
-            : BorderRadius.circular(16),
+            ? BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft)
+            : siteRadius(context, size: "xl"),
       ),
       child: configsAsync.when(
-        loading: () => const Center(child: FProgress.circularIcon()),
+        loading: () => Center(
+          child: shadcn.CircularProgressIndicator(strokeWidth: 2.4, color: cs.primary),
+        ),
         error: (e, trace) => _GeneratorError(
           error: e,
           trace: trace,
@@ -328,8 +329,9 @@ class _SiteConfigGeneratorDialogState
   }
 
   Widget _buildContent(BuildContext context, List<WebSite> configs) {
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
     final template = _template;
 
     return Column(
@@ -345,9 +347,13 @@ class _SiteConfigGeneratorDialogState
               height: 34,
               decoration: BoxDecoration(
                 color: cs.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: siteRadius(context, size: "md"),
               ),
-              child: Icon(FIcons.fileCode, size: 18, color: cs.primary),
+              child: Icon(
+                shadcn.LucideIcons.fileCode,
+                size: 18,
+                color: cs.primary,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -355,7 +361,7 @@ class _SiteConfigGeneratorDialogState
                 '生成站点配置',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: typo.lg.copyWith(fontWeight: FontWeight.w700),
+                style: typo.large.copyWith(fontWeight: FontWeight.w700),
               ),
             ),
             Flexible(
@@ -364,7 +370,7 @@ class _SiteConfigGeneratorDialogState
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.end,
-                style: typo.xs.copyWith(color: cs.mutedForeground),
+                style: typo.xSmall.copyWith(color: cs.mutedForeground),
               ),
             ),
           ],
@@ -375,10 +381,10 @@ class _SiteConfigGeneratorDialogState
             children: [
               Expanded(
                 flex: 5,
-                child: FTextField(
+                child: shadcn.TextField(
                   controller: _configNameController,
-                  label: const Text('配置名称'),
-                  hint: '保存和下载时使用该名称作为文件名',
+                  placeholder: const Text('配置名称'),
+                  hintText: '保存和下载时使用该名称作为文件名',
                 ),
               ),
               const SizedBox(width: 10),
@@ -395,12 +401,17 @@ class _SiteConfigGeneratorDialogState
           ),
         if (_error != null) ...[
           const SizedBox(height: 8),
-          Text(_error!, style: typo.xs.copyWith(color: cs.destructive)),
+          Text(_error!, style: typo.xSmall.copyWith(color: cs.destructive)),
         ],
         const SizedBox(height: 12),
         Expanded(
           child: _loadingTemplate || template == null
-              ? const Center(child: FProgress.circularIcon())
+              ? Center(
+                  child: shadcn.CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: cs.primary,
+                  ),
+                )
               : _TomlFieldList(
                   template: template,
                   controller: _scrollController,
@@ -451,8 +462,8 @@ class _GeneratorFooter extends StatelessWidget {
         Expanded(
           child: _FooterActionButton(
             label: '分享',
-            icon: FIcons.share2,
-            color: const Color(0xFF7C3AED),
+            icon: shadcn.LucideIcons.share2,
+            color: siteAccent(context, 3),
             loading: sharing,
             onPress: !enabled || sharing ? null : onShare,
           ),
@@ -461,8 +472,8 @@ class _GeneratorFooter extends StatelessWidget {
         Expanded(
           child: _FooterActionButton(
             label: '下载',
-            icon: FIcons.download,
-            color: const Color(0xFF2563EB),
+            icon: shadcn.LucideIcons.download,
+            color: siteInfo(context),
             loading: downloading,
             onPress: !enabled || downloading ? null : onDownload,
           ),
@@ -471,8 +482,8 @@ class _GeneratorFooter extends StatelessWidget {
         Expanded(
           child: _FooterActionButton(
             label: '保存',
-            icon: FIcons.save,
-            color: const Color(0xFF16A34A),
+            icon: shadcn.LucideIcons.save,
+            color: siteSuccess(context),
             loading: uploading,
             filled: true,
             onPress: !enabled || uploading ? null : onSave,
@@ -502,8 +513,9 @@ class _FooterActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
     final enabled = onPress != null;
     final effectiveColor = enabled ? color : cs.mutedForeground;
 
@@ -519,7 +531,7 @@ class _FooterActionButton extends StatelessWidget {
             color: filled
                 ? effectiveColor
                 : effectiveColor.withValues(alpha: enabled ? 0.12 : 0.06),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: siteRadius(context, size: "md"),
             border: Border.all(
               color: effectiveColor.withValues(alpha: enabled ? 0.48 : 0.22),
             ),
@@ -528,7 +540,7 @@ class _FooterActionButton extends StatelessWidget {
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: FProgress.circularIcon(),
+                  child: shadcn.CircularProgressIndicator(strokeWidth: 2.2),
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -537,13 +549,13 @@ class _FooterActionButton extends StatelessWidget {
                     Icon(
                       icon,
                       size: 15,
-                      color: filled ? Colors.white : effectiveColor,
+                      color: filled ? siteColors(context).background : effectiveColor,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       label,
-                      style: typo.sm.copyWith(
-                        color: filled ? Colors.white : effectiveColor,
+                      style: typo.small.copyWith(
+                        color: filled ? siteColors(context).background : effectiveColor,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -614,23 +626,29 @@ class _TemplateSelectField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FSelect<String>(
+    return shadcn.Select<String>(
       key: ValueKey(templateName),
-      label: const Text('模板'),
-      initialValue: templateName,
-      format: (value) => value,
-      onChange: (value) {
+      value: templateName,
+      placeholder: const Text('模板'),
+      itemBuilder: (_, value) => Text(value),
+      popup: shadcn.SelectPopup<String>(
+        items: shadcn.SelectItemList(
+          children: [
+            for (final config in configs)
+              shadcn.SelectItemButton<String>(
+                value: config.name,
+                child: Text(
+                  config.name == 'NP模板' ? '${config.name}（默认）' : config.name,
+                ),
+              ),
+          ],
+        ),
+      ).call,
+      onChanged: (value) {
         if (loading || value == null) return;
         final selected = configs.where((e) => e.name == value).firstOrNull;
         if (selected != null) onSelected(selected);
       },
-      children: [
-        for (final config in configs)
-          FSelectItem(
-            config.name == 'NP模板' ? '${config.name}（默认）' : config.name,
-            config.name,
-          ),
-      ],
     );
   }
 }
@@ -682,17 +700,18 @@ class _TomlSelectFieldGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FTileGroup(
-      style: fTileGroupStyle(context).call,
+    return Column(
       children: [
-        for (final field in fields)
-          FTile(
-            title: _FieldTitle(field: field),
-            subtitle: _TomlSelectField(
-              field: field,
-              options: options.optionsFor(field.key),
+        for (var i = 0; i < fields.length; i++) ...[
+          _FieldPanel(
+            title: _FieldTitle(field: fields[i]),
+            child: _TomlSelectField(
+              field: fields[i],
+              options: options.optionsFor(fields[i].key),
             ),
           ),
+          if (i != fields.length - 1) const SizedBox(height: 8),
+        ],
       ],
     );
   }
@@ -713,20 +732,27 @@ class _TomlSelectField extends StatelessWidget {
         if (option != current) option,
     ];
     if (values.isEmpty) {
-      return FTextField(
+      return shadcn.TextField(
         controller: field.controller,
-        hint: '${field.hint} · ${field.key}',
+        hintText: '${field.hint} · ${field.key}',
       );
     }
-    return FSelect<String>(
+    return shadcn.Select<String>(
       key: ValueKey('${field.key}-$current-${values.join('|')}'),
-      initialValue: current.isEmpty ? values.first : current,
-      format: (value) => value,
-      onChange: (value) {
+      value: current.isEmpty ? values.first : current,
+      itemBuilder: (_, value) => Text(value),
+      popup: shadcn.SelectPopup<String>(
+        items: shadcn.SelectItemList(
+          children: [
+            for (final value in values)
+              shadcn.SelectItemButton<String>(value: value, child: Text(value)),
+          ],
+        ),
+      ).call,
+      onChanged: (value) {
         if (value == null) return;
         field.controller.text = value;
       },
-      children: [for (final value in values) FSelectItem(value, value)],
     );
   }
 }
@@ -738,25 +764,77 @@ class _TomlSwitchGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FTileGroup(
-      style: fTileGroupStyle(context).call,
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Column(
       children: [
-        for (final field in fields)
-          FTile(
-            title: _FieldTitle(field: field),
-            subtitle: Text('${field.key} · ${field.hint}'),
-            suffix: ValueListenableBuilder<TextEditingValue>(
-              valueListenable: field.controller,
-              builder: (_, value, __) {
-                final active = value.text.trim().toLowerCase() == 'true';
-                return FSwitch(
-                  value: active,
-                  onChange: (next) => field.controller.text = '$next',
-                );
-              },
+        for (var i = 0; i < fields.length; i++) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: cs.background,
+              borderRadius: siteRadius(context, size: "md"),
+              border: Border.all(color: cs.border, width: 0.6),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _FieldTitle(field: fields[i]),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${fields[i].key} · ${fields[i].hint}',
+                        style: theme.typography.xSmall.copyWith(
+                          color: cs.mutedForeground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: fields[i].controller,
+                  builder: (_, value, __) {
+                    final active = value.text.trim().toLowerCase() == 'true';
+                    return shadcn.Switch(
+                      value: active,
+                      onChanged: (next) => fields[i].controller.text = '$next',
+                    );
+                  },
+                ),
+              ],
             ),
           ),
+          if (i != fields.length - 1) const SizedBox(height: 8),
+        ],
       ],
+    );
+  }
+}
+
+class _FieldPanel extends StatelessWidget {
+  final Widget title;
+  final Widget child;
+
+  const _FieldPanel({required this.title, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cs.background,
+        borderRadius: siteRadius(context, size: "md"),
+        border: Border.all(color: cs.border, width: 0.6),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [title, const SizedBox(height: 8), child],
+      ),
     );
   }
 }
@@ -785,8 +863,9 @@ class _TomlLevelListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -794,26 +873,24 @@ class _TomlLevelListSection extends StatelessWidget {
         const SizedBox(height: 4),
         Row(
           children: [
-            Icon(FIcons.layers, size: 16, color: cs.primary),
+            Icon(shadcn.LucideIcons.layers, size: 16, color: cs.primary),
             const SizedBox(width: 6),
             Expanded(
               child: Text(
                 '用户等级',
-                style: typo.sm.copyWith(fontWeight: FontWeight.w700),
+                style: typo.small.copyWith(fontWeight: FontWeight.w700),
               ),
             ),
             Text(
               '${template.levels.length} 条',
-              style: typo.xs.copyWith(color: cs.mutedForeground),
+              style: typo.xSmall.copyWith(color: cs.mutedForeground),
             ),
             const SizedBox(width: 8),
-            FButton.icon(
-              style: FButtonStyle.ghost(),
-              onPress: () => _addLevel(context),
-              child: FTooltip(
-                longPress: false,
-                tipBuilder: (_, __) => const Text('添加用户等级'),
-                child: const Icon(FIcons.plus, size: 16),
+            shadcn.IconButton.ghost(
+              onPressed: () => _addLevel(context),
+              icon: shadcn.Tooltip(
+                tooltip: (_) => const Text('添加用户等级'),
+                child: const Icon(shadcn.LucideIcons.plus, size: 16),
               ),
             ),
           ],
@@ -822,54 +899,97 @@ class _TomlLevelListSection extends StatelessWidget {
         if (template.levels.isEmpty)
           _LevelEmptyState(onAdd: () => _addLevel(context))
         else
-          FTileGroup(
-            style: fTileGroupStyle(context).call,
+          Column(
             children: [
-              for (final level in template.levels)
-                FTile(
-                  prefix: const Icon(FIcons.medal, size: 16),
-                  title: Text(
-                    level.displayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    level.summary,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  suffix: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      FButton.icon(
-                        style: FButtonStyle.ghost(),
-                        onPress: () => _showTomlLevelDetail(
-                          context,
-                          level: level,
-                          onChanged: onChanged,
-                        ),
-                        child: const Icon(FIcons.pencil, size: 15),
-                      ),
-                      FButton.icon(
-                        style: FButtonStyle.ghost(),
-                        onPress: () => _removeLevel(level),
-                        child: Icon(
-                          FIcons.trash2,
-                          size: 15,
-                          color: cs.destructive,
-                        ),
-                      ),
-                    ],
-                  ),
-                  onPress: () => _showTomlLevelDetail(
+              for (var i = 0; i < template.levels.length; i++) ...[
+                _LevelListTile(
+                  level: template.levels[i],
+                  onOpen: () => _showTomlLevelDetail(
                     context,
-                    level: level,
+                    level: template.levels[i],
                     onChanged: onChanged,
                   ),
+                  onRemove: () => _removeLevel(template.levels[i]),
                 ),
+                if (i != template.levels.length - 1) const SizedBox(height: 8),
+              ],
             ],
           ),
       ],
+    );
+  }
+}
+
+class _LevelListTile extends StatelessWidget {
+  final _TomlLevel level;
+  final VoidCallback onOpen;
+  final VoidCallback onRemove;
+
+  const _LevelListTile({
+    required this.level,
+    required this.onOpen,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return InkWell(
+      onTap: onOpen,
+      borderRadius: siteRadius(context, size: "md"),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: cs.background,
+          borderRadius: siteRadius(context, size: "md"),
+          border: Border.all(color: cs.border, width: 0.6),
+        ),
+        child: Row(
+          children: [
+            Icon(shadcn.LucideIcons.medal, size: 16, color: cs.mutedForeground),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    level.displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.typography.small.copyWith(
+                      color: cs.foreground,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    level.summary,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.typography.xSmall.copyWith(
+                      color: cs.mutedForeground,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            shadcn.IconButton.ghost(
+              onPressed: onOpen,
+              icon: const Icon(shadcn.LucideIcons.pencil, size: 15),
+            ),
+            shadcn.IconButton.ghost(
+              onPressed: onRemove,
+              icon: Icon(
+                shadcn.LucideIcons.trash2,
+                size: 15,
+                color: cs.destructive,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -881,18 +1001,13 @@ class _TomlFieldTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FTileGroup(
-      style: fTileGroupStyle(context).call,
-      children: [
-        FTile(
-          title: _FieldTitle(field: field),
-          subtitle: FTextField(
-            controller: field.controller,
-            hint: '${field.hint} · ${field.key}',
-            maxLines: field.kind == _TomlValueKind.list ? 2 : 1,
-          ),
-        ),
-      ],
+    return _FieldPanel(
+      title: _FieldTitle(field: field),
+      child: shadcn.TextField(
+        controller: field.controller,
+        hintText: '${field.hint} · ${field.key}',
+        maxLines: field.kind == _TomlValueKind.list ? 2 : 1,
+      ),
     );
   }
 }
@@ -904,8 +1019,9 @@ class _FieldTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typo = context.theme.typography;
-    final cs = context.theme.colors;
+    final theme = shadcn.Theme.of(context);
+    final typo = theme.typography;
+    final cs = theme.colorScheme;
     final label = _tomlFieldLabel(field.key);
     return Row(
       children: [
@@ -919,7 +1035,7 @@ class _FieldTitle extends StatelessWidget {
               field.key,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: typo.xs.copyWith(color: cs.mutedForeground),
+              style: typo.xSmall.copyWith(color: cs.mutedForeground),
             ),
           ),
         ],
@@ -935,18 +1051,18 @@ void _showTomlLevelDetail(
 }) {
   final editor = _TomlLevelDetail(level: level, onChanged: onChanged);
   if (context.isMobile) {
-    showFSheet(
+    showModalBottomSheet<void>(
       context: context,
-      side: FLayout.btt,
+      isScrollControlled: true,
+      backgroundColor: siteTransparent(context),
       builder: (ctx) =>
           SizedBox(height: MediaQuery.sizeOf(ctx).height * 0.9, child: editor),
     );
   } else {
-    showDialog(
+    shadcn.showDialog(
       context: context,
-      builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: ConstrainedBox(
+      builder: (_) => shadcn.AlertDialog(
+        content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 620, maxHeight: 720),
           child: editor,
         ),
@@ -994,8 +1110,9 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
     final mobile = context.isMobile;
 
     return Container(
@@ -1003,8 +1120,8 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
       decoration: BoxDecoration(
         color: cs.background,
         borderRadius: mobile
-            ? const BorderRadius.vertical(top: Radius.circular(16))
-            : BorderRadius.circular(16),
+            ? BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft)
+            : siteRadius(context, size: "xl"),
       ),
       child: Column(
         children: [
@@ -1016,9 +1133,13 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
                 height: 34,
                 decoration: BoxDecoration(
                   color: cs.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: siteRadius(context, size: "md"),
                 ),
-                child: Icon(FIcons.medal, size: 18, color: cs.primary),
+                child: Icon(
+                  shadcn.LucideIcons.medal,
+                  size: 18,
+                  color: cs.primary,
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1026,7 +1147,7 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
                   widget.level.displayName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: typo.lg.copyWith(fontWeight: FontWeight.w700),
+                  style: typo.large.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -1036,45 +1157,25 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
             child: ListView(
               controller: _scrollController,
               children: [
-                FTextField(
+                shadcn.TextField(
                   controller: widget.level.sectionController,
-                  label: const Text('配置节点名称'),
-                  hint: '例如 User，对应 [level.User]',
+                  placeholder: const Text('配置节点名称'),
+                  hintText: '例如 User，对应 [level.User]',
                 ),
                 const SizedBox(height: 10),
                 ...widget.level.orderedFields.map((field) {
                   if (field.kind == _TomlValueKind.boolean) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
-                      child: FTileGroup(
-                        style: fTileGroupStyle(context).call,
-                        children: [
-                          FTile(
-                            title: _FieldTitle(field: field),
-                            subtitle: Text('${field.key} · ${field.hint}'),
-                            suffix: ValueListenableBuilder<TextEditingValue>(
-                              valueListenable: field.controller,
-                              builder: (_, value, __) {
-                                final active =
-                                    value.text.trim().toLowerCase() == 'true';
-                                return FSwitch(
-                                  value: active,
-                                  onChange: (next) =>
-                                      field.controller.text = '$next',
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
+                      child: _LevelBooleanField(field: field),
                     );
                   }
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: FTextField(
+                    child: shadcn.TextField(
                       controller: field.controller,
-                      label: Text(_tomlFieldLabel(field.key)),
-                      hint: '${field.hint} · ${field.key}',
+                      placeholder: Text(_tomlFieldLabel(field.key)),
+                      hintText: '${field.hint} · ${field.key}',
                       maxLines: field.key == 'rights' ? 3 : 1,
                     ),
                   );
@@ -1086,13 +1187,62 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
           Row(
             children: [
               Expanded(
-                child: FButton(
-                  style: FButtonStyle.ghost(),
-                  onPress: () => Navigator.of(context).maybePop(),
+                child: shadcn.Button.ghost(
+                  onPressed: () => Navigator.of(context).maybePop(),
                   child: const Text('完成'),
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LevelBooleanField extends StatelessWidget {
+  final _TomlField field;
+
+  const _LevelBooleanField({required this.field});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: cs.background,
+        borderRadius: siteRadius(context, size: "md"),
+        border: Border.all(color: cs.border, width: 0.6),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _FieldTitle(field: field),
+                const SizedBox(height: 4),
+                Text(
+                  '${field.key} · ${field.hint}',
+                  style: theme.typography.xSmall.copyWith(
+                    color: cs.mutedForeground,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: field.controller,
+            builder: (_, value, __) {
+              final active = value.text.trim().toLowerCase() == 'true';
+              return shadcn.Switch(
+                value: active,
+                onChanged: (next) => field.controller.text = '$next',
+              );
+            },
           ),
         ],
       ),
@@ -1107,17 +1257,18 @@ class _LevelEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.theme.colors;
-    final typo = context.theme.typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(FIcons.layers, size: 24, color: cs.mutedForeground),
+          Icon(shadcn.LucideIcons.layers, size: 24, color: cs.mutedForeground),
           const SizedBox(height: 8),
-          Text('暂无用户等级', style: typo.sm.copyWith(color: cs.mutedForeground)),
+          Text('暂无用户等级', style: typo.small.copyWith(color: cs.mutedForeground)),
           const SizedBox(height: 12),
-          FButton(onPress: onAdd, child: const Text('添加等级')),
+          shadcn.Button.primary(onPressed: onAdd, child: const Text('添加等级')),
         ],
       ),
     );
@@ -1145,7 +1296,7 @@ class _GeneratorError extends StatelessWidget {
         children: [
           Text('加载站点配置失败: $error'),
           const SizedBox(height: 12),
-          FButton(onPress: onRetry, child: const Text('重试')),
+          shadcn.Button.primary(onPressed: onRetry, child: const Text('重试')),
         ],
       ),
     );
@@ -1338,8 +1489,9 @@ class _TomlLevel {
     if (id != null && id.isNotEmpty) parts.add('ID $id');
     if (days != null && days.isNotEmpty) parts.add('注册 $days 天');
     if (uploaded != null && uploaded.isNotEmpty) parts.add('上传 $uploaded');
-    if (downloaded != null && downloaded.isNotEmpty)
+    if (downloaded != null && downloaded.isNotEmpty) {
       parts.add('下载 $downloaded');
+    }
     if (ratio != null && ratio.isNotEmpty) parts.add('分享率 $ratio');
     return parts.isEmpty ? '未设置等级要求' : parts.join(' · ');
   }
@@ -1603,8 +1755,9 @@ String? _extractTomlContent(Map<String, dynamic> raw) {
   if (data is Map) return _extractTomlContent(Map<String, dynamic>.from(data));
   final result = raw['result'];
   if (result is String && result.trim().isNotEmpty) return result;
-  if (result is Map)
+  if (result is Map) {
     return _extractTomlContent(Map<String, dynamic>.from(result));
+  }
   if (raw.isNotEmpty) return _mapToToml(raw);
   return null;
 }

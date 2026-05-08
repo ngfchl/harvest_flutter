@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
-import 'package:harvest/common/style.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/downloader.dart';
 import '../provider/downloader_provider.dart';
@@ -16,17 +15,18 @@ class DownloaderEditorDialog extends ConsumerStatefulWidget {
   ConsumerState<DownloaderEditorDialog> createState() => _DownloaderEditorDialogState();
 }
 
-class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog> with TickerProviderStateMixin {
+class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameCtrl;
   late final TextEditingController _hostCtrl;
   late final TextEditingController _portCtrl;
   late final TextEditingController _usernameCtrl;
   late final TextEditingController _passwordCtrl;
-  late final FSelectController<String> _categoryCtrl;
-  late final FSelectController<String> _protocolCtrl;
-  FSelectController<String>? _pathCtrl;
 
+  late String _category;
+  late String _protocol;
+  String? _path;
+  bool _pathTouched = false;
   late bool _isActive;
   late bool _brush;
 
@@ -41,8 +41,9 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
     _portCtrl = TextEditingController(text: d?.port.toString() ?? '');
     _usernameCtrl = TextEditingController(text: d?.username ?? '');
     _passwordCtrl = TextEditingController(text: d?.password ?? '');
-    _categoryCtrl = FSelectController<String>(vsync: this, value: d?.category ?? 'Qb');
-    _protocolCtrl = FSelectController<String>(vsync: this, value: d?.protocol ?? 'http');
+    _category = d?.category ?? 'Qb';
+    _protocol = d?.protocol ?? 'http';
+    _path = d?.torrentPath;
     _isActive = d?.isActive ?? true;
     _brush = d?.brush ?? false;
   }
@@ -54,9 +55,6 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
     _portCtrl.dispose();
     _usernameCtrl.dispose();
     _passwordCtrl.dispose();
-    _categoryCtrl.dispose();
-    _protocolCtrl.dispose();
-    _pathCtrl?.dispose();
     super.dispose();
   }
 
@@ -73,22 +71,24 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
   }
 
   void _save() {
-    if (!_formKey.currentState!.validate()) return;
+    final valid = _formKey.currentState!.validate();
+    setState(() => _pathTouched = true);
+    if (!valid || _path == null || _path!.isEmpty) return;
 
     final d = Downloader(
       id: widget.downloader?.id ?? 0,
       name: _nameCtrl.text.trim(),
-      category: _categoryCtrl.value ?? 'Qb',
-      protocol: _protocolCtrl.value ?? 'http',
+      category: _category,
+      protocol: _protocol,
       host: _hostCtrl.text.trim(),
       port: int.tryParse(_portCtrl.text.trim()) ?? 0,
       username: _usernameCtrl.text.trim(),
       password: _passwordCtrl.text.trim(),
-      torrentPath: _pathCtrl?.value ?? widget.downloader?.torrentPath ?? '',
+      torrentPath: _path ?? widget.downloader?.torrentPath ?? '',
       isActive: _isActive,
       brush: _brush,
       sortId: widget.downloader?.sortId ?? 0,
-      externalHost: '${_protocolCtrl.value ?? 'http'}://${_hostCtrl.text.trim()}:${_portCtrl.text.trim()}',
+      externalHost: '$_protocol://${_hostCtrl.text.trim()}:${_portCtrl.text.trim()}',
     );
 
     widget.onSaved(d);
@@ -97,17 +97,21 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
 
   @override
   Widget build(BuildContext context) {
-    final theme = FTheme.of(context);
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
     final pathsAsync = ref.watch(downloaderPathsProvider);
 
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: ConstrainedBox(
+    return shadcn.OverlayManagerLayer(
+      popoverHandler: const shadcn.PopoverOverlayHandler(),
+      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+      menuHandler: const shadcn.PopoverOverlayHandler(),
+      child: Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8, maxWidth: 420),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ——— 标题 ———
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
               child: Row(
@@ -115,19 +119,16 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
                   Expanded(
                     child: Text(
                       _isEdit ? '编辑下载器' : '添加下载器',
-                      style: theme.typography.lg.copyWith(fontWeight: FontWeight.w700),
+                      style: theme.typography.large.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
-                  FButton.icon(
-                    style: FButtonStyle.ghost(),
-                    onPress: () => Navigator.of(context).pop(),
-                    child: const Icon(FIcons.x, size: 16),
+                  shadcn.IconButton.ghost(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(shadcn.LucideIcons.x, size: 16),
                   ),
                 ],
               ),
             ),
-
-            // ——— 表单 ———
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -136,170 +137,274 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
-                    spacing: 8,
                     children: [
-                      // 名称
-                      FTextFormField(
+                      _textField(
                         controller: _nameCtrl,
-                        label: const Text('名称'),
-                        hint: '例如: QB8999',
+                        label: '名称',
+                        hintText: '例如: QB8999',
                         validator: (v) => _validateRequired(v, '名称'),
                       ),
-
-                      // 客户端类型
-                      FSelect<String>(
-                        controller: _categoryCtrl,
-                        label: const Text('客户端类型'),
-                        hint: '选择类型',
-                        format: (v) => v == 'Qb' ? 'Qbittorrent' : 'Transmission',
-                        onChange: (v) => setState(() {}),
-                        children: [FSelectItem('Qbittorrent', 'Qb'), FSelectItem('Transmission', 'Tr')],
+                      const SizedBox(height: 8),
+                      _dropdown(
+                        label: '客户端类型',
+                        value: _category,
+                        items: const {'Qb': 'Qbittorrent', 'Tr': 'Transmission'},
+                        onChanged: (v) => setState(() => _category = v ?? 'Qb'),
                       ),
-
-                      // 协议
-                      FSelect<String>(
-                        controller: _protocolCtrl,
-                        label: const Text('协议'),
-                        hint: '选择协议',
-                        format: (v) => v.toUpperCase(),
-                        onChange: (v) => setState(() {}),
-                        children: [FSelectItem('HTTP', 'http'), FSelectItem('HTTPS', 'https')],
+                      const SizedBox(height: 8),
+                      _dropdown(
+                        label: '协议',
+                        value: _protocol,
+                        items: const {'http': 'HTTP', 'https': 'HTTPS'},
+                        onChanged: (v) => setState(() => _protocol = v ?? 'http'),
                       ),
-
-                      // 主机
-                      FTextFormField(
+                      const SizedBox(height: 8),
+                      _textField(
                         controller: _hostCtrl,
-                        label: const Text('主机'),
-                        hint: '192.168.123.100',
+                        label: '主机',
+                        hintText: '192.168.123.100',
                         validator: (v) => _validateRequired(v, '主机'),
                       ),
-
-                      // 端口
-                      FTextFormField(
+                      const SizedBox(height: 8),
+                      _textField(
                         controller: _portCtrl,
-                        label: const Text('端口'),
-                        hint: '8999',
+                        label: '端口',
+                        hintText: '8999',
                         keyboardType: TextInputType.number,
                         validator: _validatePort,
                       ),
-
-                      // 用户名
-                      FTextFormField(
+                      const SizedBox(height: 8),
+                      _textField(
                         controller: _usernameCtrl,
-                        label: const Text('用户名'),
+                        label: '用户名',
                         validator: (v) => _validateRequired(v, '用户名'),
                       ),
-
-                      // 密码
-                      FTextFormField(
+                      const SizedBox(height: 8),
+                      _textField(
                         controller: _passwordCtrl,
-                        label: const Text('密码'),
+                        label: '密码',
                         obscureText: true,
                         validator: (v) => _validateRequired(v, '密码'),
                       ),
-
-                      // 种子路径（从服务器获取）
+                      const SizedBox(height: 8),
                       pathsAsync.when(
-                        loading: () => FTextFormField(
+                        loading: () => _textField(
                           controller: TextEditingController(text: widget.downloader?.torrentPath ?? ''),
-                          label: const Text('种子路径'),
-                          hint: '加载中...',
+                          label: '种子路径',
+                          hintText: '加载中...',
                           enabled: false,
                         ),
                         error: (e, _) {
-                          // 加载失败时回退到原数据
-                          _pathCtrl ??= FSelectController<String>(vsync: this, value: widget.downloader?.torrentPath);
-                          return FSelect<String>(
-                            controller: _pathCtrl!,
-                            label: const Text('种子路径'),
-                            hint: '选择路径',
-                            format: (v) => v,
-                            validator: (v) => (v == null || v.isEmpty) ? '请选择路径' : null,
-                            onChange: (v) => setState(() {}),
-                            children: widget.downloader != null && widget.downloader!.torrentPath.isNotEmpty
-                                ? [FSelectItem(widget.downloader!.torrentPath, widget.downloader!.torrentPath)]
-                                : [],
-                          );
+                          _path ??= widget.downloader?.torrentPath;
+                          final items = widget.downloader != null && widget.downloader!.torrentPath.isNotEmpty
+                              ? <String>[widget.downloader!.torrentPath]
+                              : <String>[];
+                          return _pathDropdown(items);
                         },
                         data: (paths) {
-                          // 确保原路径在列表中（编辑时）
                           if (widget.downloader != null &&
                               widget.downloader!.torrentPath.isNotEmpty &&
                               !paths.contains(widget.downloader!.torrentPath)) {
                             paths = [widget.downloader!.torrentPath, ...paths];
                           }
-                          _pathCtrl ??= FSelectController<String>(
-                            vsync: this,
-                            value: paths.contains(widget.downloader?.torrentPath)
-                                ? widget.downloader!.torrentPath
-                                : (paths.isNotEmpty ? paths.first : null),
-                          );
-                          return FSelect<String>(
-                            controller: _pathCtrl!,
-                            label: const Text('种子路径'),
-                            hint: '选择路径',
-                            format: (v) => v,
-                            validator: (v) => (v == null || v.isEmpty) ? '请选择路径' : null,
-                            onChange: (v) => setState(() {}),
-                            children: paths.map((p) => FSelectItem(p, p)).toList(),
-                          );
+                          _path ??= paths.contains(widget.downloader?.torrentPath)
+                              ? widget.downloader!.torrentPath
+                              : (paths.isNotEmpty ? paths.first : null);
+                          return _pathDropdown(paths);
                         },
                       ),
-                      FTileGroup(
-                        style: fTileGroupStyle(context, fontSize: 12).call,
-                        children: [
-                          // 启用
-                          FTile(
-                            prefix: Icon(FIcons.power, size: 14),
-                            title: const Text('启用'),
-                            subtitle: const Text('是否激活此下载器'),
-                            suffix: FSwitch(
-                              style: fSwitchStyle(context).call,
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: cs.border),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          children: [
+                            _switchRow(
+                              icon: shadcn.LucideIcons.power,
+                              title: '启用',
+                              subtitle: '是否激活此下载器',
                               value: _isActive,
-                              onChange: (v) => setState(() => _isActive = v),
+                              onChanged: (v) => setState(() => _isActive = v),
                             ),
-                          ),
-
-                          // 辅种
-                          FTile(
-                            prefix: Icon(FIcons.zap, size: 14),
-                            title: const Text('辅种'),
-                            subtitle: const Text('是否启用辅种'),
-                            suffix: FSwitch(
-                              style: fSwitchStyle(context).call,
+                            Divider(height: 1, color: cs.border),
+                            _switchRow(
+                              icon: shadcn.LucideIcons.zap,
+                              title: '辅种',
+                              subtitle: '是否启用辅种',
                               value: !_brush,
-                              onChange: (v) => setState(() => _brush = !v),
+                              onChanged: (v) => setState(() => _brush = !v),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-
-            // ——— 按钮 ———
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
                   Expanded(
-                    child: FButton(
-                      style: FButtonStyle.outline(),
-                      onPress: () => Navigator.of(context).pop(),
-                      child: const Text('取消'),
+                    child: shadcn.Button.outline(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Center(child: const Text('取消')),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: FButton(onPress: _save, child: Text(_isEdit ? '保存' : '添加')),
+                    child: shadcn.Button.primary(
+                      onPressed: _save,
+                      child: Center(child: Text(_isEdit ? '保存' : '添加')),
+                    ),
                   ),
                 ],
               ),
             ),
           ],
         ),
+        ),
+      ),
+    );
+  }
+
+  Widget _textField({
+    required TextEditingController controller,
+    required String label,
+    String? hintText,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    bool enabled = true,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      enabled: enabled,
+      validator: validator,
+      decoration: InputDecoration(labelText: label, hintText: hintText),
+    );
+  }
+
+  Widget _dropdown({
+    required String label,
+    required String value,
+    required Map<String, String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: theme.typography.small.copyWith(
+            color: cs.foreground,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        shadcn.Select<String>(
+          value: items.containsKey(value) ? value : null,
+          placeholder: Text(label),
+          itemBuilder: (_, selected) => Text(items[selected] ?? selected),
+          popupConstraints: const BoxConstraints(maxHeight: 260),
+          popup: shadcn.SelectPopup<String>(
+            items: shadcn.SelectItemList(
+              children: [
+                for (final entry in items.entries)
+                  shadcn.SelectItemButton<String>(
+                    value: entry.key,
+                    child: Text(entry.value),
+                  ),
+              ],
+            ),
+          ).call,
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
+  Widget _pathDropdown(List<String> paths) {
+    final selected = _path != null && paths.contains(_path) ? _path : null;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '种子路径',
+          style: theme.typography.small.copyWith(
+            color: cs.foreground,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        shadcn.Select<String>(
+          value: selected,
+          placeholder: const Text('选择路径'),
+          itemBuilder: (_, value) => Text(value),
+          popupConstraints: const BoxConstraints(maxHeight: 300),
+          popup: shadcn.SelectPopup<String>(
+            items: shadcn.SelectItemList(
+              children: [
+                for (final path in paths)
+                  shadcn.SelectItemButton<String>(
+                    value: path,
+                    child: Text(path),
+                  ),
+              ],
+            ),
+          ).call,
+          onChanged: (value) {
+            setState(() {
+              _path = value;
+              _pathTouched = true;
+            });
+          },
+        ),
+        if (_pathTouched && selected == null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              '请选择路径',
+              style: theme.typography.xSmall.copyWith(color: cs.destructive),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _switchRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        children: [
+          Icon(icon, size: 14),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title),
+                Text(subtitle, style: const TextStyle(fontSize: 12)),
+              ],
+            ),
+          ),
+          Switch(value: value, onChanged: onChanged),
+        ],
       ),
     );
   }

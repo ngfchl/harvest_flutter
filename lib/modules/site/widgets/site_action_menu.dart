@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
-import 'package:harvest/common/style.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/browser_page.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../model/site_info.dart';
 import '../provider/site_provider.dart';
 import 'site_detail_sheet.dart';
 import 'site_form_sheet.dart';
+import 'site_theme.dart';
 
 class SiteActionMenu extends ConsumerWidget {
   final SiteInfo site;
@@ -18,28 +20,18 @@ class SiteActionMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final anchorContext = context;
     final refreshing = ref.watch(
       siteRefreshingIdsProvider.select((ids) => ids.contains(site.id)),
     );
+    final content = Stack(
+      children: [child, if (refreshing) const _SiteCardLoadingOverlay()],
+    );
 
-    return FPopoverMenu.tiles(
-      style: fPopoverMenuStyle(context).call,
-      spacing: FPortalSpacing.zero,
-      menuBuilder: (_, controller, _) =>
-          _buildActionGroups(anchorContext, site, controller),
-      builder: (_, controller, menuChild) => GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: refreshing ? null : () => controller.toggle(),
-        onSecondaryTap: refreshing ? null : () => controller.toggle(),
-        child: menuChild!,
-      ),
-      child: Stack(
-        children: [
-          child,
-          if (refreshing) const _SiteCardLoadingOverlay(),
-        ],
-      ),
+    return AppContextMenu(
+      enabled: !refreshing,
+      behavior: HitTestBehavior.opaque,
+      items: _buildActionItems(context, ref, site),
+      child: content,
     );
   }
 }
@@ -49,10 +41,10 @@ class _SiteCardLoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = context.theme.colors;
+    final cs = shadcn.Theme.of(context).colorScheme;
     return Positioned.fill(
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: siteRadius(context, size: "xl"),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: cs.background.withValues(alpha: 0.72),
@@ -61,7 +53,7 @@ class _SiteCardLoadingOverlay extends StatelessWidget {
             child: SizedBox(
               width: 28,
               height: 28,
-              child: CircularProgressIndicator(
+              child: shadcn.CircularProgressIndicator(
                 strokeWidth: 2.4,
                 color: cs.primary,
               ),
@@ -77,11 +69,12 @@ class _SiteCardLoadingOverlay extends StatelessWidget {
 //  操作列表
 // ═══════════════════════════════════════════════════
 
-List<FTileGroupMixin> _buildActionGroups(
+List<shadcn.MenuItem> _buildActionItems(
   BuildContext context,
+  WidgetRef ref,
   SiteInfo site,
-  FPopoverController controller,
 ) {
+  final cs = shadcn.Theme.of(context).colorScheme;
   final disabled = !site.available;
   final alreadySigned = site.signInText == '已签到';
   final hasMirror = site.mirror != null && site.mirror!.isNotEmpty;
@@ -89,184 +82,179 @@ List<FTileGroupMixin> _buildActionGroups(
   // 已禁用站点：只显示查看详情、浏览器、编辑、删除
   if (disabled) {
     return [
-      FTileGroup(
-        children: [
-          FTile(
-            prefix: const Icon(FIcons.eye, size: 14),
-            title: const Text('查看详情'),
-            onPress: () async {
-              await controller.hide();
-              if (!context.mounted) return;
-              openDetail(context, site);
-            },
-          ),
-
-          FTile(
-            prefix: const Icon(FIcons.pencil, size: 14),
-            title: const Text('编辑'),
-            onPress: () async {
-              await controller.hide();
-              if (!context.mounted) return;
-              showSiteForm(context, site: site);
-            },
-          ),
-          if (hasMirror)
-            FTile(
-              prefix: const Icon(FIcons.globe, size: 14),
-              title: const Text('浏览'),
-              onPress: () async {
-                await controller.hide();
-                if (!context.mounted) return;
-                BrowserPage.open(
-                  context,
-                  url: site.mirror!,
-                  title: site.nickname,
-                  cookie: site.cookie,
-                  userAgent: site.userAgent,
-                );
-              },
-            ),
-          FTile(
-            prefix: Icon(
-              FIcons.trash2,
-              size: 14,
-              color: context.theme.colors.destructive,
-            ),
-            title: Text(
-              '删除',
-              style: TextStyle(color: context.theme.colors.destructive),
-            ),
-            onPress: () async {
-              await controller.hide();
-              if (!context.mounted) return;
-              _confirmDelete(context, site);
-            },
-          ),
-        ],
+      _menuItem(
+        icon: shadcn.LucideIcons.eye,
+        label: '查看详情',
+        onPressed: () {
+          if (!context.mounted) return;
+          openDetail(context, site);
+        },
+      ),
+      _menuItem(
+        icon: shadcn.LucideIcons.pencil,
+        label: '编辑',
+        onPressed: () {
+          if (!context.mounted) return;
+          showSiteForm(context, site: site);
+        },
+      ),
+      if (hasMirror)
+        _menuItem(
+          icon: shadcn.LucideIcons.globe,
+          label: '浏览',
+          onPressed: () {
+            if (!context.mounted) return;
+            _openSiteBrowser(context, site);
+          },
+        ),
+      const shadcn.MenuDivider(),
+      _menuItem(
+        icon: shadcn.LucideIcons.trash2,
+        label: '删除',
+        color: cs.destructive,
+        onPressed: () {
+          if (!context.mounted) return;
+          _confirmDelete(context, ref, site);
+        },
       ),
     ];
   }
 
   // 正常站点
   return [
-    FTileGroup(
-      children: [
-        FTile(
-          prefix: const Icon(FIcons.eye, size: 14),
-          title: const Text('详情'),
-          onPress: () async {
-            await controller.hide();
-            if (!context.mounted) return;
-            openDetail(context, site);
-          },
-        ),
-
-        FTile(
-          prefix: const Icon(FIcons.pencil, size: 14),
-          title: const Text('编辑'),
-          onPress: () async {
-            await controller.hide();
-            if (!context.mounted) return;
-            showSiteForm(context, site: site);
-          },
-        ),
-        FTile(
-          prefix: const Icon(FIcons.refreshCw, size: 14),
-          title: const Text('刷新'),
-          onPress: () async {
-            final notifier = ProviderScope.containerOf(
-              context,
-            ).read(siteInfoListProvider.notifier);
-            await controller.hide();
-            final message = await notifier.refreshStatus(site.id);
-            Toast.success(message);
-          },
-        ),
-        // 未签到才显示签到按钮
-        if (!alreadySigned)
-          FTile(
-            prefix: const Icon(FIcons.check, size: 14),
-            title: const Text('签到'),
-            onPress: () async {
-              final notifier = ProviderScope.containerOf(
-                context,
-              ).read(siteInfoListProvider.notifier);
-              await controller.hide();
-              final message = await notifier.signIn(site.id);
-              Toast.success(message);
-            },
-          ),
-        FTile(
-          prefix: const Icon(FIcons.copy, size: 14),
-          title: const Text('辅种'),
-          onPress: () async {
-            final notifier = ProviderScope.containerOf(
-              context,
-            ).read(siteInfoListProvider.notifier);
-            await controller.hide();
-            await notifier.repeat(site.id);
-          },
-        ),
-        if (hasMirror)
-          FTile(
-            prefix: const Icon(FIcons.globe, size: 14),
-            title: const Text('浏览'),
-            onPress: () async {
-              await controller.hide();
-              if (!context.mounted) return;
-              BrowserPage.open(
-                context,
-                url: site.mirror!,
-                title: site.nickname,
-                cookie: site.cookie,
-                userAgent: site.userAgent,
-              );
-            },
-          ),
-        FTile(
-          prefix: Icon(
-            FIcons.trash2,
-            size: 14,
-            color: context.theme.colors.destructive,
-          ),
-          title: Text(
-            '删除',
-            style: TextStyle(color: context.theme.colors.destructive),
-          ),
-          onPress: () async {
-            await controller.hide();
-            if (!context.mounted) return;
-            _confirmDelete(context, site);
-          },
-        ),
-      ],
+    _menuItem(
+      icon: shadcn.LucideIcons.eye,
+      label: '详情',
+      onPressed: () {
+        if (!context.mounted) return;
+        openDetail(context, site);
+      },
+    ),
+    _menuItem(
+      icon: shadcn.LucideIcons.pencil,
+      label: '编辑',
+      onPressed: () {
+        if (!context.mounted) return;
+        showSiteForm(context, site: site);
+      },
+    ),
+    const shadcn.MenuDivider(),
+    _menuItem(
+      icon: shadcn.LucideIcons.refreshCw,
+      label: '刷新',
+      onPressed: () async {
+        final notifier = ref.read(siteInfoListProvider.notifier);
+        final message = await notifier.refreshStatus(site.id);
+        Toast.success(message);
+      },
+    ),
+    // 未签到才显示签到按钮
+    if (!alreadySigned)
+      _menuItem(
+        icon: shadcn.LucideIcons.check,
+        label: '签到',
+        onPressed: () async {
+          final notifier = ref.read(siteInfoListProvider.notifier);
+          final message = await notifier.signIn(site.id);
+          Toast.success(message);
+        },
+      ),
+    _menuItem(
+      icon: shadcn.LucideIcons.copy,
+      label: '辅种',
+      onPressed: () async {
+        final notifier = ref.read(siteInfoListProvider.notifier);
+        await notifier.repeat(site.id);
+      },
+    ),
+    if (hasMirror)
+      _menuItem(
+        icon: shadcn.LucideIcons.globe,
+        label: '浏览',
+        onPressed: () {
+          if (!context.mounted) return;
+          _openSiteBrowser(context, site);
+        },
+      ),
+    const shadcn.MenuDivider(),
+    _menuItem(
+      icon: shadcn.LucideIcons.trash2,
+      label: '删除',
+      color: cs.destructive,
+      onPressed: () {
+        if (!context.mounted) return;
+        _confirmDelete(context, ref, site);
+      },
     ),
   ];
+}
+
+bool _isKiswebSite(SiteInfo site) {
+  final name = site.site.toLowerCase();
+  final nickname = site.nickname.toLowerCase();
+  final mirror = (site.mirror ?? '').toLowerCase();
+  return name.contains('kisweb') ||
+      nickname.contains('kisweb') ||
+      mirror.contains('kisweb');
+}
+
+Future<void> _openSiteBrowser(BuildContext context, SiteInfo site) async {
+  final url = site.mirror?.trim() ?? '';
+  if (url.isEmpty) return;
+
+  if (_isKiswebSite(site)) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || !uri.hasScheme) {
+      Toast.warning('站点地址无效');
+      return;
+    }
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened) Toast.error('外部浏览器打开失败');
+    return;
+  }
+
+  BrowserPage.open(
+    context,
+    url: url,
+    title: site.nickname.isNotEmpty ? site.nickname : site.site,
+    cookie: site.cookie,
+    userAgent: site.userAgent,
+  );
+}
+
+shadcn.MenuButton _menuItem({
+  required IconData icon,
+  required String label,
+  required VoidCallback onPressed,
+  Color? color,
+}) {
+  final style = color == null ? null : TextStyle(color: color);
+  return shadcn.MenuButton(
+    leading: Icon(icon, color: color),
+    onPressed: (_) => onPressed(),
+    child: Text(label, style: style),
+  );
 }
 
 // ═══════════════════════════════════════════════════
 //  删除确认
 // ═══════════════════════════════════════════════════
 
-void _confirmDelete(BuildContext context, SiteInfo site) {
-  final notifier = ProviderScope.containerOf(
-    context,
-  ).read(siteInfoListProvider.notifier);
+void _confirmDelete(BuildContext context, WidgetRef ref, SiteInfo site) {
+  final notifier = ref.read(siteInfoListProvider.notifier);
 
-  showDialog(
+  shadcn.showDialog(
     context: context,
-    builder: (ctx) => FDialog(
+    builder: (ctx) => shadcn.AlertDialog(
       title: const Text('确认删除'),
-      body: Text('确定要删除站点「${site.site}」吗？'),
+      content: Text('确定要删除站点「${site.site}」吗？'),
       actions: [
-        FButton(
-          style: FButtonStyle.outline(),
-          onPress: () => Navigator.pop(ctx),
+        shadcn.Button.outline(
+          onPressed: () => Navigator.pop(ctx),
           child: const Text('取消'),
         ),
-        FButton(
-          style: FButtonStyle.destructive(),
-          onPress: () async {
+        shadcn.Button.destructive(
+          onPressed: () async {
             Navigator.pop(ctx);
             await notifier.delete(site.id);
           },

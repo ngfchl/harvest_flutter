@@ -14,7 +14,8 @@ abstract class DetailRating with _$DetailRating {
     @Default(0.0) double value,
   }) = _DetailRating;
 
-  factory DetailRating.fromJson(Map<String, dynamic> json) => _$DetailRatingFromJson(json);
+  factory DetailRating.fromJson(Map<String, dynamic> json) =>
+      _$DetailRatingFromJson(json);
 }
 
 // ─── Person (演员/导演/编剧) ───
@@ -30,7 +31,8 @@ abstract class Person with _$Person {
 
 @freezed
 abstract class Pic with _$Pic {
-  const factory Pic({@Default('') String large, @Default('') String normal}) = _Pic;
+  const factory Pic({@Default('') String large, @Default('') String normal}) =
+      _Pic;
 
   factory Pic.fromJson(Map<String, dynamic> json) => _$PicFromJson(json);
 }
@@ -47,7 +49,8 @@ abstract class Trailer with _$Trailer {
     @Default('') String runtime,
   }) = _Trailer;
 
-  factory Trailer.fromJson(Map<String, dynamic> json) => _$TrailerFromJson(json);
+  factory Trailer.fromJson(Map<String, dynamic> json) =>
+      _$TrailerFromJson(json);
 }
 
 // ─── Vendor (播放源) ───
@@ -73,10 +76,14 @@ abstract class Vendor with _$Vendor {
 
 @freezed
 abstract class LinewatchSource with _$LinewatchSource {
-  const factory LinewatchSource({@Default('') String literal, @Default('') String name, @Default('') String pic}) =
-      _LinewatchSource;
+  const factory LinewatchSource({
+    @Default('') String literal,
+    @Default('') String name,
+    @Default('') String pic,
+  }) = _LinewatchSource;
 
-  factory LinewatchSource.fromJson(Map<String, dynamic> json) => _$LinewatchSourceFromJson(json);
+  factory LinewatchSource.fromJson(Map<String, dynamic> json) =>
+      _$LinewatchSourceFromJson(json);
 }
 
 @freezed
@@ -87,7 +94,8 @@ abstract class Linewatch with _$Linewatch {
     @Default('') String url,
   }) = _Linewatch;
 
-  factory Linewatch.fromJson(Map<String, dynamic> json) => _$LinewatchFromJson(json);
+  factory Linewatch.fromJson(Map<String, dynamic> json) =>
+      _$LinewatchFromJson(json);
 }
 
 // ─── RealtimeHonor ───
@@ -102,7 +110,8 @@ abstract class RealtimeHonor with _$RealtimeHonor {
     @Default('') String uri,
   }) = _RealtimeHonor;
 
-  factory RealtimeHonor.fromJson(Map<String, dynamic> json) => _$RealtimeHonorFromJson(json);
+  factory RealtimeHonor.fromJson(Map<String, dynamic> json) =>
+      _$RealtimeHonorFromJson(json);
 }
 
 // ─── VideoDetail (主 Model) ───
@@ -136,7 +145,9 @@ abstract class VideoDetail with _$VideoDetail {
     @Default(<Trailer>[]) List<Trailer> trailers,
     @Default(<Vendor>[]) List<Vendor> vendors,
     @Default(<Linewatch>[]) List<Linewatch> linewatches,
-    @Default(<RealtimeHonor>[]) @JsonKey(name: 'realtime_hot_honor_infos') List<RealtimeHonor> realtimeHonorInfos,
+    @Default(<RealtimeHonor>[])
+    @JsonKey(name: 'realtime_hot_honor_infos')
+    List<RealtimeHonor> realtimeHonorInfos,
     @Default(0) @JsonKey(name: 'comment_count') int commentCount,
     @Default(0) @JsonKey(name: 'review_count') int reviewCount,
     @Default(0) @JsonKey(name: 'forum_topic_count') int forumTopicCount,
@@ -146,5 +157,6 @@ abstract class VideoDetail with _$VideoDetail {
     @Default('') String subtype,
   }) = _VideoDetail;
 
-  factory VideoDetail.fromJson(Map<String, dynamic> json) => _$VideoDetailFromJson(json);
+  factory VideoDetail.fromJson(Map<String, dynamic> json) =>
+      _$VideoDetailFromJson(json);
 }
