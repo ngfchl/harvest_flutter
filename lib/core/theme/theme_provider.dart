@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:harvest/core/theme/theme_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+
 import 'app_theme.dart';
 import 'theme_presets.dart';
 
@@ -10,49 +11,61 @@ part 'theme_provider.g.dart';
 class ThemeNotifier extends _$ThemeNotifier {
   @override
   ThemeState build() {
-    _load();
-    return  ThemeState(
-      theme: AppThemes.blue,
-      mode: ThemeMode.system,
-    );
+    return ThemeStorage.getPersistedStateSync();
   }
 
-  Future<void> _load() async {
-    final themeName = await ThemeStorage.getTheme();
-    final modeStr = await ThemeStorage.getMode();
-
-    final theme = AppThemes.list.firstWhere(
-          (t) => t.name == themeName,
-      orElse: () => AppThemes.blue,
-    );
-
-    final mode = switch (modeStr) {
-      'light' => ThemeMode.light,
-      'dark' => ThemeMode.dark,
-      'system' => ThemeMode.system,
-      _ => ThemeMode.system,
-    };
-
-    state = ThemeState(theme: theme, mode: mode);
-  }
+  Future<void> _persist() => ThemeStorage.saveState(state);
 
   void setTheme(AppTheme theme) {
-    state = ThemeState(
-      theme: theme,
-      mode: state.mode,
+    state = state.copyWith(
+      baseScheme: theme.baseScheme,
+      accent: theme.accent,
     );
-
-    /// 💾 persist
-    ThemeStorage.saveTheme(theme.name);
+    _persist();
   }
 
-  void setMode(ThemeMode mode) {
-    state = ThemeState(
-      theme: state.theme,
-      mode: mode,
-    );
+  void setMode(shadcn.ThemeMode mode) {
+    state = state.copyWith(mode: mode);
+    _persist();
+  }
 
-    /// 💾 persist
-    ThemeStorage.saveMode(mode.name);
+  void setBaseScheme(String baseScheme) {
+    state = state.copyWith(baseScheme: AppThemeOptions.normalizeBase(baseScheme));
+    _persist();
+  }
+
+  void setAccent(String accent) {
+    state = state.copyWith(accent: AppThemeOptions.normalizeAccent(accent));
+    _persist();
+  }
+
+  void setRadius(double radius) {
+    state = state.copyWith(radius: radius);
+    _persist();
+  }
+
+  void setDensity(String density) {
+    state = state.copyWith(density: AppThemeOptions.normalizeDensity(density));
+    _persist();
+  }
+
+  void setScaling(double scaling) {
+    state = state.copyWith(scaling: scaling);
+    _persist();
+  }
+
+  void setSurfaceOpacity(double surfaceOpacity) {
+    state = state.copyWith(surfaceOpacity: surfaceOpacity);
+    _persist();
+  }
+
+  void setSurfaceBlur(double surfaceBlur) {
+    state = state.copyWith(surfaceBlur: surfaceBlur);
+    _persist();
+  }
+
+  void reset() {
+    state = const ThemeState();
+    _persist();
   }
 }

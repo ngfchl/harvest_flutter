@@ -1,15 +1,18 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 ClassicHeader appRefreshHeader(
   BuildContext context, {
   bool showMessage = true,
   String messageText = '最后更新于 %T',
 }) {
-  final theme = FTheme.of(context);
-  final color = theme.colors.mutedForeground.withValues(alpha: 0.5);
-  final textStyle = theme.typography.xs.copyWith(color: color, fontSize: 11);
+  final theme = shadcn.Theme.of(context);
+  final color = theme.colorScheme.mutedForeground.withValues(alpha: 0.5);
+  final textStyle = theme.typography.xSmall.copyWith(
+    color: color,
+    fontSize: 11,
+  );
 
   return ClassicHeader(
     dragText: '下拉刷新',
