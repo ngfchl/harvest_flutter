@@ -1,14 +1,14 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/shell/widgets/log_floating_overlay.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../login/login_history_provider.dart';
 import 'auth_provider.dart';
@@ -30,14 +30,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void initState() {
     super.initState();
     final savedServer = HiveManager.get<String>(StorageKeys.baseUrl) ?? '';
+    final webServer = kIsWeb ? _webServerFromPageUrl() : null;
     if (kDebugMode) {
       _serverController = TextEditingController(
-        text: savedServer.isNotEmpty ? savedServer : 'http://127.0.0.1:8000',
+        text: webServer ??
+            (savedServer.isNotEmpty ? savedServer : 'http://127.0.0.1:8000'),
       );
       _usernameController = TextEditingController(text: 'admin');
       _passwordController = TextEditingController(text: 'adminadmin');
     } else {
-      _serverController = TextEditingController(text: savedServer);
+      _serverController = TextEditingController(text: webServer ?? savedServer);
       _usernameController = TextEditingController();
       _passwordController = TextEditingController();
     }
@@ -56,11 +58,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final auth = ref.watch(authNotifierProvider);
     final loginHistory = ref.watch(loginHistoryProvider);
     final showLoginHistory = loginHistory.length >= 2;
+    final tokens = _LoginThemeTokens.of(context);
+    final theme = tokens.theme;
+    final cs = theme.colorScheme;
 
     ref.listen(loginHistoryProvider, (prev, next) {
       if (!_filledFromHistory && next.isNotEmpty) {
         final latest = next.first;
-        if (_serverController.text.trim().isEmpty) {
+        if (!kIsWeb && _serverController.text.trim().isEmpty) {
           _serverController.text = latest.server;
         }
         if (_usernameController.text.trim().isEmpty) {
@@ -73,53 +78,65 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
     });
 
-    return FScaffold(
-      childPad: false,
+    return ColoredBox(
+      color: cs.background,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: tokens.edgeSymmetric(horizontal: 16),
         child: Center(
-          child: SizedBox(
-            width: 320,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: tokens.formWidth),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(height: 40),
+                  tokens.vGap(40),
                   Image.asset(
                     'assets/images/logo.png',
-                    width: 108,
-                    height: 108,
+                    width: tokens.logoSize,
+                    height: tokens.logoSize,
                     fit: BoxFit.contain,
                   ),
-                  const SizedBox(height: 16),
+                  tokens.vGap(16),
                   Text(
                     kDebugMode ? '调试模式' : 'PT 一下',
-                    style: const TextStyle(fontSize: 24),
+                    style: theme.typography.xLarge.copyWith(
+                      color: cs.foreground,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  FTextField(
+                  tokens.vGap(20),
+                  shadcn.TextField(
                     controller: _serverController,
-                    label: const Text('服务器地址'),
+                    placeholder: const Text('服务器地址'),
+                    enabled: !kIsWeb,
                   ),
-                  const SizedBox(height: 12),
-                  FTextField(
+                  tokens.fieldGap,
+                  shadcn.TextField(
                     controller: _usernameController,
-                    label: const Text('账号'),
+                    placeholder: const Text('账号'),
                   ),
-                  const SizedBox(height: 12),
-                  FTextField(
+                  tokens.fieldGap,
+                  shadcn.TextField(
                     controller: _passwordController,
-                    label: const Text('密码'),
+                    placeholder: const Text('密码'),
                     obscureText: true,
+                    features: const [shadcn.InputFeature.passwordToggle()],
                   ),
-                  const SizedBox(height: 20),
+                  tokens.vGap(20),
                   Row(
                     children: [
                       Expanded(
-                        child: FButton(
-                          onPress: auth.loading
+                        child: shadcn.Button.primary(
+                          onPressed: auth.loading
                               ? null
                               : () async {
+                                  final serverError = _validateServerAddress(
+                                    _serverController.text,
+                                  );
+                                  if (serverError != null) {
+                                    Toast.error(serverError);
+                                    return;
+                                  }
                                   try {
                                     await ref
                                         .read(authNotifierProvider.notifier)
@@ -138,29 +155,33 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     }
                                   }
                                 },
-                          child: Text(auth.loading ? '登录中...' : '登录'),
+                          child: Center(child: Text(auth.loading ? '登录中...' : '登录')),
                         ),
                       ),
                       if (showLoginHistory) ...[
-                        const SizedBox(width: 10),
-                        FButton.icon(
-                          style: FButtonStyle.outline(),
-                          onPress: auth.loading
+                        tokens.actionGap,
+                        shadcn.IconButton.outline(
+                          onPressed: auth.loading
                               ? null
                               : () => context.go('/login-history'),
-                          child: FTooltip(
-                            tipBuilder: (_, __) => const Text('登录历史'),
-                            child: const Icon(FIcons.history, size: 18),
+                          icon: shadcn.Tooltip(
+                            tooltip: (_) => const Text('登录历史'),
+                            child: Icon(
+                              shadcn.LucideIcons.history,
+                              size: tokens.iconSize,
+                            ),
                           ),
                         ),
                       ],
-                      const SizedBox(width: 10),
-                      FButton.icon(
-                        style: FButtonStyle.outline(),
-                        onPress: () => LogOverlayManager.toggle(context),
-                        child: FTooltip(
-                          tipBuilder: (_, __) => const Text('日志中心'),
-                          child: const Icon(FIcons.terminal, size: 18),
+                      tokens.actionGap,
+                      shadcn.IconButton.outline(
+                        onPressed: () => LogOverlayManager.toggle(context),
+                        icon: shadcn.Tooltip(
+                          tooltip: (_) => const Text('日志中心'),
+                          child: Icon(
+                            shadcn.LucideIcons.terminal,
+                            size: tokens.iconSize,
+                          ),
                         ),
                       ),
                     ],
@@ -214,4 +235,60 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
     return null;
   }
+
+  String _webServerFromPageUrl() {
+    final uri = Uri.base;
+    if (uri.host.isEmpty) return uri.origin;
+    final port = uri.hasPort ? ':${uri.port}' : '';
+    return '${uri.scheme}://${uri.host}$port';
+  }
+
+  String? _validateServerAddress(String input) {
+    final server = input.trim();
+    if (server.length < 10) return '服务器地址长度不能少于 10 位';
+    if (!(server.startsWith('http://') || server.startsWith('https://'))) {
+      return '服务器地址必须以 http:// 或 https:// 开头';
+    }
+    return null;
+  }
+}
+
+class _LoginThemeTokens {
+  final shadcn.ThemeData theme;
+  final double densityScale;
+  final double textScale;
+
+  _LoginThemeTokens._({required this.theme, required this.densityScale, required this.textScale});
+
+  factory _LoginThemeTokens.of(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.62, 1.45);
+    final textScale = theme.scaling.clamp(0.86, 1.30);
+    return _LoginThemeTokens._(
+      theme: theme,
+      densityScale: densityScale.toDouble(),
+      textScale: textScale.toDouble(),
+    );
+  }
+
+  double size(num value) => value * densityScale;
+
+  double font(num value) => value * textScale;
+
+  double get formWidth => size(320);
+
+  double get logoSize => size(108);
+
+  double get iconSize => font(18);
+
+  SizedBox get fieldGap => vGap(12);
+
+  SizedBox get actionGap => hGap(10);
+
+  EdgeInsets edgeSymmetric({num horizontal = 0, num vertical = 0}) =>
+      EdgeInsets.symmetric(horizontal: size(horizontal), vertical: size(vertical));
+
+  SizedBox hGap(num value) => SizedBox(width: size(value));
+
+  SizedBox vGap(num value) => SizedBox(height: size(value));
 }
