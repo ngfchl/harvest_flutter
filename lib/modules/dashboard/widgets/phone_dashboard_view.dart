@@ -1077,11 +1077,9 @@ extension _PhoneDashboardView on _DashboardPageState {
     final cs = shadcn.Theme.of(context).colorScheme;
     return SizedBox(
       width: width,
-      child: shadcn.Tooltip(
-        tooltip: (_) => Text(tooltip ?? '$label\n$value\n$caption'),
-        child: GestureDetector(
-          onTap: onTap,
-          child: SizedBox(
+      child: GestureDetector(
+        onTap: onTap,
+        child: SizedBox(
             height: 92,
             child: shadcn.Card(
               padding: const EdgeInsets.all(10),
@@ -1093,16 +1091,19 @@ extension _PhoneDashboardView on _DashboardPageState {
                 children: [
                   Row(
                     children: [
-                      SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: shadcn.Card(
-                          padding: EdgeInsets.zero,
-                          filled: true,
-                          fillColor: color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(999),
-                          borderColor: color.withValues(alpha: 0.08),
-                          child: Icon(icon, size: 14, color: color),
+                      _DashboardIconTooltip(
+                        message: tooltip ?? '$label\n$value\n$caption',
+                        child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: shadcn.Card(
+                            padding: EdgeInsets.zero,
+                            filled: true,
+                            fillColor: color.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(999),
+                            borderColor: color.withValues(alpha: 0.08),
+                            child: Icon(icon, size: 14, color: color),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -1137,7 +1138,6 @@ extension _PhoneDashboardView on _DashboardPageState {
                 ],
               ),
             ),
-          ),
         ),
       ),
     );
@@ -1187,27 +1187,28 @@ extension _PhoneDashboardView on _DashboardPageState {
   ) {
     final cs = shadcn.Theme.of(context).colorScheme;
     return Expanded(
-      child: shadcn.Tooltip(
-        tooltip: (_) => Text('$title\n$subtitle'),
-        child: GestureDetector(
-          onTap: onTap,
-          child: SizedBox(
+      child: GestureDetector(
+        onTap: onTap,
+        child: SizedBox(
             height: 102,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: shadcn.Card(
-                    padding: EdgeInsets.zero,
-                    filled: true,
-                    fillColor: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(999),
-                    borderColor: color.withValues(alpha: 0.10),
-                    child: loading
-                        ? shadcn.CircularProgressIndicator(size: 22, color: color)
-                        : Icon(icon, size: 27, color: color),
+                _DashboardIconTooltip(
+                  message: '$title\n$subtitle',
+                  child: SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: shadcn.Card(
+                      padding: EdgeInsets.zero,
+                      filled: true,
+                      fillColor: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999),
+                      borderColor: color.withValues(alpha: 0.10),
+                      child: loading
+                          ? shadcn.CircularProgressIndicator(size: 22, color: color)
+                          : Icon(icon, size: 27, color: color),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -1228,7 +1229,6 @@ extension _PhoneDashboardView on _DashboardPageState {
                 ),
               ],
             ),
-          ),
         ),
       ),
     );
@@ -2312,21 +2312,22 @@ extension _PhoneDashboardView on _DashboardPageState {
     final cs = shadcn.Theme.of(context).colorScheme;
     final pct = total <= 0 ? 0.0 : item.value / total * 100;
     final valueText = item.valueText ?? formatBytes(item.value);
-    return shadcn.Tooltip(
-      tooltip: (_) => Text(item.tooltip ?? '${item.name}\n数值\t$valueText\n占比\t${pct.toStringAsFixed(1)}%'),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
           children: [
-            SizedBox(
-              width: 9,
-              height: 9,
-              child: shadcn.Card(
-                padding: EdgeInsets.zero,
-                filled: true,
-                fillColor: item.color,
-                borderColor: item.color,
-                child: const SizedBox.expand(),
+            _DashboardIconTooltip(
+              message: item.tooltip ?? '${item.name}\n数值\t$valueText\n占比\t${pct.toStringAsFixed(1)}%',
+              child: SizedBox(
+                width: 9,
+                height: 9,
+                child: shadcn.Card(
+                  padding: EdgeInsets.zero,
+                  filled: true,
+                  fillColor: item.color,
+                  borderColor: item.color,
+                  child: const SizedBox.expand(),
+                ),
               ),
             ),
             const SizedBox(width: 7),
@@ -2357,7 +2358,6 @@ extension _PhoneDashboardView on _DashboardPageState {
               ),
             ),
           ],
-        ),
       ),
     );
   }

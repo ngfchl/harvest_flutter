@@ -64,6 +64,138 @@ extension _DashboardThemeRadius on BuildContext {
   BorderRadius get _dashRadiusXl => _dashTheme.borderRadiusXl;
 }
 
+class _DashboardIconTooltip extends StatelessWidget {
+  final String message;
+  final Widget child;
+  final Alignment alignment;
+  final Alignment anchorAlignment;
+
+  const _DashboardIconTooltip({
+    required this.message,
+    required this.child,
+    this.alignment = Alignment.topCenter,
+    this.anchorAlignment = Alignment.bottomCenter,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (message.trim().isEmpty) return child;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _showDashboardIconTooltip(
+        context,
+        message,
+        alignment: alignment,
+        anchorAlignment: anchorAlignment,
+      ),
+      child: child,
+    );
+  }
+}
+
+void _showDashboardIconTooltip(
+  BuildContext anchorContext,
+  String message, {
+  Alignment alignment = Alignment.topCenter,
+  Alignment anchorAlignment = Alignment.bottomCenter,
+}) {
+  shadcn.showPopover<void>(
+    context: anchorContext,
+    handler: const shadcn.PopoverOverlayHandler(),
+    alignment: alignment,
+    anchorAlignment: anchorAlignment,
+    offset: const Offset(0, 8),
+    consumeOutsideTaps: false,
+    builder: (context) => _DashboardIconTooltipPanel(message: message),
+  );
+}
+
+class _DashboardIconTooltipPanel extends StatelessWidget {
+  final String message;
+
+  const _DashboardIconTooltipPanel({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final lines = message.split('\n');
+    final title = lines.isNotEmpty ? lines.first : '详情';
+    final body = lines.length > 1 ? lines.skip(1).toList() : const <String>[];
+    final width = (MediaQuery.sizeOf(context).width - 32).clamp(220.0, 320.0).toDouble();
+
+    return shadcn.ModalContainer(
+      padding: EdgeInsets.all(theme.density.baseContentPadding * theme.scaling),
+      child: SizedBox(
+        width: width,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.typography.small.copyWith(
+                      color: cs.foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                shadcn.IconButton.ghost(
+                  density: shadcn.ButtonDensity.compact,
+                  icon: Icon(shadcn.LucideIcons.x, size: 15, color: cs.mutedForeground),
+                  onPressed: () => shadcn.closeOverlay(context),
+                ),
+              ],
+            ),
+            if (body.isNotEmpty) ...[
+              SizedBox(height: theme.density.baseGap * theme.scaling),
+              ...body.map(
+                (line) {
+                  final tabIndex = line.indexOf('\t');
+                  if (tabIndex > 0) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              line.substring(0, tabIndex),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            line.substring(tabIndex + 1),
+                            style: theme.typography.xSmall.copyWith(
+                              color: cs.foreground,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Text(line, style: theme.typography.xSmall.copyWith(color: cs.mutedForeground)),
+                  );
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
 
@@ -1786,7 +1918,19 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           shrinkWrap: true,
           padding: EdgeInsets.zero,
           children: [
-            if (!hideTitle)
+            if (hideTitle)
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _hideDashboardOverlayTooltip,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8, bottom: 4),
+                    child: Icon(shadcn.LucideIcons.x, size: 14, color: theme.colorScheme.mutedForeground),
+                  ),
+                ),
+              )
+            else
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
@@ -1870,7 +2014,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       ),
     );
     overlay.insert(_dashboardTooltipEntry!);
-    _dashboardTooltipTimer = Timer(const Duration(seconds: 12), _hideDashboardOverlayTooltip);
+    _dashboardTooltipTimer = Timer(const Duration(seconds: 5), _hideDashboardOverlayTooltip);
   }
 
   void _hideDashboardOverlayTooltip() {

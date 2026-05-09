@@ -32,6 +32,90 @@ import 'desktop_chart_config.dart';
 import 'phone_chart_settings.dart';
 import 'treemap.dart';
 
+class _DesktopDashboardIconTooltip extends StatelessWidget {
+  final String message;
+  final Widget child;
+
+  const _DesktopDashboardIconTooltip({
+    required this.message,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => shadcn.showPopover<void>(
+        context: context,
+        handler: const shadcn.PopoverOverlayHandler(),
+        alignment: Alignment.topCenter,
+        anchorAlignment: Alignment.bottomCenter,
+        offset: const Offset(0, 8),
+        consumeOutsideTaps: false,
+        builder: (context) => _DesktopDashboardIconTooltipPanel(message: message),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _DesktopDashboardIconTooltipPanel extends StatelessWidget {
+  final String message;
+
+  const _DesktopDashboardIconTooltipPanel({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final lines = message.split('\n');
+    final title = lines.isNotEmpty ? lines.first : '详情';
+    final body = lines.length > 1 ? lines.skip(1).toList() : const <String>[];
+
+    return shadcn.ModalContainer(
+      padding: EdgeInsets.all(theme.density.baseContentPadding * theme.scaling),
+      child: SizedBox(
+        width: 260,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.typography.small.copyWith(
+                      color: cs.foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                shadcn.IconButton.ghost(
+                  density: shadcn.ButtonDensity.compact,
+                  icon: Icon(shadcn.LucideIcons.x, size: 15, color: cs.mutedForeground),
+                  onPressed: () => shadcn.closeOverlay(context),
+                ),
+              ],
+            ),
+            if (body.isNotEmpty) ...[
+              SizedBox(height: theme.density.baseGap * theme.scaling),
+              ...body.map(
+                (line) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Text(line, style: theme.typography.xSmall.copyWith(color: cs.mutedForeground)),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class DesktopDashboardPage extends ConsumerStatefulWidget {
   const DesktopDashboardPage({super.key});
 
@@ -83,8 +167,17 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   _ChartTooltipData? _trendTooltip;
   Offset? _trendTooltipPosition;
   bool _trendTooltipHovering = false;
+  int _chartTooltipCloseSerial = 0;
 
   bool get _busy => _refreshingDashboard || _refreshingSites || _signingIn;
+
+  void _scheduleChartTooltipClose(VoidCallback onClose) {
+    final serial = ++_chartTooltipCloseSerial;
+    Future<void>.delayed(const Duration(seconds: 5), () {
+      if (!mounted || serial != _chartTooltipCloseSerial) return;
+      onClose();
+    });
+  }
 
   @override
   void initState() {
@@ -571,12 +664,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     final selected = current == mode;
     final theme = shadcn.Theme.of(context);
 
-    return Tooltip(
-      message: tooltip,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => ref.read(themeNotifierProvider.notifier).setMode(mode),
-        child: AnimatedContainer(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => ref.read(themeNotifierProvider.notifier).setMode(mode),
+      child: AnimatedContainer(
           duration: const Duration(milliseconds: 140),
           height: tokens.size(32),
           padding: tokens.edgeSymmetric(horizontal: 8),
@@ -587,10 +678,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                size: tokens.size(14),
-                color: selected ? colors.primaryForeground : _cyan,
+              _DesktopDashboardIconTooltip(
+                message: tooltip,
+                child: Icon(
+                  icon,
+                  size: tokens.size(14),
+                  color: selected ? colors.primaryForeground : _cyan,
+                ),
               ),
               tokens.hGap(4),
               Text(
@@ -603,7 +697,6 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
               ),
             ],
           ),
-        ),
       ),
     );
   }
@@ -2205,20 +2298,22 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       return _boardEmpty('暂无数据');
     }
     final total = items.fold<num>(0, (sum, item) => sum + item.value);
+    late final TooltipBehavior tooltipBehavior;
+    tooltipBehavior = TooltipBehavior(
+      enable: true,
+      activationMode: ActivationMode.singleTap,
+      animationDuration: 0,
+      duration: 5000,
+      elevation: 24,
+      opacity: 1,
+      color: _panel,
+      canShowMarker: false,
+      builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
+          _donutTooltip(dataPoint, items, formatter, onClose: () => tooltipBehavior.hide()),
+    );
     return SfCircularChart(
       margin: EdgeInsets.zero,
-      tooltipBehavior: TooltipBehavior(
-        enable: true,
-        activationMode: ActivationMode.singleTap,
-        animationDuration: 0,
-        duration: 5000,
-        elevation: 24,
-        opacity: 1,
-        color: _panel,
-        canShowMarker: false,
-        builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
-            _donutTooltip(dataPoint, items, formatter),
-      ),
+      tooltipBehavior: tooltipBehavior,
       annotations: [
         CircularChartAnnotation(
           widget: Column(
@@ -2570,8 +2665,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   Widget _donutTooltip(
     dynamic dataPoint,
     List<_NameValuePoint> items,
-    String Function(num) formatter,
-  ) {
+    String Function(num) formatter, {
+    VoidCallback? onClose,
+  }) {
     if (dataPoint is! _NameValuePoint) {
       return const SizedBox.shrink();
     }
@@ -2581,7 +2677,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     return _chartTooltip(dataPoint.name, [
       _TooltipLine('数值', formatter(dataPoint.value), _cyan),
       _TooltipLine('占比', '${percent.toStringAsFixed(1)}%', _amber),
-    ]);
+    ], onClose: onClose);
   }
 
   List<_TooltipSegment> _transferSegments({
@@ -2744,12 +2840,14 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     List<_TooltipLine> rows, {
     double width = 220,
     double maxHeight = 240,
+    VoidCallback? onClose,
   }) {
     final tokens = _tokens;
     final hasSummary = rows.isNotEmpty && rows.first.label == '汇总';
     final summary = hasSummary ? rows.first : null;
     final detailRows = hasSummary ? rows.skip(1).toList() : rows;
     final cs = shadcn.Theme.of(context).colorScheme;
+    if (onClose != null) _scheduleChartTooltipClose(onClose);
 
     return Container(
       width: tokens.size(width),
@@ -2789,6 +2887,14 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
               if (summary != null) ...[
                 tokens.hGap(12),
                 _tooltipValue(summary, fontSize: tokens.font(11)),
+              ],
+              if (onClose != null) ...[
+                tokens.hGap(8),
+                shadcn.IconButton.ghost(
+                  density: shadcn.ButtonDensity.compact,
+                  icon: Icon(shadcn.LucideIcons.x, size: tokens.size(14), color: _muted),
+                  onPressed: onClose,
+                ),
               ],
             ],
           ),
@@ -3091,20 +3197,23 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       );
     }
 
+    late final TooltipBehavior tooltipBehavior;
+    tooltipBehavior = TooltipBehavior(
+      enable: true,
+      activationMode: ActivationMode.singleTap,
+      animationDuration: 0,
+      duration: 5000,
+      elevation: 24,
+      opacity: 1,
+      color: _panel,
+      canShowMarker: false,
+      builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
+          _todayIncrementDonutTooltip(dataPoint, items, onClose: () => tooltipBehavior.hide()),
+    );
+
     return SfCircularChart(
       margin: EdgeInsets.zero,
-      tooltipBehavior: TooltipBehavior(
-        enable: true,
-        activationMode: ActivationMode.singleTap,
-        animationDuration: 0,
-        duration: 5000,
-        elevation: 24,
-        opacity: 1,
-        color: _panel,
-        canShowMarker: false,
-        builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
-            _todayIncrementDonutTooltip(dataPoint, items),
-      ),
+      tooltipBehavior: tooltipBehavior,
       annotations: [
         CircularChartAnnotation(
           widget: Column(
@@ -3150,7 +3259,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   Widget _todayIncrementDonutTooltip(
     dynamic dataPoint,
     List<_NameValuePoint> items,
-  ) {
+    {
+    VoidCallback? onClose,
+  }) {
     if (dataPoint is! _NameValuePoint) {
       return const SizedBox.shrink();
     }
@@ -3160,7 +3271,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     return _chartTooltip(dataPoint.name, [
       _TooltipLine('数值', formatBytes(dataPoint.value), _cyan),
       _TooltipLine('占比', '${percent.toStringAsFixed(1)}%', _amber),
-    ]);
+    ], onClose: onClose);
   }
 
   Widget _buildMonthlyPublishPanel(

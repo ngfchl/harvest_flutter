@@ -64,16 +64,7 @@ class _TreemapSectionState extends State<TreemapSection> {
 
   Widget _buildTooltipContent() {
     final theme = shadcn.Theme.of(context);
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 280),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      // decoration: BoxDecoration(
-      //   color: theme.colorScheme.background,
-      //   borderRadius: shadcn.Theme.of(context).borderRadiusMd,
-      //   border: Border.all(color: theme.colorScheme.border),
-      //   boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.22), blurRadius: 20, offset: const Offset(0, 8))],
-      // ),
-      child: Row(
+    return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         mainAxisSize: MainAxisSize.min,
@@ -141,7 +132,41 @@ class _TreemapSectionState extends State<TreemapSection> {
             ],
           ),
         ],
+    );
+  }
+
+  Widget _buildTooltipPanel() {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    return shadcn.ModalContainer(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: SizedBox(
+        width: 300,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(child: _buildTooltipContent()),
+            const SizedBox(width: 8),
+            shadcn.IconButton.ghost(
+              density: shadcn.ButtonDensity.compact,
+              icon: Icon(shadcn.LucideIcons.x, size: 15, color: cs.mutedForeground),
+              onPressed: () => shadcn.closeOverlay(context),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  void _showTreemapTooltip(BuildContext anchorContext) {
+    shadcn.showPopover<void>(
+      context: anchorContext,
+      handler: const shadcn.PopoverOverlayHandler(),
+      alignment: Alignment.topCenter,
+      anchorAlignment: Alignment.bottomCenter,
+      offset: const Offset(0, 8),
+      consumeOutsideTaps: false,
+      builder: (_) => _buildTooltipPanel(),
     );
   }
 
@@ -200,9 +225,7 @@ class _TreemapSectionState extends State<TreemapSection> {
       );
     }
 
-    return shadcn.Tooltip(
-      tooltip: (_) => _buildTooltipContent(),
-      child: Column(
+    return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
@@ -230,30 +253,32 @@ class _TreemapSectionState extends State<TreemapSection> {
                       top: r.top,
                       width: r.width,
                       height: r.height,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          if (item.isReduce) {
-                            setState(
-                              () => _displayCount = (_displayCount - _step)
-                                  .clamp(_step, widget.data.length),
+                      child: Builder(
+                        builder: (tileContext) => GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            if (item.isReduce) {
+                              setState(
+                                () => _displayCount = (_displayCount - _step)
+                                    .clamp(_step, widget.data.length),
+                              );
+                              return;
+                            }
+                            if (item.isLast) {
+                              setState(
+                                () => _displayCount = (_displayCount + _step)
+                                    .clamp(0, widget.data.length),
+                              );
+                              return;
+                            }
+                            final siteIndex = widget.data.indexWhere(
+                              (e) => _mask(e.name, widget.privacy) == item.name,
                             );
-                            return;
-                          }
-                          if (item.isLast) {
-                            setState(
-                              () => _displayCount = (_displayCount + _step)
-                                  .clamp(0, widget.data.length),
-                            );
-                            return;
-                          }
-                          final siteIndex = widget.data.indexWhere(
-                            (e) => _mask(e.name, widget.privacy) == item.name,
-                          );
-                          if (siteIndex >= 0) {
-                            _showSiteDetail(widget.data[siteIndex]);
-                          }
-                        },
+                            if (siteIndex >= 0) {
+                              _showSiteDetail(widget.data[siteIndex]);
+                              _showTreemapTooltip(tileContext);
+                            }
+                          },
                         child: Container(
                           margin: const EdgeInsets.all(1.5),
                           decoration: BoxDecoration(
@@ -485,6 +510,7 @@ class _TreemapSectionState extends State<TreemapSection> {
                             ),
                           ),
                         ),
+                        ),
                       ),
                     );
                   }),
@@ -493,7 +519,6 @@ class _TreemapSectionState extends State<TreemapSection> {
             ),
           ),
         ],
-      ),
     );
   }
 
