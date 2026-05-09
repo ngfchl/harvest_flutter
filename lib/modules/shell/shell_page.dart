@@ -525,106 +525,113 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
     return GestureDetector(
       onTap: widget.onTap,
       behavior: HitTestBehavior.opaque,
-      child: Row(
-        children: [
-          // ── 铃铛 + 角标 ──
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Icon(shadcn.LucideIcons.bell, size: 16, color: cs.foreground),
-              Positioned(
-                top: -4,
-                right: -6,
-                child: Container(
-                  constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
-                  padding: const EdgeInsets.symmetric(horizontal: 3),
-                  decoration: BoxDecoration(
-                    color: cs.destructive,
-                    borderRadius: BorderRadius.circular(7),
-                    border: Border.all(color: cs.background, width: 1.5),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    count > 99 ? '99+' : '$count',
-                    style: TextStyle(
-                      color: cs.destructiveForeground,
-                      fontSize: 8,
-                      height: 1,
-                      fontWeight: FontWeight.w700,
+      child: shadcn.OutlinedContainer(
+        borderColor: cs.primary.withValues(alpha: 0.72),
+        backgroundColor: cs.primary.withValues(alpha: 0.055),
+        borderRadius: theme.borderRadiusLg,
+        borderWidth: 1,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Row(
+          children: [
+            // ── 铃铛 + 角标 ──
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(shadcn.LucideIcons.bell, size: 16, color: cs.foreground),
+                Positioned(
+                  top: -4,
+                  right: -6,
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    decoration: BoxDecoration(
+                      color: cs.destructive,
+                      borderRadius: BorderRadius.circular(7),
+                      border: Border.all(color: cs.background, width: 1.5),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      count > 99 ? '99+' : '$count',
+                      style: TextStyle(
+                        color: cs.destructiveForeground,
+                        fontSize: 8,
+                        height: 1,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 10),
+              ],
+            ),
+            const SizedBox(width: 10),
 
-          // ── 标题 + 桌面端摘要 ──
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 320),
-              transitionBuilder: (child, anim) {
-                final offset = Tween<Offset>(
-                  begin: const Offset(0.2, 0),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic));
-                return FadeTransition(
-                  opacity: anim,
-                  child: SlideTransition(position: offset, child: child),
-                );
-              },
-              child: Row(
-                key: ValueKey(notice.id),
-                children: [
-                  Flexible(
-                    flex: isDesktop ? 0 : 1,
-                    child: isDesktop
-                        ? Text(
-                            _cleanTitle(notice.title),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
-                          )
-                        : shadcn.OverflowMarquee(
-                            child: Text(
+            // ── 标题 + 桌面端摘要 ──
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 320),
+                transitionBuilder: (child, anim) {
+                  final offset = Tween<Offset>(
+                    begin: const Offset(0.2, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic));
+                  return FadeTransition(
+                    opacity: anim,
+                    child: SlideTransition(position: offset, child: child),
+                  );
+                },
+                child: Row(
+                  key: ValueKey(notice.id),
+                  children: [
+                    Flexible(
+                      flex: isDesktop ? 0 : 1,
+                      child: isDesktop
+                          ? Text(
                               _cleanTitle(notice.title),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
+                            )
+                          : shadcn.OverflowMarquee(
+                              child: Text(
+                                _cleanTitle(notice.title),
+                                style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
+                              ),
                             ),
-                          ),
-                  ),
-                  if (isDesktop) ...[
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _cleanContent(notice),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
-                      ),
                     ),
+                    if (isDesktop) ...[
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _cleanContent(notice),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(width: 6),
+            const SizedBox(width: 6),
 
-          // ── 已读按钮 ──
-          shadcn.Tooltip(
-            tooltip: (_) => const Text('标记已读'),
-            child: shadcn.IconButton.ghost(
-              onPressed: () async {
-                try {
-                  await ref.read(noticeHistoryProvider.notifier).markRead(notice);
-                } catch (_) {
-                  Toast.error('标记已读失败');
-                }
-              },
-              icon: Icon(shadcn.LucideIcons.check, size: 15, color: cs.mutedForeground),
+            // ── 已读按钮 ──
+            shadcn.Tooltip(
+              tooltip: (_) => const Text('标记已读'),
+              child: shadcn.IconButton.ghost(
+                onPressed: () async {
+                  try {
+                    await ref.read(noticeHistoryProvider.notifier).markRead(notice);
+                  } catch (_) {
+                    Toast.error('标记已读失败');
+                  }
+                },
+                icon: Icon(shadcn.LucideIcons.check, size: 15, color: cs.mutedForeground),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
