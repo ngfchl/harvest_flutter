@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -93,7 +94,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
     var currentSort = ref.read(torrentSortProvider);
     var sortAsc = ref.read(torrentSortAscProvider);
 
-    showModalBottomSheet(
+    showAppSheet(
       context: context,
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setSheetState) {
@@ -126,7 +127,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sheetHeader(sheetContext, onReset: resetFilters, onClose: () => Navigator.pop(sheetContext)),
+                    _sheetHeader(sheetContext, onReset: resetFilters, onClose: () => closeAppSheet(sheetContext)),
                     _chipSection(
                       sheetContext,
                       title: '排序',

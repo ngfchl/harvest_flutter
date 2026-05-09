@@ -451,7 +451,8 @@ final filteredTorrentsProvider = Provider.autoDispose
         list = list.where((t) => matcher.match(t)?.key == site).toList();
       }
 
-      if (errorDetail.isNotEmpty) {
+      if (desktopStatusFilter == DesktopTorrentStatusFilter.error &&
+          errorDetail.isNotEmpty) {
         list = list
             .where((t) => _normalizedErrorDetail(t) == errorDetail)
             .toList();

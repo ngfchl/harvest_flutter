@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/modules/download/model/downloader.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
-import '../model/torrent_action_menu.dart';
 import '../model/torrent_model.dart';
 import 'desktop_torrent_detail_panel.dart';
 import 'desktop_torrent_sidebar.dart';
@@ -16,9 +15,11 @@ class DesktopTorrentLayout extends ConsumerStatefulWidget {
   final DownloaderType downloaderType;
   final Downloader? downloader;
   final String? selectedHash;
+  final Set<String> selectedHashes;
   final bool detailExpanded;
   final double detailHeight;
   final ValueChanged<Torrent> onSelect;
+  final ValueChanged<Set<String>> onSelectionChange;
   final VoidCallback onToggleDetail;
   final ValueChanged<double> onDetailResize;
   final VoidCallback onRefresh;
@@ -32,9 +33,11 @@ class DesktopTorrentLayout extends ConsumerStatefulWidget {
     required this.downloaderType,
     required this.downloader,
     required this.selectedHash,
+    required this.selectedHashes,
     required this.detailExpanded,
     required this.detailHeight,
     required this.onSelect,
+    required this.onSelectionChange,
     required this.onToggleDetail,
     required this.onDetailResize,
     required this.onRefresh,
@@ -93,8 +96,7 @@ class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
                       behavior: HitTestBehavior.translucent,
                       onHorizontalDragUpdate: (details) {
                         setState(() {
-                          _sidebarWidth = (_sidebarWidth + details.delta.dx)
-                              .clamp(_minSidebarWidth, _maxSidebarWidth);
+                          _sidebarWidth = (_sidebarWidth + details.delta.dx).clamp(_minSidebarWidth, _maxSidebarWidth);
                         });
                       },
                       child: SizedBox(
@@ -120,7 +122,9 @@ class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
                           downloaderId: widget.downloaderId,
                           downloaderType: widget.downloaderType,
                           selectedHash: widget.selectedHash,
+                          selectedHashes: widget.selectedHashes,
                           onSelect: widget.onSelect,
+                          onSelectionChange: widget.onSelectionChange,
                         ),
                       ),
                       DesktopTorrentDetailPanel(

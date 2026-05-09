@@ -10,11 +10,7 @@ List<String> torrentPathCategoryLevels(String rawPath) {
   final path = rawPath.trim();
   if (path.isEmpty) return const [];
   final normalized = path.replaceAll('\\', '/');
-  final parts = normalized
-      .split('/')
-      .map((part) => part.trim())
-      .where((part) => part.isNotEmpty)
-      .toList();
+  final parts = normalized.split('/').map((part) => part.trim()).where((part) => part.isNotEmpty).toList();
   if (parts.isEmpty) return const [];
   return [for (var i = 0; i < parts.length; i++) parts.take(i + 1).join('/')];
 }
@@ -60,10 +56,18 @@ List<Widget> desktopCategoryFilterItems({
   required Map<String, int> counts,
   required String selectedCategory,
   required bool tree,
+  bool sortByCount = false,
   required ValueChanged<String> onSelect,
   required List<Widget> Function(String item) trailingActionsBuilder,
 }) {
-  final sorted = List<String>.from(categories)..sort(compareCategoryPath);
+  final sorted = List<String>.from(categories)
+    ..sort((a, b) {
+      if (sortByCount) {
+        final countCompare = (counts[b] ?? 0).compareTo(counts[a] ?? 0);
+        if (countCompare != 0) return countCompare;
+      }
+      return compareCategoryPath(a, b);
+    });
   return [
     for (final item in sorted)
       DesktopFilterItem(

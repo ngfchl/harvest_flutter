@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/download/model/downloader.dart';
@@ -45,6 +46,7 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
   late int _currentDownloaderId;
   late DownloaderType _currentDownloaderType;
   String? _selectedTorrentHash;
+  Set<String> _selectedTorrentHashes = const {};
   bool _desktopDetailExpanded = false;
   double _desktopDetailHeight = 340;
 
@@ -98,7 +100,7 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
     final currentCount = ref.watch(filteredTorrentsProvider(_currentDownloaderId)).length;
 
     return EscapeBackScope(
-      onBack: () => Navigator.of(context).pop(),
+      onBack: () => closeAppSheet(context),
       child: shadcn.Scaffold(
         backgroundColor: cs.background,
         headerBackgroundColor: cs.background,
@@ -114,7 +116,7 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
                     alignment: Alignment.centerLeft,
                     child: shadcn.IconButton.ghost(
                       icon: const Icon(shadcn.LucideIcons.chevronLeft),
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () => closeAppSheet(context),
                     ),
                   ),
                   Center(
@@ -175,7 +177,12 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
                         : (enabled) => _toggleDownloaderSpeedMode(downloader, enabled),
                   ),
                   Expanded(
-                    child: TorrentListMobile(downloaderId: _currentDownloaderId, downloaderType: currentDownloaderType),
+                    child: TorrentListMobile(
+                      downloaderId: _currentDownloaderId,
+                      downloaderType: currentDownloaderType,
+                      selectedHashes: _selectedTorrentHashes,
+                      onSelectionChange: (hashes) => setState(() => _selectedTorrentHashes = Set<String>.of(hashes)),
+                    ),
                   ),
                 ],
               )
@@ -184,12 +191,14 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
                 downloaderType: currentDownloaderType,
                 downloader: downloader,
                 selectedHash: _selectedTorrentHash,
+                selectedHashes: _selectedTorrentHashes,
                 detailExpanded: _desktopDetailExpanded,
                 detailHeight: _desktopDetailHeight,
                 onSelect: (torrent) => setState(() {
                   _selectedTorrentHash = torrent.hashString;
                   _desktopDetailExpanded = true;
                 }),
+                onSelectionChange: (hashes) => setState(() => _selectedTorrentHashes = Set<String>.of(hashes)),
                 onToggleDetail: () => setState(() => _desktopDetailExpanded = !_desktopDetailExpanded),
                 onDetailResize: (delta) => setState(() {
                   _desktopDetailHeight = (_desktopDetailHeight - delta).clamp(220, 620);
@@ -248,7 +257,7 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      shadcn.Button.ghost(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+                      shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
                       const SizedBox(width: 8),
                       shadcn.Button.primary(
                         onPressed: () async {
@@ -258,7 +267,7 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
                             Toast.warning('请填写完整的 Tracker URL');
                             return;
                           }
-                          Navigator.pop(ctx);
+                          closeAppSheet(ctx);
                           await _executeTrackerReplace(downloaderId, oldUrl, newUrl);
                         },
                         child: const Text('替换'),
@@ -340,8 +349,7 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
   }
 
   void _switchDownloaderId(int downloaderId, DownloaderType downloaderType) {
-    if (_currentDownloaderId == downloaderId &&
-        _currentDownloaderType == downloaderType) {
+    if (_currentDownloaderId == downloaderId && _currentDownloaderType == downloaderType) {
       _torrentNotifier?.setWsPaused(true);
       stopAutoRefresh(resetRemaining: true);
       ref.read(torrentRefreshPausedProvider(downloaderId).notifier).state = false;
@@ -364,6 +372,7 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
       _currentDownloaderId = downloaderId;
       _currentDownloaderType = downloaderType;
       _selectedTorrentHash = null;
+      _selectedTorrentHashes = const {};
       _desktopDetailExpanded = false;
     });
 
@@ -373,8 +382,7 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
     ref.read(torrentSiteFilterProvider.notifier).state = '';
     ref.read(torrentErrorDetailFilterProvider.notifier).state = '';
     ref.read(torrentFilterProvider.notifier).state = TorrentFilter.all;
-    ref.read(desktopTorrentStatusFilterProvider.notifier).state =
-        DesktopTorrentStatusFilter.all;
+    ref.read(desktopTorrentStatusFilterProvider.notifier).state = DesktopTorrentStatusFilter.all;
     ref.read(torrentRefreshPausedProvider(downloaderId).notifier).state = false;
     ref.read(torrentRefreshRemainingProvider(downloaderId).notifier).state = 0;
 
@@ -387,14 +395,14 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
   // ── 对话框 ──
 
   void _showQbCategoryManager(Downloader downloader) {
-    showModalBottomSheet(
+    showAppSheet(
       context: context,
       builder: (_) => QbCategoryManagerSheet(downloader: downloader),
     );
   }
 
   void _showQbTagManager(Downloader downloader) {
-    showModalBottomSheet(
+    showAppSheet(
       context: context,
       builder: (_) => QbTagManagerSheet(downloader: downloader),
     );
