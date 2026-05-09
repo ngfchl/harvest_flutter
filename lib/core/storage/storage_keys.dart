@@ -13,6 +13,8 @@ class StorageKeys {
   static const String dashboardDesktopTreemapCount =
       'dashboard_desktop_treemap_count';
   static const String dashboardPhoneTrendDays = 'dashboard_phone_trend_days';
+  static const String dashboardDesktopDynamicBackground =
+      'dashboard_desktop_dynamic_background';
 
   // ── 站点筛选 ──
   static const String siteFilterAvailability = 'site_filter_availability';

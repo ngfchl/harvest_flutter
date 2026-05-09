@@ -17,8 +17,11 @@ class ChartSettingsDialog extends StatefulWidget {
   final bool allowReorder;
   final bool showSizingControls;
   final bool showTreemapCountControl;
+  final bool showDesktopDynamicBackgroundControl;
+  final bool desktopDynamicBackgroundEnabled;
   final String title;
   final void Function(int count)? onTreemapCountSaved;
+  final ValueChanged<bool>? onDesktopDynamicBackgroundSaved;
 
   final void Function(
     List<String> order,
@@ -40,8 +43,12 @@ class ChartSettingsDialog extends StatefulWidget {
     this.allowReorder = true,
     this.showSizingControls = true,
     this.showTreemapCountControl = false,
+    this.showDesktopDynamicBackgroundControl = false,
+    this.desktopDynamicBackgroundEnabled =
+        DashboardChartConfig.defaultDesktopDynamicBackground,
     this.title = '仪表盘卡片设置',
     this.onTreemapCountSaved,
+    this.onDesktopDynamicBackgroundSaved,
   });
 
   @override
@@ -57,6 +64,7 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
   late int _serverResourceDuration;
   late bool _serverResourceAutoStart;
   late int _phoneTrendDays;
+  late bool _desktopDynamicBackgroundEnabled;
 
   static const _tMin = DashboardChartConfig.minTreemapCount;
   static const _tMax = DashboardChartConfig.maxTreemapCount;
@@ -80,6 +88,7 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
     _serverResourceAutoStart =
         HiveManager.get<bool>(StorageKeys.serverResourceAutoStart) ?? kDefaultServerResourceAutoStart;
     _phoneTrendDays = DashboardChartConfig.getPhoneTrendDays();
+    _desktopDynamicBackgroundEnabled = widget.desktopDynamicBackgroundEnabled;
   }
 
   @override
@@ -162,6 +171,14 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
     if (_showPhoneTrendDefaultControl) {
       DashboardChartConfig.savePhoneTrendDays(_phoneTrendDays);
     }
+    if (widget.showDesktopDynamicBackgroundControl) {
+      DashboardChartConfig.saveDesktopDynamicBackgroundEnabled(
+        _desktopDynamicBackgroundEnabled,
+      );
+      widget.onDesktopDynamicBackgroundSaved?.call(
+        _desktopDynamicBackgroundEnabled,
+      );
+    }
     HiveManager.set(StorageKeys.serverResourceInterval, _serverResourceInterval);
     HiveManager.set(StorageKeys.serverResourceDuration, _serverResourceDuration);
     HiveManager.set(StorageKeys.serverResourceAutoStart, _serverResourceAutoStart);
@@ -181,6 +198,8 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
       _serverResourceDuration = kDefaultServerResourceDuration;
       _serverResourceAutoStart = kDefaultServerResourceAutoStart;
       _phoneTrendDays = DashboardChartConfig.defaultPhoneTrendDays;
+      _desktopDynamicBackgroundEnabled =
+          DashboardChartConfig.defaultDesktopDynamicBackground;
       if (_showTreemapCountControl) {
         _treemapCount = widget.defaultTreemapCount;
       }
@@ -276,6 +295,25 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                                   style: theme.typography.xSmall.copyWith(color: theme.colorScheme.mutedForeground),
                                 ),
                               ],
+                            ),
+                          ],
+                        ),
+                        tokens.vGap(16),
+                      ],
+                      if (widget.showDesktopDynamicBackgroundControl) ...[
+                        _SettingsSection(
+                          icon: shadcn.LucideIcons.activity,
+                          title: '桌面视觉效果',
+                          description: '控制桌面看板背景动画，关闭后保留静态背景并降低持续动画开销。',
+                          children: [
+                            _SettingsTile(
+                              leading: Icon(shadcn.LucideIcons.monitorCog, size: tokens.iconSm),
+                              title: '动态背景',
+                              subtitle: _desktopDynamicBackgroundEnabled ? '数字流、网格与线路背景保持动态' : '背景动画已关闭',
+                              trailing: shadcn.Switch(
+                                value: _desktopDynamicBackgroundEnabled,
+                                onChanged: (value) => setState(() => _desktopDynamicBackgroundEnabled = value),
+                              ),
                             ),
                           ],
                         ),

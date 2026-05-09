@@ -161,6 +161,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   bool _refreshingSites = false;
   bool _signingIn = false;
   bool _showWeeks = false;
+  bool _dynamicBackgroundEnabled = true;
   late int _treemapCount;
   late Map<String, bool> _chartVisibility;
   late final AnimationController _backdropController;
@@ -182,10 +183,15 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   @override
   void initState() {
     super.initState();
+    _dynamicBackgroundEnabled =
+        DashboardChartConfig.getDesktopDynamicBackgroundEnabled();
     _backdropController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2800),
-    )..repeat();
+    );
+    if (_dynamicBackgroundEnabled) {
+      _backdropController.repeat();
+    }
     _treemapCount = DashboardChartConfig.getDesktopTreemapCount();
     _chartVisibility = DashboardChartConfig.getVisibility();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -227,8 +233,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         allowReorder: false,
         showSizingControls: false,
         showTreemapCountControl: true,
+        showDesktopDynamicBackgroundControl: true,
+        desktopDynamicBackgroundEnabled: _dynamicBackgroundEnabled,
         title: '桌面看板显示设置',
         onTreemapCountSaved: DashboardChartConfig.saveDesktopTreemapCount,
+        onDesktopDynamicBackgroundSaved: _setDynamicBackgroundEnabled,
         onSaved: (_, visibility, __, treemapCount, ___) {
           ref
               .read(serverResourceIntervalProvider.notifier)
@@ -254,6 +263,16 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         },
       ),
     );
+  }
+
+  void _setDynamicBackgroundEnabled(bool enabled) {
+    if (_dynamicBackgroundEnabled == enabled) return;
+    setState(() => _dynamicBackgroundEnabled = enabled);
+    if (enabled) {
+      _backdropController.repeat();
+    } else {
+      _backdropController.stop();
+    }
   }
 
   void _syncDesktopMonitorCards(Map<String, bool> visibility) {
@@ -420,7 +439,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         ),
         child: Stack(
           children: [
-            Positioned.fill(child: _buildBackdrop()),
+            if (_dynamicBackgroundEnabled)
+              Positioned.fill(child: _buildBackdrop()),
             Positioned.fill(
               child: data == null
                   ? Center(
@@ -905,52 +925,30 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     final tokens = _tokens;
     return SizedBox(
       width: double.infinity,
-      child: AnimatedBuilder(
-        animation: _backdropController,
-        builder: (context, child) {
-          return Stack(
-            clipBehavior: Clip.none,
-            children: [
-              if(false)
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _KpiValuePulsePainter(
-                    tick: _backdropController.value,
-                    color: item.color,
-                    isDark: _isDark,
-                  ),
-                ),
+      child: FittedBox(
+        alignment: Alignment.centerLeft,
+        fit: BoxFit.scaleDown,
+        child: Text(
+          item.value,
+          maxLines: 1,
+          style: TextStyle(
+            color: _isDark ? item.color : Color.lerp(item.color, _text, 0.18),
+            fontSize: tokens.font(34),
+            fontWeight: FontWeight.w900,
+            height: 1,
+            shadows: [
+              Shadow(
+                color: item.color.withValues(alpha: _isDark ? 0.36 : 0.46),
+                blurRadius: _isDark ? 13 : 16,
               ),
-              FittedBox(
-                alignment: Alignment.centerLeft,
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  item.value,
-                  maxLines: 1,
-                  style: TextStyle(
-                    color: _isDark
-                        ? item.color
-                        : Color.lerp(item.color, _text, 0.18),
-                    fontSize: tokens.font(34),
-                    fontWeight: FontWeight.w900,
-                    height: 1,
-                    shadows: [
-                      Shadow(
-                        color: item.color.withValues(alpha: _isDark ? 0.36 : 0.46),
-                        blurRadius: _isDark ? 13 : 16,
-                      ),
-                      if (!_isDark)
-                        Shadow(
-                          color: _tokens.background.withValues(alpha: 0.95),
-                          blurRadius: 2,
-                        ),
-                    ],
-                  ),
+              if (!_isDark)
+                Shadow(
+                  color: _tokens.background.withValues(alpha: 0.95),
+                  blurRadius: 2,
                 ),
-              ),
             ],
-          );
-        },
+          ),
+        ),
       ),
     );
   }
@@ -4141,76 +4139,6 @@ class _ChartTooltipData {
   final List<_TooltipLine> rows;
 
   const _ChartTooltipData(this.title, this.rows);
-}
-
-class _KpiValuePulsePainter extends CustomPainter {
-  final double tick;
-  final Color color;
-  final bool isDark;
-
-  const _KpiValuePulsePainter({
-    required this.tick,
-    required this.color,
-    required this.isDark,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (size.isEmpty) return;
-    final glowPaint = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          color.withValues(alpha: isDark ? 0.00 : 0.08),
-          color.withValues(alpha: isDark ? 0.14 : 0.20),
-          color.withValues(alpha: isDark ? 0.00 : 0.05),
-        ],
-      ).createShader(Offset.zero & size);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, size.height * 0.08, size.width * 0.78, size.height * 0.84),
-        const Radius.circular(8),
-      ),
-      glowPaint,
-    );
-
-    final scanX = (tick * (size.width + 44)) - 22;
-    final scanPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [
-          color.withValues(alpha: 0),
-          color.withValues(alpha: isDark ? 0.34 : 0.58),
-          color.withValues(alpha: isDark ? 0.12 : 0.62),
-          color.withValues(alpha: 0),
-        ],
-      ).createShader(Rect.fromLTWH(scanX - 18, 0, 36, size.height));
-    canvas.drawRect(Rect.fromLTWH(scanX - 18, 0, 36, size.height), scanPaint);
-
-    final linePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8
-      ..color = color.withValues(alpha: isDark ? 0.20 : 0.34);
-    for (double y = size.height - 3; y > 0; y -= 8) {
-      canvas.drawLine(Offset(0, y), Offset(size.width * 0.62, y), linePaint);
-    }
-
-    final dotPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = color.withValues(alpha: isDark ? 0.28 : 0.46);
-    for (var i = 0; i < 5; i++) {
-      final x = (tick * 28 + i * 27) % math.max(size.width, 1);
-      final y = 5.0 + (i % 3) * 10.0;
-      canvas.drawCircle(Offset(x, y), 1.2, dotPaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _KpiValuePulsePainter oldDelegate) {
-    return oldDelegate.tick != tick ||
-        oldDelegate.color != color ||
-        oldDelegate.isDark != isDark;
-  }
 }
 
 class _TooltipLine {
