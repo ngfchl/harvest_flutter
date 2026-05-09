@@ -65,6 +65,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
   bool _capturing = false;
   bool _drawerOpen = false;
   bool _exitDialogOpen = false;
+  double _drawerEdgeDragDistance = 0;
   int? _suppressedPageChangedIndex;
 
   @override
@@ -205,8 +206,26 @@ class _ShellPageState extends ConsumerState<ShellPage> {
     if (mounted && _drawerOpen) setState(() => _drawerOpen = false);
   }
 
+  void _startDrawerEdgeDrag(DragStartDetails d) {
+    _drawerEdgeDragDistance = 0;
+  }
+
   void _handleDrawerEdgeDrag(DragUpdateDetails d) {
-    if (!_drawerOpen && (d.primaryDelta ?? 0) > 9) _openDrawer();
+    if (_drawerOpen) return;
+    final delta = d.primaryDelta ?? 0;
+    if (delta <= 0) {
+      _drawerEdgeDragDistance = 0;
+      return;
+    }
+    _drawerEdgeDragDistance += delta;
+    if (_drawerEdgeDragDistance > 24) {
+      _drawerEdgeDragDistance = 0;
+      _openDrawer();
+    }
+  }
+
+  void _endDrawerEdgeDrag(DragEndDetails d) {
+    _drawerEdgeDragDistance = 0;
   }
 
   Future<void> _openDrawerPage(Widget page) async {
@@ -302,10 +321,13 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                 left: 0,
                 top: 0,
                 bottom: 0,
-                width: 24,
+                width: 32,
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
+                  onHorizontalDragStart: _startDrawerEdgeDrag,
                   onHorizontalDragUpdate: _handleDrawerEdgeDrag,
+                  onHorizontalDragEnd: _endDrawerEdgeDrag,
+                  onHorizontalDragCancel: () => _drawerEdgeDragDistance = 0,
                 ),
               ),
 

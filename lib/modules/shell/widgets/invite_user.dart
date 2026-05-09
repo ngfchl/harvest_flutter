@@ -51,8 +51,7 @@ void _showInviteDialog(BuildContext context) {
                   autofocus: true,
                   keyboardType: TextInputType.emailAddress,
                   hintText: "",
-                  onSubmitted: (_) =>
-                      FocusManager.instance.primaryFocus?.unfocus(),
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -77,10 +76,7 @@ void _showInviteDialog(BuildContext context) {
                                 }
                                 setDialogState(() => sending = true);
                                 try {
-                                  await Http.post(
-                                    API.ADMIN_USER,
-                                    queryParameters: {'invite_email': email},
-                                  );
+                                  await Http.post(API.ADMIN_USER, queryParameters: {'invite_email': email});
                                   if (ctx.mounted) Navigator.pop(ctx);
                                   Toast.success('邀请成功');
                                 } catch (e) {
@@ -94,9 +90,8 @@ void _showInviteDialog(BuildContext context) {
                             ? const SizedBox(
                                 width: 16,
                                 height: 16,
-                                child: shadcn.CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
+                                child: Center(
+                                  child: shadcn.CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                 ),
                               )
                             : Center(child: const Text('邀请')),
