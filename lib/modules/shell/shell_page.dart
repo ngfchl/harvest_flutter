@@ -398,8 +398,8 @@ class _ShellHeader extends StatelessWidget {
         color: cs.background,
         child: SafeArea(
           bottom: false,
-          child: shadcn.OutlinedContainer(
-            clipBehavior: Clip.antiAlias,
+          child: shadcn.AnimatedContainer(
+            duration: Duration(milliseconds: 100),
             child: shadcn.AppBar(
               leading: [
                 shadcn.IconButton.ghost(onPressed: onOpenDrawer, icon: Icon(shadcn.LucideIcons.panelLeft, size: 18)),
