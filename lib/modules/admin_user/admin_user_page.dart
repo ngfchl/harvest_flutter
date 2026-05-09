@@ -98,9 +98,12 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
         color: cs.background,
         child: Column(
           children: [
-            _Header(
-              onBack: () => Navigator.of(context).pop(),
-              onRefresh: () => ref.read(adminUserListProvider.notifier).refresh(),
+            SafeArea(
+              bottom: false,
+              child: _Header(
+                onBack: () => Navigator.of(context).pop(),
+                onRefresh: () => ref.read(adminUserListProvider.notifier).refresh(),
+              ),
             ),
             Expanded(
               child: EasyRefresh(
@@ -181,35 +184,45 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => shadcn.AlertDialog(
           title: const Text('添加授权用户'),
-          content: SizedBox(
-            width: 360,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                shadcn.TextField(controller: emailCtrl, autofocus: true, hintText: '邮箱'),
-                const SizedBox(height: 16),
-                _DialogActions(
-                  saving: saving,
-                  cancelLabel: '取消',
-                  submitLabel: '添加',
-                  onCancel: () => Navigator.of(ctx).pop(),
-                  onSubmit: () async {
-                    final email = emailCtrl.text.trim();
-                    if (email.isEmpty) {
-                      Toast.warning('邮箱不能为空');
-                      return;
-                    }
-                    setDialogState(() => saving = true);
-                    try {
-                      await ref.read(adminUserListProvider.notifier).createUser(email);
-                      if (ctx.mounted) Navigator.of(ctx).pop();
-                      Toast.success('授权用户已添加');
-                    } catch (_) {
-                      if (ctx.mounted) setDialogState(() => saving = false);
-                    }
-                  },
-                ),
-              ],
+          content: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: SizedBox(
+              width: 360,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  shadcn.TextField(
+                    controller: emailCtrl,
+                    autofocus: true,
+                    hintText: '邮箱',
+                    onSubmitted: (_) =>
+                        FocusManager.instance.primaryFocus?.unfocus(),
+                  ),
+                  const SizedBox(height: 16),
+                  _DialogActions(
+                    saving: saving,
+                    cancelLabel: '取消',
+                    submitLabel: '添加',
+                    onCancel: () => Navigator.of(ctx).pop(),
+                    onSubmit: () async {
+                      final email = emailCtrl.text.trim();
+                      if (email.isEmpty) {
+                        Toast.warning('邮箱不能为空');
+                        return;
+                      }
+                      setDialogState(() => saving = true);
+                      try {
+                        await ref.read(adminUserListProvider.notifier).createUser(email);
+                        if (ctx.mounted) Navigator.of(ctx).pop();
+                        Toast.success('授权用户已添加');
+                      } catch (_) {
+                        if (ctx.mounted) setDialogState(() => saving = false);
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -251,52 +264,66 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
 
           return shadcn.AlertDialog(
             title: const Text('重新授权'),
-            content: SizedBox(
-              width: 420,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _ReadOnlyField(label: '邮箱', value: user.email),
-                  const SizedBox(height: 10),
-                  shadcn.TextField(controller: payCtrl, hintText: '支付金额'),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
-                    children: _discounts
-                        .map(
-                          (discount) => _DiscountButton(
-                            label: _discountLabel(discount),
-                            onPressed: saving
-                                ? null
-                                : () {
-                                    payCtrl.text = (_defaultPay * discount / 10).round().toString();
-                                    setDialogState(() {});
-                                  },
-                          ),
-                        )
-                        .toList(),
-                  ),
-                  const SizedBox(height: 10),
-                  shadcn.TextField(controller: expireCtrl, hintText: '过期时间'),
-                  const SizedBox(height: 10),
-                  _PanelTile(
-                    title: const Text('试用授权'),
-                    trailing: shadcn.Switch(
-                      value: tryUser,
-                      onChanged: saving ? null : (value) => setDialogState(() => tryUser = value),
+            content: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: SizedBox(
+                width: 420,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _ReadOnlyField(label: '邮箱', value: user.email),
+                    const SizedBox(height: 10),
+                    shadcn.TextField(
+                      controller: payCtrl,
+                      hintText: '支付金额',
+                      onSubmitted: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  _DialogActions(
-                    saving: saving,
-                    cancelLabel: '取消',
-                    submitLabel: '重新授权',
-                    onCancel: () => Navigator.of(ctx).pop(),
-                    onSubmit: save,
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: _discounts
+                          .map(
+                            (discount) => _DiscountButton(
+                              label: _discountLabel(discount),
+                              onPressed: saving
+                                  ? null
+                                  : () {
+                                      payCtrl.text = (_defaultPay * discount / 10).round().toString();
+                                      setDialogState(() {});
+                                    },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    const SizedBox(height: 10),
+                    shadcn.TextField(
+                      controller: expireCtrl,
+                      hintText: '过期时间',
+                      onSubmitted: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
+                    ),
+                    const SizedBox(height: 10),
+                    _PanelTile(
+                      title: const Text('试用授权'),
+                      trailing: shadcn.Switch(
+                        value: tryUser,
+                        onChanged: saving ? null : (value) => setDialogState(() => tryUser = value),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _DialogActions(
+                      saving: saving,
+                      cancelLabel: '取消',
+                      submitLabel: '重新授权',
+                      onCancel: () => Navigator.of(ctx).pop(),
+                      onSubmit: save,
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -313,36 +340,46 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => shadcn.AlertDialog(
           title: const Text('重置全部邀请'),
-          content: SizedBox(
-            width: 360,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                shadcn.TextField(controller: countCtrl, autofocus: true, hintText: '邀请数量'),
-                const SizedBox(height: 16),
-                _DialogActions(
-                  saving: saving,
-                  cancelLabel: '取消',
-                  submitLabel: '重置',
-                  onCancel: () => Navigator.of(ctx).pop(),
-                  onSubmit: () async {
-                    final count = int.tryParse(countCtrl.text.trim());
-                    if (count == null || count < 0) {
-                      Toast.warning('邀请数无效');
-                      return;
-                    }
-                    setDialogState(() => saving = true);
-                    try {
-                      await ref.read(adminUserListProvider.notifier).resetInvite(count);
-                      if (ctx.mounted) Navigator.of(ctx).pop();
-                      Toast.success('全部用户邀请数已重置');
-                    } catch (_) {
-                      if (ctx.mounted) setDialogState(() => saving = false);
-                    }
-                  },
-                ),
-              ],
+          content: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: SizedBox(
+              width: 360,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  shadcn.TextField(
+                    controller: countCtrl,
+                    autofocus: true,
+                    hintText: '邀请数量',
+                    onSubmitted: (_) =>
+                        FocusManager.instance.primaryFocus?.unfocus(),
+                  ),
+                  const SizedBox(height: 16),
+                  _DialogActions(
+                    saving: saving,
+                    cancelLabel: '取消',
+                    submitLabel: '重置',
+                    onCancel: () => Navigator.of(ctx).pop(),
+                    onSubmit: () async {
+                      final count = int.tryParse(countCtrl.text.trim());
+                      if (count == null || count < 0) {
+                        Toast.warning('邀请数无效');
+                        return;
+                      }
+                      setDialogState(() => saving = true);
+                      try {
+                        await ref.read(adminUserListProvider.notifier).resetInvite(count);
+                        if (ctx.mounted) Navigator.of(ctx).pop();
+                        Toast.success('全部用户邀请数已重置');
+                      } catch (_) {
+                        if (ctx.mounted) setDialogState(() => saving = false);
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

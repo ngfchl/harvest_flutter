@@ -40,10 +40,13 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
         color: cs.background,
         child: Column(
           children: [
-            _Header(
-              title: '用户中心',
-              onBack: () => Navigator.of(context).pop(),
-              onRefresh: () => ref.read(managedUserListProvider.notifier).refresh(),
+            SafeArea(
+              bottom: false,
+              child: _Header(
+                title: '用户中心',
+                onBack: () => Navigator.of(context).pop(),
+                onRefresh: () => ref.read(managedUserListProvider.notifier).refresh(),
+              ),
             ),
             Expanded(
               child: EasyRefresh(
@@ -136,17 +139,41 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
           final tokens = _UserManagementThemeTokens.of(ctx);
           return shadcn.AlertDialog(
             title: Text(title),
-            content: SizedBox(
-              width: tokens.dialogWidth,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  shadcn.TextField(controller: usernameCtrl, enabled: !resetPassword, autofocus: !isEdit, placeholder: const Text('用户名')),
-                  tokens.vGap(12),
-                  shadcn.TextField(controller: passwordCtrl, obscureText: true, autofocus: resetPassword, placeholder: Text(resetPassword ? '新密码' : '密码')),
-                  tokens.vGap(12),
-                  shadcn.TextField(controller: confirmCtrl, obscureText: true, placeholder: const Text('确认密码')),
-                ],
+            content: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: SizedBox(
+                width: tokens.dialogWidth,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    shadcn.TextField(
+                      controller: usernameCtrl,
+                      enabled: !resetPassword,
+                      autofocus: !isEdit,
+                      placeholder: const Text('用户名'),
+                      onSubmitted: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
+                    ),
+                    tokens.vGap(12),
+                    shadcn.TextField(
+                      controller: passwordCtrl,
+                      obscureText: true,
+                      autofocus: resetPassword,
+                      placeholder: Text(resetPassword ? '新密码' : '密码'),
+                      onSubmitted: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
+                    ),
+                    tokens.vGap(12),
+                    shadcn.TextField(
+                      controller: confirmCtrl,
+                      obscureText: true,
+                      placeholder: const Text('确认密码'),
+                      onSubmitted: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
+                    ),
+                  ],
+                ),
               ),
             ),
             actions: [
