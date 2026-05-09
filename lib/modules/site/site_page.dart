@@ -35,18 +35,23 @@ class _SitePageState extends ConsumerState<SitePage> {
   @override
   void initState() {
     super.initState();
+    _searchCtrl.addListener(_onSearchTextChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      ref.read(activeScrollControllerProvider.notifier).state =
-          _scrollController;
+      ref.read(activeScrollControllerProvider.notifier).state = _scrollController;
     });
   }
 
   @override
   void dispose() {
+    _searchCtrl.removeListener(_onSearchTextChanged);
     _searchCtrl.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onSearchTextChanged() {
+    ref.read(siteFilterStateProvider).setSiteNameQuery(_searchCtrl.text);
   }
 
   @override
@@ -68,22 +73,8 @@ class _SitePageState extends ConsumerState<SitePage> {
           // 筛选面板（桌面端展开时显示）
           if (!mobile && _showFilter) const SiteFilterPanel(),
           // 工具栏统一放顶部
-          _buildToolbar(
-            context,
-            filteredSites.length,
-            totalCount,
-            hasFilters,
-            mobile,
-          ),
-          CacheStatusBanner(
-            info: cacheInfo,
-            margin: EdgeInsets.fromLTRB(
-              mobile ? 12 : 16,
-              0,
-              mobile ? 12 : 16,
-              6,
-            ),
-          ),
+          _buildToolbar(context, filteredSites.length, totalCount, hasFilters, mobile),
+          CacheStatusBanner(info: cacheInfo, margin: EdgeInsets.fromLTRB(mobile ? 12 : 16, 0, mobile ? 12 : 16, 6)),
           Expanded(
             child: EasyRefresh(
               onRefresh: _refresh,
@@ -95,31 +86,21 @@ class _SitePageState extends ConsumerState<SitePage> {
                   if (filteredSites.isEmpty) {
                     return ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: EdgeInsets.only(
-                        bottom: ShellBottomSpacing.value(context),
-                      ),
+                      padding: EdgeInsets.only(bottom: ShellBottomSpacing.value(context)),
                       children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.3,
-                        ),
+                        SizedBox(height: MediaQuery.of(context).size.height * 0.3),
                         Center(
                           child: Text(
                             hasFilters ? '没有符合筛选条件的站点' : '暂无站点数据',
-                            style: shadcn.Theme.of(context).typography.small
-                                .copyWith(
-                                  color: shadcn.Theme.of(
-                                    context,
-                                  ).colorScheme.mutedForeground,
-                                ),
+                            style: shadcn.Theme.of(
+                              context,
+                            ).typography.small.copyWith(color: shadcn.Theme.of(context).colorScheme.mutedForeground),
                           ),
                         ),
                       ],
                     );
                   }
-                  return SiteListView(
-                    sites: filteredSites,
-                    controller: _scrollController,
-                  );
+                  return SiteListView(sites: filteredSites, controller: _scrollController);
                 },
               ),
             ),
@@ -146,10 +127,7 @@ class _SitePageState extends ConsumerState<SitePage> {
             children: [
               shadcn.CircularProgressIndicator(strokeWidth: 2.4, color: cs.primary),
               const SizedBox(height: 16),
-              Text(
-                '加载中...',
-                style: TextStyle(color: cs.mutedForeground, fontSize: 13),
-              ),
+              Text('加载中...', style: TextStyle(color: cs.mutedForeground, fontSize: 13)),
             ],
           ),
         ),
@@ -159,13 +137,7 @@ class _SitePageState extends ConsumerState<SitePage> {
 
   // ── 工具栏 ──
 
-  Widget _buildToolbar(
-    BuildContext context,
-    int current,
-    int total,
-    bool hasFilters,
-    bool mobile,
-  ) {
+  Widget _buildToolbar(BuildContext context, int current, int total, bool hasFilters, bool mobile) {
     final cs = shadcn.Theme.of(context).colorScheme;
 
     return Container(
@@ -174,22 +146,9 @@ class _SitePageState extends ConsumerState<SitePage> {
       height: mobile ? null : 48,
       decoration: BoxDecoration(
         color: mobile ? cs.background : null,
-        border: mobile
-            ? null
-            : Border(
-                bottom: BorderSide(
-                  color: cs.border.withValues(alpha: 0.4),
-                  width: 0.5,
-                ),
-              ),
+        border: mobile ? null : Border(bottom: BorderSide(color: cs.border.withValues(alpha: 0.4), width: 0.5)),
         boxShadow: mobile
-            ? [
-                BoxShadow(
-                  color: siteShadow(context, alpha: 0.06),
-                  blurRadius: 12,
-                  offset: const Offset(0, -2),
-                ),
-              ]
+            ? [BoxShadow(color: siteShadow(context, alpha: 0.06), blurRadius: 12, offset: const Offset(0, -2))]
             : null,
       ),
       child: Row(
@@ -200,9 +159,7 @@ class _SitePageState extends ConsumerState<SitePage> {
           _filterButton(
             context,
             hasFilters,
-            mobile
-                ? () => _openFilterSheet(context)
-                : () => setState(() => _showFilter = !_showFilter),
+            mobile ? () => _openFilterSheet(context) : () => setState(() => _showFilter = !_showFilter),
           ),
           _buildCardStyleMenu(context),
           _buildSiteCreateMenu(context),
@@ -213,12 +170,7 @@ class _SitePageState extends ConsumerState<SitePage> {
 
   // ── 计数 ──
 
-  Widget _buildCounter(
-    BuildContext context,
-    int current,
-    int total,
-    bool hasFilters,
-  ) {
+  Widget _buildCounter(BuildContext context, int current, int total, bool hasFilters) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
@@ -227,10 +179,7 @@ class _SitePageState extends ConsumerState<SitePage> {
         children: [
           TextSpan(
             text: '$current',
-            style: typo.small.copyWith(
-              fontWeight: FontWeight.w700,
-              color: hasFilters ? cs.primary : cs.foreground,
-            ),
+            style: typo.small.copyWith(fontWeight: FontWeight.w700, color: hasFilters ? cs.primary : cs.foreground),
           ),
           TextSpan(
             text: ' / $total',
@@ -250,14 +199,10 @@ class _SitePageState extends ConsumerState<SitePage> {
       child: shadcn.TextField(
         controller: _searchCtrl,
         hintText: '搜索站点...',
-        onChanged: (v) => ref.read(siteFilterStateProvider).setSiteNameQuery(v),
         features: [
           shadcn.InputFeature.clear(
-            icon: Icon(
-              shadcn.LucideIcons.x,
-              size: 12,
-              color: cs.mutedForeground,
-            ),
+            visibility: shadcn.InputFeatureVisibility.textNotEmpty,
+            icon: Icon(shadcn.LucideIcons.x, size: 12, color: cs.mutedForeground),
           ),
         ],
       ),
@@ -266,11 +211,7 @@ class _SitePageState extends ConsumerState<SitePage> {
 
   // ── 筛选按钮 ──
 
-  Widget _filterButton(
-    BuildContext context,
-    bool hasFilters,
-    VoidCallback onTap,
-  ) {
+  Widget _filterButton(BuildContext context, bool hasFilters, VoidCallback onTap) {
     final cs = shadcn.Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
@@ -278,19 +219,13 @@ class _SitePageState extends ConsumerState<SitePage> {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         height: 34,
         decoration: BoxDecoration(
-          color: hasFilters
-              ? cs.primary.withValues(alpha: 0.1)
-              : cs.muted.withValues(alpha: 0.3),
+          color: hasFilters ? cs.primary.withValues(alpha: 0.1) : cs.muted.withValues(alpha: 0.3),
           borderRadius: siteRadius(context, size: "xl"),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              shadcn.LucideIcons.slidersHorizontal,
-              size: 14,
-              color: hasFilters ? cs.primary : cs.mutedForeground,
-            ),
+            Icon(shadcn.LucideIcons.slidersHorizontal, size: 14, color: hasFilters ? cs.primary : cs.mutedForeground),
             const SizedBox(width: 5),
             Text(
               '筛选',
@@ -344,12 +279,7 @@ class _SitePageState extends ConsumerState<SitePage> {
     );
   }
 
-  shadcn.MenuButton _cardStyleTile(
-    BuildContext context,
-    SiteCardStyle style,
-    SiteCardStyle current,
-    String title,
-  ) {
+  shadcn.MenuButton _cardStyleTile(BuildContext context, SiteCardStyle style, SiteCardStyle current, String title) {
     final selected = style == current;
     final cs = siteColors(context);
     return shadcn.MenuButton(
@@ -360,9 +290,7 @@ class _SitePageState extends ConsumerState<SitePage> {
         height: 62,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: selected
-                ? cs.primary.withValues(alpha: 0.08)
-                : siteTransparent(context),
+            color: selected ? cs.primary.withValues(alpha: 0.08) : siteTransparent(context),
             borderRadius: siteRadius(context, size: "md"),
           ),
           child: Padding(
@@ -401,10 +329,7 @@ class _SitePageState extends ConsumerState<SitePage> {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: cs.brightness == Brightness.dark
-              ? Color.alphaBlend(
-                  cs.muted.withValues(alpha: 0.10),
-                  cs.background,
-                )
+              ? Color.alphaBlend(cs.muted.withValues(alpha: 0.10), cs.background)
               : siteColors(context).background,
           borderRadius: siteRadius(context, size: "md"),
           border: Border.all(color: cs.border, width: 0.8),
@@ -445,21 +370,9 @@ class _SitePageState extends ConsumerState<SitePage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _previewLine(
-                width: 14,
-                color: siteSuccess(context),
-                height: 4,
-              ),
-              _previewLine(
-                width: 14,
-                color: siteDanger(context),
-                height: 4,
-              ),
-              _previewLine(
-                width: 14,
-                color: cs.mutedForeground,
-                height: 4,
-              ),
+              _previewLine(width: 14, color: siteSuccess(context), height: 4),
+              _previewLine(width: 14, color: siteDanger(context), height: 4),
+              _previewLine(width: 14, color: cs.mutedForeground, height: 4),
             ],
           ),
         ),
@@ -468,11 +381,7 @@ class _SitePageState extends ConsumerState<SitePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(
             4,
-            (_) => _previewLine(
-              width: 12,
-              color: cs.mutedForeground.withValues(alpha: 0.62),
-              height: 4,
-            ),
+            (_) => _previewLine(width: 12, color: cs.mutedForeground.withValues(alpha: 0.62), height: 4),
           ),
         ),
       ],
@@ -488,59 +397,25 @@ class _SitePageState extends ConsumerState<SitePage> {
             Container(
               width: 14,
               height: 14,
-              decoration: BoxDecoration(
-                color: cs.foreground,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: cs.foreground, shape: BoxShape.circle),
             ),
             const SizedBox(width: 5),
-            Expanded(
-              child: _previewLine(
-                width: 30,
-                color: cs.foreground,
-                height: 5,
-              ),
-            ),
+            Expanded(child: _previewLine(width: 30, color: cs.foreground, height: 5)),
             _previewLine(width: 13, color: cs.mutedForeground.withValues(alpha: 0.62), height: 4),
           ],
         ),
         const SizedBox(height: 7),
         Row(
           children: [
-            Expanded(
-              child: _previewLine(
-                width: 18,
-                color: siteSuccess(context),
-                height: 6,
-              ),
-            ),
-            Expanded(
-              child: _previewLine(
-                width: 18,
-                color: siteDanger(context),
-                height: 6,
-              ),
-            ),
-            Expanded(
-              child: _previewLine(
-                width: 18,
-                color: siteInfo(context),
-                height: 6,
-              ),
-            ),
+            Expanded(child: _previewLine(width: 18, color: siteSuccess(context), height: 6)),
+            Expanded(child: _previewLine(width: 18, color: siteDanger(context), height: 6)),
+            Expanded(child: _previewLine(width: 18, color: siteInfo(context), height: 6)),
           ],
         ),
         const SizedBox(height: 7),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(
-            3,
-            (_) => _previewLine(
-              width: 15,
-              color: cs.mutedForeground,
-              height: 4,
-            ),
-          ),
+          children: List.generate(3, (_) => _previewLine(width: 15, color: cs.mutedForeground, height: 4)),
         ),
       ],
     );
@@ -561,13 +436,7 @@ class _SitePageState extends ConsumerState<SitePage> {
               ),
             ),
             const SizedBox(width: 5),
-            Expanded(
-              child: _previewLine(
-                width: 26,
-                color: cs.foreground,
-                height: 5,
-              ),
-            ),
+            Expanded(child: _previewLine(width: 26, color: cs.foreground, height: 5)),
             _previewLine(width: 18, color: siteWarning(context, alpha: 0.18), height: 8),
           ],
         ),
@@ -621,11 +490,7 @@ class _SitePageState extends ConsumerState<SitePage> {
     );
   }
 
-  Widget _previewLine({
-    required double width,
-    required double height,
-    required Color color,
-  }) {
+  Widget _previewLine({required double width, required double height, required Color color}) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
@@ -689,16 +554,8 @@ class _SitePageState extends ConsumerState<SitePage> {
     );
   }
 
-  shadcn.MenuButton _menuAction({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-  }) {
-    return shadcn.MenuButton(
-      leading: Icon(icon),
-      onPressed: (_) => onPressed(),
-      child: Text(label),
-    );
+  shadcn.MenuButton _menuAction({required IconData icon, required String label, required VoidCallback onPressed}) {
+    return shadcn.MenuButton(leading: Icon(icon), onPressed: (_) => onPressed(), child: Text(label));
   }
 
   // ── 移动端筛选弹窗 ──
@@ -755,17 +612,13 @@ class _SitePageState extends ConsumerState<SitePage> {
             if (result == null) return;
             if (!ctx.mounted) return;
 
-            final tomlFiles = result.files
-                .where((file) => file.name.toLowerCase().endsWith('.toml'))
-                .toList();
+            final tomlFiles = result.files.where((file) => file.name.toLowerCase().endsWith('.toml')).toList();
             if (tomlFiles.length != result.files.length) {
               Toast.warning('仅支持 TOML 配置文件');
             }
             if (tomlFiles.isEmpty) return;
 
-            AppLogger.info(
-              '已选择 TOML 配置文件: ${tomlFiles.map((file) => file.name).join(', ')}',
-            );
+            AppLogger.info('已选择 TOML 配置文件: ${tomlFiles.map((file) => file.name).join(', ')}');
             setDialogState(() => files = tomlFiles);
           }
 
@@ -781,12 +634,8 @@ class _SitePageState extends ConsumerState<SitePage> {
 
             setDialogState(() => uploading = true);
             try {
-              AppLogger.info(
-                '提交上传 TOML 配置文件: count=${files.length}, overwrite=$overwrite',
-              );
-              await ref
-                  .read(siteInfoListProvider.notifier)
-                  .importCustomSiteToml(files, overwrite: overwrite);
+              AppLogger.info('提交上传 TOML 配置文件: count=${files.length}, overwrite=$overwrite');
+              await ref.read(siteInfoListProvider.notifier).importCustomSiteToml(files, overwrite: overwrite);
               if (ctx.mounted) Navigator.of(ctx).pop();
               Toast.success('站点配置已上传');
             } catch (e, st) {
@@ -798,11 +647,7 @@ class _SitePageState extends ConsumerState<SitePage> {
 
           return shadcn.AlertDialog(
             content: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: ctx.isMobile
-                    ? MediaQuery.sizeOf(ctx).width - 40
-                    : 460,
-              ),
+              constraints: BoxConstraints(maxWidth: ctx.isMobile ? MediaQuery.sizeOf(ctx).width - 40 : 460),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
                 child: Column(
@@ -811,10 +656,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                   children: [
                     Text(
                       '上传站点配置',
-                      style: theme.typography.large.copyWith(
-                        color: cs.foreground,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 14),
                     Row(
@@ -822,9 +664,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                         Expanded(
                           child: shadcn.Button.outline(
                             onPressed: uploading ? null : selectFiles,
-                            child: Text(
-                              files.isEmpty ? '选择 TOML 文件' : '重新选择 TOML 文件',
-                            ),
+                            child: Text(files.isEmpty ? '选择 TOML 文件' : '重新选择 TOML 文件'),
                           ),
                         ),
                         if (files.isNotEmpty) ...[
@@ -833,9 +673,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                             onPressed: uploading
                                 ? null
                                 : () {
-                                    AppLogger.info(
-                                      '清除全部待上传 TOML 配置文件: count=${files.length}',
-                                    );
+                                    AppLogger.info('清除全部待上传 TOML 配置文件: count=${files.length}');
                                     setDialogState(() => files = []);
                                   },
                             child: const Text('一键清除'),
@@ -850,29 +688,22 @@ class _SitePageState extends ConsumerState<SitePage> {
                       _TomlFileList(
                         files: files,
                         onRemove: (index) {
-                          AppLogger.info(
-                            '移除待上传 TOML 配置文件: ${files[index].name}',
-                          );
-                          setDialogState(
-                            () => files = [...files]..removeAt(index),
-                          );
+                          AppLogger.info('移除待上传 TOML 配置文件: ${files[index].name}');
+                          setDialogState(() => files = [...files]..removeAt(index));
                         },
                       ),
                     const SizedBox(height: 12),
                     _OverwriteOption(
                       overwrite: overwrite,
                       enabled: !uploading,
-                      onChanged: (value) =>
-                          setDialogState(() => overwrite = value),
+                      onChanged: (value) => setDialogState(() => overwrite = value),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
                           child: shadcn.Button.ghost(
-                            onPressed: uploading
-                                ? null
-                                : () => Navigator.of(ctx).pop(),
+                            onPressed: uploading ? null : () => Navigator.of(ctx).pop(),
                             child: const Text('取消'),
                           ),
                         ),
@@ -884,13 +715,9 @@ class _SitePageState extends ConsumerState<SitePage> {
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: shadcn.CircularProgressIndicator(
-                                      strokeWidth: 2.2,
-                                    ),
+                                    child: shadcn.CircularProgressIndicator(strokeWidth: 2.2),
                                   )
-                                : Text(
-                                    '上传${files.isEmpty ? '' : ' ${files.length} 个'}',
-                                  ),
+                                : Text('上传${files.isEmpty ? '' : ' ${files.length} 个'}'),
                           ),
                         ),
                       ],
@@ -911,11 +738,7 @@ class _OverwriteOption extends StatelessWidget {
   final bool enabled;
   final ValueChanged<bool> onChanged;
 
-  const _OverwriteOption({
-    required this.overwrite,
-    required this.enabled,
-    required this.onChanged,
-  });
+  const _OverwriteOption({required this.overwrite, required this.enabled, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -937,25 +760,17 @@ class _OverwriteOption extends StatelessWidget {
               children: [
                 Text(
                   '覆盖同名配置',
-                  style: theme.typography.small.copyWith(
-                    color: cs.foreground,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   overwrite ? '同名文件将被覆盖' : '同名文件保持原样',
-                  style: theme.typography.xSmall.copyWith(
-                    color: cs.mutedForeground,
-                  ),
+                  style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
                 ),
               ],
             ),
           ),
-          shadcn.Switch(
-            value: overwrite,
-            onChanged: enabled ? onChanged : null,
-          ),
+          shadcn.Switch(value: overwrite, onChanged: enabled ? onChanged : null),
         ],
       ),
     );
@@ -984,10 +799,7 @@ class _TomlUploadEmptyState extends StatelessWidget {
         children: [
           Icon(shadcn.LucideIcons.fileUp, size: 24, color: cs.mutedForeground),
           const SizedBox(height: 8),
-          Text(
-            '支持多选 .toml 配置文件',
-            style: typo.small.copyWith(color: cs.mutedForeground),
-          ),
+          Text('支持多选 .toml 配置文件', style: typo.small.copyWith(color: cs.mutedForeground)),
         ],
       ),
     );
@@ -1012,10 +824,7 @@ class _TomlFileList extends StatelessWidget {
           children: [
             for (var i = 0; i < files.length; i++) ...[
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: cs.muted.withValues(alpha: 0.24),
                   borderRadius: siteRadius(context, size: "md"),
@@ -1023,11 +832,7 @@ class _TomlFileList extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      shadcn.LucideIcons.fileCode,
-                      size: 18,
-                      color: cs.mutedForeground,
-                    ),
+                    Icon(shadcn.LucideIcons.fileCode, size: 18, color: cs.mutedForeground),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -1037,17 +842,12 @@ class _TomlFileList extends StatelessWidget {
                             files[i].name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: theme.typography.small.copyWith(
-                              color: cs.foreground,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             formatBytes(files[i].size),
-                            style: theme.typography.xSmall.copyWith(
-                              color: cs.mutedForeground,
-                            ),
+                            style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
                           ),
                         ],
                       ),
@@ -1139,15 +939,10 @@ class _MobileFilterSheet extends ConsumerWidget {
                         controller: searchCtrl,
                         // 共用
                         hintText: '搜索站点...',
-                        onChanged: (v) =>
-                            ref.read(siteFilterStateProvider).setSiteNameQuery(v),
                         features: [
                           shadcn.InputFeature.clear(
-                            icon: Icon(
-                              shadcn.LucideIcons.x,
-                              size: 12,
-                              color: cs.mutedForeground,
-                            ),
+                            visibility: shadcn.InputFeatureVisibility.textNotEmpty,
+                            icon: Icon(shadcn.LucideIcons.x, size: 12, color: cs.mutedForeground),
                           ),
                         ],
                       ),
@@ -1161,9 +956,7 @@ class _MobileFilterSheet extends ConsumerWidget {
             // 筛选面板（可滚动）
             Flexible(
               child: SingleChildScrollView(
-                padding: EdgeInsets.only(
-                  bottom: media.padding.bottom + 16,
-                ),
+                padding: EdgeInsets.only(bottom: media.padding.bottom + 16),
                 child: const SiteFilterPanel(),
               ),
             ),
