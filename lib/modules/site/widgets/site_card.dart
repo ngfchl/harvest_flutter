@@ -906,6 +906,98 @@ Widget _siteSignBadge(BuildContext context, String text) {
   );
 }
 
+bool _hasSiteUnread(SiteInfo site) => site.mail > 0 || site.notice > 0;
+
+Widget _siteUnreadIndicators(
+  BuildContext context,
+  SiteInfo site, {
+  double iconSize = 12,
+  double fontSize = 10,
+  double height = 22,
+  double horizontal = 6,
+  double gap = 5,
+}) {
+  final indicators = <Widget>[
+    if (site.mail > 0)
+      _siteUnreadIndicator(
+        context,
+        icon: shadcn.LucideIcons.mail,
+        value: fmtCompact(site.mail.toDouble()),
+        color: siteInfo(context),
+        tooltip: '短消息 ${site.mail}',
+        iconSize: iconSize,
+        fontSize: fontSize,
+        height: height,
+        horizontal: horizontal,
+      ),
+    if (site.notice > 0)
+      _siteUnreadIndicator(
+        context,
+        icon: shadcn.LucideIcons.bell,
+        value: fmtCompact(site.notice.toDouble()),
+        color: siteWarning(context),
+        tooltip: '公告通知 ${site.notice}',
+        iconSize: iconSize,
+        fontSize: fontSize,
+        height: height,
+        horizontal: horizontal,
+      ),
+  ];
+
+  if (indicators.isEmpty) return const SizedBox.shrink();
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      for (var i = 0; i < indicators.length; i++) ...[
+        indicators[i],
+        if (i != indicators.length - 1) SizedBox(width: gap),
+      ],
+    ],
+  );
+}
+
+Widget _siteUnreadIndicator(
+  BuildContext context, {
+  required IconData icon,
+  required String value,
+  required Color color,
+  required String tooltip,
+  required double iconSize,
+  required double fontSize,
+  required double height,
+  required double horizontal,
+}) {
+  final isDark = shadcn.Theme.of(context).brightness == Brightness.dark;
+  return _siteTooltip(
+    tooltip,
+    Container(
+      height: height,
+      padding: EdgeInsets.symmetric(horizontal: horizontal),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: isDark ? 0.14 : 0.10),
+        borderRadius: siteRadius(context, size: "xl"),
+        border: Border.all(color: color.withValues(alpha: 0.20), width: 0.8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: iconSize, color: color),
+          const SizedBox(width: 3),
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: fontSize,
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 Widget _siteLevelMilestoneBadge(
   BuildContext context,
   _SiteLevelMilestone milestone, {
@@ -1079,6 +1171,10 @@ class SiteCard2 extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(child: _siteTitle(context)),
+                  if (_hasSiteUnread(site)) ...[
+                    const SizedBox(width: 8),
+                    _siteUnreadIndicators(context, site),
+                  ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 8),
                     _siteSignBadge(context, signStatus),
@@ -1173,6 +1269,10 @@ class SiteCard2 extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  if (_hasSiteUnread(site)) ...[
+                    const SizedBox(width: 8),
+                    _siteUnreadIndicators(context, site),
+                  ],
                   if (milestone != null) ...[
                     const SizedBox(width: 8),
                     _siteLevelMilestoneBadge(
@@ -1596,6 +1696,17 @@ class SiteCard3 extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(child: _title(context)),
+                  if (_hasSiteUnread(site)) ...[
+                    const SizedBox(width: 8),
+                    _siteUnreadIndicators(
+                      context,
+                      site,
+                      iconSize: 13,
+                      fontSize: 11,
+                      height: 24,
+                      horizontal: 7,
+                    ),
+                  ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 8),
                     _siteSignBadge(context, signStatus),
@@ -1667,6 +1778,17 @@ class SiteCard3 extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  if (_hasSiteUnread(site)) ...[
+                    const SizedBox(width: 8),
+                    _siteUnreadIndicators(
+                      context,
+                      site,
+                      iconSize: 13,
+                      fontSize: 11,
+                      height: 24,
+                      horizontal: 7,
+                    ),
+                  ],
                   if (milestone != null) ...[
                     const SizedBox(width: 8),
                     _siteLevelMilestoneBadge(
