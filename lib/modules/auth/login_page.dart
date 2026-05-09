@@ -78,17 +78,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       }
     });
 
-    return ColoredBox(
-      color: cs.background,
-      child: Padding(
-        padding: tokens.edgeSymmetric(horizontal: 16),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: tokens.formWidth),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: ColoredBox(
+        color: cs.background,
+        child: Padding(
+          padding: tokens.edgeSymmetric(horizontal: 16),
+          child: Align(
+            alignment: Alignment.center,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: tokens.formWidth),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                   tokens.vGap(40),
                   Image.asset(
                     'assets/images/logo.png',
@@ -109,11 +113,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     controller: _serverController,
                     placeholder: const Text('服务器地址'),
                     enabled: !kIsWeb,
+                    onSubmitted: (_) => FocusScope.of(context).unfocus(),
                   ),
                   tokens.fieldGap,
                   shadcn.TextField(
                     controller: _usernameController,
                     placeholder: const Text('账号'),
+                    onSubmitted: (_) => FocusScope.of(context).unfocus(),
                   ),
                   tokens.fieldGap,
                   shadcn.TextField(
@@ -121,6 +127,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     placeholder: const Text('密码'),
                     obscureText: true,
                     features: const [shadcn.InputFeature.passwordToggle()],
+                    onSubmitted: (_) => FocusScope.of(context).unfocus(),
                   ),
                   tokens.vGap(20),
                   Row(
@@ -186,7 +193,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ],
                   ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -277,7 +285,7 @@ class _LoginThemeTokens {
 
   double get formWidth => size(320);
 
-  double get logoSize => size(108);
+  double get logoSize => size(136);
 
   double get iconSize => font(18);
 

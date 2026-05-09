@@ -1119,7 +1119,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                       Expanded(
                         child: shadcn.Button.outline(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('取消'),
+                          child: const Center(child: Text('取消')),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -1132,7 +1132,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                                   height: 16,
                                   child: shadcn.CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                 )
-                              : const Text('保存'),
+                              : const Center(child: Text('保存')),
                         ),
                       ),
                     ],

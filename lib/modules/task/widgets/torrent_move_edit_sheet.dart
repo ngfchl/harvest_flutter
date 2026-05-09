@@ -233,16 +233,20 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     final downloadersAsync = ref.watch(downloaderListProvider);
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildHeader(),
-          Flexible(child: _buildForm(downloadersAsync)),
-          const Divider(height: 1),
-          _buildButtons(),
-        ],
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildHeader(),
+            Flexible(child: _buildForm(downloadersAsync)),
+            const Divider(height: 1),
+            _buildButtons(),
+          ],
+        ),
       ),
     );
   }

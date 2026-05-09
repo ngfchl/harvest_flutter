@@ -22,6 +22,7 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
   late final TextEditingController _portCtrl;
   late final TextEditingController _usernameCtrl;
   late final TextEditingController _passwordCtrl;
+  late final TextEditingController _externalHostCtrl;
 
   late String _category;
   late String _protocol;
@@ -41,6 +42,9 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
     _portCtrl = TextEditingController(text: d?.port.toString() ?? '');
     _usernameCtrl = TextEditingController(text: d?.username ?? '');
     _passwordCtrl = TextEditingController(text: d?.password ?? '');
+    _externalHostCtrl = TextEditingController(
+      text: d?.externalHost ?? '',
+    );
     _category = d?.category ?? 'Qb';
     _protocol = d?.protocol ?? 'http';
     _path = d?.torrentPath;
@@ -55,6 +59,7 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
     _portCtrl.dispose();
     _usernameCtrl.dispose();
     _passwordCtrl.dispose();
+    _externalHostCtrl.dispose();
     super.dispose();
   }
 
@@ -88,7 +93,9 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
       isActive: _isActive,
       brush: _brush,
       sortId: widget.downloader?.sortId ?? 0,
-      externalHost: '$_protocol://${_hostCtrl.text.trim()}:${_portCtrl.text.trim()}',
+      externalHost: _externalHostCtrl.text.trim().isNotEmpty
+          ? _externalHostCtrl.text.trim()
+          : '$_protocol://${_hostCtrl.text.trim()}:${_portCtrl.text.trim()}',
     );
 
     widget.onSaved(d);
@@ -105,13 +112,16 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
       popoverHandler: const shadcn.PopoverOverlayHandler(),
       tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
       menuHandler: const shadcn.PopoverOverlayHandler(),
-      child: Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8, maxWidth: 420),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8, maxWidth: 420),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
               child: Row(
@@ -187,6 +197,12 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
                         validator: (v) => _validateRequired(v, '密码'),
                       ),
                       const SizedBox(height: 8),
+                      _textField(
+                        controller: _externalHostCtrl,
+                        label: 'External Host',
+                        hintText: 'http://127.0.0.1:8999',
+                      ),
+                      const SizedBox(height: 8),
                       pathsAsync.when(
                         loading: () => _textField(
                           controller: TextEditingController(text: widget.downloader?.torrentPath ?? ''),
@@ -219,22 +235,30 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
                           border: Border.all(color: cs.border),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Column(
+                        child: Row(
                           children: [
-                            _switchRow(
-                              icon: shadcn.LucideIcons.power,
-                              title: '启用',
-                              subtitle: '是否激活此下载器',
-                              value: _isActive,
-                              onChanged: (v) => setState(() => _isActive = v),
+                            Expanded(
+                              child: _switchRow(
+                                icon: shadcn.LucideIcons.power,
+                                title: '启用',
+                                subtitle: '是否激活',
+                                value: _isActive,
+                                onChanged: (v) => setState(() => _isActive = v),
+                              ),
                             ),
-                            Divider(height: 1, color: cs.border),
-                            _switchRow(
-                              icon: shadcn.LucideIcons.zap,
-                              title: '辅种',
-                              subtitle: '是否启用辅种',
-                              value: !_brush,
-                              onChanged: (v) => setState(() => _brush = !v),
+                            Container(
+                              width: 1,
+                              height: 56,
+                              color: cs.border,
+                            ),
+                            Expanded(
+                              child: _switchRow(
+                                icon: shadcn.LucideIcons.zap,
+                                title: '辅种',
+                                subtitle: '是否启用',
+                                value: !_brush,
+                                onChanged: (v) => setState(() => _brush = !v),
+                              ),
                             ),
                           ],
                         ),
@@ -251,7 +275,7 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
                   Expanded(
                     child: shadcn.Button.outline(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: Center(child: const Text('取消')),
+                      child: const Center(child: Text('取消')),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -264,8 +288,9 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
                 ],
               ),
             ),
-          ],
-        ),
+            ],
+          ),
+          ),
         ),
       ),
     );
@@ -286,6 +311,7 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
       obscureText: obscureText,
       enabled: enabled,
       validator: validator,
+      onFieldSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       decoration: InputDecoration(labelText: label, hintText: hintText),
     );
   }
@@ -309,23 +335,26 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
           ),
         ),
         const SizedBox(height: 6),
-        shadcn.Select<String>(
-          value: items.containsKey(value) ? value : null,
-          placeholder: Text(label),
-          itemBuilder: (_, selected) => Text(items[selected] ?? selected),
-          popupConstraints: const BoxConstraints(maxHeight: 260),
-          popup: shadcn.SelectPopup<String>(
-            items: shadcn.SelectItemList(
-              children: [
-                for (final entry in items.entries)
-                  shadcn.SelectItemButton<String>(
-                    value: entry.key,
-                    child: Text(entry.value),
-                  ),
-              ],
-            ),
-          ).call,
-          onChanged: onChanged,
+        SizedBox(
+          width: double.infinity,
+          child: shadcn.Select<String>(
+            value: items.containsKey(value) ? value : null,
+            placeholder: Text(label),
+            itemBuilder: (_, selected) => Text(items[selected] ?? selected),
+            popupConstraints: const BoxConstraints(maxHeight: 260),
+            popup: shadcn.SelectPopup<String>(
+              items: shadcn.SelectItemList(
+                children: [
+                  for (final entry in items.entries)
+                    shadcn.SelectItemButton<String>(
+                      value: entry.key,
+                      child: Text(entry.value),
+                    ),
+                ],
+              ),
+            ).call,
+            onChanged: onChanged,
+          ),
         ),
       ],
     );
@@ -346,28 +375,31 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
           ),
         ),
         const SizedBox(height: 6),
-        shadcn.Select<String>(
-          value: selected,
-          placeholder: const Text('选择路径'),
-          itemBuilder: (_, value) => Text(value),
-          popupConstraints: const BoxConstraints(maxHeight: 300),
-          popup: shadcn.SelectPopup<String>(
-            items: shadcn.SelectItemList(
-              children: [
-                for (final path in paths)
-                  shadcn.SelectItemButton<String>(
-                    value: path,
-                    child: Text(path),
-                  ),
-              ],
-            ),
-          ).call,
-          onChanged: (value) {
-            setState(() {
-              _path = value;
-              _pathTouched = true;
-            });
-          },
+        SizedBox(
+          width: double.infinity,
+          child: shadcn.Select<String>(
+            value: selected,
+            placeholder: const Text('选择路径'),
+            itemBuilder: (_, value) => Text(value),
+            popupConstraints: const BoxConstraints(maxHeight: 300),
+            popup: shadcn.SelectPopup<String>(
+              items: shadcn.SelectItemList(
+                children: [
+                  for (final path in paths)
+                    shadcn.SelectItemButton<String>(
+                      value: path,
+                      child: Text(path),
+                    ),
+                ],
+              ),
+            ).call,
+            onChanged: (value) {
+              setState(() {
+                _path = value;
+                _pathTouched = true;
+              });
+            },
+          ),
         ),
         if (_pathTouched && selected == null)
           Padding(

@@ -95,9 +95,12 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
 
     final content = Padding(
       padding: EdgeInsets.only(bottom: bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
           if (mobile) ...[
             const SizedBox(height: 12),
             buildHandle(context),
@@ -111,6 +114,7 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
               controller: _ctrl,
               hintText: '搜索电影、剧集...',
               onChanged: _onChanged,
+              onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
               autofocus: true,
               features: [
                 shadcn.InputFeature.leading(
@@ -177,7 +181,8 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
               ),
             ),
           const SizedBox(height: 16),
-        ],
+          ],
+        ),
       ),
     );
 

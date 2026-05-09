@@ -118,11 +118,15 @@ class ShellScaffold extends StatelessWidget {
               ),
           ],
         ),
-        body: Column(
-          children: [
-            header,
-            Expanded(child: child),
-          ],
+        body: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: Column(
+            children: [
+              header,
+              Expanded(child: child),
+            ],
+          ),
         ),
       );
     }
@@ -130,11 +134,15 @@ class ShellScaffold extends StatelessWidget {
     return Stack(
       children: [
         Positioned.fill(
-          child: Column(
-            children: [
-              header,
-              Expanded(child: child),
-            ],
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            child: Column(
+              children: [
+                header,
+                Expanded(child: child),
+              ],
+            ),
           ),
         ),
         Positioned(

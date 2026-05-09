@@ -882,27 +882,35 @@ class _BulkUpgradeCardState extends ConsumerState<_BulkUpgradeCard> {
                 ),
           ),
           const SizedBox(height: 12),
-          shadcn.Select<String>(
-            value: _selectedKey,
-            placeholder: const Text('选择字段'),
-            itemBuilder: (_, value) => Text(_fieldOptions[value] ?? value),
-            popup: shadcn.SelectPopup<String>(
-              items: shadcn.SelectItemList(
-                children: [
-                  for (final entry in _fieldOptions.entries)
-                    shadcn.SelectItemButton<String>(
-                      value: entry.key,
-                      child: Text(entry.value),
-                    ),
-                ],
+          shadcn.OverlayManagerLayer(
+            popoverHandler: const shadcn.PopoverOverlayHandler(),
+            tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+            menuHandler: const shadcn.PopoverOverlayHandler(),
+            child: SizedBox(
+              width: double.infinity,
+              child: shadcn.Select<String>(
+                value: _selectedKey,
+                placeholder: const Text('选择字段'),
+                itemBuilder: (_, value) => Text(_fieldOptions[value] ?? value),
+                popup: shadcn.SelectPopup<String>(
+                  items: shadcn.SelectItemList(
+                    children: [
+                      for (final entry in _fieldOptions.entries)
+                        shadcn.SelectItemButton<String>(
+                          value: entry.key,
+                          child: Text(entry.value),
+                        ),
+                    ],
+                  ),
+                ).call,
+                onChanged: _submitting
+                    ? null
+                    : (value) {
+                        if (value == null) return;
+                        setState(() => _selectedKey = value);
+                      },
               ),
-            ).call,
-            onChanged: _submitting
-                ? null
-                : (value) {
-                    if (value == null) return;
-                    setState(() => _selectedKey = value);
-                  },
+            ),
           ),
           const SizedBox(height: 10),
           shadcn.TextField(

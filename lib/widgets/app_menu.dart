@@ -55,6 +55,7 @@ class AppContextMenu extends StatelessWidget {
   final HitTestBehavior behavior;
   final Axis direction;
   final bool enabled;
+  final bool openOnTap;
 
   const AppContextMenu({
     super.key,
@@ -63,6 +64,7 @@ class AppContextMenu extends StatelessWidget {
     this.behavior = HitTestBehavior.translucent,
     this.direction = Axis.vertical,
     this.enabled = true,
+    this.openOnTap = false,
   });
 
   @override
@@ -71,9 +73,23 @@ class AppContextMenu extends StatelessWidget {
     final enableLongPress = platform == TargetPlatform.iOS ||
         platform == TargetPlatform.android ||
         platform == TargetPlatform.fuchsia;
+    Offset? tapPosition;
 
     return GestureDetector(
       behavior: behavior,
+      onTapDown: openOnTap && enabled
+          ? (details) => tapPosition = details.globalPosition
+          : null,
+      onTap: openOnTap && enabled
+          ? () {
+              appShowContextMenu(
+                context: context,
+                position: tapPosition ?? Offset.zero,
+                items: items,
+                direction: direction,
+              );
+            }
+          : null,
       onSecondaryTapDown: !enabled
           ? null
           : (details) {

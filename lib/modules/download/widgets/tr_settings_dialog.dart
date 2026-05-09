@@ -432,7 +432,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
             Expanded(
               child: shadcn.Button.outline(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('取消'),
+                child: const Center(child: Text('取消')),
               ),
             ),
             const SizedBox(width: 12),
@@ -448,7 +448,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('保存'),
+                    : const Center(child: Text('保存')),
               ),
             ),
           ],
