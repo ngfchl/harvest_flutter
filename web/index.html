@@ -1,4 +1,6 @@
-<!DOCTYPE html><html><head>
+<!DOCTYPE html>
+<html>
+<head>
     <!--
       If you are serving your web app in a path other than the root, change the
       href value below to reflect the base path you are serving from.
@@ -22,7 +24,7 @@
     <meta content="yes" name="mobile-web-app-capable">
     <meta content="black" name="mobile-web-app-status-bar-style">
     <meta content="harvest" name="mobile-web-app-title">
-    <link href="icons/Icon-192.png" rel="touch-icon">
+    <!--    <link href="icons/Icon-192.png" rel="touch-icon">-->
 
     <!-- Favicon -->
     <link href="favicon.ico" rel="icon">
@@ -34,6 +36,20 @@
         // The value below is injected by flutter build, do not touch.
         const {{flutter_service_worker_version}} = null;
     </script>
+    <script>
+        {{flutter_js}}
+        {{flutter_build_config}}
+
+        _flutter.loader.load({
+          serviceWorkerSettings: {
+            serviceWorkerVersion: {{flutter_service_worker_version}}
+          },
+          config: {
+            // 关键：指定 CanvasKit 从本地加载
+            canvasKitBaseUrl: "canvaskit/"
+          }
+        });
+    </script>
     <!-- This script adds the flutter initialization JS code -->
     <script async="" src="flutter_bootstrap.js"></script>
 
@@ -41,170 +57,49 @@
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
 
 
-    <script defer="" src="/assets/packages/flutter_inappwebview_web/assets/web/web_support.js" type="application/javascript"></script>
+    <script defer="" src="/assets/packages/flutter_inappwebview_web/assets/web/web_support.js"
+            type="application/javascript"></script>
 
 
-    
-    
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  <style id="splash-screen-style">
-    html {
-      height: 100%
-    }
+    <style id="splash-screen-style">
+        html {
+          height: 100%;
+        }
 
-    body {
-      margin: 0;
-      min-height: 100%;
-      background-color: #ffffff;
-      background-image: url("splash/img/light-background.png");
-      background-size: 100% 100%;
-    }
+        body {
+          margin: 0;
+          min-height: 100%;
+          background-color: #ffffff;
+        }
 
-    .center {
-      margin: 0;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      -ms-transform: translate(-50%, -50%);
-      transform: translate(-50%, -50%);
-    }
+        #splash {
+          position: fixed;
+          inset: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background-color: #ffffff;
+          z-index: 9999;
+        }
 
-    .contain {
-      display:block;
-      width:100%; height:100%;
-      object-fit: contain;
-    }
-
-    .stretch {
-      display:block;
-      width:100%; height:100%;
-    }
-
-    .cover {
-      display:block;
-      width:100%; height:100%;
-      object-fit: cover;
-    }
-
-    .bottom {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      -ms-transform: translate(-50%, 0);
-      transform: translate(-50%, 0);
-    }
-
-    .bottomLeft {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-    }
-
-    .bottomRight {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #121212;
-        background-image: url("splash/img/dark-background.png");
-      }
-    }
-  </style>
-  <script id="splash-screen-script">
-    function removeSplashFromWeb() {
-      document.getElementById("splash")?.remove();
-      document.getElementById("splash-branding")?.remove();
-      document.body.style.background = "transparent";
-    }
-  </script>
+        #splash img {
+          width: 160px;   /* 固定宽度，按需调整 */
+          height: 160px;  /* 固定高度，按需调整 */
+          object-fit: contain;
+        }
+    </style>
+    <script id="splash-screen-script">
+        function removeSplashFromWeb() {
+          document.getElementById("splash")?.remove();
+          document.getElementById("splash-branding")?.remove();
+          document.body.style.background = "transparent";
+        }
+    </script>
 </head>
 <body>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-
+<div id="splash">
+    <img src="splash/img/light-background.png" alt="loading">
+</div>
 
 <script>
     window.addEventListener('load', function(ev) {
@@ -215,13 +110,14 @@
         },
         onEntrypointLoaded: function(engineInitializer) {
           engineInitializer.initializeEngine().then(function(appRunner) {
+            removeSplashFromWeb();
             appRunner.runApp();
           });
-        }
+        },
       });
     });
 </script>
 
 
-
-</body></html>
+</body>
+</html>

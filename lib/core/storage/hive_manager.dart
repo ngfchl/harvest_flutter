@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'storage_keys.dart';
@@ -25,7 +26,9 @@ class HiveManager {
   static bool _authSessionCleared = false;
 
   static Future<void> init() async {
-    await Hive.initFlutter();
+    if (!kIsWeb) {
+      await Hive.initFlutter();
+    }
     _box = await Hive.openBox(_boxName);
   }
 
@@ -98,15 +101,8 @@ class HiveManager {
 
   static String _scopePrefix() {
     final server =
-        (_scopeServer?.isNotEmpty == true
-            ? _scopeServer
-            : _globalString(StorageKeys.baseUrl)) ??
-        'default_server';
-    final username =
-        (_scopeUsername?.isNotEmpty == true
-            ? _scopeUsername
-            : _authUsername()) ??
-        'anonymous';
+        (_scopeServer?.isNotEmpty == true ? _scopeServer : _globalString(StorageKeys.baseUrl)) ?? 'default_server';
+    final username = (_scopeUsername?.isNotEmpty == true ? _scopeUsername : _authUsername()) ?? 'anonymous';
     return '$server-$username';
   }
 
