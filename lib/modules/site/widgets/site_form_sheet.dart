@@ -23,9 +23,13 @@ void showAddSiteSheet(BuildContext context) {
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
         final maxHeight = (media.size.height - media.padding.top - media.viewInsets.bottom) * 0.66;
-        return ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: maxHeight),
-          child: sheet,
+        return GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            child: sheet,
+          ),
         );
       },
     );
@@ -107,8 +111,16 @@ void showSiteForm(
         maxChildSize: 0.95,
         minChildSize: 0.5,
         expand: false,
-        builder: (ctx, scrollCtrl) =>
-            SiteFormSheet(site: site, siteName: siteName, scrollController: scrollCtrl, showBackToList: showBackToList),
+        builder: (ctx, scrollCtrl) => GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: SiteFormSheet(
+            site: site,
+            siteName: siteName,
+            scrollController: scrollCtrl,
+            showBackToList: showBackToList,
+          ),
+        ),
       ),
     );
   } else {

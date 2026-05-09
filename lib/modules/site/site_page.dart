@@ -169,9 +169,9 @@ class _SitePageState extends ConsumerState<SitePage> {
     final cs = shadcn.Theme.of(context).colorScheme;
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: mobile ? 8 : 5),
       margin: EdgeInsets.zero,
-      height: mobile ? null : 44,
+      height: mobile ? null : 48,
       decoration: BoxDecoration(
         color: mobile ? cs.background : null,
         border: mobile

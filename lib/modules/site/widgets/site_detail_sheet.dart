@@ -138,22 +138,6 @@ class SiteDetailSheet extends ConsumerWidget {
                     _row(context, 'Cookie', _truncate(site.cookie, 40)),
                     _row(context, 'User-Agent', _truncate(site.userAgent, 50)),
                   ]),
-                  const SizedBox(height: 12),
-
-                  // ── 数据统计 ──
-                  _section(context, '数据统计', shadcn.LucideIcons.chartBar, [
-                    _row(context, '注册时间', fmtDate(site.timeJoin)),
-                    _row(
-                      context,
-                      '最后访问',
-                      site.latestActiveText.isEmpty
-                          ? '-'
-                          : site.latestActiveText,
-                    ),
-                    _row(context, '短消息', '${site.mail}'),
-                    _row(context, '公告', '${site.notice}'),
-                  ]),
-
                   // ── 签到信息 ──
                   if (site.signInText != null) ...[
                     const SizedBox(height: 12),
@@ -834,24 +818,21 @@ class SiteDetailSheet extends ConsumerWidget {
                 ),
             ],
           ),
-          // 签到 + 时魔 + HR
-          if (site.signInText != null || status != null) ...[
+          // 签到 + 消息 + 时魔 + HR
+          if (site.signInText != null || status != null || site.mail > 0 || site.notice > 0) ...[
             const SizedBox(height: 12),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 // HR
-                if (status != null &&
-                    status.myHr != '0/0/0' &&
-                    status.myHr != '0') ...[
+                if (status != null && status.myHr != '0/0/0' && status.myHr != '0')
                   _miniBadge(
                     context,
                     shadcn.LucideIcons.triangleAlert,
                     'HR ${status.myHr}',
                     siteDanger(context),
                   ),
-                  if (site.signInText != null || status.bonusHour > 0)
-                    const SizedBox(width: 8),
-                ],
                 // 签到状态
                 if (site.signInText != null)
                   _miniBadge(
@@ -864,18 +845,32 @@ class SiteDetailSheet extends ConsumerWidget {
                         ? siteSuccess(context)
                         : siteDanger(context),
                   ),
+                _miniIconBadge(
+                  context,
+                  shadcn.LucideIcons.mail,
+                  '${site.mail}',
+                  siteInfo(context),
+                  '短消息 ${site.mail}',
+                ),
+                _miniIconBadge(
+                  context,
+                  shadcn.LucideIcons.bell,
+                  '${site.notice}',
+                  siteWarning(context),
+                  '公告 ${site.notice}',
+                ),
                 // 时魔
-                if (status != null) ...[
-                  if (site.signInText != null) const SizedBox(width: 8),
+                if (status != null)
                   _miniBadge(
                     context,
                     shadcn.LucideIcons.zap,
                     '${_fmtMagicWithRatio(status.bonusHour, spFull)}/h',
                     siteWarning(context),
                   ),
-                ],
               ],
             ),
+            const SizedBox(height: 10),
+            _buildTimeMetaRow(context, cs),
           ],
         ],
       ),
@@ -904,6 +899,73 @@ class SiteDetailSheet extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _miniIconBadge(
+    BuildContext context,
+    IconData icon,
+    String text,
+    Color color,
+    String tooltip,
+  ) {
+    return shadcn.Tooltip(
+      tooltip: (_) => Text(tooltip),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: siteRadius(context, size: "sm"),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+            Text(
+              text,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeMetaRow(BuildContext context, shadcn.ColorScheme cs) {
+    final registerTime = fmtDate(site.timeJoin);
+    final latestActive = site.latestActiveText.isEmpty ? '-' : site.latestActiveText;
+    final style = TextStyle(
+      color: cs.foreground.withValues(alpha: 0.45),
+      fontSize: 11,
+      fontWeight: FontWeight.w500,
+    );
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            '注册 $registerTime',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            '最后登录 $latestActive',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+            style: style,
+          ),
+        ),
+      ],
     );
   }
 
@@ -1024,49 +1086,70 @@ class SiteDetailSheet extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        alignment: WrapAlignment.spaceBetween,
-        children: flags.map((f) {
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: f.on
-                  ? siteSuccess(context).withValues(alpha: 0.08)
-                  : cs.foreground.withValues(alpha: 0.03),
-              borderRadius: siteRadius(context, size: "md"),
-              border: Border.all(
-                color: f.on
-                    ? siteSuccess(context).withValues(alpha: 0.2)
-                    : cs.border,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  f.icon,
-                  size: 12,
-                  color: f.on
-                      ? siteSuccess(context)
-                      : cs.foreground.withValues(alpha: 0.25),
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  f.label,
-                  style: TextStyle(
-                    fontSize: 11,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          const spacing = 8.0;
+          final columns = constraints.maxWidth < 360
+              ? 2
+              : constraints.maxWidth < 520
+                  ? 3
+                  : 5;
+          final itemWidth =
+              (constraints.maxWidth - spacing * (columns - 1)) / columns;
+
+          return Wrap(
+            spacing: spacing,
+            runSpacing: spacing,
+            children: flags.map((f) {
+              return SizedBox(
+                width: itemWidth,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
                     color: f.on
-                        ? siteSuccess(context)
-                        : cs.foreground.withValues(alpha: 0.4),
-                    fontWeight: f.on ? FontWeight.w600 : FontWeight.normal,
+                        ? siteSuccess(context).withValues(alpha: 0.08)
+                        : cs.foreground.withValues(alpha: 0.03),
+                    borderRadius: siteRadius(context, size: "md"),
+                    border: Border.all(
+                      color: f.on
+                          ? siteSuccess(context).withValues(alpha: 0.2)
+                          : cs.border,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        f.icon,
+                        size: 12,
+                        color: f.on
+                            ? siteSuccess(context)
+                            : cs.foreground.withValues(alpha: 0.25),
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          f.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: f.on
+                                ? siteSuccess(context)
+                                : cs.foreground.withValues(alpha: 0.4),
+                            fontWeight:
+                                f.on ? FontWeight.w600 : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              );
+            }).toList(),
           );
-        }).toList(),
+        },
       ),
     );
   }

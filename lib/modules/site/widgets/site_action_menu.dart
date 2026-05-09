@@ -30,6 +30,7 @@ class SiteActionMenu extends ConsumerWidget {
     return AppContextMenu(
       enabled: !refreshing,
       behavior: HitTestBehavior.opaque,
+      openOnTap: context.isMobile,
       items: _buildActionItems(context, ref, site),
       child: content,
     );
@@ -104,7 +105,7 @@ List<shadcn.MenuItem> _buildActionItems(
           label: '浏览',
           onPressed: () {
             if (!context.mounted) return;
-            _openSiteBrowser(context, site);
+            openSiteBrowser(context, site);
           },
         ),
       const shadcn.MenuDivider(),
@@ -173,7 +174,7 @@ List<shadcn.MenuItem> _buildActionItems(
         label: '浏览',
         onPressed: () {
           if (!context.mounted) return;
-          _openSiteBrowser(context, site);
+          openSiteBrowser(context, site);
         },
       ),
     const shadcn.MenuDivider(),
@@ -189,6 +190,19 @@ List<shadcn.MenuItem> _buildActionItems(
   ];
 }
 
+Future<void> showSiteActionMenu({
+  required BuildContext context,
+  required WidgetRef ref,
+  required SiteInfo site,
+  required Offset position,
+}) {
+  return appShowContextMenu(
+    context: context,
+    position: position,
+    items: _buildActionItems(context, ref, site),
+  );
+}
+
 bool _isKiswebSite(SiteInfo site) {
   final name = site.site.toLowerCase();
   final nickname = site.nickname.toLowerCase();
@@ -198,18 +212,12 @@ bool _isKiswebSite(SiteInfo site) {
       mirror.contains('kisweb');
 }
 
-Future<void> _openSiteBrowser(BuildContext context, SiteInfo site) async {
+Future<void> openSiteBrowser(BuildContext context, SiteInfo site) async {
   final url = site.mirror?.trim() ?? '';
   if (url.isEmpty) return;
 
   if (_isKiswebSite(site)) {
-    final uri = Uri.tryParse(url);
-    if (uri == null || !uri.hasScheme) {
-      Toast.warning('站点地址无效');
-      return;
-    }
-    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!opened) Toast.error('外部浏览器打开失败');
+    await openSiteExternalBrowser(site);
     return;
   }
 
@@ -220,6 +228,19 @@ Future<void> _openSiteBrowser(BuildContext context, SiteInfo site) async {
     cookie: site.cookie,
     userAgent: site.userAgent,
   );
+}
+
+Future<void> openSiteExternalBrowser(SiteInfo site) async {
+  final url = site.mirror?.trim() ?? '';
+  if (url.isEmpty) return;
+
+  final uri = Uri.tryParse(url);
+  if (uri == null || !uri.hasScheme) {
+    Toast.warning('站点地址无效');
+    return;
+  }
+  final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+  if (!opened) Toast.error('外部浏览器打开失败');
 }
 
 shadcn.MenuButton _menuItem({

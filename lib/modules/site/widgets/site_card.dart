@@ -9,7 +9,6 @@ import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
-import 'package:harvest/widgets/browser_page.dart';
 
 import '../model/site_config.dart';
 import '../model/site_info.dart';
@@ -18,6 +17,7 @@ import '../provider/site_card_style_provider.dart';
 import '../provider/site_provider.dart';
 import '../utils/site_level_milestone.dart';
 import 'site_action_menu.dart';
+import 'site_detail_sheet.dart';
 import 'site_level_sheet.dart';
 
 String _maskSiteName(String name, bool privacy) {
@@ -180,7 +180,6 @@ class SiteCard extends ConsumerWidget {
     context: context,
     site: site,
     config: config,
-    title: _maskSiteName(site.nickname.isNotEmpty ? site.nickname : site.site, privacy),
     privacy: privacy,
     size: 22,
     decoration: BoxDecoration(
@@ -821,7 +820,6 @@ Widget _siteBrowserLogo({
   required BuildContext context,
   required SiteInfo site,
   required WebSite? config,
-  required String title,
   required bool privacy,
   required double size,
   required BoxDecoration decoration,
@@ -840,13 +838,8 @@ Widget _siteBrowserLogo({
 
   return GestureDetector(
     behavior: HitTestBehavior.opaque,
-    onTap: () => BrowserPage.open(
-      context,
-      url: mirror,
-      title: title,
-      cookie: site.cookie,
-      userAgent: site.userAgent,
-    ),
+    onTap: () => openSiteBrowser(context, site),
+    onLongPress: () => openSiteExternalBrowser(site),
     child: logo,
   );
 }
@@ -1383,7 +1376,6 @@ class SiteCard2 extends ConsumerWidget {
       context: context,
       site: site,
       config: config,
-      title: _maskSiteName(site.nickname.isNotEmpty ? site.nickname : site.site, privacy),
       privacy: privacy,
       size: 44,
       decoration: BoxDecoration(
@@ -1530,7 +1522,7 @@ class SiteCard3 extends ConsumerWidget {
           ],
         ),
         child: status == null
-            ? _emptyCard(context, config)
+            ? _emptyCard(context, ref, config)
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1584,14 +1576,14 @@ class SiteCard3 extends ConsumerWidget {
                     color: _dividerColor(context),
                   ),
                   const SizedBox(height: 8),
-                  _footer(context, status),
+                  _footer(context, ref, status),
                 ],
               ),
       ),
     );
   }
 
-  Widget _emptyCard(BuildContext context, WebSite? config) {
+  Widget _emptyCard(BuildContext context, WidgetRef ref, WebSite? config) {
     final signStatus = _siteSignStatus(site, config);
     return Row(
       children: [
@@ -1622,7 +1614,7 @@ class SiteCard3 extends ConsumerWidget {
             ],
           ),
         ),
-        _moreCircle(context),
+        _actionMenuButton(context, ref),
       ],
     );
   }
@@ -1939,7 +1931,7 @@ class SiteCard3 extends ConsumerWidget {
     return _siteTooltip('${item.label}: ${item.value}', tile);
   }
 
-  Widget _footer(BuildContext context, SiteDailyStatus status) {
+  Widget _footer(BuildContext context, WidgetRef ref, SiteDailyStatus status) {
     final text = status.updated_at.trim().isNotEmpty
         ? status.updated_at.trim()
         : (site.latestStatusUpdatedAt ?? '').trim();
@@ -1962,31 +1954,56 @@ class SiteCard3 extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: 10),
-        Container(
-          height: 32,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: _softTileColor(
-              context,
-              siteInfo(context, alpha: 0.14),
-              siteInfo(context),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => openDetail(context, site),
+          child: Container(
+            height: 32,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: _softTileColor(
+                context,
+                siteInfo(context, alpha: 0.14),
+                siteInfo(context),
+              ),
+              borderRadius: siteRadius(context, size: "xl"),
             ),
-            borderRadius: siteRadius(context, size: "xl"),
-          ),
-          child: Text(
-            '详情',
-            style: TextStyle(
-              color: siteInfo(context),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              height: 1,
+            child: Text(
+              '详情',
+              style: TextStyle(
+                color: siteInfo(context),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                height: 1,
+              ),
             ),
           ),
         ),
         const SizedBox(width: 10),
-        _moreCircle(context),
+        _actionMenuButton(context, ref),
       ],
+    );
+  }
+
+  Widget _actionMenuButton(BuildContext context, WidgetRef ref) {
+    return Builder(
+      builder: (buttonContext) => GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          final renderObject = buttonContext.findRenderObject();
+          final position = renderObject is RenderBox
+              ? renderObject.localToGlobal(Offset(renderObject.size.width, 0))
+              : Offset.zero;
+          showSiteActionMenu(
+            context: buttonContext,
+            ref: ref,
+            site: site,
+            position: position,
+          );
+        },
+        child: _moreCircle(context),
+      ),
     );
   }
 
@@ -1995,7 +2012,6 @@ class SiteCard3 extends ConsumerWidget {
       context: context,
       site: site,
       config: config,
-      title: _maskSiteName(site.nickname.isNotEmpty ? site.nickname : site.site, privacy),
       privacy: privacy,
       size: size,
       decoration: BoxDecoration(
