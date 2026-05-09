@@ -14,13 +14,13 @@ class ThemeState {
   final double surfaceBlur;
 
   const ThemeState({
-    this.baseScheme = 'stone',
-    this.accent = 'rose',
+    this.baseScheme = 'neutral',
+    this.accent = 'sky',
     this.mode = shadcn.ThemeMode.system,
-    this.radius = 1.5,
-    this.density = 'spacious',
-    this.scaling = 1.15,
-    this.surfaceOpacity = 0.7,
+    this.radius = 0.5,
+    this.density = 'default',
+    this.scaling = 1.0,
+    this.surfaceOpacity = 1.0,
     this.surfaceBlur = 0.0,
   });
 
@@ -45,7 +45,9 @@ class ThemeState {
   }
 
   ThemeData materialTheme(Brightness brightness) {
-    final shadcnTheme = brightness == Brightness.dark ? shadcnDark : shadcnLight;
+    final shadcnTheme = brightness == Brightness.dark
+        ? shadcnDark
+        : shadcnLight;
     final cs = shadcnTheme.colorScheme;
     final materialScheme = ColorScheme.fromSeed(
       seedColor: cs.primary,
@@ -80,21 +82,27 @@ class ThemeState {
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: md)),
+        style: ElevatedButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: md),
+        ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: md)),
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: md),
+        ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: sm)),
+        style: TextButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: sm),
+        ),
       ),
-      chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(borderRadius: sm),
-      ),
+      chipTheme: ChipThemeData(shape: RoundedRectangleBorder(borderRadius: sm)),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: cs.background,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(shadcnTheme.radiusLg)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(shadcnTheme.radiusLg),
+          ),
         ),
       ),
     );
@@ -138,20 +146,27 @@ class ThemeState {
   factory ThemeState.fromJson(Map<String, dynamic> json) {
     final modeValue = json['mode'];
     final mode = modeValue is int
-        ? shadcn.ThemeMode.values[modeValue.clamp(0, shadcn.ThemeMode.values.length - 1)]
+        ? shadcn.ThemeMode.values[modeValue.clamp(
+            0,
+            shadcn.ThemeMode.values.length - 1,
+          )]
         : switch (modeValue?.toString()) {
             'light' => shadcn.ThemeMode.light,
             'dark' => shadcn.ThemeMode.dark,
             _ => shadcn.ThemeMode.system,
           };
     return ThemeState(
-      baseScheme: AppThemeOptions.normalizeBase(json['baseScheme'] ?? json['theme'] ?? json['name']),
-      accent: AppThemeOptions.normalizeAccent(json['accent'] ?? json['theme'] ?? json['name']),
+      baseScheme: AppThemeOptions.normalizeBase(
+        json['baseScheme'] ?? json['theme'] ?? json['name'],
+      ),
+      accent: AppThemeOptions.normalizeAccent(
+        json['accent'] ?? json['theme'] ?? json['name'],
+      ),
       mode: mode,
-      radius: (json['radius'] as num?)?.toDouble() ?? 1.5,
+      radius: (json['radius'] as num?)?.toDouble() ?? 0.5,
       density: AppThemeOptions.normalizeDensity(json['density']),
-      scaling: (json['scaling'] as num?)?.toDouble() ?? 1.15,
-      surfaceOpacity: (json['surfaceOpacity'] as num?)?.toDouble() ?? 0.7,
+      scaling: (json['scaling'] as num?)?.toDouble() ?? 1.0,
+      surfaceOpacity: (json['surfaceOpacity'] as num?)?.toDouble() ?? 1.0,
       surfaceBlur: (json['surfaceBlur'] as num?)?.toDouble() ?? 0.0,
     );
   }
@@ -174,24 +189,20 @@ class AppTheme {
 
   shadcn.ThemeData get shadcnLight => shadcn.ThemeData(
     colorScheme: AppThemeOptions.colorScheme(baseScheme, accent, false),
-    radius: 1.5,
-    density: shadcn.Density.spaciousDensity,
-    surfaceOpacity: 0.7,
+    radius: 0.5,
+    density: shadcn.Density.defaultDensity,
+    surfaceOpacity: 1.0,
   );
 
   shadcn.ThemeData get shadcnDark => shadcn.ThemeData(
     colorScheme: AppThemeOptions.colorScheme(baseScheme, accent, true),
-    radius: 1.5,
-    density: shadcn.Density.spaciousDensity,
-    surfaceOpacity: 0.7,
+    radius: 0.5,
+    density: shadcn.Density.defaultDensity,
+    surfaceOpacity: 1.0,
   );
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'baseScheme': baseScheme,
-      'accent': accent,
-    };
+    return {'name': name, 'baseScheme': baseScheme, 'accent': accent};
   }
 
   factory AppTheme.fromJson(Map<String, dynamic> json) {

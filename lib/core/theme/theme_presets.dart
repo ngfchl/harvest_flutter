@@ -29,7 +29,11 @@ class AppThemeOptions {
     AppThemeOption(id: 'slate', label: 'Slate', value: shadcn.Colors.slate),
     AppThemeOption(id: 'gray', label: 'Gray', value: shadcn.Colors.gray),
     AppThemeOption(id: 'zinc', label: 'Zinc', value: shadcn.Colors.zinc),
-    AppThemeOption(id: 'neutral', label: 'Neutral', value: shadcn.Colors.neutral),
+    AppThemeOption(
+      id: 'neutral',
+      label: 'Neutral',
+      value: shadcn.Colors.neutral,
+    ),
     AppThemeOption(id: 'stone', label: 'Stone', value: shadcn.Colors.stone),
     AppThemeOption(id: 'red', label: 'Red', value: shadcn.Colors.red),
     AppThemeOption(id: 'orange', label: 'Orange', value: shadcn.Colors.orange),
@@ -37,7 +41,11 @@ class AppThemeOptions {
     AppThemeOption(id: 'yellow', label: 'Yellow', value: shadcn.Colors.yellow),
     AppThemeOption(id: 'lime', label: 'Lime', value: shadcn.Colors.lime),
     AppThemeOption(id: 'green', label: 'Green', value: shadcn.Colors.green),
-    AppThemeOption(id: 'emerald', label: 'Emerald', value: shadcn.Colors.emerald),
+    AppThemeOption(
+      id: 'emerald',
+      label: 'Emerald',
+      value: shadcn.Colors.emerald,
+    ),
     AppThemeOption(id: 'teal', label: 'Teal', value: shadcn.Colors.teal),
     AppThemeOption(id: 'cyan', label: 'Cyan', value: shadcn.Colors.cyan),
     AppThemeOption(id: 'sky', label: 'Sky', value: shadcn.Colors.sky),
@@ -45,16 +53,31 @@ class AppThemeOptions {
     AppThemeOption(id: 'indigo', label: 'Indigo', value: shadcn.Colors.indigo),
     AppThemeOption(id: 'violet', label: 'Violet', value: shadcn.Colors.violet),
     AppThemeOption(id: 'purple', label: 'Purple', value: shadcn.Colors.purple),
-    AppThemeOption(id: 'fuchsia', label: 'Fuchsia', value: shadcn.Colors.fuchsia),
+    AppThemeOption(
+      id: 'fuchsia',
+      label: 'Fuchsia',
+      value: shadcn.Colors.fuchsia,
+    ),
     AppThemeOption(id: 'pink', label: 'Pink', value: shadcn.Colors.pink),
     AppThemeOption(id: 'rose', label: 'Rose', value: shadcn.Colors.rose),
   ];
 
   static const densities = [
-    AppThemeOption(id: 'compact', label: 'Compact', value: shadcn.Density.compactDensity),
-    AppThemeOption(id: 'reduced', label: 'Reduced', value: shadcn.Density.reducedDensity),
-    AppThemeOption(id: 'default', label: 'Default', value: shadcn.Density.defaultDensity),
-    AppThemeOption(id: 'spacious', label: 'Spacious', value: shadcn.Density.spaciousDensity),
+    AppThemeOption(
+      id: 'reduced',
+      label: 'Reduced',
+      value: shadcn.Density.reducedDensity,
+    ),
+    AppThemeOption(
+      id: 'default',
+      label: 'Default',
+      value: shadcn.Density.defaultDensity,
+    ),
+    AppThemeOption(
+      id: 'spacious',
+      label: 'Spacious',
+      value: shadcn.Density.spaciousDensity,
+    ),
   ];
 
   static const radiusOptions = [
@@ -87,54 +110,83 @@ class AppThemeOptions {
 
   static String normalizeBase(Object? value) {
     final id = value?.toString();
-    return baseSchemes.any((option) => option.id == id) ? id! : 'stone';
+    return baseSchemes.any((option) => option.id == id) ? id! : 'neutral';
   }
 
   static String normalizeAccent(Object? value) {
     final id = value?.toString();
-    return accents.any((option) => option.id == id) ? id! : 'rose';
+    return accents.any((option) => option.id == id) ? id! : 'sky';
   }
 
   static String normalizeDensity(Object? value) {
     final id = value?.toString();
-    return densities.any((option) => option.id == id) ? id! : 'spacious';
+    return densities.any((option) => option.id == id) ? id! : 'default';
   }
 
   static shadcn.Density densityValue(String id) {
-    return densities.firstWhere(
-      (option) => option.id == id,
-      orElse: () => densities.last,
-    ).value;
+    return densities
+        .firstWhere(
+          (option) => option.id == id,
+          orElse: () =>
+              densities.firstWhere((option) => option.id == 'default'),
+        )
+        .value;
   }
 
   static Color accentColor(String id) {
-    return accents.firstWhere(
-      (option) => option.id == id,
-      orElse: () => accents.last,
-    ).value ?? shadcn.Colors.stone;
+    return accents
+            .firstWhere(
+              (option) => option.id == id,
+              orElse: () => accents.firstWhere((option) => option.id == 'sky'),
+            )
+            .value ??
+        shadcn.Colors.stone;
   }
 
-  static shadcn.ColorScheme colorScheme(String baseId, String accentId, bool dark) {
+  static shadcn.ColorScheme colorScheme(
+    String baseId,
+    String accentId,
+    bool dark,
+  ) {
     final base = _baseColorScheme(normalizeBase(baseId), dark);
-    final accent = accents.firstWhere(
-      (option) => option.id == normalizeAccent(accentId),
-      orElse: () => accents.last,
-    ).value;
+    final accent = accents
+        .firstWhere(
+          (option) => option.id == normalizeAccent(accentId),
+          orElse: () => accents.last,
+        )
+        .value;
     return accent == null ? base : base.recolor(accent);
   }
 
   static shadcn.ColorScheme _baseColorScheme(String id, bool dark) {
     return switch (id) {
-      'slate' => dark ? shadcn.ColorSchemes.darkSlate : shadcn.ColorSchemes.lightSlate,
-      'zinc' => dark ? shadcn.ColorSchemes.darkZinc : shadcn.ColorSchemes.lightZinc,
-      'gray' => dark ? shadcn.ColorSchemes.darkGray : shadcn.ColorSchemes.lightGray,
-      'neutral' => dark ? shadcn.ColorSchemes.darkNeutral : shadcn.ColorSchemes.lightNeutral,
-      _ => dark ? shadcn.ColorSchemes.darkStone : shadcn.ColorSchemes.lightStone,
+      'slate' =>
+        dark ? shadcn.ColorSchemes.darkSlate : shadcn.ColorSchemes.lightSlate,
+      'zinc' =>
+        dark ? shadcn.ColorSchemes.darkZinc : shadcn.ColorSchemes.lightZinc,
+      'gray' =>
+        dark ? shadcn.ColorSchemes.darkGray : shadcn.ColorSchemes.lightGray,
+      'neutral' =>
+        dark
+            ? shadcn.ColorSchemes.darkNeutral
+            : shadcn.ColorSchemes.lightNeutral,
+      _ =>
+        dark
+            ? shadcn.ColorSchemes.darkNeutral
+            : shadcn.ColorSchemes.lightNeutral,
     };
   }
 }
 
 class AppThemes {
+  static const sky = AppTheme(
+    name: 'sky',
+    label: 'Sky',
+    seedColor: Color(0xFF0EA5E9),
+    baseScheme: 'neutral',
+    accent: 'sky',
+  );
+
   static const blue = AppTheme(
     name: 'blue',
     label: 'Blue',
@@ -199,15 +251,26 @@ class AppThemes {
     accent: 'base',
   );
 
-  static const list = [blue, yellow, rose, green, orange, violet, red, zinc];
+  static const list = [
+    sky,
+    blue,
+    yellow,
+    rose,
+    green,
+    orange,
+    violet,
+    red,
+    zinc,
+  ];
 
   static AppTheme byName(String? name) {
-    return list.firstWhere((theme) => theme.name == name, orElse: () => rose);
+    return list.firstWhere((theme) => theme.name == name, orElse: () => sky);
   }
 
   static AppTheme fromState(ThemeState state) {
     return list.firstWhere(
-      (theme) => theme.baseScheme == state.baseScheme && theme.accent == state.accent,
+      (theme) =>
+          theme.baseScheme == state.baseScheme && theme.accent == state.accent,
       orElse: () => AppTheme(
         name: '${state.baseScheme}-${state.accent}',
         label: '${state.baseScheme}/${state.accent}',
