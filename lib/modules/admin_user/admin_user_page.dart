@@ -4,6 +4,7 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -833,15 +834,11 @@ class _AdminUserTile extends StatelessWidget {
       ),
     );
 
-    return shadcn.ContextMenu(
+    return AppContextMenu(
       behavior: HitTestBehavior.opaque,
+      openOnTap: true,
       items: _menuItems(context),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapUp: (details) => _showMenu(context, details.globalPosition),
-        onLongPressStart: (details) => _showMenu(context, details.globalPosition),
-        child: tile,
-      ),
+      child: tile,
     );
   }
 
@@ -877,18 +874,6 @@ class _AdminUserTile extends StatelessWidget {
     );
   }
 
-  void _showMenu(BuildContext context, Offset position) {
-    shadcn.showPopover<void>(
-      context: context,
-      position: position,
-      alignment: Alignment.topLeft,
-      offset: const Offset(0, 8),
-      widthConstraint: shadcn.PopoverConstraint.intrinsic,
-      heightConstraint: shadcn.PopoverConstraint.intrinsic,
-      consumeOutsideTaps: false,
-      builder: (_) => shadcn.DropdownMenu(children: _menuItems(context)),
-    );
-  }
 }
 
 class _AdminUserTitle extends StatelessWidget {
