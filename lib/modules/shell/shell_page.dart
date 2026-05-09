@@ -926,10 +926,20 @@ class _AccountMenuButton extends ConsumerWidget {
     final c = highlighted ? hl : color;
     final style = c == null ? null : TextStyle(color: c, fontWeight: FontWeight.w700);
     return shadcn.MenuButton(
-      leading: Icon(icon, size: 16, color: c),
-      trailing: trailing,
       onPressed: (_) => unawaited(Future<void>.sync(onTap)),
-      child: SizedBox(width: 180, child: Text(title, style: style)),
+      child: SizedBox(
+        width: 148,
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: c),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: style),
+            ),
+            if (trailing != null) ...[const SizedBox(width: 8), trailing],
+          ],
+        ),
+      ),
     );
   }
 }
