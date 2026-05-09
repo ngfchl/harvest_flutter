@@ -429,21 +429,14 @@ class _ShellHeader extends StatelessWidget {
               title: hasUnread
                   ? _NoticeTicker(notices: unreadNotices, onTap: onOpenNotices)
                   : Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.typography.lead.copyWith(
-                      color: cs.foreground,
-                      fontWeight: FontWeight.w800,
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.typography.lead.copyWith(color: cs.foreground, fontWeight: FontWeight.w800),
                     ),
-                  ),
               trailing: [
                 if (!hasUnread)
-                  _HeaderNoticeButton(
-                    unreadCount: unreadNotices.length,
-                    hasUnread: hasUnread,
-                    onTap: onOpenNotices,
-                  ),
+                  _HeaderNoticeButton(unreadCount: unreadNotices.length, hasUnread: hasUnread, onTap: onOpenNotices),
                 if (hasAppUpgrade)
                   _HeaderDotButton(
                     icon: shadcn.LucideIcons.circleArrowUp,
@@ -594,7 +587,10 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
                           : shadcn.OverflowMarquee(
                               child: Text(
                                 _cleanTitle(notice.title),
-                                style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
+                                style: theme.typography.small.copyWith(
+                                  color: cs.foreground,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
                     ),
@@ -620,6 +616,7 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
             shadcn.Tooltip(
               tooltip: (_) => const Text('标记已读'),
               child: shadcn.IconButton.ghost(
+                density: shadcn.ButtonDensity.compact,
                 onPressed: () async {
                   try {
                     await ref.read(noticeHistoryProvider.notifier).markRead(notice);
@@ -655,11 +652,7 @@ class _HeaderNoticeButton extends StatelessWidget {
   final bool hasUnread;
   final VoidCallback onTap;
 
-  const _HeaderNoticeButton({
-    required this.unreadCount,
-    required this.hasUnread,
-    required this.onTap,
-  });
+  const _HeaderNoticeButton({required this.unreadCount, required this.hasUnread, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
