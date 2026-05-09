@@ -169,6 +169,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
           _AdminUserList(
             users: filtered,
             onRenew: _openRenewDialog,
+            onResetInvite: _openResetInviteDialog,
             onSendEmail: _sendTokenEmail,
             onDelete: _confirmDelete,
           ),
@@ -196,8 +197,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                     controller: emailCtrl,
                     autofocus: true,
                     hintText: '邮箱',
-                    onSubmitted: (_) =>
-                        FocusManager.instance.primaryFocus?.unfocus(),
+                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   ),
                   const SizedBox(height: 16),
                   _DialogActions(
@@ -278,8 +278,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                     shadcn.TextField(
                       controller: payCtrl,
                       hintText: '支付金额',
-                      onSubmitted: (_) =>
-                          FocusManager.instance.primaryFocus?.unfocus(),
+                      onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                     const SizedBox(height: 8),
                     Wrap(
@@ -303,8 +302,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                     shadcn.TextField(
                       controller: expireCtrl,
                       hintText: '过期时间',
-                      onSubmitted: (_) =>
-                          FocusManager.instance.primaryFocus?.unfocus(),
+                      onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                     const SizedBox(height: 10),
                     _PanelTile(
@@ -353,8 +351,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                     controller: countCtrl,
                     autofocus: true,
                     hintText: '邀请数量',
-                    onSubmitted: (_) =>
-                        FocusManager.instance.primaryFocus?.unfocus(),
+                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   ),
                   const SizedBox(height: 16),
                   _DialogActions(
@@ -383,6 +380,85 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _openResetInviteDialog(AdminUser user) {
+    final countCtrl = TextEditingController(text: '3');
+    var saving = false;
+    shadcn.showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          Future<void> save() async {
+            final count = int.tryParse(countCtrl.text.trim());
+            if (count == null || count < 3 || count > 5) {
+              Toast.warning('邀请数量需在 3 到 5 之间');
+              return;
+            }
+            setDialogState(() => saving = true);
+            try {
+              await ref
+                  .read(adminUserListProvider.notifier)
+                  .updateUser(AdminUserEditPayload(id: user.id, email: user.email, invite: count));
+              if (ctx.mounted) Navigator.of(ctx).pop();
+              Toast.success('邀请数量已重置');
+            } catch (_) {
+              if (ctx.mounted) setDialogState(() => saving = false);
+            }
+          }
+
+          return shadcn.AlertDialog(
+            title: const Text('重置邀请'),
+            content: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: SizedBox(
+                width: 360,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _ReadOnlyField(label: '邮箱', value: user.email),
+                    const SizedBox(height: 10),
+                    shadcn.TextField(
+                      controller: countCtrl,
+                      autofocus: true,
+                      hintText: '邀请数量',
+                      onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: [
+                        for (final count in const [3, 4, 5])
+                          _DiscountButton(
+                            label: '$count 次',
+                            onPressed: saving
+                                ? null
+                                : () {
+                                    countCtrl.text = count.toString();
+                                    setDialogState(() {});
+                                  },
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    _DialogActions(
+                      saving: saving,
+                      cancelLabel: '取消',
+                      submitLabel: '重置',
+                      onCancel: () => Navigator.of(ctx).pop(),
+                      onSubmit: save,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -654,10 +730,17 @@ class _AdminUserToolbar extends StatelessWidget {
 class _AdminUserList extends StatelessWidget {
   final List<AdminUser> users;
   final ValueChanged<AdminUser> onRenew;
+  final ValueChanged<AdminUser> onResetInvite;
   final ValueChanged<AdminUser> onSendEmail;
   final ValueChanged<AdminUser> onDelete;
 
-  const _AdminUserList({required this.users, required this.onRenew, required this.onSendEmail, required this.onDelete});
+  const _AdminUserList({
+    required this.users,
+    required this.onRenew,
+    required this.onResetInvite,
+    required this.onSendEmail,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -678,6 +761,7 @@ class _AdminUserList extends StatelessWidget {
                   child: _AdminUserTile(
                     user: user,
                     onRenew: () => onRenew(user),
+                    onResetInvite: () => onResetInvite(user),
                     onSendEmail: () => onSendEmail(user),
                     onDelete: () => onDelete(user),
                   ),
@@ -700,10 +784,17 @@ int _adaptiveColumns(double width, {required double minWidth, required int maxCo
 class _AdminUserTile extends StatelessWidget {
   final AdminUser user;
   final VoidCallback onRenew;
+  final VoidCallback onResetInvite;
   final VoidCallback onSendEmail;
   final VoidCallback onDelete;
 
-  const _AdminUserTile({required this.user, required this.onRenew, required this.onSendEmail, required this.onDelete});
+  const _AdminUserTile({
+    required this.user,
+    required this.onRenew,
+    required this.onResetInvite,
+    required this.onSendEmail,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -758,6 +849,7 @@ class _AdminUserTile extends StatelessWidget {
     final cs = _adminColors(context);
     return [
       _menuItem(context: context, icon: shadcn.LucideIcons.refreshCw, title: '重新授权', onPressed: onRenew),
+      _menuItem(context: context, icon: shadcn.LucideIcons.ticketPlus, title: '重置邀请', onPressed: onResetInvite),
       _menuItem(context: context, icon: shadcn.LucideIcons.send, title: '发送邮件', onPressed: onSendEmail),
       const shadcn.MenuDivider(),
       _menuItem(
@@ -1309,15 +1401,22 @@ class _DialogActions extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: shadcn.Button.outline(onPressed: saving ? null : onCancel, child: Text(cancelLabel)),
+          child: shadcn.Button.outline(
+            onPressed: saving ? null : onCancel,
+            child: Center(child: Text(cancelLabel)),
+          ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: shadcn.Button.primary(
             onPressed: saving ? null : onSubmit,
             child: saving
-                ? const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(strokeWidth: 2))
-                : Text(submitLabel),
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
+                  )
+                : Center(child: Text(submitLabel)),
           ),
         ),
       ],

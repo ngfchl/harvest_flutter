@@ -17,11 +17,12 @@ class AdminUserService {
   }
 
   static Future<void> createUser(String email) async {
-    await Http.post(API.ADMIN_USER, queryParameters: {'invite_email': email, 'notify': true});
+    await Http.post(API.ADMIN_USER, queryParameters: {'invite_email': email, 'notify': false});
   }
 
   static Future<void> updateUser(AdminUserEditPayload payload) async {
-    await Http.put(API.ADMIN_USER, data: payload.toJson());
+    final data = payload.toJson()..removeWhere((_, value) => value == null);
+    await Http.put(API.ADMIN_USER, data: data);
   }
 
   static Future<void> resetToken(int userId, AdminUserResetTokenPayload payload) async {
