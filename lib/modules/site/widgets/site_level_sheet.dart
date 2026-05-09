@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -16,7 +17,7 @@ import '../provider/site_provider.dart';
 
 void openLevelInfo(BuildContext context, {required SiteInfo site}) {
   if (context.isMobile) {
-    showModalBottomSheet<void>(
+    showAppSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: siteTransparent(context),
@@ -25,8 +26,7 @@ void openLevelInfo(BuildContext context, {required SiteInfo site}) {
         maxChildSize: 0.95,
         minChildSize: 0.4,
         expand: false,
-        builder: (ctx, scrollCtrl) =>
-            _LevelInfoSheet(site: site, scrollController: scrollCtrl),
+        builder: (ctx, scrollCtrl) => _LevelInfoSheet(site: site, scrollController: scrollCtrl),
       ),
     );
   } else {
@@ -87,26 +87,18 @@ class _LevelInfoSheet extends ConsumerWidget {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () => closeAppSheet(context),
             behavior: HitTestBehavior.opaque,
             child: Padding(
               padding: const EdgeInsets.all(4),
-              child: Icon(
-                shadcn.LucideIcons.arrowLeft,
-                size: 20,
-                color: cs.foreground,
-              ),
+              child: Icon(shadcn.LucideIcons.arrowLeft, size: 20, color: cs.foreground),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               '等级信息 · ${site.site}',
-              style: TextStyle(
-                color: cs.foreground,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
           // 当前等级徽章
@@ -119,11 +111,7 @@ class _LevelInfoSheet extends ConsumerWidget {
               ),
               child: Text(
                 status.myLevel,
-                style: TextStyle(
-                  color: levelColor(status.myLevel),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(color: levelColor(status.myLevel), fontSize: 12, fontWeight: FontWeight.w700),
               ),
             ),
         ],
@@ -137,9 +125,7 @@ class _LevelInfoSheet extends ConsumerWidget {
         16,
         16,
         16,
-        MediaQuery.of(context).viewInsets.bottom +
-            MediaQuery.of(context).padding.bottom +
-            16,
+        MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom + 16,
       ),
       children: [
         // ── 无配置 ──
@@ -147,10 +133,7 @@ class _LevelInfoSheet extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(24),
             child: Center(
-              child: Text(
-                '暂无等级配置',
-                style: TextStyle(fontSize: 14, color: cs.mutedForeground),
-              ),
+              child: Text('暂无等级配置', style: TextStyle(fontSize: 14, color: cs.mutedForeground)),
             ),
           ),
 
@@ -189,11 +172,7 @@ class _LevelInfoSheet extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(
-          color: shadcn.Theme.of(
-            context,
-          ).colorScheme.border.withValues(alpha: 0.4),
-        ),
+        border: Border.all(color: shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.4)),
         borderRadius: siteRadius(context, size: "md"),
       ),
       child: ClipRRect(
@@ -228,26 +207,19 @@ class _LevelInfoSheet extends ConsumerWidget {
                 color: isCurrent
                     ? color.withValues(alpha: 0.08)
                     : isNext
-                    ? shadcn.Theme.of(
-                        context,
-                      ).colorScheme.muted.withValues(alpha: 0.08)
+                    ? shadcn.Theme.of(context).colorScheme.muted.withValues(alpha: 0.08)
                     : null,
                 border: isLast
                     ? null
                     : Border(
                         bottom: BorderSide(
-                          color: shadcn.Theme.of(
-                            context,
-                          ).colorScheme.border.withValues(alpha: 0.2),
+                          color: shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.2),
                           width: 0.5,
                         ),
                       ),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -255,21 +227,14 @@ class _LevelInfoSheet extends ConsumerWidget {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: color.withValues(alpha: 0.12),
                             borderRadius: siteRadius(context, size: "xs"),
                           ),
                           child: Text(
                             name,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: color,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w700),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -283,8 +248,7 @@ class _LevelInfoSheet extends ConsumerWidget {
                           _statusTag(
                             context,
                             '未解锁',
-                            shadcn.Theme.of(context).colorScheme.mutedForeground
-                                .withValues(alpha: 0.4),
+                            shadcn.Theme.of(context).colorScheme.mutedForeground.withValues(alpha: 0.4),
                             false,
                           ),
 
@@ -302,9 +266,7 @@ class _LevelInfoSheet extends ConsumerWidget {
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: shadcn.Theme.of(
-                                    context,
-                                  ).colorScheme.mutedForeground,
+                                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                                 ),
                               ),
                             ),
@@ -317,24 +279,15 @@ class _LevelInfoSheet extends ConsumerWidget {
                       const SizedBox(height: 8),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                         decoration: BoxDecoration(
                           color: siteWarning(context).withValues(alpha: 0.06),
                           borderRadius: siteRadius(context, size: "sm"),
-                          border: Border.all(
-                            color: siteWarning(context).withValues(alpha: 0.15),
-                          ),
+                          border: Border.all(color: siteWarning(context).withValues(alpha: 0.15)),
                         ),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.star_rounded,
-                              size: 14,
-                              color: siteWarning(context),
-                            ),
+                            Icon(Icons.star_rounded, size: 14, color: siteWarning(context)),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
@@ -387,20 +340,12 @@ class _LevelInfoSheet extends ConsumerWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(
-          fontSize: 10,
-          color: color,
-          fontWeight: bold ? FontWeight.w700 : FontWeight.normal,
-        ),
+        style: TextStyle(fontSize: 10, color: color, fontWeight: bold ? FontWeight.w700 : FontWeight.normal),
       ),
     );
   }
 
-  Widget _buildProgressSection(
-    BuildContext context,
-    SiteDailyStatus status,
-    SiteLevel nextLevel,
-  ) {
+  Widget _buildProgressSection(BuildContext context, SiteDailyStatus status, SiteLevel nextLevel) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final cfgUp = parseSize(nextLevel.uploaded);
     final cfgDl = parseSize(nextLevel.downloaded);
@@ -410,9 +355,7 @@ class _LevelInfoSheet extends ConsumerWidget {
     if (cfgUp > 0) {
       requiredUp = cfgUp;
     } else if (cfgDl > 0 && ratio > 0) {
-      final effectiveDl = status.downloaded >= cfgDl
-          ? status.downloaded
-          : cfgDl;
+      final effectiveDl = status.downloaded >= cfgDl ? status.downloaded : cfgDl;
       requiredUp = (effectiveDl * ratio).round();
     } else {
       requiredUp = 0;
@@ -427,59 +370,19 @@ class _LevelInfoSheet extends ConsumerWidget {
     }
 
     if (requiredUp > 0) {
-      addProgressItem(
-        _progressItem(
-          context,
-          '上传量',
-          status.uploaded,
-          requiredUp,
-          (v) => fmtBytes(v.toInt()),
-        ),
-      );
+      addProgressItem(_progressItem(context, '上传量', status.uploaded, requiredUp, (v) => fmtBytes(v.toInt())));
     }
     if (cfgDl > 0) {
-      addProgressItem(
-        _progressItem(
-          context,
-          '下载量',
-          status.downloaded,
-          cfgDl,
-          (v) => fmtBytes(v.toInt()),
-        ),
-      );
+      addProgressItem(_progressItem(context, '下载量', status.downloaded, cfgDl, (v) => fmtBytes(v.toInt())));
     }
     if (nextLevel.score > 0) {
-      addProgressItem(
-        _progressItem(
-          context,
-          '做种积分',
-          status.myScore,
-          nextLevel.score,
-          (v) => fmtCompact(v.toDouble()),
-        ),
-      );
+      addProgressItem(_progressItem(context, '做种积分', status.myScore, nextLevel.score, (v) => fmtCompact(v.toDouble())));
     }
     if (nextLevel.bonus > 0) {
-      addProgressItem(
-        _progressItem(
-          context,
-          '魔力值',
-          status.myBonus,
-          nextLevel.bonus,
-          (v) => fmtCompact(v.toDouble()),
-        ),
-      );
+      addProgressItem(_progressItem(context, '魔力值', status.myBonus, nextLevel.bonus, (v) => fmtCompact(v.toDouble())));
     }
     if (nextLevel.torrents > 0) {
-      addProgressItem(
-        _progressItem(
-          context,
-          '做种数',
-          status.seed,
-          nextLevel.torrents,
-          (v) => '$v',
-        ),
-      );
+      addProgressItem(_progressItem(context, '做种数', status.seed, nextLevel.torrents, (v) => '$v'));
     }
     if (nextLevel.days > 0) {
       addProgressItem(_timeItem(context, nextLevel.days));
@@ -499,11 +402,7 @@ class _LevelInfoSheet extends ConsumerWidget {
         children: [
           Text(
             '升级进度',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: cs.foreground.withValues(alpha: 0.7),
-            ),
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.foreground.withValues(alpha: 0.7)),
           ),
           const SizedBox(height: 8),
           ...progressItems,
@@ -512,11 +411,7 @@ class _LevelInfoSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildCurrentRights(
-    BuildContext context,
-    List<MapEntry<String, SiteLevel>> levels,
-    int currentIdx,
-  ) {
+  Widget _buildCurrentRights(BuildContext context, List<MapEntry<String, SiteLevel>> levels, int currentIdx) {
     final rights = <String>[];
     for (var i = currentIdx; i < levels.length; i++) {
       final r = levels[i].value.rights;
@@ -530,11 +425,7 @@ class _LevelInfoSheet extends ConsumerWidget {
       children: [
         Text(
           '已享权利',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: cs.foreground.withValues(alpha: 0.7),
-          ),
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.foreground.withValues(alpha: 0.7)),
         ),
         const SizedBox(height: 6),
         ..._buildRightsRows(context, rights, siteSuccess(context)),
@@ -542,11 +433,7 @@ class _LevelInfoSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildNextRights(
-    BuildContext context,
-    List<String> rights,
-    Color levelColor,
-  ) {
+  Widget _buildNextRights(BuildContext context, List<String> rights, Color levelColor) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -560,11 +447,7 @@ class _LevelInfoSheet extends ConsumerWidget {
         children: [
           Text(
             '即将获得新增权利',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: levelColor,
-            ),
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: levelColor),
           ),
           const SizedBox(height: 6),
           ..._buildRightsRows(context, rights, levelColor),
@@ -581,24 +464,14 @@ class _LevelInfoSheet extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: cs.foreground,
-        ),
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: cs.foreground),
       ),
     );
   }
 
   // ────────────── 进度条 ──────────────
 
-  Widget _progressItem(
-    BuildContext context,
-    String label,
-    num current,
-    num required,
-    String Function(num) fmt,
-  ) {
+  Widget _progressItem(BuildContext context, String label, num current, num required, String Function(num) fmt) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final met = current >= required;
     final ratio = required > 0 ? (current / required).clamp(0.0, 1.0) : 1.0;
@@ -609,10 +482,7 @@ class _LevelInfoSheet extends ConsumerWidget {
       children: [
         Row(
           children: [
-            Text(
-              label,
-              style: TextStyle(fontSize: 11, color: cs.mutedForeground),
-            ),
+            Text(label, style: TextStyle(fontSize: 11, color: cs.mutedForeground)),
             const Spacer(),
             Text(
               '${fmt(current)} / ${fmt(required)}',
@@ -719,11 +589,7 @@ class _LevelInfoSheet extends ConsumerWidget {
 
   // ────────────── 权利列表 ──────────────
 
-  List<Widget> _buildRightsRows(
-    BuildContext context,
-    List<String> rights,
-    Color markerColor,
-  ) {
+  List<Widget> _buildRightsRows(BuildContext context, List<String> rights, Color markerColor) {
     final cs = shadcn.Theme.of(context).colorScheme;
     return rights
         .map(
@@ -737,21 +603,14 @@ class _LevelInfoSheet extends ConsumerWidget {
                   child: Container(
                     width: 4,
                     height: 4,
-                    decoration: BoxDecoration(
-                      color: markerColor,
-                      shape: BoxShape.circle,
-                    ),
+                    decoration: BoxDecoration(color: markerColor, shape: BoxShape.circle),
                   ),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     r,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: cs.foreground.withValues(alpha: 0.7),
-                      height: 1.4,
-                    ),
+                    style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.7), height: 1.4),
                   ),
                 ),
               ],

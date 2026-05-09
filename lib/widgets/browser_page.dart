@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:harvest/core/utils/utils.dart';
@@ -20,30 +21,13 @@ class BrowserPage extends StatefulWidget {
   final String? cookie;
   final String? userAgent;
 
-  const BrowserPage({
-    super.key,
-    required this.url,
-    this.title,
-    this.cookie,
-    this.userAgent,
-  });
+  const BrowserPage({super.key, required this.url, this.title, this.cookie, this.userAgent});
 
   /// 快捷打开
-  static void open(
-    BuildContext context, {
-    required String url,
-    String? title,
-    String? cookie,
-    String? userAgent,
-  }) {
+  static void open(BuildContext context, {required String url, String? title, String? cookie, String? userAgent}) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => BrowserPage(
-          url: url,
-          title: title,
-          cookie: cookie,
-          userAgent: userAgent,
-        ),
+        builder: (_) => BrowserPage(url: url, title: title, cookie: cookie, userAgent: userAgent),
       ),
     );
   }
@@ -158,7 +142,7 @@ class _BrowserPageState extends State<BrowserPage> {
         if (_canGoBack) {
           _controller?.goBack();
         } else {
-          Navigator.of(context).pop();
+          closeAppSheet(context);
         }
       },
       child: Scaffold(
@@ -179,9 +163,7 @@ class _BrowserPageState extends State<BrowserPage> {
               ),
               // ── WebView ──
               Expanded(
-                child: _cookiesReady
-                    ? _buildWebView()
-                    : const Center(child: shadcn.CircularProgressIndicator()),
+                child: _cookiesReady ? _buildWebView() : const Center(child: shadcn.CircularProgressIndicator()),
               ),
               // ── 底部工具栏 ──
               _buildBottomBar(cs),
@@ -202,7 +184,7 @@ class _BrowserPageState extends State<BrowserPage> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: () => closeAppSheet(context),
             behavior: HitTestBehavior.opaque,
             child: Padding(
               padding: const EdgeInsets.all(4),
@@ -218,20 +200,13 @@ class _BrowserPageState extends State<BrowserPage> {
                 if (_currentTitle.isNotEmpty)
                   Text(
                     _currentTitle,
-                    style: TextStyle(
-                      color: cs.foreground,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(color: cs.foreground, fontSize: 13, fontWeight: FontWeight.w600),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 Text(
                   _displayUrl(_currentUrl),
-                  style: TextStyle(
-                    color: cs.foreground.withValues(alpha: 0.4),
-                    fontSize: 10,
-                  ),
+                  style: TextStyle(color: cs.foreground.withValues(alpha: 0.4), fontSize: 10),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -252,19 +227,12 @@ class _BrowserPageState extends State<BrowserPage> {
                   Container(
                     width: 5,
                     height: 5,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF10B981),
-                      shape: BoxShape.circle,
-                    ),
+                    decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle),
                   ),
                   const SizedBox(width: 4),
                   const Text(
                     'Cookie',
-                    style: TextStyle(
-                      color: Color(0xFF10B981),
-                      fontSize: 9,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -272,22 +240,11 @@ class _BrowserPageState extends State<BrowserPage> {
           // 加载状态
           if (_isLoading) ...[
             const SizedBox(width: 8),
-            SizedBox(
-              width: 14,
-              height: 14,
-              child: shadcn.CircularProgressIndicator(
-                strokeWidth: 2,
-                color: cs.primary,
-              ),
-            ),
+            SizedBox(width: 14, height: 14, child: shadcn.CircularProgressIndicator(strokeWidth: 2, color: cs.primary)),
           ],
           if (_error != null) ...[
             const SizedBox(width: 8),
-            Icon(
-              shadcn.LucideIcons.circleAlert,
-              size: 14,
-              color: const Color(0xFFF85149),
-            ),
+            Icon(shadcn.LucideIcons.circleAlert, size: 14, color: const Color(0xFFF85149)),
           ],
         ],
       ),
@@ -310,51 +267,25 @@ class _BrowserPageState extends State<BrowserPage> {
             if (_canGoBack) {
               _controller?.goBack();
             } else {
-              Navigator.of(context).pop();
+              closeAppSheet(context);
             }
           }),
-          _bottomBtn(
-            cs,
-            shadcn.LucideIcons.arrowRight,
-            '前进',
-            _canGoForward,
-            () => _controller?.goForward(),
-          ),
-          _bottomBtn(
-            cs,
-            shadcn.LucideIcons.refreshCw,
-            '刷新',
-            true,
-            () => _controller?.reload(),
-          ),
+          _bottomBtn(cs, shadcn.LucideIcons.arrowRight, '前进', _canGoForward, () => _controller?.goForward()),
+          _bottomBtn(cs, shadcn.LucideIcons.refreshCw, '刷新', true, () => _controller?.reload()),
           _bottomBtn(cs, shadcn.LucideIcons.copy, '复制', true, () {
             Clipboard.setData(ClipboardData(text: _currentUrl));
             Toast.success('链接已复制');
           }),
-          _bottomBtn(
-            cs,
-            shadcn.LucideIcons.globe,
-            'UA',
-            true,
-            _showUserAgentPicker,
-          ),
+          _bottomBtn(cs, shadcn.LucideIcons.globe, 'UA', true, _showUserAgentPicker),
           _bottomBtn(cs, shadcn.LucideIcons.share2, '分享', true, () {
-            SharePlus.instance.share(
-              ShareParams(text: _currentUrl, subject: _currentTitle),
-            );
+            SharePlus.instance.share(ShareParams(text: _currentUrl, subject: _currentTitle));
           }),
         ],
       ),
     );
   }
 
-  Widget _bottomBtn(
-    shadcn.ColorScheme cs,
-    IconData icon,
-    String label,
-    bool enabled,
-    VoidCallback onTap,
-  ) {
+  Widget _bottomBtn(shadcn.ColorScheme cs, IconData icon, String label, bool enabled, VoidCallback onTap) {
     return GestureDetector(
       onTap: enabled ? onTap : null,
       behavior: HitTestBehavior.opaque,
@@ -366,18 +297,14 @@ class _BrowserPageState extends State<BrowserPage> {
             Icon(
               icon,
               size: 18,
-              color: enabled
-                  ? cs.foreground.withValues(alpha: 0.7)
-                  : cs.foreground.withValues(alpha: 0.15),
+              color: enabled ? cs.foreground.withValues(alpha: 0.7) : cs.foreground.withValues(alpha: 0.15),
             ),
             const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
                 fontSize: 9,
-                color: enabled
-                    ? cs.foreground.withValues(alpha: 0.5)
-                    : cs.foreground.withValues(alpha: 0.15),
+                color: enabled ? cs.foreground.withValues(alpha: 0.5) : cs.foreground.withValues(alpha: 0.15),
               ),
             ),
           ],
@@ -469,12 +396,7 @@ class _BrowserPageState extends State<BrowserPage> {
         userAgent: _safariMacosUserAgent,
       ),
       if (configuredUserAgent != null && configuredUserAgent.isNotEmpty)
-        _UserAgentPreset(
-          id: 'site',
-          label: '站点配置',
-          description: configuredUserAgent,
-          userAgent: configuredUserAgent,
-        ),
+        _UserAgentPreset(id: 'site', label: '站点配置', description: configuredUserAgent, userAgent: configuredUserAgent),
       _UserAgentPreset(
         id: 'default',
         label: '默认 WebView',
@@ -510,8 +432,7 @@ class _BrowserPageState extends State<BrowserPage> {
       id: 'firefox_windows',
       label: 'Firefox Windows',
       description: 'Windows Firefox Desktop',
-      userAgent:
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0',
     ),
   ];
 
@@ -520,7 +441,7 @@ class _BrowserPageState extends State<BrowserPage> {
     if (!mounted) return;
 
     final cs = shadcn.Theme.of(context).colorScheme;
-    await showModalBottomSheet<void>(
+    await showAppSheet<void>(
       context: context,
       showDragHandle: true,
       backgroundColor: cs.background,
@@ -537,13 +458,9 @@ class _BrowserPageState extends State<BrowserPage> {
                 dense: true,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                 leading: Icon(
-                  selected
-                      ? shadcn.LucideIcons.check
-                      : shadcn.LucideIcons.globe,
+                  selected ? shadcn.LucideIcons.check : shadcn.LucideIcons.globe,
                   size: 18,
-                  color: selected
-                      ? cs.primary
-                      : cs.foreground.withValues(alpha: 0.62),
+                  color: selected ? cs.primary : cs.foreground.withValues(alpha: 0.62),
                 ),
                 title: Text(
                   preset.label,
@@ -557,13 +474,10 @@ class _BrowserPageState extends State<BrowserPage> {
                   preset.description,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: cs.foreground.withValues(alpha: 0.56),
-                  ),
+                  style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.56)),
                 ),
                 onTap: () async {
-                  Navigator.of(context).pop();
+                  closeAppSheet(context);
                   await _applyUserAgentPreset(preset);
                 },
               );
@@ -574,34 +488,22 @@ class _BrowserPageState extends State<BrowserPage> {
                 shrinkWrap: true,
                 padding: const EdgeInsets.fromLTRB(12, 4, 12, 16),
                 children: [
-                  for (final preset in presets) ...[
-                    presetTile(preset),
-                    Divider(height: 1, color: cs.border),
-                  ],
+                  for (final preset in presets) ...[presetTile(preset), Divider(height: 1, color: cs.border)],
                   ListTile(
                     dense: true,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                     leading: Icon(
-                      fallbackExpanded
-                          ? shadcn.LucideIcons.chevronDown
-                          : shadcn.LucideIcons.chevronRight,
+                      fallbackExpanded ? shadcn.LucideIcons.chevronDown : shadcn.LucideIcons.chevronRight,
                       size: 18,
                       color: cs.foreground.withValues(alpha: 0.62),
                     ),
                     title: Text(
                       '备选 UA',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: cs.foreground,
-                      ),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: cs.foreground),
                     ),
                     subtitle: Text(
                       'Chrome / Edge / Firefox',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: cs.foreground.withValues(alpha: 0.56),
-                      ),
+                      style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.56)),
                     ),
                     onTap: () {
                       setSheetState(() {
@@ -610,10 +512,7 @@ class _BrowserPageState extends State<BrowserPage> {
                     },
                   ),
                   if (fallbackExpanded)
-                    for (final preset in fallbackPresets) ...[
-                      Divider(height: 1, color: cs.border),
-                      presetTile(preset),
-                    ],
+                    for (final preset in fallbackPresets) ...[Divider(height: 1, color: cs.border), presetTile(preset)],
                 ],
               ),
             );
@@ -629,9 +528,7 @@ class _BrowserPageState extends State<BrowserPage> {
     if (mounted) setState(() {});
 
     try {
-      await _controller?.setSettings(
-        settings: InAppWebViewSettings(userAgent: _activeUserAgent),
-      );
+      await _controller?.setSettings(settings: InAppWebViewSettings(userAgent: _activeUserAgent));
       await _controller?.reload();
       Toast.success('已切换 UA：${preset.label}');
     } catch (e, st) {
@@ -646,9 +543,7 @@ class _BrowserPageState extends State<BrowserPage> {
     try {
       final uri = Uri.parse(url);
       final display = uri.host + uri.path;
-      return display.endsWith('/')
-          ? display.substring(0, display.length - 1)
-          : display;
+      return display.endsWith('/') ? display.substring(0, display.length - 1) : display;
     } catch (_) {
       return url;
     }
@@ -661,10 +556,5 @@ class _UserAgentPreset {
   final String description;
   final String? userAgent;
 
-  const _UserAgentPreset({
-    required this.id,
-    required this.label,
-    required this.description,
-    required this.userAgent,
-  });
+  const _UserAgentPreset({required this.id, required this.label, required this.description, required this.userAgent});
 }

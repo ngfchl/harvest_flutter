@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
@@ -13,21 +14,17 @@ import 'tmdb_detail_sheet.dart';
 
 void openTmdbSearch(BuildContext context, WidgetRef ref) {
   if (context.isMobile) {
-    showModalBottomSheet(
+    showAppSheet(
       context: context,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: shadcn.Theme.of(context).borderRadiusLg,
-      ),
+      shape: RoundedRectangleBorder(borderRadius: shadcn.Theme.of(context).borderRadiusLg),
       builder: (_) => _SearchSheet(ref: ref),
     );
   } else {
     showDialog(
       context: context,
       builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: shadcn.Theme.of(context).borderRadiusLg,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: shadcn.Theme.of(context).borderRadiusLg),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480, maxHeight: 600),
           child: _SearchSheet(ref: ref),
@@ -101,96 +98,76 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-          if (mobile) ...[
-            const SizedBox(height: 12),
-            buildHandle(context),
-            const SizedBox(height: 12),
-          ],
+            if (mobile) ...[const SizedBox(height: 12), buildHandle(context), const SizedBox(height: 12)],
 
-          // 搜索输入框
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: shadcn.TextField(
-              controller: _ctrl,
-              hintText: '搜索电影、剧集...',
-              onChanged: _onChanged,
-              onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-              autofocus: true,
-              features: [
-                shadcn.InputFeature.leading(
-                  Icon(
-                    shadcn.LucideIcons.search,
-                    size: 16,
-                    color: cs.mutedForeground,
-                  ),
-                ),
-                if (_query.isNotEmpty)
-                  shadcn.InputFeature.trailing(
-                    shadcn.IconButton.ghost(
-                      size: shadcn.ButtonSize.small,
-                      density: shadcn.ButtonDensity.iconDense,
-                      onPressed: () {
-                        _ctrl.clear();
-                        setState(() {
-                          _query = '';
-                          _results = [];
-                        });
-                      },
-                      icon: const Icon(shadcn.LucideIcons.x, size: 14),
+            // 搜索输入框
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: shadcn.TextField(
+                controller: _ctrl,
+                hintText: '搜索电影、剧集...',
+                onChanged: _onChanged,
+                onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                autofocus: true,
+                features: [
+                  shadcn.InputFeature.leading(Icon(shadcn.LucideIcons.search, size: 16, color: cs.mutedForeground)),
+                  if (_query.isNotEmpty)
+                    shadcn.InputFeature.trailing(
+                      shadcn.IconButton.ghost(
+                        size: shadcn.ButtonSize.small,
+                        density: shadcn.ButtonDensity.iconDense,
+                        onPressed: () {
+                          _ctrl.clear();
+                          setState(() {
+                            _query = '';
+                            _results = [];
+                          });
+                        },
+                        icon: const Icon(shadcn.LucideIcons.x, size: 14),
+                      ),
                     ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // 结果
-          if (_loading)
-            const Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(child: shadcn.CircularProgressIndicator()),
-            )
-          else if (_query.isNotEmpty && _results.isEmpty)
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text('没有找到「$_query」').small.muted,
-            )
-          else if (_results.isNotEmpty)
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: _results.length,
-                separatorBuilder: (_, __) => const shadcn.Divider(),
-                itemBuilder: (_, i) => _buildResultTile(context, _results[i]),
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    shadcn.LucideIcons.search,
-                    size: 40,
-                    color: cs.mutedForeground.withValues(alpha: 0.3),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text('输入关键词开始搜索').small.muted,
                 ],
               ),
             ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 12),
+
+            // 结果
+            if (_loading)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: shadcn.CircularProgressIndicator()),
+              )
+            else if (_query.isNotEmpty && _results.isEmpty)
+              Padding(padding: const EdgeInsets.all(24), child: Text('没有找到「$_query」').small.muted)
+            else if (_results.isNotEmpty)
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: _results.length,
+                  separatorBuilder: (_, __) => const shadcn.Divider(),
+                  itemBuilder: (_, i) => _buildResultTile(context, _results[i]),
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(shadcn.LucideIcons.search, size: 40, color: cs.mutedForeground.withValues(alpha: 0.3)),
+                    const SizedBox(height: 12),
+                    const Text('输入关键词开始搜索').small.muted,
+                  ],
+                ),
+              ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
     );
 
     if (mobile) return SafeArea(child: content);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: content,
-    );
+    return Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: content);
   }
 
   Widget _buildResultTile(BuildContext context, MediaItem item) {
@@ -199,7 +176,7 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
 
     return shadcn.Clickable(
       onPressed: () {
-        Navigator.pop(context);
+        closeAppSheet(context);
         openTmdbDetail(context, item);
       },
       child: Padding(
@@ -219,9 +196,7 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
                           child: SizedBox(
                             width: 16,
                             height: 16,
-                            child: shadcn.CircularProgressIndicator(
-                              strokeWidth: 1.5,
-                            ),
+                            child: shadcn.CircularProgressIndicator(strokeWidth: 1.5),
                           ),
                         ),
                         errorWidget: (_, __, ___) => _ph(context),
@@ -238,16 +213,10 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      if (item.releaseDate.isNotEmpty)
-                        Text(item.releaseDate).xSmall.muted,
-                      if (item.voteAverage != null &&
-                          item.voteAverage! > 0) ...[
+                      if (item.releaseDate.isNotEmpty) Text(item.releaseDate).xSmall.muted,
+                      if (item.voteAverage != null && item.voteAverage! > 0) ...[
                         const SizedBox(width: 8),
-                        Icon(
-                          shadcn.LucideIcons.star,
-                          size: 12,
-                          color: cs.chart4,
-                        ),
+                        Icon(shadcn.LucideIcons.star, size: 12, color: cs.chart4),
                         const SizedBox(width: 2),
                         Text(item.voteAverage!.toStringAsFixed(1)).xSmall.muted,
                       ],
@@ -274,9 +243,7 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
       child: Icon(
         shadcn.LucideIcons.film,
         size: 20,
-        color: shadcn.Theme.of(
-          ctx,
-        ).colorScheme.mutedForeground.withValues(alpha: 0.3),
+        color: shadcn.Theme.of(ctx).colorScheme.mutedForeground.withValues(alpha: 0.3),
       ),
     ),
   );

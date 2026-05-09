@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -46,12 +47,9 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
     _nameCtrl = TextEditingController(text: task?.name ?? '');
     _minuteCtrl = TextEditingController(text: task?.crontab?.minute ?? '1');
     _hourCtrl = TextEditingController(text: task?.crontab?.hour ?? '*');
-    _dayOfWeekCtrl =
-        TextEditingController(text: task?.crontab?.dayOfWeek ?? '*');
-    _dayOfMonthCtrl =
-        TextEditingController(text: task?.crontab?.dayOfMonth ?? '*');
-    _monthOfYearCtrl =
-        TextEditingController(text: task?.crontab?.monthOfYear ?? '*');
+    _dayOfWeekCtrl = TextEditingController(text: task?.crontab?.dayOfWeek ?? '*');
+    _dayOfMonthCtrl = TextEditingController(text: task?.crontab?.dayOfMonth ?? '*');
+    _monthOfYearCtrl = TextEditingController(text: task?.crontab?.monthOfYear ?? '*');
     _selectedTaskType = task?.task.isNotEmpty == true ? task?.task : null;
     _enabled = task?.enabled ?? true;
   }
@@ -59,8 +57,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final cron =
-    _findCrontab(ref.read(crontabListProvider).valueOrNull ?? []);
+    final cron = _findCrontab(ref.read(crontabListProvider).valueOrNull ?? []);
     if (cron != null) {
       _minuteCtrl.text = cron.minute;
       _hourCtrl.text = cron.hour;
@@ -119,7 +116,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
       );
 
       await ref.read(scheduleProvider.notifier).save(schedule);
-      if (mounted) Navigator.pop(context);
+      if (mounted) closeAppSheet(context);
     } catch (e) {
       // if (mounted) _err('保存失败: $e');
     } finally {
@@ -134,11 +131,9 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
     required String Function(T) labelBuilder,
     required ValueChanged<T?> onSelected,
   }) {
-    showModalBottomSheet(
+    showAppSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -154,26 +149,28 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(title,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600)),
+              child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
             Flexible(
               child: SingleChildScrollView(
                 child: Column(
                   children: options
-                      .map((t) => _SheetTile(
-                    title: Text(labelBuilder(t)),
-                    onTap: () {
-                      onSelected(t);
-                      Navigator.pop(ctx);
-                    },
-                    trailing: t == selected
-                        ? Icon(shadcn.LucideIcons.check,
-                        size: 18,
-                        color: shadcn.Theme.of(context).colorScheme.primary)
-                        : null,
-                  ))
+                      .map(
+                        (t) => _SheetTile(
+                          title: Text(labelBuilder(t)),
+                          onTap: () {
+                            onSelected(t);
+                            closeAppSheet(ctx);
+                          },
+                          trailing: t == selected
+                              ? Icon(
+                                  shadcn.LucideIcons.check,
+                                  size: 18,
+                                  color: shadcn.Theme.of(context).colorScheme.primary,
+                                )
+                              : null,
+                        ),
+                      )
                       .toList(),
                 ),
               ),
@@ -214,16 +211,12 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(_isEdit ? '编辑任务' : '添加任务',
-              style:
-              const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          Text(_isEdit ? '编辑任务' : '添加任务', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           Row(
             children: [
               const Text('高级', style: TextStyle(fontSize: 13)),
               const SizedBox(width: 4),
-              Switch(
-                  value: _advance,
-                  onChanged: (v) => setState(() => _advance = v)),
+              Switch(value: _advance, onChanged: (v) => setState(() => _advance = v)),
             ],
           ),
         ],
@@ -236,8 +229,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
       loading: () => const Center(child: shadcn.CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('加载失败: $e')),
       data: (types) {
-        final filtered =
-        types.where((t) => !t.contains('种子迁移')).toList();
+        final filtered = types.where((t) => !t.contains('种子迁移')).toList();
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: Column(
@@ -253,8 +245,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                       options: filtered,
                       selected: _selectedTaskType,
                       labelBuilder: (v) => v,
-                      onSelected: (v) =>
-                          setState(() => _selectedTaskType = v),
+                      onSelected: (v) => setState(() => _selectedTaskType = v),
                     ),
                   ),
                 ],
@@ -270,9 +261,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                 children: [
                   _SheetTile(
                     title: const Text('开启任务'),
-                    trailing: Switch(
-                        value: _enabled,
-                        onChanged: (v) => setState(() => _enabled = v)),
+                    trailing: Switch(value: _enabled, onChanged: (v) => setState(() => _enabled = v)),
                   ),
                 ],
               ),
@@ -298,7 +287,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
         children: [
           Expanded(
             child: shadcn.Button.outline(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => closeAppSheet(context),
               child: Center(child: const Text('取消')),
             ),
           ),
@@ -307,10 +296,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
             child: shadcn.Button.primary(
               onPressed: _saving ? null : _save,
               child: _saving
-                  ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: shadcn.CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(strokeWidth: 2))
                   : Center(child: const Text('保存')),
             ),
           ),
@@ -320,7 +306,6 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
   }
 }
 
-
 class _SheetTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -329,10 +314,7 @@ class _SheetTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return shadcn.TextField(
-      controller: controller,
-      hintText: "",
-    );
+    return shadcn.TextField(controller: controller, hintText: "");
   }
 }
 

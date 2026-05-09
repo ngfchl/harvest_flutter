@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -168,7 +169,7 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
       );
 
       await ref.read(scheduleProvider.notifier).save(schedule);
-      if (mounted) Navigator.pop(context);
+      if (mounted) closeAppSheet(context);
     } catch (e) {
       // if (mounted) _err('保存失败: $e');
     } finally {
@@ -183,7 +184,7 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
     required String Function(T) labelBuilder,
     required ValueChanged<T?> onSelected,
   }) {
-    showModalBottomSheet(
+    showAppSheet(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => SafeArea(
@@ -194,7 +195,10 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
             Container(
               width: 36,
               height: 4,
-              decoration: BoxDecoration(color: shadcn.Theme.of(context).colorScheme.border, borderRadius: BorderRadius.circular(99)),
+              decoration: BoxDecoration(
+                color: shadcn.Theme.of(context).colorScheme.border,
+                borderRadius: BorderRadius.circular(99),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -210,10 +214,14 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
                           title: Text(labelBuilder(t)),
                           onTap: () {
                             onSelected(t);
-                            Navigator.pop(ctx);
+                            closeAppSheet(ctx);
                           },
                           trailing: t == selected
-                              ? Icon(shadcn.LucideIcons.check, size: 18, color: shadcn.Theme.of(context).colorScheme.primary)
+                              ? Icon(
+                                  shadcn.LucideIcons.check,
+                                  size: 18,
+                                  color: shadcn.Theme.of(context).colorScheme.primary,
+                                )
                               : null,
                         ),
                       )
@@ -318,11 +326,7 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
               ),
               const SizedBox(height: 12),
 
-              shadcn.TextField(
-                controller: _folderMapCtrl,
-                hintText: '文件夹映射',
-                maxLines: 3,
-              ),
+              shadcn.TextField(controller: _folderMapCtrl, hintText: '文件夹映射', maxLines: 3),
               const SizedBox(height: 8),
 
               Column(
@@ -374,7 +378,7 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
         children: [
           Expanded(
             child: shadcn.Button.outline(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => closeAppSheet(context),
               child: Center(child: const Text('取消')),
             ),
           ),
@@ -393,60 +397,13 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
   }
 }
 
-
-class _SheetTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String label;
-  final int? maxLines;
-  final String? helperText;
-
-  const _SheetTextField({
-    required this.controller,
-    required this.label,
-    this.maxLines,
-    this.helperText,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return shadcn.TextField(
-      controller: controller,
-      maxLines: maxLines,
-      hintText: label,
-    );
-  }
-}
-
-class _SheetGroup extends StatelessWidget {
-  final List<Widget> children;
-
-  const _SheetGroup({required this.children});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: cs.border),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(children: children),
-    );
-  }
-}
-
 class _SheetTile extends StatelessWidget {
   final Widget title;
   final Widget? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
 
-  const _SheetTile({
-    required this.title,
-    this.subtitle,
-    this.trailing,
-    this.onTap,
-  });
+  const _SheetTile({required this.title, this.subtitle, this.trailing, this.onTap});
 
   @override
   Widget build(BuildContext context) {

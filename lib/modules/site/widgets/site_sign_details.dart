@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -75,11 +76,7 @@ class _SignInHistorySheetState extends State<SignInHistorySheet> {
     return content;
   }
 
-  Widget _buildHeader(
-    BuildContext context,
-    shadcn.ColorScheme cs,
-    bool mobile,
-  ) {
+  Widget _buildHeader(BuildContext context, shadcn.ColorScheme cs, bool mobile) {
     return Container(
       padding: EdgeInsets.fromLTRB(16, mobile ? 12 : 16, 12, 12),
       decoration: BoxDecoration(
@@ -89,12 +86,8 @@ class _SignInHistorySheetState extends State<SignInHistorySheet> {
         children: [
           if (!mobile) ...[
             GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Icon(
-                shadcn.LucideIcons.arrowLeft,
-                size: 18,
-                color: cs.foreground,
-              ),
+              onTap: () => closeAppSheet(context),
+              child: Icon(shadcn.LucideIcons.arrowLeft, size: 18, color: cs.foreground),
             ),
             const SizedBox(width: 8),
           ],
@@ -104,19 +97,12 @@ class _SignInHistorySheetState extends State<SignInHistorySheet> {
               children: [
                 Text(
                   '签到历史',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: cs.foreground,
-                  ),
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: cs.foreground),
                 ),
                 if (!_loading && !_loading)
                   Text(
                     '共 ${_signInfo.length} 条记录',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: cs.foreground.withValues(alpha: 0.4),
-                    ),
+                    style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.4)),
                   ),
               ],
             ),
@@ -132,11 +118,7 @@ class _SignInHistorySheetState extends State<SignInHistorySheet> {
               },
               child: Padding(
                 padding: const EdgeInsets.all(4),
-                child: Icon(
-                  shadcn.LucideIcons.refreshCw,
-                  size: 16,
-                  color: cs.mutedForeground,
-                ),
+                child: Icon(shadcn.LucideIcons.refreshCw, size: 16, color: cs.mutedForeground),
               ),
             ),
         ],
@@ -150,19 +132,9 @@ class _SignInHistorySheetState extends State<SignInHistorySheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 18,
-              height: 18,
-              child: shadcn.CircularProgressIndicator(
-                strokeWidth: 2,
-                color: cs.primary,
-              ),
-            ),
+            SizedBox(width: 18, height: 18, child: shadcn.CircularProgressIndicator(strokeWidth: 2, color: cs.primary)),
             const SizedBox(height: 12),
-            Text(
-              '加载中...',
-              style: TextStyle(color: cs.mutedForeground, fontSize: 12),
-            ),
+            Text('加载中...', style: TextStyle(color: cs.mutedForeground, fontSize: 12)),
           ],
         ),
       );
@@ -173,16 +145,9 @@ class _SignInHistorySheetState extends State<SignInHistorySheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              shadcn.LucideIcons.circleAlert,
-              size: 32,
-              color: siteDanger(context),
-            ),
+            Icon(shadcn.LucideIcons.circleAlert, size: 32, color: siteDanger(context)),
             const SizedBox(height: 8),
-            Text(
-              _error!,
-              style: TextStyle(color: cs.mutedForeground, fontSize: 12),
-            ),
+            Text(_error!, style: TextStyle(color: cs.mutedForeground, fontSize: 12)),
             const SizedBox(height: 12),
             shadcn.Button.outline(
               onPressed: () {
@@ -201,36 +166,21 @@ class _SignInHistorySheetState extends State<SignInHistorySheet> {
 
     if (_signInfo.isEmpty) {
       return Center(
-        child: Text(
-          '暂无签到记录',
-          style: TextStyle(color: cs.mutedForeground, fontSize: 13),
-        ),
+        child: Text('暂无签到记录', style: TextStyle(color: cs.mutedForeground, fontSize: 13)),
       );
     }
 
     // 按日期倒序排列
-    final sorted = _signInfo.entries.toList()
-      ..sort((a, b) => b.key.compareTo(a.key));
+    final sorted = _signInfo.entries.toList()..sort((a, b) => b.key.compareTo(a.key));
 
     return ListView.builder(
-      padding: EdgeInsets.fromLTRB(
-        12,
-        8,
-        12,
-        MediaQuery.of(context).padding.bottom + 16,
-      ),
+      padding: EdgeInsets.fromLTRB(12, 8, 12, MediaQuery.of(context).padding.bottom + 16),
       itemCount: sorted.length,
-      itemBuilder: (_, i) =>
-          _buildItem(context, cs, sorted[i].key, sorted[i].value),
+      itemBuilder: (_, i) => _buildItem(context, cs, sorted[i].key, sorted[i].value),
     );
   }
 
-  Widget _buildItem(
-    BuildContext context,
-    shadcn.ColorScheme cs,
-    String date,
-    dynamic value,
-  ) {
+  Widget _buildItem(BuildContext context, shadcn.ColorScheme cs, String date, dynamic value) {
     final info = value as Map<String, dynamic>;
     final text = info['info']?.toString() ?? '';
     final updatedAt = info['updated_at']?.toString() ?? '';
@@ -258,33 +208,19 @@ class _SignInHistorySheetState extends State<SignInHistorySheet> {
             children: [
               Text(
                 date,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: cs.foreground,
-                ),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.foreground),
               ),
               const SizedBox(width: 8),
               const Spacer(),
               if (updatedAt.isNotEmpty)
                 Text(
                   formatTime(updatedAt),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: cs.foreground.withValues(alpha: 0.35),
-                  ),
+                  style: TextStyle(fontSize: 10, color: cs.foreground.withValues(alpha: 0.35)),
                 ),
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            displayText,
-            style: TextStyle(
-              fontSize: 11,
-              color: cs.foreground.withValues(alpha: 0.6),
-              height: 1.4,
-            ),
-          ),
+          Text(displayText, style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.6), height: 1.4)),
         ],
       ),
     );

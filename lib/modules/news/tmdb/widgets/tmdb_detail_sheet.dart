@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
@@ -15,12 +16,10 @@ import '../service/tmdb_service.dart';
 
 void openTmdbDetail(BuildContext context, MediaItem item) {
   if (context.isMobile) {
-    showModalBottomSheet<void>(
+    showAppSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: shadcn.Theme.of(
-        context,
-      ).colorScheme.background.withValues(alpha: 0),
+      backgroundColor: shadcn.Theme.of(context).colorScheme.background.withValues(alpha: 0),
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.85,
         minChildSize: 0.5,
@@ -55,9 +54,7 @@ class _TmdbDetailSheet extends ConsumerWidget {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
 
-    final content = isMovie
-        ? ref.watch(movieDetailProvider(item.id))
-        : ref.watch(tvShowDetailProvider(item.id));
+    final content = isMovie ? ref.watch(movieDetailProvider(item.id)) : ref.watch(tvShowDetailProvider(item.id));
 
     String title;
     if (content.hasValue) {
@@ -88,23 +85,14 @@ class _TmdbDetailSheet extends ConsumerWidget {
               children: [
                 shadcn.IconButton.ghost(
                   icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 20),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => closeAppSheet(context),
                 ),
                 const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ).base.semiBold,
-                ),
+                Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis).base.semiBold),
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 6),
-            child: shadcn.Divider(),
-          ),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 6), child: shadcn.Divider()),
           Flexible(child: body),
         ],
       ),
@@ -126,14 +114,10 @@ class _TmdbDetailSheet extends ConsumerWidget {
     int voteCount = detail.voteCount ?? 0;
 
     if (detail is MovieDetail) {
-      year = detail.releaseDate.length >= 4
-          ? detail.releaseDate.substring(0, 4)
-          : '';
+      year = detail.releaseDate.length >= 4 ? detail.releaseDate.substring(0, 4) : '';
       genres = detail.genres.map((g) => g.name).toList();
     } else if (detail is TvShowDetail) {
-      year = (detail.releaseDate ?? '').length >= 4
-          ? detail.releaseDate!.substring(0, 4)
-          : '';
+      year = (detail.releaseDate ?? '').length >= 4 ? detail.releaseDate!.substring(0, 4) : '';
       genres = detail.genres.map((g) => g.name).toList();
     }
 
@@ -169,8 +153,7 @@ class _TmdbDetailSheet extends ConsumerWidget {
                         width: 100,
                         height: 150,
                         fit: BoxFit.cover,
-                        placeholder: (_, __) =>
-                            _loadingBox(width: 100, height: 150),
+                        placeholder: (_, __) => _loadingBox(width: 100, height: 150),
                         errorWidget: (_, __, ___) => _posterFallback(context),
                       ),
                     ),
@@ -180,31 +163,20 @@ class _TmdbDetailSheet extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(title).large.bold,
-                        if (year.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(year).small.muted,
-                        ],
+                        if (year.isNotEmpty) ...[const SizedBox(height: 4), Text(year).small.muted],
                         if (genres.isNotEmpty) ...[
                           const SizedBox(height: 6),
                           Wrap(
                             spacing: 4,
                             runSpacing: 4,
-                            children: genres
-                                .map(
-                                  (g) => shadcn.SecondaryBadge(child: Text(g)),
-                                )
-                                .toList(),
+                            children: genres.map((g) => shadcn.SecondaryBadge(child: Text(g))).toList(),
                           ),
                         ],
                         if (voteAverage > 0) ...[
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              Icon(
-                                shadcn.LucideIcons.star,
-                                size: 16,
-                                color: cs.chart4,
-                              ),
+                              Icon(shadcn.LucideIcons.star, size: 16, color: cs.chart4),
                               const SizedBox(width: 4),
                               Text(voteAverage.toStringAsFixed(1)).base.bold,
                               const SizedBox(width: 4),
@@ -222,26 +194,17 @@ class _TmdbDetailSheet extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _infoRow(context, '时长', '${detail.runtime} 分钟'),
                 _infoRow(context, '状态', detail.status),
-                if (detail.originCountry.isNotEmpty)
-                  _infoRow(context, '国家', detail.originCountry.join(', ')),
+                if (detail.originCountry.isNotEmpty) _infoRow(context, '国家', detail.originCountry.join(', ')),
                 _infoRow(context, '语言', detail.originalLanguage),
-                if (detail.budget > 0)
-                  _infoRow(context, '预算', '\$${detail.budget}'),
-                if (detail.revenue > 0)
-                  _infoRow(context, '票房', '\$${detail.revenue}'),
+                if (detail.budget > 0) _infoRow(context, '预算', '\$${detail.budget}'),
+                if (detail.revenue > 0) _infoRow(context, '票房', '\$${detail.revenue}'),
               ] else if (detail is TvShowDetail) ...[
                 const SizedBox(height: 16),
                 _infoRow(context, '状态', detail.status),
                 _infoRow(context, '季数', '${detail.numberOfSeasons}'),
                 _infoRow(context, '集数', '${detail.numberOfEpisodes}'),
-                if (detail.originCountry.isNotEmpty)
-                  _infoRow(context, '国家', detail.originCountry.join(', ')),
-                if (detail.networks.isNotEmpty)
-                  _infoRow(
-                    context,
-                    '网络',
-                    detail.networks.map((n) => n.name).join(', '),
-                  ),
+                if (detail.originCountry.isNotEmpty) _infoRow(context, '国家', detail.originCountry.join(', ')),
+                if (detail.networks.isNotEmpty) _infoRow(context, '网络', detail.networks.map((n) => n.name).join(', ')),
               ],
 
               if (overview.isNotEmpty) ...[
@@ -264,14 +227,11 @@ class _TmdbDetailSheet extends ConsumerWidget {
                 alignment: Alignment.center,
                 leading: const Icon(shadcn.LucideIcons.search, size: 16),
                 onPressed: () {
-                  Navigator.pop(context);
+                  closeAppSheet(context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => UnifiedSearchPage(
-                        initialQuery: searchQuery,
-                        initialMode: SearchMode.resource,
-                      ),
+                      builder: (_) => UnifiedSearchPage(initialQuery: searchQuery, initialMode: SearchMode.resource),
                     ),
                   );
                 },
@@ -294,11 +254,7 @@ class _TmdbDetailSheet extends ConsumerWidget {
             width: width,
             height: height,
             child: const Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-              ),
+              child: SizedBox(width: 20, height: 20, child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
             ),
           ),
         );
@@ -313,10 +269,7 @@ class _TmdbDetailSheet extends ConsumerWidget {
       child: SizedBox(
         width: 100,
         height: 150,
-        child: Icon(
-          shadcn.LucideIcons.film,
-          color: cs.mutedForeground.withValues(alpha: 0.3),
-        ),
+        child: Icon(shadcn.LucideIcons.film, color: cs.mutedForeground.withValues(alpha: 0.3)),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -15,23 +16,19 @@ class QbCategoryManagerSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncCategories = ref.watch(
-      downloaderCategoriesProvider(downloader.id),
-    );
+    final asyncCategories = ref.watch(downloaderCategoriesProvider(downloader.id));
 
     return _ManagerScaffold(
       title: '分类管理',
       subtitle: downloader.name,
       icon: shadcn.LucideIcons.tags,
       onAdd: () => _showCategoryEditor(context, ref),
-      onRefresh: () =>
-          ref.invalidate(downloaderCategoriesProvider(downloader.id)),
+      onRefresh: () => ref.invalidate(downloaderCategoriesProvider(downloader.id)),
       child: asyncCategories.when(
         loading: () => const Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
         error: (error, _) => _ManagerError(
           message: '加载分类失败',
-          onRetry: () =>
-              ref.invalidate(downloaderCategoriesProvider(downloader.id)),
+          onRetry: () => ref.invalidate(downloaderCategoriesProvider(downloader.id)),
         ),
         data: (categories) {
           if (categories.isEmpty) {
@@ -55,11 +52,7 @@ class QbCategoryManagerSheet extends ConsumerWidget {
     );
   }
 
-  void _showCategoryEditor(
-    BuildContext context,
-    WidgetRef ref, [
-    DownloaderCategory? category,
-  ]) {
+  void _showCategoryEditor(BuildContext context, WidgetRef ref, [DownloaderCategory? category]) {
     final nameCtrl = TextEditingController(text: category?.name ?? '');
     final pathCtrl = TextEditingController(text: category?.savePath ?? '');
     final editing = category != null;
@@ -81,20 +74,12 @@ class QbCategoryManagerSheet extends ConsumerWidget {
           }
           try {
             if (editing) {
-              await DownloaderService.editCategory(
-                downloader.id,
-                category: name,
-                savePath: pathCtrl.text.trim(),
-              );
+              await DownloaderService.editCategory(downloader.id, category: name, savePath: pathCtrl.text.trim());
             } else {
-              await DownloaderService.createCategory(
-                downloader.id,
-                category: name,
-                savePath: pathCtrl.text.trim(),
-              );
+              await DownloaderService.createCategory(downloader.id, category: name, savePath: pathCtrl.text.trim());
             }
             ref.invalidate(downloaderCategoriesProvider(downloader.id));
-            if (ctx.mounted) Navigator.pop(ctx);
+            if (ctx.mounted) closeAppSheet(ctx);
             Toast.success(editing ? '分类已更新' : '分类已创建');
           } catch (e, st) {
             AppLogger.error('保存 QB 分类失败', e, st);
@@ -105,11 +90,7 @@ class QbCategoryManagerSheet extends ConsumerWidget {
     );
   }
 
-  void _confirmDeleteCategory(
-    BuildContext context,
-    WidgetRef ref,
-    DownloaderCategory category,
-  ) {
+  void _confirmDeleteCategory(BuildContext context, WidgetRef ref, DownloaderCategory category) {
     _showConfirmDialog(
       context,
       title: '删除分类',
@@ -146,10 +127,8 @@ class QbTagManagerSheet extends ConsumerWidget {
       onRefresh: () => ref.invalidate(downloaderTagsProvider(downloader.id)),
       child: asyncTags.when(
         loading: () => const Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
-        error: (error, _) => _ManagerError(
-          message: '加载标签失败',
-          onRetry: () => ref.invalidate(downloaderTagsProvider(downloader.id)),
-        ),
+        error: (error, _) =>
+            _ManagerError(message: '加载标签失败', onRetry: () => ref.invalidate(downloaderTagsProvider(downloader.id))),
         data: (tags) {
           if (tags.isEmpty) return const _ManagerEmpty(text: '暂无标签');
           return ListView.separated(
@@ -158,10 +137,7 @@ class QbTagManagerSheet extends ConsumerWidget {
             separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (_, index) {
               final tag = tags[index];
-              return _TagCard(
-                tag: tag,
-                onDelete: () => _confirmDeleteTag(context, ref, tag),
-              );
+              return _TagCard(tag: tag, onDelete: () => _confirmDeleteTag(context, ref, tag));
             },
           );
         },
@@ -187,7 +163,7 @@ class QbTagManagerSheet extends ConsumerWidget {
           try {
             await DownloaderService.createTag(downloader.id, tag);
             ref.invalidate(downloaderTagsProvider(downloader.id));
-            if (ctx.mounted) Navigator.pop(ctx);
+            if (ctx.mounted) closeAppSheet(ctx);
             Toast.success('标签已创建');
           } catch (e, st) {
             AppLogger.error('创建 QB 标签失败', e, st);
@@ -266,21 +242,14 @@ class _ManagerScaffold extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: TextStyle(
-                              color: cs.foreground,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w700),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             subtitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: cs.mutedForeground,
-                              fontSize: 12,
-                            ),
+                            style: TextStyle(color: cs.mutedForeground, fontSize: 12),
                           ),
                         ],
                       ),
@@ -289,10 +258,7 @@ class _ManagerScaffold extends StatelessWidget {
                       onPressed: onRefresh,
                       icon: const Icon(shadcn.LucideIcons.refreshCw, size: 16),
                     ),
-                    shadcn.IconButton.primary(
-                      onPressed: onAdd,
-                      icon: const Icon(shadcn.LucideIcons.plus, size: 16),
-                    ),
+                    shadcn.IconButton.primary(onPressed: onAdd, icon: const Icon(shadcn.LucideIcons.plus, size: 16)),
                   ],
                 ),
               ),
@@ -311,11 +277,7 @@ class _CategoryCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const _CategoryCard({
-    required this.category,
-    required this.onEdit,
-    required this.onDelete,
-  });
+  const _CategoryCard({required this.category, required this.onEdit, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -339,11 +301,7 @@ class _CategoryCard extends StatelessWidget {
                   category.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: cs.foreground,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(color: cs.foreground, fontSize: 14, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -355,10 +313,7 @@ class _CategoryCard extends StatelessWidget {
               ],
             ),
           ),
-          shadcn.IconButton.ghost(
-            onPressed: onEdit,
-            icon: const Icon(shadcn.LucideIcons.pencil, size: 15),
-          ),
+          shadcn.IconButton.ghost(onPressed: onEdit, icon: const Icon(shadcn.LucideIcons.pencil, size: 15)),
           shadcn.IconButton.ghost(
             onPressed: onDelete,
             icon: Icon(shadcn.LucideIcons.trash2, size: 15, color: cs.destructive),
@@ -394,11 +349,7 @@ class _TagCard extends StatelessWidget {
               tag,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: cs.foreground,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: cs.foreground, fontSize: 14, fontWeight: FontWeight.w600),
             ),
           ),
           shadcn.IconButton.ghost(
@@ -444,33 +395,19 @@ class _InputDialog extends StatelessWidget {
           children: [
             Text(
               title,
-              style: TextStyle(
-                color: cs.foreground,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 14),
-            shadcn.TextField(
-              controller: primaryController,
-              enabled: primaryEnabled,
-              hintText: "",
-            ),
+            shadcn.TextField(controller: primaryController, enabled: primaryEnabled, hintText: ""),
             if (secondaryController != null && secondaryLabel != null) ...[
               const SizedBox(height: 12),
-              shadcn.TextField(
-                controller: secondaryController!,
-                hintText: "",
-              ),
+              shadcn.TextField(controller: secondaryController!, hintText: ""),
             ],
             const SizedBox(height: 18),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                shadcn.Button.ghost(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('取消'),
-                ),
+                shadcn.Button.ghost(onPressed: () => closeAppSheet(context), child: const Text('取消')),
                 const SizedBox(width: 8),
                 shadcn.Button.primary(onPressed: onSubmit, child: const Text('保存')),
               ],
@@ -556,34 +493,28 @@ void _showConfirmDialog(
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                message,
-                style: TextStyle(color: cs.mutedForeground, fontSize: 13),
-              ),
+              Text(message, style: TextStyle(color: cs.mutedForeground, fontSize: 13)),
               const SizedBox(height: 18),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  shadcn.Button.ghost(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('取消'),
-                  ),
+                  shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
                   const SizedBox(width: 8),
                   destructive
                       ? shadcn.Button.destructive(
-                    onPressed: () async {
-                      Navigator.pop(ctx);
-                      await onConfirm();
-                    },
-                    child: const Text('确认'),
-                  )
+                          onPressed: () async {
+                            closeAppSheet(ctx);
+                            await onConfirm();
+                          },
+                          child: const Text('确认'),
+                        )
                       : shadcn.Button.primary(
-                    onPressed: () async {
-                      Navigator.pop(ctx);
-                      await onConfirm();
-                    },
-                    child: const Text('确认'),
-                  ),
+                          onPressed: () async {
+                            closeAppSheet(ctx);
+                            await onConfirm();
+                          },
+                          child: const Text('确认'),
+                        ),
                 ],
               ),
             ],

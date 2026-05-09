@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
@@ -279,7 +280,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   void _onHistoryTap(String keyword) {
-    showModalBottomSheet(
+    showAppSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
@@ -325,7 +326,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                 title: '搜索信息',
                 subtitle: '从 TMDB / 豆瓣搜索影视信息',
                 onTap: () {
-                  Navigator.pop(ctx);
+                  closeAppSheet(ctx);
                   _submitSearch(_cleanKeyword(keyword), mode: SearchMode.media);
                 },
               ),
@@ -336,14 +337,14 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                 title: '搜索资源',
                 subtitle: '从已配置站点搜索种子资源',
                 onTap: () {
-                  Navigator.pop(ctx);
+                  closeAppSheet(ctx);
                   _submitSearch(keyword, mode: SearchMode.resource);
                 },
               ),
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
-                child: shadcn.Button.outline(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+                child: shadcn.Button.outline(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
               ),
             ],
           ),
@@ -353,7 +354,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   void _showSearchSettings() {
-    showModalBottomSheet(
+    showAppSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -379,7 +380,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
         resourceState.searching;
 
     return EscapeBackScope(
-      onBack: () => Navigator.pop(context),
+      onBack: () => closeAppSheet(context),
       child: Scaffold(
         backgroundColor: cs.background,
         appBar: AppBar(
@@ -388,7 +389,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
           elevation: 0,
           leading: shadcn.IconButton.ghost(
             icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: cs.foreground),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => closeAppSheet(context),
           ),
           leadingWidth: 48,
           titleSpacing: 0,
@@ -1167,7 +1168,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   void _showResourceFilterSheet() {
-    showModalBottomSheet<void>(
+    showAppSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -1672,14 +1673,14 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   // ═══════════════════════════════════════════════
 
   void _onTorrentTap(SearchTorrentInfo item) {
-    showModalBottomSheet(
+    showAppSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => DownloaderSelectSheet(
         onSelected: (downloader) {
-          Navigator.pop(ctx);
-          showModalBottomSheet<void>(
+          closeAppSheet(ctx);
+          showAppSheet<void>(
             context: context,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,

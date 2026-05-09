@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
@@ -16,19 +17,16 @@ void openDoubanDetail(BuildContext context, String subjectId) {
     subjectId = extractDoubanId(subjectId);
   }
   if (context.isMobile) {
-    showModalBottomSheet<void>(
+    showAppSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: shadcn.Theme.of(
-        context,
-      ).colorScheme.background.withValues(alpha: 0),
+      backgroundColor: shadcn.Theme.of(context).colorScheme.background.withValues(alpha: 0),
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.85,
         minChildSize: 0.75,
         maxChildSize: 0.95,
         expand: false,
-        builder: (context, scrollCtrl) =>
-            _DoubanDetailSheet(subjectId: subjectId),
+        builder: (context, scrollCtrl) => _DoubanDetailSheet(subjectId: subjectId),
       ),
     );
   } else {
@@ -124,23 +122,14 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
               children: [
                 shadcn.IconButton.ghost(
                   icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 20),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => closeAppSheet(context),
                 ),
                 const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ).base.semiBold,
-                ),
+                Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis).base.semiBold),
               ],
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 6),
-            child: shadcn.Divider(),
-          ),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 6), child: shadcn.Divider()),
           Flexible(child: body),
         ],
       ),
@@ -171,36 +160,24 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(detail.title).large.bold,
-                        if (detail.originalTitle.isNotEmpty &&
-                            detail.originalTitle != detail.title) ...[
+                        if (detail.originalTitle.isNotEmpty && detail.originalTitle != detail.title) ...[
                           const SizedBox(height: 2),
                           Text(detail.originalTitle).xSmall.muted,
                         ],
-                        if (detail.year.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(detail.year).small.muted,
-                        ],
+                        if (detail.year.isNotEmpty) ...[const SizedBox(height: 4), Text(detail.year).small.muted],
                         if (detail.genres.isNotEmpty) ...[
                           const SizedBox(height: 6),
                           Wrap(
                             spacing: 4,
                             runSpacing: 4,
-                            children: detail.genres
-                                .map(
-                                  (g) => shadcn.SecondaryBadge(child: Text(g)),
-                                )
-                                .toList(),
+                            children: detail.genres.map((g) => shadcn.SecondaryBadge(child: Text(g))).toList(),
                           ),
                         ],
                         const SizedBox(height: 8),
                         if (hasRating)
                           Row(
                             children: [
-                              Icon(
-                                shadcn.LucideIcons.star,
-                                size: 16,
-                                color: cs.chart4,
-                              ),
+                              Icon(shadcn.LucideIcons.star, size: 16, color: cs.chart4),
                               const SizedBox(width: 4),
                               Text(ratingText).base.bold,
                               const SizedBox(width: 4),
@@ -215,11 +192,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
                             spacing: 4,
                             runSpacing: 4,
                             children: detail.realtimeHonorInfos
-                                .map(
-                                  (h) => shadcn.OutlineBadge(
-                                    child: Text('${h.title} #${h.rank}'),
-                                  ),
-                                )
+                                .map((h) => shadcn.OutlineBadge(child: Text('${h.title} #${h.rank}')))
                                 .toList(),
                           ),
                         ],
@@ -235,20 +208,14 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
                 Text(detail.intro).small.muted,
               ],
               const SizedBox(height: 16),
-              if (detail.countries.isNotEmpty)
-                _infoRow(context, '国家', detail.countries.join(' / ')),
-              if (detail.languages.isNotEmpty)
-                _infoRow(context, '语言', detail.languages.join(' / ')),
-              if (detail.durations.isNotEmpty)
-                _infoRow(context, '时长', detail.durations.join(' / ')),
-              if (detail.pubdate.isNotEmpty)
-                _infoRow(context, '上映', detail.pubdate.join(' / ')),
-              if (detail.aka.isNotEmpty)
-                _infoRow(context, '别名', detail.aka.join(' / ')),
+              if (detail.countries.isNotEmpty) _infoRow(context, '国家', detail.countries.join(' / ')),
+              if (detail.languages.isNotEmpty) _infoRow(context, '语言', detail.languages.join(' / ')),
+              if (detail.durations.isNotEmpty) _infoRow(context, '时长', detail.durations.join(' / ')),
+              if (detail.pubdate.isNotEmpty) _infoRow(context, '上映', detail.pubdate.join(' / ')),
+              if (detail.aka.isNotEmpty) _infoRow(context, '别名', detail.aka.join(' / ')),
               if (detail.isTv) ...[
                 _infoRow(context, '集数', '${detail.episodesCount}'),
-                if (detail.episodesInfo.isNotEmpty)
-                  _infoRow(context, '进度', detail.episodesInfo),
+                if (detail.episodesInfo.isNotEmpty) _infoRow(context, '进度', detail.episodesInfo),
               ],
               if (detail.directors.isNotEmpty) ...[
                 const SizedBox(height: 12),
@@ -262,23 +229,14 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
                 const SizedBox(height: 16),
                 _sectionTitle('播放源'),
                 const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: detail.vendors
-                      .map((v) => _vendorCard(context, v))
-                      .toList(),
-                ),
+                Wrap(spacing: 8, runSpacing: 8, children: detail.vendors.map((v) => _vendorCard(context, v)).toList()),
               ],
               if (detail.trailers.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _sectionTitle('预告片'),
                 const SizedBox(height: 8),
                 ...detail.trailers.map(
-                  (t) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _trailerCard(context, t),
-                  ),
+                  (t) => Padding(padding: const EdgeInsets.only(bottom: 8), child: _trailerCard(context, t)),
                 ),
               ],
               if (detail.commentCount > 0 || detail.reviewCount > 0) ...[
@@ -287,12 +245,9 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    if (detail.commentCount > 0)
-                      _statChip('${detail.commentCount} 短评'),
-                    if (detail.reviewCount > 0)
-                      _statChip('${detail.reviewCount} 影评'),
-                    if (detail.forumTopicCount > 0)
-                      _statChip('${detail.forumTopicCount} 讨论'),
+                    if (detail.commentCount > 0) _statChip('${detail.commentCount} 短评'),
+                    if (detail.reviewCount > 0) _statChip('${detail.reviewCount} 影评'),
+                    if (detail.forumTopicCount > 0) _statChip('${detail.forumTopicCount} 讨论'),
                   ],
                 ),
               ],
@@ -310,14 +265,11 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
                 alignment: Alignment.center,
                 leading: const Icon(shadcn.LucideIcons.search, size: 16),
                 onPressed: () {
-                  Navigator.pop(context);
+                  closeAppSheet(context);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => UnifiedSearchPage(
-                        initialQuery: searchQuery,
-                        initialMode: SearchMode.resource,
-                      ),
+                      builder: (_) => UnifiedSearchPage(initialQuery: searchQuery, initialMode: SearchMode.resource),
                     ),
                   );
                 },
@@ -362,8 +314,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(vendor.title).xSmall.semiBold,
-              if (vendor.paymentDesc.isNotEmpty)
-                Text(vendor.paymentDesc).xSmall.muted,
+              if (vendor.paymentDesc.isNotEmpty) Text(vendor.paymentDesc).xSmall.muted,
             ],
           ),
         ],
@@ -387,8 +338,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
               fit: BoxFit.cover,
               httpHeaders: const {
                 'Referer': 'https://movie.douban.com/',
-                'User-Agent':
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
               },
               placeholder: (_, __) => _loadingBox(height: 180),
               errorWidget: (_, __, ___) => _mutedBox(context, height: 180),
@@ -401,11 +351,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
             borderColor: cs.border.withValues(alpha: 0.2),
             borderRadius: theme.borderRadiusLg,
             padding: const EdgeInsets.all(12),
-            child: Icon(
-              shadcn.LucideIcons.play,
-              size: 20,
-              color: cs.popoverForeground,
-            ),
+            child: Icon(shadcn.LucideIcons.play, size: 20, color: cs.popoverForeground),
           ),
           Positioned(
             bottom: 8,
@@ -416,9 +362,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
               borderColor: cs.border.withValues(alpha: 0.2),
               borderRadius: theme.borderRadiusSm,
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              child: Text(
-                '${trailer.title} ${trailer.runtime}',
-              ).xSmall.primaryForeground,
+              child: Text('${trailer.title} ${trailer.runtime}').xSmall.primaryForeground,
             ),
           ),
         ],
@@ -437,17 +381,11 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
         fit: BoxFit.cover,
         httpHeaders: const {
           'Referer': 'https://movie.douban.com/',
-          'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         },
         placeholder: (_, __) => _loadingBox(height: 180),
-        errorWidget: (_, __, ___) => _posterFallback(
-          context,
-          width: double.infinity,
-          height: 180,
-          iconSize: 40,
-          iconAlpha: 0.2,
-        ),
+        errorWidget: (_, __, ___) =>
+            _posterFallback(context, width: double.infinity, height: 180, iconSize: 40, iconAlpha: 0.2),
       ),
     );
   }
@@ -463,17 +401,10 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
         fit: BoxFit.cover,
         httpHeaders: const {
           'Referer': 'https://movie.douban.com/',
-          'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         },
         placeholder: (_, __) => _loadingBox(width: 110, height: 165),
-        errorWidget: (_, __, ___) => _posterFallback(
-          context,
-          width: 110,
-          height: 165,
-          iconSize: 32,
-          iconAlpha: 0.3,
-        ),
+        errorWidget: (_, __, ___) => _posterFallback(context, width: 110, height: 165, iconSize: 32, iconAlpha: 0.3),
       ),
     );
   }
@@ -488,11 +419,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
             width: width,
             height: height,
             child: const Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-              ),
+              child: SizedBox(width: 20, height: 20, child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
             ),
           ),
         );
@@ -500,11 +427,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
     );
   }
 
-  Widget _mutedBox(
-    BuildContext context, {
-    double? width,
-    required double height,
-  }) {
+  Widget _mutedBox(BuildContext context, {double? width, required double height}) {
     return ColoredBox(
       color: shadcn.Theme.of(context).colorScheme.muted,
       child: SizedBox(width: width, height: height),

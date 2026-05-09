@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -12,8 +13,7 @@ class SearchSettingsSheet extends ConsumerStatefulWidget {
   const SearchSettingsSheet({super.key});
 
   @override
-  ConsumerState<SearchSettingsSheet> createState() =>
-      _SearchSettingsSheetState();
+  ConsumerState<SearchSettingsSheet> createState() => _SearchSettingsSheetState();
 }
 
 class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
@@ -40,14 +40,10 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     final availableSites = _availableSearchSites();
     final availableSiteKeys = availableSites.map(_siteKey).toSet();
-    final selectedCount = _selectedSites
-        .where((site) => availableSiteKeys.contains(site))
-        .length;
+    final selectedCount = _selectedSites.where((site) => availableSiteKeys.contains(site)).length;
 
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.82,
-      ),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.82),
       decoration: BoxDecoration(
         color: cs.background,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -60,26 +56,17 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
             child: Container(
               width: 36,
               height: 4,
-              decoration: BoxDecoration(
-                color: cs.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
+              decoration: BoxDecoration(color: cs.border, borderRadius: BorderRadius.circular(2)),
             ),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Text(
-                '搜索设置',
-                style: typo.normal.copyWith(fontWeight: FontWeight.w600),
-              ),
+              Text('搜索设置', style: typo.normal.copyWith(fontWeight: FontWeight.w600)),
               const Spacer(),
               GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Text(
-                  '完成',
-                  style: typo.small.copyWith(color: cs.primary),
-                ),
+                onTap: () => closeAppSheet(context),
+                child: Text('完成', style: typo.small.copyWith(color: cs.primary)),
               ),
             ],
           ),
@@ -90,27 +77,14 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '最大站点数',
-                      style: typo.small.copyWith(fontWeight: FontWeight.w500),
-                    ),
-                    Text(
-                      '从多少个站点搜索，默认 5，0 表示全部',
-                      style: typo.xSmall.copyWith(
-                        color: cs.mutedForeground,
-                        fontSize: 11,
-                      ),
-                    ),
+                    Text('最大站点数', style: typo.small.copyWith(fontWeight: FontWeight.w500)),
+                    Text('从多少个站点搜索，默认 5，0 表示全部', style: typo.xSmall.copyWith(color: cs.mutedForeground, fontSize: 11)),
                   ],
                 ),
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildUnlimitedButton(),
-                  const SizedBox(width: 8),
-                  _buildStepper(),
-                ],
+                children: [_buildUnlimitedButton(), const SizedBox(width: 8), _buildStepper()],
               ),
             ],
           ),
@@ -134,34 +108,18 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              '指定站点',
-                              style: typo.small.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                            Text('指定站点', style: typo.small.copyWith(fontWeight: FontWeight.w500)),
                             const SizedBox(height: 2),
                             Text(
-                              _sitesEnabled
-                                  ? '仅显示存活且可搜索的站点'
-                                  : '已关闭，搜索时 sites 参数为空',
-                              style: typo.xSmall.copyWith(
-                                color: cs.mutedForeground,
-                                fontSize: 11,
-                              ),
+                              _sitesEnabled ? '仅显示存活且可搜索的站点' : '已关闭，搜索时 sites 参数为空',
+                              style: typo.xSmall.copyWith(color: cs.mutedForeground, fontSize: 11),
                             ),
                           ],
                         ),
                       ),
-                      Text(
-                        _sitesEnabled ? '$selectedCount 个站点' : '关闭',
-                        style: typo.xSmall.copyWith(color: cs.primary),
-                      ),
+                      Text(_sitesEnabled ? '$selectedCount 个站点' : '关闭', style: typo.xSmall.copyWith(color: cs.primary)),
                       const SizedBox(width: 10),
-                      Switch(
-                        value: _sitesEnabled,
-                        onChanged: _setSitesEnabled,
-                      ),
+                      Switch(value: _sitesEnabled, onChanged: _setSitesEnabled),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -172,9 +130,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                           icon: shadcn.LucideIcons.refreshCw,
                           label: '加载',
                           color: Colors.blue,
-                          onPress: availableSites.isEmpty
-                              ? null
-                              : () => _loadStoredSites(availableSites),
+                          onPress: availableSites.isEmpty ? null : () => _loadStoredSites(availableSites),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -183,9 +139,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                           icon: shadcn.LucideIcons.checkCheck,
                           label: '全部',
                           color: Colors.green,
-                          onPress: availableSites.isEmpty
-                              ? null
-                              : () => _selectAllSites(availableSites),
+                          onPress: availableSites.isEmpty ? null : () => _selectAllSites(availableSites),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -194,9 +148,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                           icon: shadcn.LucideIcons.dices,
                           label: '随机',
                           color: Colors.orange,
-                          onPress: availableSites.isEmpty
-                              ? null
-                              : () => _selectRandomSites(availableSites),
+                          onPress: availableSites.isEmpty ? null : () => _selectRandomSites(availableSites),
                         ),
                       ),
                     ],
@@ -207,22 +159,14 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                         ? Padding(
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             child: Center(
-                              child: Text(
-                                '没有可搜索的存活站点',
-                                style: typo.small.copyWith(
-                                  color: cs.mutedForeground,
-                                ),
-                              ),
+                              child: Text('没有可搜索的存活站点', style: typo.small.copyWith(color: cs.mutedForeground)),
                             ),
                           )
                         : SingleChildScrollView(
                             child: Wrap(
                               spacing: 7,
                               runSpacing: 7,
-                              children: [
-                                for (final site in availableSites)
-                                  _buildSiteChip(site),
-                              ],
+                              children: [for (final site in availableSites) _buildSiteChip(site)],
                             ),
                           ),
                   ),
@@ -237,14 +181,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
 
   List<SiteInfo> _availableSearchSites() {
     final sites = ref.watch(siteInfoListProvider).valueOrNull ?? [];
-    final result = sites
-        .where(
-          (site) =>
-              site.available &&
-              site.searchTorrents &&
-              site.site.trim().isNotEmpty,
-        )
-        .toList();
+    final result = sites.where((site) => site.available && site.searchTorrents && site.site.trim().isNotEmpty).toList();
     result.sort((a, b) {
       final sort = a.sortId.compareTo(b.sortId);
       if (sort != 0) return sort;
@@ -273,29 +210,20 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
               child: Icon(
                 shadcn.LucideIcons.minus,
                 size: 16,
-                color: _maxCount > 0
-                    ? cs.foreground
-                    : cs.mutedForeground.withValues(alpha: 0.3),
+                color: _maxCount > 0 ? cs.foreground : cs.mutedForeground.withValues(alpha: 0.3),
               ),
             ),
           ),
           Container(
             width: 34,
             alignment: Alignment.center,
-            child: Text(
-              _maxCount == 0 ? '全部' : '$_maxCount',
-              style: typo.small.copyWith(fontWeight: FontWeight.w600),
-            ),
+            child: Text(_maxCount == 0 ? '全部' : '$_maxCount', style: typo.small.copyWith(fontWeight: FontWeight.w600)),
           ),
           GestureDetector(
             onTap: () => _setMaxCount(_maxCount + 1),
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: Icon(
-                shadcn.LucideIcons.plus,
-                size: 16,
-                color: cs.foreground,
-              ),
+              child: Icon(shadcn.LucideIcons.plus, size: 16, color: cs.foreground),
             ),
           ),
         ],
@@ -318,9 +246,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
         decoration: BoxDecoration(
           color: color.withValues(alpha: active ? 0.16 : 0.08),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: color.withValues(alpha: active ? 0.65 : 0.38),
-          ),
+          border: Border.all(color: color.withValues(alpha: active ? 0.65 : 0.38)),
         ),
         child: Text(
           '不限',
@@ -370,11 +296,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: typo.xSmall.copyWith(
-                    color: effectiveColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: typo.xSmall.copyWith(color: effectiveColor, fontSize: 10, fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -400,15 +322,9 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
         constraints: const BoxConstraints(maxWidth: 150),
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
         decoration: BoxDecoration(
-          color: selected
-              ? cs.primary.withValues(alpha: 0.12)
-              : cs.background.withValues(alpha: 0.75),
+          color: selected ? cs.primary.withValues(alpha: 0.12) : cs.background.withValues(alpha: 0.75),
           borderRadius: BorderRadius.circular(7),
-          border: Border.all(
-            color: selected
-                ? cs.primary.withValues(alpha: 0.55)
-                : cs.border.withValues(alpha: 0.55),
-          ),
+          border: Border.all(color: selected ? cs.primary.withValues(alpha: 0.55) : cs.border.withValues(alpha: 0.55)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -424,10 +340,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                 ),
               ),
             ),
-            if (selected) ...[
-              const SizedBox(width: 5),
-              Icon(shadcn.LucideIcons.check, size: 12, color: cs.primary),
-            ],
+            if (selected) ...[const SizedBox(width: 5), Icon(shadcn.LucideIcons.check, size: 12, color: cs.primary)],
           ],
         ),
       ),
@@ -487,11 +400,8 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   }
 
   void _selectRandomSites(List<SiteInfo> availableSites) {
-    final count = _maxCount == 0
-        ? availableSites.length
-        : min(_maxCount, availableSites.length);
-    final shuffled = List<SiteInfo>.from(availableSites)
-      ..shuffle(Random.secure());
+    final count = _maxCount == 0 ? availableSites.length : min(_maxCount, availableSites.length);
+    final shuffled = List<SiteInfo>.from(availableSites)..shuffle(Random.secure());
     setState(() {
       _sitesEnabled = true;
       _selectedSites = shuffled.take(count).map(_siteKey).toList();

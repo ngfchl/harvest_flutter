@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -16,7 +17,7 @@ import 'site_theme.dart';
 void showAddSiteSheet(BuildContext context) {
   const sheet = AddSiteSheet();
   if (context.isMobile) {
-    showModalBottomSheet<void>(
+    showAppSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: siteTransparent(context),
@@ -102,7 +103,7 @@ void showSiteForm(
   bool showBackToList = false,
 }) {
   if (context.isMobile) {
-    showModalBottomSheet(
+    showAppSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: siteTransparent(context),
@@ -233,7 +234,7 @@ class AddSiteSheet extends ConsumerWidget {
     final configs = ref.read(websiteListProvider).valueOrNull ?? [];
     final config = configs.firstWhereOrNull((c) => c.name == siteName);
     final rootContext = navigatorKey.currentContext ?? Navigator.of(context).context;
-    Navigator.pop(context);
+    closeAppSheet(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!rootContext.mounted) return;
       showSiteForm(rootContext, siteName: siteName, config: config, showBackToList: true);
@@ -346,7 +347,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
 
   void _backToAddList() {
     final rootContext = navigatorKey.currentContext ?? Navigator.of(context).context;
-    Navigator.of(context).pop();
+    closeAppSheet(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!rootContext.mounted) return;
       showAddSiteSheet(rootContext);
@@ -494,7 +495,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
             children: [
               Expanded(
                 child: shadcn.Button.outline(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => closeAppSheet(context),
                   child: Center(child: const Text('取消')),
                 ),
               ),
@@ -806,7 +807,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
               ),
             );
       }
-      if (mounted) Navigator.pop(context);
+      if (mounted) closeAppSheet(context);
     } catch (_) {
       // TODO: 错误提示
     } finally {

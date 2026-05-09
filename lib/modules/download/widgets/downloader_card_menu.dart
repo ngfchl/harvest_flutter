@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:harvest/modules/torrents/widgets/torrent_action_menu.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../torrents/torrent_list_page.dart';
@@ -42,10 +42,7 @@ class DownloaderCardMenu {
         onPressed: onPressed,
         child: SizedBox(
           width: 168,
-          child: Text(
-            title,
-            style: theme.typography.small.copyWith(color: color),
-          ),
+          child: Text(title, style: theme.typography.small.copyWith(color: color)),
         ),
       );
     }
@@ -69,9 +66,7 @@ class DownloaderCardMenu {
               builder: (_) => TorrentListPage(
                 downloaderId: d.id,
                 downloaderName: d.name,
-                downloaderType: d.isQb
-                    ? DownloaderType.qbittorrent
-                    : DownloaderType.transmission,
+                downloaderType: d.isQb ? DownloaderType.qbittorrent : DownloaderType.transmission,
               ),
             ),
           );
@@ -83,7 +78,7 @@ class DownloaderCardMenu {
         onPressed: (ctx) async {
           await close(ctx);
           if (!hostContext.mounted) return;
-          showModalBottomSheet<void>(
+          showAppSheet<void>(
             context: hostContext,
             isScrollControlled: true,
             backgroundColor: cs.background,
@@ -126,12 +121,7 @@ class DownloaderCardMenu {
           onToggleBrush();
         },
       ),
-      if (!d.brush)
-        item(
-          icon: shadcn.LucideIcons.copy,
-          title: '执行辅种',
-          onPressed: close,
-        ),
+      if (!d.brush) item(icon: shadcn.LucideIcons.copy, title: '执行辅种', onPressed: close),
       const shadcn.MenuDivider(),
       item(
         icon: shadcn.LucideIcons.settings,
@@ -141,9 +131,7 @@ class DownloaderCardMenu {
           if (!hostContext.mounted) return;
           shadcn.showDialog(
             context: hostContext,
-            builder: (_) => d.isQb
-                ? QbSettingsDialog(downloader: d)
-                : TrSettingsDialog(downloader: d),
+            builder: (_) => d.isQb ? QbSettingsDialog(downloader: d) : TrSettingsDialog(downloader: d),
           );
         },
       ),
@@ -170,7 +158,7 @@ class DownloaderCardMenu {
           onPressed: (ctx) async {
             await close(ctx);
             if (!hostContext.mounted) return;
-            showModalBottomSheet<void>(
+            showAppSheet<void>(
               context: hostContext,
               isScrollControlled: true,
               backgroundColor: cs.background,
@@ -184,7 +172,7 @@ class DownloaderCardMenu {
           onPressed: (ctx) async {
             await close(ctx);
             if (!hostContext.mounted) return;
-            showModalBottomSheet<void>(
+            showAppSheet<void>(
               context: hostContext,
               isScrollControlled: true,
               backgroundColor: cs.background,

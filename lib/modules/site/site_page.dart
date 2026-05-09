@@ -1,6 +1,7 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
@@ -561,7 +562,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   // ── 移动端筛选弹窗 ──
 
   void _openFilterSheet(BuildContext context) {
-    showModalBottomSheet<void>(
+    showAppSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: siteTransparent(context),
@@ -636,7 +637,7 @@ class _SitePageState extends ConsumerState<SitePage> {
             try {
               AppLogger.info('提交上传 TOML 配置文件: count=${files.length}, overwrite=$overwrite');
               await ref.read(siteInfoListProvider.notifier).importCustomSiteToml(files, overwrite: overwrite);
-              if (ctx.mounted) Navigator.of(ctx).pop();
+              if (ctx.mounted) closeAppSheet(ctx);
               Toast.success('站点配置已上传');
             } catch (e, st) {
               AppLogger.error('站点配置上传失败', e, st);
@@ -703,7 +704,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                       children: [
                         Expanded(
                           child: shadcn.Button.ghost(
-                            onPressed: uploading ? null : () => Navigator.of(ctx).pop(),
+                            onPressed: uploading ? null : () => closeAppSheet(ctx),
                             child: const Text('取消'),
                           ),
                         ),
