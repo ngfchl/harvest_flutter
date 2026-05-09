@@ -93,10 +93,46 @@ class _AppShadcnLocalizationsDelegate
   @override
   Future<shadcn.ShadcnLocalizations> load(Locale locale) {
     return SynchronousFuture<shadcn.ShadcnLocalizations>(
-      ShadcnLocalizationsEn(locale.toString()),
+      locale.languageCode == 'zh'
+          ? _AppShadcnLocalizationsZh(locale.toString())
+          : ShadcnLocalizationsEn(locale.toString()),
     );
   }
 
   @override
   bool shouldReload(_AppShadcnLocalizationsDelegate old) => false;
+}
+
+class _AppShadcnLocalizationsZh extends ShadcnLocalizationsEn {
+  _AppShadcnLocalizationsZh(super.locale);
+
+  @override
+  String get menuCut => '剪切';
+
+  @override
+  String get menuCopy => '复制';
+
+  @override
+  String get menuPaste => '粘贴';
+
+  @override
+  String get menuSelectAll => '全选';
+
+  @override
+  String get menuUndo => '撤销';
+
+  @override
+  String get menuRedo => '重做';
+
+  @override
+  String get menuDelete => '删除';
+
+  @override
+  String get menuShare => '分享';
+
+  @override
+  String get menuSearchWeb => '网页搜索';
+
+  @override
+  String get menuLiveTextInput => '扫描文本';
 }
