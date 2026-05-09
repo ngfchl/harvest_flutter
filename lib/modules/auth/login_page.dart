@@ -11,6 +11,7 @@ import 'package:harvest/modules/shell/widgets/log_floating_overlay.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../login/login_history_provider.dart';
+import '../login/login_record.dart';
 import 'auth_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -25,6 +26,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   late final TextEditingController _usernameController;
   late final TextEditingController _passwordController;
   bool _filledFromHistory = false;
+  static const _debugUsername = 'admin';
+  static const _debugPassword = 'adminadmin';
+  static const _debugServer = 'http://127.0.0.1:8000';
 
   @override
   void initState() {
@@ -34,10 +38,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (kDebugMode) {
       _serverController = TextEditingController(
         text: webServer ??
-            (savedServer.isNotEmpty ? savedServer : 'http://127.0.0.1:8000'),
+            (savedServer.isNotEmpty ? savedServer : _debugServer),
       );
-      _usernameController = TextEditingController(text: 'admin');
-      _passwordController = TextEditingController(text: 'adminadmin');
+      _usernameController = TextEditingController(text: _debugUsername);
+      _passwordController = TextEditingController(text: _debugPassword);
     } else {
       _serverController = TextEditingController(text: webServer ?? savedServer);
       _usernameController = TextEditingController();
@@ -62,21 +66,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final theme = tokens.theme;
     final cs = theme.colorScheme;
 
-    ref.listen(loginHistoryProvider, (prev, next) {
-      if (!_filledFromHistory && next.isNotEmpty) {
-        final latest = next.first;
-        if (!kIsWeb && _serverController.text.trim().isEmpty) {
-          _serverController.text = latest.server;
-        }
-        if (_usernameController.text.trim().isEmpty) {
-          _usernameController.text = latest.username;
-        }
-        if (_passwordController.text.trim().isEmpty) {
-          _passwordController.text = latest.password;
-        }
-        _filledFromHistory = true;
-      }
-    });
+    _fillFromLoginHistory(loginHistory);
+    ref.listen(loginHistoryProvider, (prev, next) => _fillFromLoginHistory(next));
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -201,6 +192,36 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         ),
       ),
     );
+  }
+
+  void _fillFromLoginHistory(List<LoginRecord> history) {
+    if (_filledFromHistory || history.isEmpty) return;
+    final latest = history.first;
+    if (!kIsWeb && _canFillServer()) {
+      _serverController.text = latest.server;
+    }
+    if (_canFillUsername()) {
+      _usernameController.text = latest.username;
+    }
+    if (_canFillPassword()) {
+      _passwordController.text = latest.password;
+    }
+    _filledFromHistory = true;
+  }
+
+  bool _canFillServer() {
+    final value = _serverController.text.trim();
+    return value.isEmpty || (kDebugMode && value == _debugServer);
+  }
+
+  bool _canFillUsername() {
+    final value = _usernameController.text.trim();
+    return value.isEmpty || (kDebugMode && value == _debugUsername);
+  }
+
+  bool _canFillPassword() {
+    final value = _passwordController.text;
+    return value.isEmpty || (kDebugMode && value == _debugPassword);
   }
 
   String _loginErrorMessage(Object error) {
