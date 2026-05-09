@@ -96,6 +96,9 @@ class DesktopSelectedSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
+    final errorText = torrent.effectiveErrorMessage.isEmpty
+        ? '种子存在错误'
+        : torrent.effectiveErrorMessage;
     return shadcn.Card(
       filled: true,
       fillColor: cs.background,
@@ -125,6 +128,48 @@ class DesktopSelectedSummary extends StatelessWidget {
               Text(torrent.torrentStatus.label).xSmall.muted,
             ],
           ),
+          if (torrent.hasError) ...[
+            const SizedBox(height: 10),
+            shadcn.Tooltip(
+              tooltip: (_) => Text(errorText).xSmall,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: cs.destructive.withValues(alpha: 0.1),
+                  border: Border.all(
+                    color: cs.destructive.withValues(alpha: 0.35),
+                    width: 0.6,
+                  ),
+                  borderRadius: shadcn.Theme.of(context).borderRadiusSm,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      shadcn.LucideIcons.circleAlert,
+                      size: 14,
+                      color: cs.destructive,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: DefaultTextStyle.merge(
+                        style: TextStyle(color: cs.destructive),
+                        child: Text(
+                          errorText,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ).xSmall.medium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

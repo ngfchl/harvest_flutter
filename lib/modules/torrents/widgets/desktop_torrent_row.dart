@@ -60,6 +60,11 @@ class DesktopTorrentRow extends StatelessWidget {
       TorrentColumn column,
       Color color,
       ) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final hasError = torrent.hasError;
+    final errorText = torrent.effectiveErrorMessage.isEmpty
+        ? '种子存在错误'
+        : torrent.effectiveErrorMessage;
     return switch (column) {
       TorrentColumn.queueId => DesktopCell(
         width: column.width,
@@ -71,23 +76,63 @@ class DesktopTorrentRow extends StatelessWidget {
           children: [
             StatusDot(color: color),
             const SizedBox(width: 9),
+            if (hasError)
+              shadcn.Tooltip(
+                tooltip: (_) => Text(errorText).xSmall,
+                child: Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: cs.destructive.withValues(alpha: 0.12),
+                    borderRadius: shadcn.Theme.of(context).borderRadiusSm,
+                    border: Border.all(
+                      color: cs.destructive.withValues(alpha: 0.35),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(color: cs.destructive),
+                    child: Text('错').xSmall.medium,
+                  ),
+                ),
+              ),
             Expanded(
-              child: (selected
+              child: hasError
+                  ? shadcn.Tooltip(
+                tooltip: (_) => Text(errorText).xSmall,
+                child: DefaultTextStyle.merge(
+                  style: TextStyle(color: cs.destructive),
+                  child: (selected
+                      ? Text(
+                    torrent.name.isEmpty
+                        ? '(无名称)'
+                        : torrent.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ).small.bold
+                      : Text(
+                    torrent.name.isEmpty
+                        ? '(无名称)'
+                        : torrent.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ).small.medium),
+                ),
+              )
+                  : (selected
                   ? Text(
-                torrent.name.isEmpty
-                    ? '(无名称)'
-                    : torrent.name,
+                torrent.name.isEmpty ? '(无名称)' : torrent.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-              ).small.bold
+              ).small.bold.foreground
                   : Text(
-                torrent.name.isEmpty
-                    ? '(无名称)'
-                    : torrent.name,
+                torrent.name.isEmpty ? '(无名称)' : torrent.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-              ).small.medium)
-                  .foreground,
+              ).small.medium.foreground),
             ),
           ],
         ),

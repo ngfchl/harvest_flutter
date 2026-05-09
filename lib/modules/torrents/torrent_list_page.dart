@@ -371,6 +371,7 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
     ref.read(torrentCategoryProvider.notifier).state = '';
     ref.read(torrentTagProvider.notifier).state = '';
     ref.read(torrentSiteFilterProvider.notifier).state = '';
+    ref.read(torrentErrorDetailFilterProvider.notifier).state = '';
     ref.read(torrentFilterProvider.notifier).state = TorrentFilter.all;
     ref.read(desktopTorrentStatusFilterProvider.notifier).state =
         DesktopTorrentStatusFilter.all;

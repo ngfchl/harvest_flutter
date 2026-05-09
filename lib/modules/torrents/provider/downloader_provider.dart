@@ -285,6 +285,9 @@ final torrentTagProvider = StateProvider.autoDispose<String>((_) => '');
 
 // ── 新增：站点筛选 ──
 final torrentSiteFilterProvider = StateProvider.autoDispose<String>((_) => '');
+final torrentErrorDetailFilterProvider = StateProvider.autoDispose<String>(
+  (_) => '',
+);
 
 final torrentSiteMatcherProvider = Provider.autoDispose<TorrentSiteMatcher>((
   ref,
@@ -368,6 +371,25 @@ final availableTagsProvider = Provider.autoDispose.family<List<String>, int>((
   return list;
 });
 
+String _normalizedErrorDetail(Torrent torrent) {
+  return torrent.effectiveErrorMessage.trim();
+}
+
+final availableErrorDetailsProvider = Provider.autoDispose
+    .family<List<String>, int>((ref, id) {
+      final data = ref.watch(torrentListProvider(id)).valueOrNull;
+      if (data == null) return const <String>[];
+      final details = <String>{};
+      for (final torrent in data.torrents) {
+        final detail = _normalizedErrorDetail(torrent);
+        if (detail.isNotEmpty) {
+          details.add(detail);
+        }
+      }
+      final list = details.toList()..sort();
+      return list;
+    });
+
 // ── 更新 filteredTorrentsProvider ──
 final filteredTorrentsProvider = Provider.autoDispose
     .family<List<Torrent>, int>((ref, id) {
@@ -378,6 +400,7 @@ final filteredTorrentsProvider = Provider.autoDispose
       final category = ref.watch(torrentCategoryProvider);
       final tag = ref.watch(torrentTagProvider);
       final site = ref.watch(torrentSiteFilterProvider);
+      final errorDetail = ref.watch(torrentErrorDetailFilterProvider);
       final sort = ref.watch(torrentSortProvider);
       final asc = ref.watch(torrentSortAscProvider);
       final matcher = ref.watch(torrentSiteMatcherProvider);
@@ -426,6 +449,12 @@ final filteredTorrentsProvider = Provider.autoDispose
       // ── 站点过滤 ──
       if (site.isNotEmpty) {
         list = list.where((t) => matcher.match(t)?.key == site).toList();
+      }
+
+      if (errorDetail.isNotEmpty) {
+        list = list
+            .where((t) => _normalizedErrorDetail(t) == errorDetail)
+            .toList();
       }
 
       // ── 搜索 ──

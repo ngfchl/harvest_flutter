@@ -55,6 +55,7 @@ class DesktopTorrentSidebar extends ConsumerStatefulWidget {
   final DownloaderType downloaderType;
   final Downloader? downloader;
   final VoidCallback onCollapse;
+  final double width;
 
   const DesktopTorrentSidebar({
     super.key,
@@ -62,6 +63,7 @@ class DesktopTorrentSidebar extends ConsumerStatefulWidget {
     required this.downloaderType,
     required this.downloader,
     required this.onCollapse,
+    required this.width,
   });
 
   @override
@@ -75,6 +77,7 @@ class _DesktopTorrentSidebarState
   final Set<String> _collapsedSections = {};
   static const List<String> _sectionIds = [
     'status',
+    'error',
     'category',
     'tag',
     'site',
@@ -83,6 +86,7 @@ class _DesktopTorrentSidebarState
   static const double _collapsedSectionHeight = 38;
   final Map<String, double> _sectionWeights = {
     'status': 1.25,
+    'error': 0.9,
     'category': 1,
     'tag': 1,
     'site': 1,
@@ -109,6 +113,7 @@ class _DesktopTorrentSidebarState
     final category = ref.watch(torrentCategoryProvider);
     final tag = ref.watch(torrentTagProvider);
     final site = ref.watch(torrentSiteFilterProvider);
+    final errorDetail = ref.watch(torrentErrorDetailFilterProvider);
     final categories = ref.watch(
       availableCategoriesProvider(widget.downloaderId),
     );
@@ -118,9 +123,17 @@ class _DesktopTorrentSidebarState
     final sites = ref.watch(
       availableTorrentSitesProvider(widget.downloaderId),
     );
+    final availableErrorDetails = ref.watch(
+      availableErrorDetailsProvider(widget.downloaderId),
+    );
     final downloader = widget.downloader;
     final isQb =
         widget.downloaderType == DownloaderType.qbittorrent;
+    final isTransmission =
+        widget.downloaderType == DownloaderType.transmission;
+    final sectionIds = isTransmission
+        ? _sectionIds
+        : _sectionIds.where((id) => id != 'error').toList();
     final allTorrents = ref
         .watch(torrentListProvider(widget.downloaderId))
         .valueOrNull
@@ -148,9 +161,17 @@ class _DesktopTorrentSidebarState
         siteCounts[match.key] = (siteCounts[match.key] ?? 0) + 1;
       }
     }
+    final errorCounts = <String, int>{};
+    for (final torrent in allTorrents) {
+      if (!torrent.hasError) continue;
+      final detail = torrent.effectiveErrorMessage.isEmpty
+          ? '未知错误'
+          : torrent.effectiveErrorMessage;
+      errorCounts[detail] = (errorCounts[detail] ?? 0) + 1;
+    }
 
     return Container(
-      width: 260,
+      width: widget.width,
       decoration: BoxDecoration(
         color: cs.background,
         border: Border(
@@ -205,7 +226,7 @@ class _DesktopTorrentSidebarState
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final sectionHeights =
-                _resolvedSectionHeights(constraints.maxHeight);
+                _resolvedSectionHeights(constraints.maxHeight, sectionIds);
                 return Column(
                   children: [
                     DesktopResizableFilterSection(
@@ -213,7 +234,7 @@ class _DesktopTorrentSidebarState
                       height: sectionHeights['status'] ?? 38,
                       collapsed: _isSectionCollapsed('status'),
                       onToggle: () => _toggleSection('status'),
-                      onResize: (d) => _resizeSection('status', d),
+                      onResize: (d) => _resizeSection('status', d, sectionIds),
                       child: ListView(
                         padding: const EdgeInsets.fromLTRB(
                           10,
@@ -339,13 +360,52 @@ class _DesktopTorrentSidebarState
                         ],
                       ),
                     ),
+                    if (isTransmission)
+                      DesktopResizableFilterSection(
+                        title: '错误详情',
+                        height: sectionHeights['error'] ?? 38,
+                        collapsed: _isSectionCollapsed('error'),
+                        onToggle: () => _toggleSection('error'),
+                        onResize: (d) => _resizeSection('error', d, sectionIds),
+                        child: ListView(
+                          padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
+                          children: [
+                            DesktopFilterItem(
+                              icon: shadcn.LucideIcons.list,
+                              label: '全部错误',
+                              count: errorCounts.values.fold<int>(
+                                0,
+                                (sum, value) => sum + value,
+                              ),
+                              selected: errorDetail.isEmpty,
+                              onTap: () => ref
+                                  .read(
+                                    torrentErrorDetailFilterProvider.notifier,
+                                  )
+                                  .state = '',
+                            ),
+                            for (final detail in availableErrorDetails)
+                              DesktopFilterItem(
+                                icon: shadcn.LucideIcons.circleAlert,
+                                label: detail,
+                                count: errorCounts[detail] ?? 0,
+                                selected: errorDetail == detail,
+                                onTap: () => ref
+                                    .read(
+                                      torrentErrorDetailFilterProvider.notifier,
+                                    )
+                                    .state = detail,
+                              ),
+                          ],
+                        ),
+                      ),
                     DesktopResizableFilterSection(
                       title: '分类',
                       height: sectionHeights['category'] ?? 38,
                       collapsed: _isSectionCollapsed('category'),
                       onToggle: () => _toggleSection('category'),
                       onResize: (d) =>
-                          _resizeSection('category', d),
+                          _resizeSection('category', d, sectionIds),
                       actions: isQb && downloader != null
                           ? [
                         DesktopFilterActionButton(
@@ -420,7 +480,7 @@ class _DesktopTorrentSidebarState
                       height: sectionHeights['tag'] ?? 38,
                       collapsed: _isSectionCollapsed('tag'),
                       onToggle: () => _toggleSection('tag'),
-                      onResize: (d) => _resizeSection('tag', d),
+                      onResize: (d) => _resizeSection('tag', d, sectionIds),
                       actions: isQb && downloader != null
                           ? [
                         DesktopFilterActionButton(
@@ -492,7 +552,7 @@ class _DesktopTorrentSidebarState
                       height: sectionHeights['site'] ?? 38,
                       collapsed: _isSectionCollapsed('site'),
                       onToggle: () => _toggleSection('site'),
-                      onResize: (d) => _resizeSection('site', d),
+                      onResize: (d) => _resizeSection('site', d, sectionIds),
                       child: ListView(
                         padding: const EdgeInsets.fromLTRB(
                           10,
@@ -528,8 +588,10 @@ class _DesktopTorrentSidebarState
                         ],
                       ),
                     ),
-                    if (_collapsedSections.length ==
-                        _sectionIds.length)
+                    if (_collapsedSections
+                            .where(sectionIds.contains)
+                            .length ==
+                        sectionIds.length)
                       const Spacer(),
                   ],
                 );
@@ -543,11 +605,12 @@ class _DesktopTorrentSidebarState
 
   Map<String, double> _resolvedSectionHeights(
       double availableHeight,
+      List<String> sectionIds,
       ) {
-    final expanded = _sectionIds
+    final expanded = sectionIds
         .where((id) => !_isSectionCollapsed(id))
         .toList();
-    final collapsed = _sectionIds
+    final collapsed = sectionIds
         .where((id) => _isSectionCollapsed(id))
         .toList();
     final heights = <String, double>{
@@ -557,7 +620,7 @@ class _DesktopTorrentSidebarState
     if (expanded.isEmpty) return heights;
 
     final sectionArea =
-    (availableHeight - _sectionIds.length * _sectionBottomGap)
+    (availableHeight - sectionIds.length * _sectionBottomGap)
         .clamp(0.0, double.infinity);
     final expandedArea =
     (sectionArea - collapsed.length * _collapsedSectionHeight)
@@ -586,9 +649,9 @@ class _DesktopTorrentSidebarState
     });
   }
 
-  void _resizeSection(String id, double delta) {
+  void _resizeSection(String id, double delta, List<String> sectionIds) {
     if (_isSectionCollapsed(id)) return;
-    final expanded = _sectionIds
+    final expanded = sectionIds
         .where((s) => !_isSectionCollapsed(s))
         .toList();
     if (expanded.length <= 1) return;
@@ -624,6 +687,7 @@ class _DesktopTorrentSidebarState
     ref.read(torrentCategoryProvider.notifier).state = '';
     ref.read(torrentTagProvider.notifier).state = '';
     ref.read(torrentSiteFilterProvider.notifier).state = '';
+    ref.read(torrentErrorDetailFilterProvider.notifier).state = '';
   }
 
   Future<void> _showCategoryEditor(

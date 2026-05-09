@@ -107,6 +107,17 @@ bool _isVirtualTracker(TrackerStat tracker) {
       _isVirtualTrackerText(tracker.announce);
 }
 
+bool _isSuccessfulTrackerMessage(String value) {
+  final normalized = value.trim().toLowerCase();
+  if (normalized.isEmpty) return true;
+  return normalized == 'success' ||
+      normalized == 'ok' ||
+      normalized == 'working' ||
+      normalized.contains('succeeded') ||
+      normalized.contains('success') ||
+      normalized.contains('成功');
+}
+
 // ══════════════════════════════════════════════════════
 //  Enums
 // ══════════════════════════════════════════════════════
@@ -447,7 +458,27 @@ abstract class Torrent with _$Torrent {
 
   TorrentStatus get torrentStatus => TorrentStatus.fromValue(status);
 
-  bool get hasError => error != 0;
+  bool get hasError => error != 0 || errorString.trim().isNotEmpty;
+
+  String get trackerErrorMessage {
+    final seen = <String>{};
+    for (final tracker in visibleTrackerStats) {
+      final msg = tracker.lastAnnounceResult.trim();
+      if (msg.isEmpty) continue;
+      if (tracker.lastAnnounceSucceeded) continue;
+      if (_isSuccessfulTrackerMessage(msg)) continue;
+      if (seen.add(msg)) return msg;
+    }
+    return '';
+  }
+
+  String get effectiveErrorMessage {
+    final direct = errorString.trim();
+    if (direct.isNotEmpty) return direct;
+    final tracker = trackerErrorMessage;
+    if (tracker.isNotEmpty) return tracker;
+    return hasError ? '未知错误' : '';
+  }
 
   List<TrackerStat> get visibleTrackerStats =>
       trackerStats.where((t) => !_isVirtualTracker(t)).toList();

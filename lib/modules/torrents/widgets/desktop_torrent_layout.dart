@@ -49,6 +49,9 @@ class DesktopTorrentLayout extends ConsumerStatefulWidget {
 
 class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
   bool _sidebarCollapsed = false;
+  double _sidebarWidth = 280;
+  static const double _minSidebarWidth = 220;
+  static const double _maxSidebarWidth = 460;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +84,33 @@ class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
                     downloaderType: widget.downloaderType,
                     downloader: widget.downloader,
                     onCollapse: () => setState(() => _sidebarCollapsed = true),
+                    width: _sidebarWidth,
+                  ),
+                if (!_sidebarCollapsed)
+                  MouseRegion(
+                    cursor: SystemMouseCursors.resizeLeftRight,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onHorizontalDragUpdate: (details) {
+                        setState(() {
+                          _sidebarWidth = (_sidebarWidth + details.delta.dx)
+                              .clamp(_minSidebarWidth, _maxSidebarWidth);
+                        });
+                      },
+                      child: SizedBox(
+                        width: 8,
+                        child: Center(
+                          child: Container(
+                            width: 2,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: cs.border.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(1),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 Expanded(
                   child: Column(
