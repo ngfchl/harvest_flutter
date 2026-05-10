@@ -50,6 +50,10 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   String _query = '';
   String _submittedQuery = '';
   SearchMode? _submittedMode;
+  String _mediaQuery = '';
+  String _resourceQuery = '';
+  String _mediaSubmittedQuery = '';
+  String _resourceSubmittedQuery = '';
   int _mediaSearchSerial = 0;
   _ResourceSortField _resourceSortField = _ResourceSortField.published;
   bool _resourceSortAscending = false;
@@ -125,15 +129,17 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     final q = value.trim();
     setState(() {
       _query = q;
+      _setModeQuery(_mode, q);
       if (q.isEmpty) {
-        _clearSubmittedState();
-      } else if (q != _submittedQuery && _mediaLoading) {
+        _clearActiveSubmittedState();
+      } else if (_mode == SearchMode.media && q != _mediaSubmittedQuery && _mediaLoading) {
         _mediaSearchSerial++;
         _mediaLoading = false;
       }
     });
 
-    if (q.isEmpty || (q != _submittedQuery && _submittedMode == SearchMode.resource)) {
+    if (_mode == SearchMode.resource &&
+        (q.isEmpty || (q != _resourceSubmittedQuery && _submittedMode == SearchMode.resource))) {
       ref.read(resourceSearchProvider.notifier).clear();
     }
   }
@@ -158,6 +164,8 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     setState(() {
       _mode = targetMode;
       _query = q;
+      _setModeQuery(targetMode, q);
+      _setModeSubmittedQuery(targetMode, q);
       _submittedQuery = q;
       _submittedMode = targetMode;
 
@@ -166,9 +174,6 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
         _doubanResults = [];
       } else {
         _resetResourceFilters();
-        _mediaLoading = false;
-        _tmdbResults = [];
-        _doubanResults = [];
       }
     });
 
@@ -230,7 +235,6 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   void _searchResource(String q) {
-    _mediaSearchSerial++;
     final settings = SearchSettings.load();
     ref
         .read(resourceSearchProvider.notifier)
@@ -239,20 +243,32 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
 
   void _switchMode(SearchMode mode) {
     if (mode == _mode) return;
+    final savedQuery = _modeQuery(mode);
+    final nextQuery = savedQuery.isNotEmpty ? savedQuery : _query;
+    final nextSubmittedQuery = _modeSubmittedQuery(mode);
     setState(() {
       _mode = mode;
-      _clearSubmittedState();
+      _query = nextQuery;
+      _setModeQuery(mode, nextQuery);
+      _submittedQuery = nextSubmittedQuery;
+      _submittedMode = nextSubmittedQuery.isEmpty ? null : mode;
+      _ctrl.value = TextEditingValue(
+        text: nextQuery,
+        selection: TextSelection.collapsed(offset: nextQuery.length),
+      );
     });
-    ref.read(resourceSearchProvider.notifier).clear();
   }
 
   void _onClear() {
     _ctrl.clear();
     setState(() {
       _query = '';
-      _clearSubmittedState();
+      _setModeQuery(_mode, '');
+      _clearActiveSubmittedState();
     });
-    ref.read(resourceSearchProvider.notifier).clear();
+    if (_mode == SearchMode.resource) {
+      ref.read(resourceSearchProvider.notifier).clear();
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNode.requestFocus();
     });
@@ -262,14 +278,42 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     _submitSearch(query, mode: SearchMode.resource);
   }
 
-  void _clearSubmittedState() {
+  String _modeQuery(SearchMode mode) {
+    return mode == SearchMode.media ? _mediaQuery : _resourceQuery;
+  }
+
+  void _setModeQuery(SearchMode mode, String query) {
+    if (mode == SearchMode.media) {
+      _mediaQuery = query;
+    } else {
+      _resourceQuery = query;
+    }
+  }
+
+  String _modeSubmittedQuery(SearchMode mode) {
+    return mode == SearchMode.media ? _mediaSubmittedQuery : _resourceSubmittedQuery;
+  }
+
+  void _setModeSubmittedQuery(SearchMode mode, String query) {
+    if (mode == SearchMode.media) {
+      _mediaSubmittedQuery = query;
+    } else {
+      _resourceSubmittedQuery = query;
+    }
+  }
+
+  void _clearActiveSubmittedState() {
     _submittedQuery = '';
     _submittedMode = null;
-    _mediaLoading = false;
-    _tmdbResults = [];
-    _doubanResults = [];
-    _resetResourceFilters();
-    _mediaSearchSerial++;
+    _setModeSubmittedQuery(_mode, '');
+    if (_mode == SearchMode.media) {
+      _mediaLoading = false;
+      _tmdbResults = [];
+      _doubanResults = [];
+      _mediaSearchSerial++;
+    } else {
+      _resetResourceFilters();
+    }
   }
 
   String _cleanKeyword(String keyword) {
@@ -376,9 +420,9 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     final showHistory = _query.isEmpty && history.isNotEmpty;
     final showResourceProgress =
         _mode == SearchMode.resource &&
-        _submittedMode == SearchMode.resource &&
-        _query == _submittedQuery &&
-        resourceState.query == _submittedQuery &&
+        _resourceSubmittedQuery.isNotEmpty &&
+        _query == _resourceSubmittedQuery &&
+        resourceState.query == _resourceSubmittedQuery &&
         resourceState.searching;
 
     return EscapeBackScope(
@@ -510,10 +554,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
             '${state.results.length} 条',
             style: typo.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
           ),
-          if (state.results.isNotEmpty) ...[
-            const SizedBox(width: 8),
-            _buildResourceFilterButton(),
-          ],
+          if (state.results.isNotEmpty) ...[const SizedBox(width: 8), _buildResourceFilterButton()],
         ],
       ),
     );
@@ -616,7 +657,8 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     if (_query.isEmpty) {
       return _buildEmptyHint('输入${_mode == SearchMode.media ? '影视名称' : '资源关键词'}开始搜索');
     }
-    if (_submittedQuery.isEmpty || _submittedMode != _mode || _query != _submittedQuery) {
+    final activeSubmittedQuery = _modeSubmittedQuery(_mode);
+    if (activeSubmittedQuery.isEmpty || _query != activeSubmittedQuery) {
       return _buildEmptyHint('按回车开始搜索');
     }
     if (_mode == SearchMode.media) return _buildMediaBody(context);
@@ -656,7 +698,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     if (_tmdbResults.isEmpty && _doubanResults.isEmpty) {
       return Center(
         child: Text(
-          '没有找到「$_submittedQuery」',
+          '没有找到「$_mediaSubmittedQuery」',
           style: shadcn.Theme.of(
             context,
           ).typography.small.copyWith(color: shadcn.Theme.of(context).colorScheme.mutedForeground),
@@ -970,14 +1012,14 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   // ═══════════════════════════════════════════════
 
   Widget _buildResourceBody(BuildContext context, ResourceSearchState state) {
-    if (state.query != _submittedQuery) {
+    if (state.query != _resourceSubmittedQuery) {
       return _buildEmptyHint('按回车开始搜索');
     }
 
     if (state.results.isEmpty && !state.searching) {
       return Center(
         child: Text(
-          '没有找到「$_submittedQuery」相关资源',
+          '没有找到「$_resourceSubmittedQuery」相关资源',
           style: shadcn.Theme.of(
             context,
           ).typography.small.copyWith(color: shadcn.Theme.of(context).colorScheme.mutedForeground),
@@ -1028,10 +1070,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               '${state.results.length} 条',
               style: typo.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
             ),
-            if (state.results.isNotEmpty) ...[
-              const SizedBox(width: 8),
-              _buildResourceFilterButton(),
-            ],
+            if (state.results.isNotEmpty) ...[const SizedBox(width: 8), _buildResourceFilterButton()],
           ],
         ),
         children: [_buildMessagesList(state)],
@@ -1083,6 +1122,23 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     final mobile = context.isMobile;
     final results = _sortedResourceResults(_filteredResourceResults(state.results));
     if (results.isEmpty) {
+      if (state.searching) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(width: 22, height: 22, child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
+              const SizedBox(height: 12),
+              Text(
+                '正在搜索资源...',
+                style: shadcn.Theme.of(
+                  context,
+                ).typography.small.copyWith(color: shadcn.Theme.of(context).colorScheme.mutedForeground),
+              ),
+            ],
+          ),
+        );
+      }
       return Center(
         child: Text(
           '没有符合筛选条件的资源',
@@ -1207,7 +1263,9 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
         .clamp(compact ? 160.0 : 220.0, compact ? overlaySize.height - 24 : 520.0)
         .toDouble();
     final panelLeft = compact ? 12.0 : null;
-    final panelRight = compact ? 12.0 : (overlaySize.width - anchorOffset.dx - anchorSize.width).clamp(8.0, overlaySize.width);
+    final panelRight = compact
+        ? 12.0
+        : (overlaySize.width - anchorOffset.dx - anchorSize.width).clamp(8.0, overlaySize.width);
 
     late final OverlayEntry entry;
     entry = OverlayEntry(
@@ -1674,7 +1732,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                         _badge(item.siteId, cs.primary),
                         if (item.category.isNotEmpty && item.category != '无分类')
                           _badge(_categoryLabel(item.category), cs.mutedForeground),
-                        if (item.hr) _badge('HR', Colors.orange),
+                        if (!item.hr) _badge('HR', Colors.orange),
                         if (item.saleStatus.isNotEmpty && item.saleStatus != '无优惠')
                           _badge(item.saleStatus, Colors.green),
                         if (item.published.isNotEmpty)
@@ -1951,7 +2009,7 @@ class _ResourceFilterPanelState extends State<_ResourceFilterPanel> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
                   children: [
-                    _ResourceFilterSwitchTile(label: '只看 HR', value: widget.hrOnly, onToggle: widget.onToggleHr),
+                    _ResourceFilterSwitchTile(label: '不看 HR', value: widget.hrOnly, onToggle: widget.onToggleHr),
                     _ResourceSizeRangeFilter(
                       enabled: widget.sizeEnabled,
                       value: widget.sizeGb,
