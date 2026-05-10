@@ -44,8 +44,7 @@ class ChartSettingsDialog extends StatefulWidget {
     this.showSizingControls = true,
     this.showTreemapCountControl = false,
     this.showDesktopDynamicBackgroundControl = false,
-    this.desktopDynamicBackgroundEnabled =
-        DashboardChartConfig.defaultDesktopDynamicBackground,
+    this.desktopDynamicBackgroundEnabled = DashboardChartConfig.defaultDesktopDynamicBackground,
     this.title = '仪表盘卡片设置',
     this.onTreemapCountSaved,
     this.onDesktopDynamicBackgroundSaved,
@@ -172,12 +171,8 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
       DashboardChartConfig.savePhoneTrendDays(_phoneTrendDays);
     }
     if (widget.showDesktopDynamicBackgroundControl) {
-      DashboardChartConfig.saveDesktopDynamicBackgroundEnabled(
-        _desktopDynamicBackgroundEnabled,
-      );
-      widget.onDesktopDynamicBackgroundSaved?.call(
-        _desktopDynamicBackgroundEnabled,
-      );
+      DashboardChartConfig.saveDesktopDynamicBackgroundEnabled(_desktopDynamicBackgroundEnabled);
+      widget.onDesktopDynamicBackgroundSaved?.call(_desktopDynamicBackgroundEnabled);
     }
     HiveManager.set(StorageKeys.serverResourceInterval, _serverResourceInterval);
     HiveManager.set(StorageKeys.serverResourceDuration, _serverResourceDuration);
@@ -198,8 +193,7 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
       _serverResourceDuration = kDefaultServerResourceDuration;
       _serverResourceAutoStart = kDefaultServerResourceAutoStart;
       _phoneTrendDays = DashboardChartConfig.defaultPhoneTrendDays;
-      _desktopDynamicBackgroundEnabled =
-          DashboardChartConfig.defaultDesktopDynamicBackground;
+      _desktopDynamicBackgroundEnabled = DashboardChartConfig.defaultDesktopDynamicBackground;
       if (_showTreemapCountControl) {
         _treemapCount = widget.defaultTreemapCount;
       }
@@ -326,7 +320,7 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                         children: [
                           _SettingsTile(
                             leading: Icon(shadcn.LucideIcons.activity, size: tokens.iconSm),
-                            title: '自动刷新状态监控',
+                            title: '自动刷新',
                             subtitle: '开启后持续刷新服务器与服务状态，关闭时仅获取一次',
                             trailing: shadcn.Switch(
                               value: _serverResourceAutoStart,
@@ -337,7 +331,7 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                           _serverResourceSettingRow(
                             tokens,
                             icon: shadcn.LucideIcons.clock,
-                            title: '状态刷新间隔',
+                            title: '刷新间隔',
                             value: '${_serverResourceInterval}s',
                             onMinus: () => setState(
                               () => _serverResourceInterval = (_serverResourceInterval - 1)
@@ -347,23 +341,6 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                             onPlus: () => setState(
                               () => _serverResourceInterval = (_serverResourceInterval + 1)
                                   .clamp(kMinServerResourceInterval, kMaxServerResourceInterval)
-                                  .toInt(),
-                            ),
-                          ),
-                          tokens.vGap(12),
-                          _serverResourceSettingRow(
-                            tokens,
-                            icon: shadcn.LucideIcons.timer,
-                            title: '状态刷新时长',
-                            value: '${_serverResourceDuration}min',
-                            onMinus: () => setState(
-                              () => _serverResourceDuration = (_serverResourceDuration - 1)
-                                  .clamp(kMinServerResourceDuration, kMaxServerResourceDuration)
-                                  .toInt(),
-                            ),
-                            onPlus: () => setState(
-                              () => _serverResourceDuration = (_serverResourceDuration + 1)
-                                  .clamp(kMinServerResourceDuration, kMaxServerResourceDuration)
                                   .toInt(),
                             ),
                           ),
@@ -378,7 +355,7 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                           if (_showPhoneTrendDefaultControl) ...[
                             _SettingsTile(
                               leading: Icon(shadcn.LucideIcons.calendarRange, size: tokens.iconSm),
-                              title: '增量趋势默认范围',
+                              title: '增量趋势默认间隔',
                               subtitle: '进入仪表盘时默认显示的时间范围',
                               trailing: _RangeSegmentedControl(
                                 value: _phoneTrendDays,
@@ -558,35 +535,58 @@ class _SettingsTile extends StatelessWidget {
       fillColor: cs.muted.withValues(alpha: 0.20),
       borderColor: cs.border.withValues(alpha: 0.44),
       padding: tokens.symmetric(horizontal: 14, vertical: 13),
-      child: Row(
-        children: [
-          IconTheme(
-            data: IconThemeData(color: cs.mutedForeground, size: tokens.iconSm),
-            child: leading,
-          ),
-          tokens.hGap(10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
-                ),
-                if (subtitle != null)
-                  Padding(
-                    padding: tokens.only(top: 4),
-                    child: Text(
-                      subtitle!,
-                      style: theme.typography.xSmall.copyWith(color: cs.mutedForeground, height: 1.35),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < tokens.size(300);
+          final label = Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IconTheme(
+                data: IconThemeData(color: cs.mutedForeground, size: tokens.iconSm),
+                child: leading,
+              ),
+              tokens.hGap(10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
                     ),
-                  ),
-              ],
-            ),
-          ),
-          tokens.hGap(10),
-          trailing,
-        ],
+                    if (subtitle != null)
+                      Padding(
+                        padding: tokens.only(top: 4),
+                        child: Text(
+                          subtitle!,
+                          style: theme.typography.xSmall.copyWith(color: cs.mutedForeground, height: 1.35),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          );
+
+          // if (compact) {
+          //   return Column(
+          //     crossAxisAlignment: CrossAxisAlignment.stretch,
+          //     children: [
+          //       label,
+          //       tokens.vGap(10),
+          //       Align(alignment: Alignment.centerRight, child: trailing),
+          //     ],
+          //   );
+          // }
+
+          return Row(
+            children: [
+              Expanded(child: label),
+              tokens.hGap(10),
+              trailing,
+            ],
+          );
+        },
       ),
     );
   }
@@ -610,8 +610,9 @@ class _RangeSegmentedControl extends StatelessWidget {
       filled: true,
       fillColor: cs.background.withValues(alpha: 0.72),
       borderColor: cs.border.withValues(alpha: 0.68),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: shadcn.Row(
+        mainAxisSize: shadcn.MainAxisSize.max,
+        mainAxisAlignment: shadcn.MainAxisAlignment.spaceAround,
         children: [
           for (final item in _items)
             value == item.key
