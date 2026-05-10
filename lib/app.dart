@@ -23,8 +23,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _platformBrightness =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    _platformBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
   }
 
   @override
@@ -35,8 +34,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   @override
   void didChangePlatformBrightness() {
-    final brightness =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
     if (_platformBrightness == brightness) return;
     setState(() => _platformBrightness = brightness);
   }
@@ -49,6 +47,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       debugShowCheckedModeBanner: false,
 
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => shadcn.DrawerOverlay(child: child ?? const SizedBox.shrink()),
       locale: const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
       supportedLocales: const [
         Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
@@ -64,13 +63,11 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       ],
 
       scaling: themeState.adaptiveScaling,
-      materialTheme: themeState.materialTheme(
-        switch (themeState.mode) {
-          shadcn.ThemeMode.dark => Brightness.dark,
-          shadcn.ThemeMode.light => Brightness.light,
-          shadcn.ThemeMode.system => _platformBrightness,
-        },
-      ),
+      materialTheme: themeState.materialTheme(switch (themeState.mode) {
+        shadcn.ThemeMode.dark => Brightness.dark,
+        shadcn.ThemeMode.light => Brightness.light,
+        shadcn.ThemeMode.system => _platformBrightness,
+      }),
       theme: themeState.shadcnLight,
       darkTheme: themeState.shadcnDark,
       themeMode: switch (themeState.mode) {
@@ -82,13 +79,11 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   }
 }
 
-class _AppShadcnLocalizationsDelegate
-    extends LocalizationsDelegate<shadcn.ShadcnLocalizations> {
+class _AppShadcnLocalizationsDelegate extends LocalizationsDelegate<shadcn.ShadcnLocalizations> {
   const _AppShadcnLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) =>
-      locale.languageCode == 'zh' || locale.languageCode == 'en';
+  bool isSupported(Locale locale) => locale.languageCode == 'zh' || locale.languageCode == 'en';
 
   @override
   Future<shadcn.ShadcnLocalizations> load(Locale locale) {
