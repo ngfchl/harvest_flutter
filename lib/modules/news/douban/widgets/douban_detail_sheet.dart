@@ -16,6 +16,7 @@ void openDoubanDetail(BuildContext context, String subjectId) {
   if (subjectId.startsWith('https://')) {
     subjectId = extractDoubanId(subjectId);
   }
+  final navigatorContext = context;
   if (context.isMobile) {
     showAppSheet<void>(
       context: context,
@@ -26,7 +27,7 @@ void openDoubanDetail(BuildContext context, String subjectId) {
         minChildSize: 0.75,
         maxChildSize: 0.95,
         expand: false,
-        builder: (context, scrollCtrl) => _DoubanDetailSheet(subjectId: subjectId),
+        builder: (context, scrollCtrl) => _DoubanDetailSheet(subjectId: subjectId, navigatorContext: navigatorContext),
       ),
     );
   } else {
@@ -37,7 +38,7 @@ void openDoubanDetail(BuildContext context, String subjectId) {
         shape: RoundedRectangleBorder(borderRadius: theme.borderRadiusLg),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520, maxHeight: 700),
-          child: _DoubanDetailSheet(subjectId: subjectId),
+          child: _DoubanDetailSheet(subjectId: subjectId, navigatorContext: navigatorContext),
         ),
       ),
     );
@@ -55,8 +56,9 @@ String extractDoubanId(String url) {
 
 class _DoubanDetailSheet extends ConsumerStatefulWidget {
   final String subjectId;
+  final BuildContext navigatorContext;
 
-  const _DoubanDetailSheet({required this.subjectId});
+  const _DoubanDetailSheet({required this.subjectId, required this.navigatorContext});
 
   @override
   ConsumerState<_DoubanDetailSheet> createState() => _DoubanDetailSheetState();
@@ -266,8 +268,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
                 leading: const Icon(shadcn.LucideIcons.search, size: 16),
                 onPressed: () {
                   closeAppSheet(context);
-                  Navigator.push(
-                    context,
+                  Navigator.of(widget.navigatorContext).push(
                     MaterialPageRoute(
                       builder: (_) => UnifiedSearchPage(initialQuery: searchQuery, initialMode: SearchMode.resource),
                     ),

@@ -15,6 +15,7 @@ import '../provider/tmdb_provider.dart';
 import '../service/tmdb_service.dart';
 
 void openTmdbDetail(BuildContext context, MediaItem item) {
+  final navigatorContext = context;
   if (context.isMobile) {
     showAppSheet<void>(
       context: context,
@@ -25,7 +26,7 @@ void openTmdbDetail(BuildContext context, MediaItem item) {
         minChildSize: 0.5,
         maxChildSize: 0.95,
         expand: false,
-        builder: (context, scrollCtrl) => _TmdbDetailSheet(item: item),
+        builder: (context, scrollCtrl) => _TmdbDetailSheet(item: item, navigatorContext: navigatorContext),
       ),
     );
   } else {
@@ -36,7 +37,7 @@ void openTmdbDetail(BuildContext context, MediaItem item) {
         shape: RoundedRectangleBorder(borderRadius: theme.borderRadiusLg),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520, maxHeight: 700),
-          child: _TmdbDetailSheet(item: item),
+          child: _TmdbDetailSheet(item: item, navigatorContext: navigatorContext),
         ),
       ),
     );
@@ -45,8 +46,9 @@ void openTmdbDetail(BuildContext context, MediaItem item) {
 
 class _TmdbDetailSheet extends ConsumerWidget {
   final MediaItem item;
+  final BuildContext navigatorContext;
 
-  const _TmdbDetailSheet({required this.item});
+  const _TmdbDetailSheet({required this.item, required this.navigatorContext});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -228,8 +230,7 @@ class _TmdbDetailSheet extends ConsumerWidget {
                 leading: const Icon(shadcn.LucideIcons.search, size: 16),
                 onPressed: () {
                   closeAppSheet(context);
-                  Navigator.push(
-                    context,
+                  Navigator.of(navigatorContext).push(
                     MaterialPageRoute(
                       builder: (_) => UnifiedSearchPage(initialQuery: searchQuery, initialMode: SearchMode.resource),
                     ),
