@@ -737,14 +737,17 @@ jobs:
           REQUEST_JSON=$(jq -n \
             --arg version "$VERSION" \
             --arg changelog "$CHANGELOG" \
-            --argjson links "$LINKS_JSON" \
+            --arg links "$LINKS_JSON" \
             '{
               version: $version,
               changelog: $changelog,
               downloadLinks: $links
             }')
 
-          curl -X POST "$PUBLISH_URL" \
+          echo "发布 API 请求参数:"
+          echo "$REQUEST_JSON" | jq '{version, changelog, downloadLinksType: (.downloadLinks | type)}'
+
+          curl --fail-with-body -X POST "$PUBLISH_URL" \
             -H "Authorization: $TOKEN" \
             -H "EMAIL: $EMAIL" \
             -H "Content-Type: application/json" \
