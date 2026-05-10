@@ -8,7 +8,9 @@ import '../provider/site_filter_state.dart';
 import '../provider/site_filtered_provider.dart';
 
 class SiteFilterPanel extends ConsumerWidget {
-  const SiteFilterPanel({super.key});
+  final VoidCallback? onClose;
+
+  const SiteFilterPanel({super.key, this.onClose});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -76,6 +78,17 @@ class SiteFilterPanel extends ConsumerWidget {
                       ),
                     ),
                   ),
+                if (onClose != null) ...[
+                  const SizedBox(width: 8),
+                  shadcn.IconButton.ghost(
+                    onPressed: onClose,
+                    icon: Icon(
+                      shadcn.LucideIcons.panelTopClose,
+                      size: 15,
+                      color: cs.mutedForeground,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
