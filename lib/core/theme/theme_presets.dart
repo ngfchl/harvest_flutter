@@ -170,6 +170,8 @@ class AppThemeOptions {
         dark
             ? shadcn.ColorSchemes.darkNeutral
             : shadcn.ColorSchemes.lightNeutral,
+      'stone' =>
+        dark ? shadcn.ColorSchemes.darkStone : shadcn.ColorSchemes.lightStone,
       _ =>
         dark
             ? shadcn.ColorSchemes.darkNeutral

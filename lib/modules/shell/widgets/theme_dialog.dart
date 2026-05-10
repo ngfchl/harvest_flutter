@@ -21,163 +21,142 @@ class ThemeDialog extends ConsumerWidget {
     final cs = tokens.cs;
 
     return shadcn.AlertDialog(
-      title: SizedBox(
+      padding: EdgeInsets.symmetric(horizontal: tokens.panelHorizontalPadding, vertical: tokens.panelVerticalPadding),
+      content: SizedBox(
         width: tokens.dialogWidth,
-        child: Text(
-          '主题设置',
-          textAlign: TextAlign.center,
-          style: theme.typography.large.copyWith(
-            color: cs.foreground,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-      padding: EdgeInsets.all(tokens.size(16)),
-      leading: SizedBox.square(dimension: tokens.closeSlotSize),
-      trailing: shadcn.IconButton.ghost(
-        onPressed: () => Navigator.of(context).pop(),
-        icon: Icon(shadcn.LucideIcons.x, size: tokens.iconMd),
-      ),
-      content: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: tokens.dialogWidth,
-          maxHeight: tokens.dialogHeight,
-        ),
-        child: SizedBox(
-          width: tokens.dialogWidth,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: tokens.dialogHeight),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              SizedBox(
+                height: tokens.closeSlotSize,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Text(
+                      '主题设置',
+                      textAlign: TextAlign.center,
+                      style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w800),
+                    ),
+                    Positioned(
+                      right: 0,
+                      child: shadcn.IconButton.ghost(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: Icon(shadcn.LucideIcons.x, size: tokens.iconMd),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              tokens.vGap(8),
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      _section(
-                        context,
-                        title: '明暗模式',
-                        child: Wrap(
-                          spacing: tokens.size(6),
-                          runSpacing: tokens.size(6),
-                          alignment: WrapAlignment.center,
-                          children: [
-                            _modeButton(
+                    _section(
+                      context,
+                      title: '明暗模式',
+                      child: Wrap(
+                        spacing: tokens.size(6),
+                        runSpacing: tokens.size(6),
+                        alignment: WrapAlignment.center,
+                        children: [
+                          _modeButton(context, ref, shadcn.ThemeMode.light, shadcn.LucideIcons.sun, '亮色'),
+                          _modeButton(context, ref, shadcn.ThemeMode.dark, shadcn.LucideIcons.moon, '暗色'),
+                          _modeButton(context, ref, shadcn.ThemeMode.system, shadcn.LucideIcons.monitorCog, '自动'),
+                        ],
+                      ),
+                    ),
+                    _section(
+                      context,
+                      title: '基础色',
+                      child: _baseOptions(context, selected: current.baseScheme, onSelected: notifier.setBaseScheme),
+                    ),
+                    _section(
+                      context,
+                      title: '强调色',
+                      child: Wrap(
+                        spacing: tokens.size(6),
+                        runSpacing: tokens.size(8),
+                        alignment: WrapAlignment.center,
+                        children: [
+                          for (final option in AppThemeOptions.accents)
+                            _accentSwatch(
                               context,
-                              ref,
-                              shadcn.ThemeMode.light,
-                              shadcn.LucideIcons.sun,
-                              '亮色',
+                              label: _accentLabel(option.id),
+                              color:
+                                  option.value ??
+                                  AppThemeOptions.colorScheme(
+                                    current.baseScheme,
+                                    'base',
+                                    current.mode == shadcn.ThemeMode.dark,
+                                  ).primary,
+                              selected: current.accent == option.id,
+                              onTap: () => notifier.setAccent(option.id),
                             ),
-                            _modeButton(
-                              context,
-                              ref,
-                              shadcn.ThemeMode.dark,
-                              shadcn.LucideIcons.moon,
-                              '暗色',
-                            ),
-                            _modeButton(
-                              context,
-                              ref,
-                              shadcn.ThemeMode.system,
-                              shadcn.LucideIcons.monitorCog,
-                              '自动',
-                            ),
-                          ],
-                        ),
+                        ],
                       ),
-                      _section(
+                    ),
+                    _section(
+                      context,
+                      title: '圆角',
+                      child: _themeSlider(
                         context,
-                        title: '基础色',
-                        child: _baseOptions(
-                          context,
-                          selected: current.baseScheme,
-                          onSelected: notifier.setBaseScheme,
-                        ),
+                        value: current.radius,
+                        min: 0,
+                        max: 1.5,
+                        display: current.radius.toStringAsFixed(2),
+                        onChanged: notifier.setRadius,
                       ),
-                      _section(
+                    ),
+                    _section(
+                      context,
+                      title: '密度',
+                      child: _idOptions(
                         context,
-                        title: '强调色',
-                        child: Wrap(
-                          spacing: tokens.size(6),
-                          runSpacing: tokens.size(8),
-                          alignment: WrapAlignment.center,
-                          children: [
-                            for (final option in AppThemeOptions.accents)
-                              _accentSwatch(
-                                context,
-                                label: _accentLabel(option.id),
-                                color:
-                                    option.value ??
-                                    AppThemeOptions.colorScheme(
-                                      current.baseScheme,
-                                      'base',
-                                      current.mode == shadcn.ThemeMode.dark,
-                                    ).primary,
-                                selected: current.accent == option.id,
-                                onTap: () => notifier.setAccent(option.id),
-                              ),
-                          ],
-                        ),
+                        options: AppThemeOptions.densities,
+                        selected: current.density,
+                        labelBuilder: (option) => _densityLabel(option.id),
+                        onSelected: notifier.setDensity,
                       ),
-                      _section(
+                    ),
+                    _section(
+                      context,
+                      title: '缩放',
+                      child: _themeSlider(
                         context,
-                        title: '圆角',
-                        child: _themeSlider(
-                          context,
-                          value: current.radius,
-                          min: 0,
-                          max: 1.5,
-                          display: current.radius.toStringAsFixed(2),
-                          onChanged: notifier.setRadius,
-                        ),
+                        value: current.scaling,
+                        min: 0.85,
+                        max: 1.15,
+                        display: current.scaling.toStringAsFixed(2),
+                        onChanged: notifier.setScaling,
                       ),
-                      _section(
+                    ),
+                    _section(
+                      context,
+                      title: '表面透明度',
+                      child: _themeSlider(
                         context,
-                        title: '密度',
-                        child: _idOptions(
-                          context,
-                          options: AppThemeOptions.densities,
-                          selected: current.density,
-                          labelBuilder: (option) => _densityLabel(option.id),
-                          onSelected: notifier.setDensity,
-                        ),
+                        value: current.surfaceOpacity,
+                        min: 0.7,
+                        max: 1.0,
+                        display: current.surfaceOpacity.toStringAsFixed(2),
+                        onChanged: notifier.setSurfaceOpacity,
                       ),
-                      _section(
+                    ),
+                    _section(
+                      context,
+                      title: '表面模糊',
+                      child: _themeSlider(
                         context,
-                        title: '缩放',
-                        child: _themeSlider(
-                          context,
-                          value: current.scaling,
-                          min: 0.85,
-                          max: 1.15,
-                          display: current.scaling.toStringAsFixed(2),
-                          onChanged: notifier.setScaling,
-                        ),
+                        value: current.surfaceBlur,
+                        min: 0,
+                        max: 12,
+                        display: current.surfaceBlur.toStringAsFixed(1),
+                        onChanged: notifier.setSurfaceBlur,
                       ),
-                      _section(
-                        context,
-                        title: '表面透明度',
-                        child: _themeSlider(
-                          context,
-                          value: current.surfaceOpacity,
-                          min: 0.7,
-                          max: 1.0,
-                          display: current.surfaceOpacity.toStringAsFixed(2),
-                          onChanged: notifier.setSurfaceOpacity,
-                        ),
-                      ),
-                      _section(
-                        context,
-                        title: '表面模糊',
-                        child: _themeSlider(
-                          context,
-                          value: current.surfaceBlur,
-                          min: 0,
-                          max: 12,
-                          display: current.surfaceBlur.toStringAsFixed(1),
-                          onChanged: notifier.setSurfaceBlur,
-                        ),
-                      ),
+                    ),
                     ],
                   ),
                 ),
@@ -206,11 +185,7 @@ class ThemeDialog extends ConsumerWidget {
     );
   }
 
-  Widget _section(
-    BuildContext context, {
-    required String title,
-    required Widget child,
-  }) {
+  Widget _section(BuildContext context, {required String title, required Widget child}) {
     final tokens = _ThemeDialogTokens.of(context);
     final theme = tokens.theme;
     final cs = tokens.cs;
@@ -224,10 +199,7 @@ class ThemeDialog extends ConsumerWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: theme.typography.small.copyWith(
-                color: cs.mutedForeground,
-                fontWeight: FontWeight.w800,
-              ),
+              style: theme.typography.small.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w800),
             ),
             tokens.vGap(8),
             Center(child: child),
@@ -261,28 +233,26 @@ class ThemeDialog extends ConsumerWidget {
     );
   }
 
-  Widget _baseOptions(
-    BuildContext context, {
-    required String selected,
-    required ValueChanged<String> onSelected,
-  }) {
+  Widget _baseOptions(BuildContext context, {required String selected, required ValueChanged<String> onSelected}) {
     final tokens = _ThemeDialogTokens.of(context);
     final options = AppThemeOptions.baseSchemes;
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: tokens.baseOptionsWidth),
-      child: Row(
+      child: Wrap(
+        spacing: tokens.size(6),
+        runSpacing: tokens.size(8),
+        alignment: WrapAlignment.center,
         children: [
-          for (var i = 0; i < options.length; i++) ...[
-            Expanded(
+          for (final option in options)
+            SizedBox(
+              width: tokens.baseButtonWidth,
               child: _baseSchemeButton(
                 context,
-                option: options[i],
-                selected: selected == options[i].id,
-                onTap: () => onSelected(options[i].id),
+                option: option,
+                selected: selected == option.id,
+                onTap: () => onSelected(option.id),
               ),
             ),
-            if (i != options.length - 1) tokens.hGap(6),
-          ],
         ],
       ),
     );
@@ -296,15 +266,13 @@ class ThemeDialog extends ConsumerWidget {
   }) {
     final tokens = _ThemeDialogTokens.of(context);
     final cs = tokens.cs;
-    final color = AppThemeOptions.colorScheme(
-      option.id,
-      'base',
-      cs.brightness == Brightness.dark,
-    ).primary;
-    final foreground =
-        ThemeData.estimateBrightnessForColor(color) == Brightness.dark
-        ? Colors.white
-        : Colors.black;
+    final color = AppThemeOptions.colorScheme(option.id, 'base', cs.brightness == Brightness.dark).primary;
+    final background = selected ? color : cs.secondary;
+    final foreground = selected
+        ? ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+            ? Colors.white
+            : Colors.black
+        : cs.foreground;
     return shadcn.Tooltip(
       tooltip: (_) => Text(_baseLabel(option.id)),
       child: GestureDetector(
@@ -316,23 +284,18 @@ class ThemeDialog extends ConsumerWidget {
           alignment: Alignment.center,
           padding: EdgeInsets.symmetric(horizontal: tokens.size(6)),
           decoration: BoxDecoration(
-            color: color,
+            color: background,
             borderRadius: BorderRadius.circular(tokens.theme.radiusSm),
             border: Border.all(
-              color: selected
-                  ? cs.foreground
-                  : cs.border.withValues(alpha: 0.75),
-              width: selected ? tokens.size(2) : tokens.hairline,
+              color: selected ? color : cs.border.withValues(alpha: 0.75),
+              width: tokens.hairline,
             ),
           ),
           child: Text(
             _baseLabel(option.id),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: tokens.theme.typography.xSmall.copyWith(
-              color: foreground,
-              fontWeight: FontWeight.w800,
-            ),
+            style: tokens.theme.typography.xSmall.copyWith(color: foreground, fontWeight: FontWeight.w800),
           ),
         ),
       ),
@@ -355,22 +318,19 @@ class ThemeDialog extends ConsumerWidget {
       child: Row(
         children: [
           Expanded(
-            child: shadcn.Slider(
-              value: shadcn.SliderValue.single(
-                _sliderPosition(value, min, max),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: tokens.sliderThumbPadding),
+              child: shadcn.Slider(
+                value: shadcn.SliderValue.single(_sliderPosition(value, min, max)),
+                onChanged: (sliderValue) => onChanged(_sliderValue(sliderValue.value, min, max)),
               ),
-              onChanged: (sliderValue) =>
-                  onChanged(_sliderValue(sliderValue.value, min, max)),
             ),
           ),
           tokens.hGap(10),
           Container(
             width: tokens.size(46),
             alignment: Alignment.center,
-            padding: EdgeInsets.symmetric(
-              horizontal: tokens.size(6),
-              vertical: tokens.size(3),
-            ),
+            padding: EdgeInsets.symmetric(horizontal: tokens.size(6), vertical: tokens.size(3)),
             decoration: BoxDecoration(
               color: cs.secondary,
               borderRadius: BorderRadius.circular(theme.radiusSm),
@@ -379,10 +339,7 @@ class ThemeDialog extends ConsumerWidget {
             child: Text(
               display,
               maxLines: 1,
-              style: theme.typography.xSmall.copyWith(
-                color: cs.foreground,
-                fontWeight: FontWeight.w800,
-              ),
+              style: theme.typography.xSmall.copyWith(color: cs.foreground, fontWeight: FontWeight.w800),
             ),
           ),
         ],
@@ -402,14 +359,8 @@ class ThemeDialog extends ConsumerWidget {
     return shadcn.Button(
       onPressed: onTap,
       style: selected
-          ? const shadcn.ButtonStyle.primary(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-            )
-          : const shadcn.ButtonStyle.secondary(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-            ),
+          ? const shadcn.ButtonStyle.primary(size: shadcn.ButtonSize.small, density: shadcn.ButtonDensity.dense)
+          : const shadcn.ButtonStyle.secondary(size: shadcn.ButtonSize.small, density: shadcn.ButtonDensity.dense),
       child: Text(
         label,
         style: theme.typography.xSmall.copyWith(
@@ -455,34 +406,17 @@ class ThemeDialog extends ConsumerWidget {
     );
   }
 
-  Widget _modeButton(
-    BuildContext context,
-    WidgetRef ref,
-    shadcn.ThemeMode mode,
-    IconData icon,
-    String label,
-  ) {
+  Widget _modeButton(BuildContext context, WidgetRef ref, shadcn.ThemeMode mode, IconData icon, String label) {
     final tokens = _ThemeDialogTokens.of(context);
     final current = ref.watch(themeNotifierProvider);
     final selected = current.mode == mode;
     return shadcn.Button(
       onPressed: () => ref.read(themeNotifierProvider.notifier).setMode(mode),
       style: selected
-          ? const shadcn.ButtonStyle.primary(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-            )
-          : const shadcn.ButtonStyle.secondary(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-            ),
+          ? const shadcn.ButtonStyle.primary(size: shadcn.ButtonSize.small, density: shadcn.ButtonDensity.dense)
+          : const shadcn.ButtonStyle.secondary(size: shadcn.ButtonSize.small, density: shadcn.ButtonDensity.dense),
       leading: Icon(icon, size: tokens.iconSm),
-      child: Text(
-        label,
-        style: tokens.theme.typography.xSmall.copyWith(
-          fontWeight: FontWeight.w700,
-        ),
-      ),
+      child: Text(label, style: tokens.theme.typography.xSmall.copyWith(fontWeight: FontWeight.w700)),
     );
   }
 }
@@ -492,27 +426,27 @@ class _ThemeDialogTokens {
   final shadcn.ColorScheme cs;
   final double densityScale;
   final double textScale;
+  final Size mediaSize;
 
   _ThemeDialogTokens._({
     required this.theme,
     required this.cs,
     required this.densityScale,
     required this.textScale,
+    required this.mediaSize,
   });
 
   factory _ThemeDialogTokens.of(BuildContext context) {
     final theme = shadcn.Theme.of(context);
-    final densityScale =
-        ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(
-          0.55,
-          1.45,
-        );
+    final mediaSize = MediaQuery.sizeOf(context);
+    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.55, 1.45);
     final textScale = theme.scaling.clamp(0.86, 1.30);
     return _ThemeDialogTokens._(
       theme: theme,
       cs: theme.colorScheme,
       densityScale: densityScale.toDouble(),
       textScale: textScale.toDouble(),
+      mediaSize: mediaSize,
     );
   }
 
@@ -520,7 +454,7 @@ class _ThemeDialogTokens {
 
   double font(num value) => value * textScale;
 
-  double get hairline => size(0.5).clamp(0.5, 1.0);
+  double get hairline => size(0.5).clamp(0.5, 1.0).toDouble();
 
   double get iconMd => font(16);
 
@@ -528,25 +462,30 @@ class _ThemeDialogTokens {
 
   double get closeSlotSize => size(32);
 
-  double get dialogWidth => size(560).clamp(320.0, 640.0);
+  double get panelHorizontalPadding => 16.0;
 
-  double get dialogHeight => size(620).clamp(420.0, 760.0);
+  double get panelVerticalPadding => mediaSize.width < 420 ? 10.0 : 16.0;
 
-  double get baseOptionsWidth => size(440).clamp(280.0, 540.0);
+  double get dialogWidth {
+    final maxWidth = (mediaSize.width - 16).clamp(280.0, 640.0).toDouble();
+    return 560.0.clamp(280.0, maxWidth).toDouble();
+  }
 
-  double get sliderWidth => size(420).clamp(260.0, 520.0);
+  double get dialogHeight {
+    final maxHeight = (mediaSize.height - 96).clamp(360.0, 760.0).toDouble();
+    return 620.0.clamp(360.0, maxHeight).toDouble();
+  }
 
-  EdgeInsets edgeOnly({
-    num left = 0,
-    num top = 0,
-    num right = 0,
-    num bottom = 0,
-  }) => EdgeInsets.only(
-    left: size(left),
-    top: size(top),
-    right: size(right),
-    bottom: size(bottom),
-  );
+  double get baseOptionsWidth => dialogWidth;
+
+  double get baseButtonWidth => 78.0.clamp(64.0, 96.0).toDouble();
+
+  double get sliderWidth => dialogWidth;
+
+  double get sliderThumbPadding => size(8).clamp(6.0, 10.0).toDouble();
+
+  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) =>
+      EdgeInsets.only(left: size(left), top: size(top), right: size(right), bottom: size(bottom));
 
   SizedBox vGap(num value) => SizedBox(height: size(value));
 
