@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/site_config.dart';
@@ -183,7 +183,6 @@ class AddSiteSheet extends ConsumerWidget {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (mobile) ...[const SizedBox(height: 12), buildHandle(context), const SizedBox(height: 12)],
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text('选择站点 (${names.length})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
@@ -226,7 +225,6 @@ class AddSiteSheet extends ConsumerWidget {
       child: content,
     );
 
-    if (mobile) return SafeArea(child: sheet);
     return sheet;
   }
 
@@ -365,7 +363,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
         else
           Container(
             width: 32,
-            height: 32,
+            height: 2,
             decoration: BoxDecoration(
               color: cs.primary.withValues(alpha: 0.1),
               borderRadius: siteRadius(context, size: "md"),
@@ -452,10 +450,8 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
       padding: EdgeInsets.fromLTRB(16, mobile ? 0 : 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
       child: Column(
         children: [
-          if (mobile) ...[const SizedBox(height: 12), buildHandle(context), const SizedBox(height: 16)],
-
           _buildHeader(context),
-          Divider(height: 24, thickness: 0.6, color: cs.border),
+          Divider(height: 2, thickness: 0.6, color: cs.border),
           Expanded(
             child: ListView(
               controller: widget.scrollController,
@@ -530,7 +526,6 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
       child: wrapped,
     );
 
-    if (mobile) return SafeArea(child: layered);
     return Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: layered);
   }
 
