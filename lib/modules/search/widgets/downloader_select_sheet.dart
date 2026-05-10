@@ -27,14 +27,6 @@ class DownloaderSelectSheet extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(color: cs.border, borderRadius: BorderRadius.circular(2)),
-            ),
-          ),
-          const SizedBox(height: 16),
           Text('选择下载器', style: typo.base.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           async.when(

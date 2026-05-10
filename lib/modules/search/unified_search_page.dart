@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -381,51 +381,57 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
 
     return EscapeBackScope(
       onBack: () => closeAppSheet(context),
-      child: Scaffold(
-        backgroundColor: cs.background,
-        appBar: AppBar(
+      // ← 加这一层
+      child: shadcn.OverlayManagerLayer(
+        popoverHandler: const shadcn.PopoverOverlayHandler(),
+        tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+        menuHandler: const shadcn.PopoverOverlayHandler(),
+        child: Scaffold(
           backgroundColor: cs.background,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          leading: shadcn.IconButton.ghost(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: cs.foreground),
-            onPressed: () => closeAppSheet(context),
-          ),
-          leadingWidth: 48,
-          titleSpacing: 0,
-          title: Padding(
-            padding: const EdgeInsets.only(right: 4),
-            child: UnifiedSearchBar(
-              controller: _ctrl,
-              focusNode: _focusNode,
-              onChanged: _onTextChanged,
-              onSubmit: _doSearch,
-              onClear: _onClear,
-              hint: _mode == SearchMode.media ? '搜索电影、剧集...' : '搜索种子资源...',
+          appBar: AppBar(
+            backgroundColor: cs.background,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            leading: shadcn.IconButton.ghost(
+              icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: cs.foreground),
+              onPressed: () => closeAppSheet(context),
             ),
-          ),
-          actions: [
-            const DebugThemeButton.material(),
-            if (_mode == SearchMode.resource)
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: shadcn.IconButton.ghost(
-                  icon: Icon(shadcn.LucideIcons.settings, size: 19, color: cs.foreground),
-                  onPressed: _showSearchSettings,
-                ),
+            leadingWidth: 48,
+            titleSpacing: 0,
+            title: Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: UnifiedSearchBar(
+                controller: _ctrl,
+                focusNode: _focusNode,
+                onChanged: _onTextChanged,
+                onSubmit: _doSearch,
+                onClear: _onClear,
+                hint: _mode == SearchMode.media ? '搜索电影、剧集...' : '搜索种子资源...',
               ),
-          ],
+            ),
+            actions: [
+              const DebugThemeButton.material(),
+              if (_mode == SearchMode.resource)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: shadcn.IconButton.ghost(
+                    icon: Icon(shadcn.LucideIcons.settings, size: 19, color: cs.foreground),
+                    onPressed: _showSearchSettings,
+                  ),
+                ),
+            ],
+          ),
+          body: Column(
+            children: [
+              _buildModeSwitcher(),
+              Container(height: 0.5, color: cs.border.withValues(alpha: 0.3)),
+              if (showResourceProgress) _buildResourceProgress(resourceState),
+              if (showHistory) _buildHistorySuggestions(),
+              Expanded(child: _buildBody(context, resourceState)),
+            ],
+          ),
         ),
-        body: Column(
-          children: [
-            _buildModeSwitcher(),
-            Container(height: 0.5, color: cs.border.withValues(alpha: 0.3)),
-            if (showResourceProgress) _buildResourceProgress(resourceState),
-            if (showHistory) _buildHistorySuggestions(),
-            Expanded(child: _buildBody(context, resourceState)),
-          ],
-        ),
-      ),
+      ), // ← OverlayManagerLayer 结束
     );
   }
 
@@ -1674,18 +1680,21 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
 
   void _onTorrentTap(SearchTorrentInfo item) {
     showAppSheet(
-      context: context,
+      context: context, // 直接用页面 context，不要用 navigatorKey
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => DownloaderSelectSheet(
         onSelected: (downloader) {
           closeAppSheet(ctx);
-          showAppSheet<void>(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (_) => PushTorrentSheet(torrent: item, downloader: downloader),
-          );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            showAppSheet<void>(
+              context: context, // 这里也一样
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (_) => PushTorrentSheet(torrent: item, downloader: downloader),
+            );
+          });
         },
       ),
     );
