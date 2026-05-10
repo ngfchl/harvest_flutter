@@ -51,24 +51,14 @@ class StatsBar extends ConsumerWidget {
 
     final torrents = data?.torrents ?? const <Torrent>[];
     final activeCount = torrents.isEmpty
-        ? liveInfo?.activeTorrentCount ??
-        status?.activeTorrentCount ??
-        0
-        : torrents
-        .where(
-          (t) => t.rateDownload > 0 || t.rateUpload > 0,
-    )
-        .length;
-    final pausedCount = status?.pausedTorrentCount ??
-        liveInfo?.pausedTorrentCount ??
-        0;
-    final totalCount = status?.torrentCount ??
-        liveInfo?.totalTorrentCount ??
-        torrents.length;
-    final downloadSpeed =
-        liveInfo?.downloadSpeed ?? status?.downloadSpeed ?? 0;
-    final uploadSpeed =
-        liveInfo?.uploadSpeed ?? status?.uploadSpeed ?? 0;
+        ? liveInfo?.activeTorrentCount ?? status?.activeTorrentCount ?? 0
+        : torrents.where((t) => t.rateDownload > 0 || t.rateUpload > 0).length;
+    final pausedCount =
+        status?.pausedTorrentCount ?? liveInfo?.pausedTorrentCount ?? 0;
+    final totalCount =
+        status?.torrentCount ?? liveInfo?.totalTorrentCount ?? torrents.length;
+    final downloadSpeed = liveInfo?.downloadSpeed ?? status?.downloadSpeed ?? 0;
+    final uploadSpeed = liveInfo?.uploadSpeed ?? status?.uploadSpeed ?? 0;
     final sessionUploaded = _firstPositive([
       liveInfo?.uploadedSession ?? 0,
       status?.currentStats.uploadedBytes ?? 0,
@@ -89,17 +79,14 @@ class StatsBar extends ConsumerWidget {
     final downloadLimit = liveInfo?.downloadLimit ?? 0;
     final limited = liveInfo?.hasLimit ?? false;
     final slowMode = liveInfo?.alternativeSpeedEnabled ?? false;
-    final modeText =
-        '${slowMode ? '龟速' : '极速'} · ${limited ? '限速' : '不限速'}';
+    final modeText = '${slowMode ? '龟速' : '极速'} · ${limited ? '限速' : '不限速'}';
     final freeSpace = liveInfo?.freeSpace ?? 0;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: cs.background,
-        border: Border(
-          bottom: BorderSide(color: cs.border, width: 0.5),
-        ),
+        border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
       ),
       child: SizedBox(
         width: double.infinity,
@@ -131,28 +118,20 @@ class StatsBar extends ConsumerWidget {
             StatusBarMetric(
               icon: shadcn.LucideIcons.database,
               label: '本次',
-              value: _formatTransferPair(
-                sessionUploaded,
-                sessionDownloaded,
-              ),
+              value: _formatTransferPair(sessionUploaded, sessionDownloaded),
               color: cs.foreground,
             ),
             StatusBarMetric(
               icon: shadcn.LucideIcons.hardDrive,
               label: '总计',
-              value: _formatTransferPair(
-                totalUploaded,
-                totalDownloaded,
-              ),
+              value: _formatTransferPair(totalUploaded, totalDownloaded),
               color: cs.foreground,
             ),
             StatusBarMetric(
               icon: shadcn.LucideIcons.zap,
               label: '模式',
               value: modeText,
-              color: limited
-                  ? const Color(0xFFD97706)
-                  : colorDownloading,
+              color: limited ? const Color(0xFFD97706) : colorDownloading,
               tooltip: onToggleSpeedMode == null
                   ? null
                   : (slowMode ? '切换为极速模式' : '切换为龟速模式'),
@@ -164,20 +143,14 @@ class StatsBar extends ConsumerWidget {
               icon: shadcn.LucideIcons.gauge,
               label: '限速',
               value: _formatLimitPair(uploadLimit, downloadLimit),
-              color: limited
-                  ? const Color(0xFFD97706)
-                  : cs.mutedForeground,
-              tooltip: onOpenSpeedSettings == null
-                  ? null
-                  : '打开限速设置',
+              color: limited ? const Color(0xFFD97706) : cs.mutedForeground,
+              tooltip: onOpenSpeedSettings == null ? null : '打开限速设置',
               onTap: onOpenSpeedSettings,
             ),
             StatusBarMetric(
               icon: shadcn.LucideIcons.hardDrive,
               label: '剩余',
-              value: freeSpace > 0
-                  ? TorrentUtils.formatBytes(freeSpace)
-                  : '-',
+              value: freeSpace > 0 ? TorrentUtils.formatBytes(freeSpace) : '-',
               color: cs.mutedForeground,
             ),
           ],
@@ -218,8 +191,7 @@ String _formatTransferPair(int up, int down) {
 
 String _formatLimitPair(int upLimit, int downLimit) {
   final up = upLimit <= 0 ? '不限' : TorrentUtils.formatSpeed(upLimit);
-  final down =
-  downLimit <= 0 ? '不限' : TorrentUtils.formatSpeed(downLimit);
+  final down = downLimit <= 0 ? '不限' : TorrentUtils.formatSpeed(downLimit);
   return '↑$up ↓$down';
 }
 
@@ -285,11 +257,7 @@ class StatusBarCount extends StatelessWidget {
   final String label;
   final int count;
 
-  const StatusBarCount({
-    super.key,
-    required this.label,
-    required this.count,
-  });
+  const StatusBarCount({super.key, required this.label, required this.count});
 
   @override
   Widget build(BuildContext context) {
@@ -312,5 +280,95 @@ class StatusBarCount extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class StatusBarIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+  final String? tooltip;
+  final Color? color;
+
+  const StatusBarIconButton({
+    super.key,
+    required this.icon,
+    required this.onTap,
+    this.tooltip,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final button = GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Icon(
+          icon,
+          size: 14,
+          color:
+              color ??
+              cs.mutedForeground.withValues(alpha: onTap == null ? 0.25 : 0.45),
+        ),
+      ),
+    );
+
+    if (tooltip == null) return button;
+    return shadcn.Tooltip(tooltip: (_) => Text(tooltip!), child: button);
+  }
+}
+
+class StatusBarPillButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+  final Color color;
+  final Color? backgroundColor;
+  final String? tooltip;
+
+  const StatusBarPillButton({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    required this.color,
+    this.backgroundColor,
+    this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final typo = shadcn.Theme.of(context).typography;
+    final button = GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: backgroundColor ?? color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: typo.xSmall.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (tooltip == null) return button;
+    return shadcn.Tooltip(tooltip: (_) => Text(tooltip!), child: button);
   }
 }

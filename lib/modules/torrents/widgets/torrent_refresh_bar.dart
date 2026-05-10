@@ -5,6 +5,7 @@ import 'package:harvest/modules/download/widgets/downloader_speed_setting.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../provider/downloader_provider.dart';
+import 'torrent_stats_bar.dart';
 
 class TorrentRefreshBar extends ConsumerWidget {
   final int downloaderId;
@@ -30,13 +31,17 @@ class TorrentRefreshBar extends ConsumerWidget {
     final running = enabled && !paused;
     final min = remaining ~/ 60;
     final sec = remaining % 60;
-    final countdown = remaining > 0 ? '$min:${sec.toString().padLeft(2, '0')}' : '';
+    final countdown = remaining > 0
+        ? '$min:${sec.toString().padLeft(2, '0')}'
+        : '';
     final pauseButtonColor = !enabled
         ? cs.mutedForeground.withValues(alpha: 0.35)
         : paused
         ? const Color(0xFF10B981)
         : const Color(0xFFF59E0B);
-    final pauseButtonBg = !enabled ? cs.foreground.withValues(alpha: 0.04) : pauseButtonColor.withValues(alpha: 0.1);
+    final pauseButtonBg = !enabled
+        ? cs.foreground.withValues(alpha: 0.04)
+        : pauseButtonColor.withValues(alpha: 0.1);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
@@ -50,7 +55,9 @@ class TorrentRefreshBar extends ConsumerWidget {
             width: 6,
             height: 6,
             decoration: BoxDecoration(
-              color: running ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+              color: running
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFFF59E0B),
               shape: BoxShape.circle,
             ),
           ),
@@ -61,7 +68,10 @@ class TorrentRefreshBar extends ConsumerWidget {
                 : enabled
                 ? '种子数据已暂停'
                 : '自动刷新已关闭',
-            style: typo.xSmall.copyWith(color: cs.mutedForeground.withValues(alpha: 0.55), fontSize: 11),
+            style: typo.xSmall.copyWith(
+              color: cs.mutedForeground.withValues(alpha: 0.55),
+              fontSize: 11,
+            ),
           ),
           if (running && countdown.isNotEmpty) ...[
             const SizedBox(width: 8),
@@ -79,14 +89,18 @@ class TorrentRefreshBar extends ConsumerWidget {
                   Icon(
                     shadcn.LucideIcons.timer,
                     size: 10,
-                    color: remaining <= 60 ? const Color(0xFFF59E0B) : cs.mutedForeground.withValues(alpha: 0.5),
+                    color: remaining <= 60
+                        ? const Color(0xFFF59E0B)
+                        : cs.mutedForeground.withValues(alpha: 0.5),
                   ),
                   const SizedBox(width: 3),
                   Text(
                     countdown,
                     style: typo.xSmall.copyWith(
                       fontSize: 10,
-                      color: remaining <= 60 ? const Color(0xFFF59E0B) : cs.mutedForeground.withValues(alpha: 0.5),
+                      color: remaining <= 60
+                          ? const Color(0xFFF59E0B)
+                          : cs.mutedForeground.withValues(alpha: 0.5),
                       fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
@@ -95,46 +109,39 @@ class TorrentRefreshBar extends ConsumerWidget {
             ),
           ],
           const Spacer(),
-          GestureDetector(
+          StatusBarIconButton(
             onTap: onRefresh,
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Icon(shadcn.LucideIcons.refreshCw, size: 14, color: cs.mutedForeground.withValues(alpha: 0.45)),
-            ),
+            icon: shadcn.LucideIcons.refreshCw,
+            tooltip: '刷新',
           ),
-          GestureDetector(
+          StatusBarIconButton(
             onTap: () => showSpeedSettings(context, ref),
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Icon(shadcn.LucideIcons.settings, size: 14, color: cs.mutedForeground.withValues(alpha: 0.45)),
-            ),
+            icon: shadcn.LucideIcons.settings,
+            tooltip: '刷新设置',
           ),
-          GestureDetector(
+          StatusBarPillButton(
             onTap: enabled
                 ? () {
                     final nextPaused = !paused;
-                    ref.read(torrentRefreshPausedProvider(downloaderId).notifier).state = nextPaused;
-                    ref.read(torrentListProvider(downloaderId).notifier).setWsPaused(nextPaused);
+                    ref
+                            .read(
+                              torrentRefreshPausedProvider(
+                                downloaderId,
+                              ).notifier,
+                            )
+                            .state =
+                        nextPaused;
+                    ref
+                        .read(torrentListProvider(downloaderId).notifier)
+                        .setWsPaused(nextPaused);
                     onRefreshStateChanged();
                   }
                 : null,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(color: pauseButtonBg, borderRadius: BorderRadius.circular(6)),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(paused ? shadcn.LucideIcons.play : shadcn.LucideIcons.pause, size: 12, color: pauseButtonColor),
-                  const SizedBox(width: 4),
-                  Text(
-                    paused ? '恢复' : '暂停',
-                    style: typo.xSmall.copyWith(color: pauseButtonColor, fontWeight: FontWeight.w600, fontSize: 11),
-                  ),
-                ],
-              ),
-            ),
+            icon: paused ? shadcn.LucideIcons.play : shadcn.LucideIcons.pause,
+            label: paused ? '恢复' : '暂停',
+            color: pauseButtonColor,
+            backgroundColor: pauseButtonBg,
+            tooltip: paused ? '恢复自动刷新' : '暂停自动刷新',
           ),
         ],
       ),

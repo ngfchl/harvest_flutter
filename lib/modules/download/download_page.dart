@@ -36,7 +36,8 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      ref.read(activeScrollControllerProvider.notifier).state = _scrollController;
+      ref.read(activeScrollControllerProvider.notifier).state =
+          _scrollController;
     });
   }
 
@@ -62,15 +63,27 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
             child: ColoredBox(
               color: cs.background,
               child: asyncList.when(
-                loading: () => Center(child: shadcn.CircularProgressIndicator(strokeWidth: tokens.size(2))),
-                error: (e, _) => _DownloaderErrorView(error: e, onRetry: _refreshDownloaders),
+                loading: () => Center(
+                  child: shadcn.CircularProgressIndicator(
+                    strokeWidth: tokens.size(2),
+                  ),
+                ),
+                error: (e, _) => _DownloaderErrorView(
+                  error: e,
+                  onRetry: _refreshDownloaders,
+                ),
                 data: (list) {
                   if (list.isEmpty) {
                     return Column(
                       children: [
                         CacheStatusBanner(
                           info: cacheInfo,
-                          margin: EdgeInsets.fromLTRB(horizontalInset, tokens.size(8), horizontalInset, tokens.size(6)),
+                          margin: EdgeInsets.fromLTRB(
+                            horizontalInset,
+                            tokens.size(8),
+                            horizontalInset,
+                            tokens.size(6),
+                          ),
                         ),
                         _buildStatusBar(horizontalInset),
                         Expanded(
@@ -80,9 +93,16 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
                             child: ListView(
                               controller: _scrollController,
                               physics: const AlwaysScrollableScrollPhysics(),
-                              padding: EdgeInsets.only(bottom: tokens.size(16) + ShellBottomSpacing.value(context)),
+                              padding: EdgeInsets.only(
+                                bottom:
+                                    tokens.size(16) +
+                                    ShellBottomSpacing.value(context),
+                              ),
                               children: [
-                                SizedBox(height: MediaQuery.sizeOf(context).height * 0.28),
+                                SizedBox(
+                                  height:
+                                      MediaQuery.sizeOf(context).height * 0.28,
+                                ),
                                 Center(
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
@@ -90,10 +110,19 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
                                       Icon(
                                         shadcn.LucideIcons.hardDrive,
                                         size: tokens.font(48),
-                                        color: cs.mutedForeground.withValues(alpha: 0.3),
+                                        color: cs.mutedForeground.withValues(
+                                          alpha: 0.3,
+                                        ),
                                       ),
-                                      _DownloaderPageTokens.of(context).vGap(12),
-                                      Text('暂无下载器', style: typo.large.copyWith(color: cs.mutedForeground)),
+                                      _DownloaderPageTokens.of(
+                                        context,
+                                      ).vGap(12),
+                                      Text(
+                                        '暂无下载器',
+                                        style: typo.large.copyWith(
+                                          color: cs.mutedForeground,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -108,7 +137,12 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
                     children: [
                       CacheStatusBanner(
                         info: cacheInfo,
-                        margin: EdgeInsets.fromLTRB(horizontalInset, tokens.size(8), horizontalInset, tokens.size(2)),
+                        margin: EdgeInsets.fromLTRB(
+                          horizontalInset,
+                          tokens.size(8),
+                          horizontalInset,
+                          tokens.size(2),
+                        ),
                       ),
                       _buildStatusBar(horizontalInset),
                       // ── 列表 / 网格 ──
@@ -116,7 +150,9 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
                         child: EasyRefresh(
                           onRefresh: _refreshDownloaders,
                           header: refreshHeader,
-                          child: mobile ? _buildMobileList(list) : _buildDesktopGrid(list),
+                          child: mobile
+                              ? _buildMobileList(list)
+                              : _buildDesktopGrid(list),
                         ),
                       ),
                     ],
@@ -136,7 +172,12 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
     final tokens = _DownloaderPageTokens.of(context);
 
     return Container(
-      padding: EdgeInsets.fromLTRB(horizontalInset, tokens.size(8), horizontalInset, tokens.size(8)),
+      padding: EdgeInsets.fromLTRB(
+        horizontalInset,
+        tokens.size(8),
+        horizontalInset,
+        tokens.size(8),
+      ),
       decoration: BoxDecoration(
         color: cs.background,
         border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
@@ -146,13 +187,17 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
           final cs = shadcn.Theme.of(context).colorScheme;
           final paused = ref.watch(speedPausedProvider);
           final remaining = ref.watch(speedRemainingProvider);
-          final downloaders = ref.watch(downloaderListProvider).valueOrNull ?? const <Downloader>[];
+          final downloaders =
+              ref.watch(downloaderListProvider).valueOrNull ??
+              const <Downloader>[];
           final activeCount = downloaders.where((d) => d.isActive).length;
           final brushCount = downloaders.where((d) => !d.brush).length;
 
           final min = remaining ~/ 60;
           final sec = remaining % 60;
-          final countdown = remaining > 0 ? '$min:${sec.toString().padLeft(2, '0')}' : '';
+          final countdown = remaining > 0
+              ? '$min:${sec.toString().padLeft(2, '0')}'
+              : '';
 
           return Row(
             children: [
@@ -163,7 +208,9 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     StatusBarMetric(
-                      icon: paused ? shadcn.LucideIcons.pause : shadcn.LucideIcons.radio,
+                      icon: paused
+                          ? shadcn.LucideIcons.pause
+                          : shadcn.LucideIcons.radio,
                       label: '实时',
                       value: paused ? '已暂停' : '接收中',
                       color: paused ? cs.destructive : cs.primary,
@@ -182,31 +229,28 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
                 ),
               ),
               tokens.hGap(8),
-              shadcn.IconButton.ghost(
-                onPressed: () => showSpeedSettings(context, ref),
-                icon: Icon(
-                  shadcn.LucideIcons.settings,
-                  size: tokens.iconLg,
-                  color: cs.foreground,
-                ),
+              StatusBarIconButton(
+                onTap: () => showSpeedSettings(context, ref),
+                icon: shadcn.LucideIcons.settings,
+                tooltip: '刷新设置',
               ),
-              shadcn.IconButton.ghost(
-                onPressed: () {
+              StatusBarPillButton(
+                onTap: () {
                   ref.read(speedPausedProvider.notifier).state = !paused;
                 },
-                icon: Icon(
-                  paused ? shadcn.LucideIcons.play : shadcn.LucideIcons.pause,
-                  size: tokens.iconLg,
-                  color: cs.foreground,
-                ),
+                icon: paused
+                    ? shadcn.LucideIcons.play
+                    : shadcn.LucideIcons.pause,
+                label: paused ? '恢复' : '暂停',
+                color: paused
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFF59E0B),
+                tooltip: paused ? '恢复实时状态' : '暂停实时状态',
               ),
-              shadcn.IconButton.ghost(
-                onPressed: () => _showEditor(),
-                icon: Icon(
-                  shadcn.LucideIcons.plus,
-                  size: tokens.iconLg,
-                  color: cs.foreground,
-                ),
+              StatusBarIconButton(
+                onTap: () => _showEditor(),
+                icon: shadcn.LucideIcons.plus,
+                tooltip: '添加下载器',
               ),
             ],
           );
@@ -227,7 +271,8 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
       controller: _scrollController,
       padding: tokens.edgeFromLTRB(12, 10, 12, 0),
       itemCount: list.length + 1,
-      separatorBuilder: (context, i) => i >= list.length - 1 ? const SizedBox.shrink() : tokens.vGap(12),
+      separatorBuilder: (context, i) =>
+          i >= list.length - 1 ? const SizedBox.shrink() : tokens.vGap(12),
       itemBuilder: (context, i) {
         if (i == list.length) {
           return SizedBox(height: 72 + ShellBottomSpacing.value(context));
@@ -281,7 +326,9 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
                 ),
               ),
             ),
-            SliverToBoxAdapter(child: SizedBox(height: 72 + ShellBottomSpacing.value(context))),
+            SliverToBoxAdapter(
+              child: SizedBox(height: 72 + ShellBottomSpacing.value(context)),
+            ),
           ],
         );
       },
@@ -311,7 +358,10 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
         title: const Text('删除下载器'),
         content: Text('确定删除「${d.name}」吗？此操作不可撤销。'),
         actions: [
-          shadcn.Button.outline(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
+          shadcn.Button.outline(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('取消'),
+          ),
           shadcn.Button.destructive(
             onPressed: () {
               Navigator.of(ctx).pop();
@@ -325,7 +375,9 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
   }
 
   void _toggleActive(Downloader d) {
-    ref.read(downloaderListProvider.notifier).edit(d.copyWith(isActive: !d.isActive));
+    ref
+        .read(downloaderListProvider.notifier)
+        .edit(d.copyWith(isActive: !d.isActive));
   }
 
   void _toggleBrush(Downloader d) {
@@ -338,11 +390,19 @@ class _DownloaderPageTokens {
   final double densityScale;
   final double textScale;
 
-  _DownloaderPageTokens._({required this.theme, required this.densityScale, required this.textScale});
+  _DownloaderPageTokens._({
+    required this.theme,
+    required this.densityScale,
+    required this.textScale,
+  });
 
   factory _DownloaderPageTokens.of(BuildContext context) {
     final theme = shadcn.Theme.of(context);
-    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.55, 1.45);
+    final densityScale =
+        ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(
+          0.55,
+          1.45,
+        );
     final textScale = theme.scaling.clamp(0.86, 1.30);
     return _DownloaderPageTokens._(
       theme: theme,
@@ -387,7 +447,9 @@ class _DownloaderErrorView extends StatelessWidget {
       header: appRefreshHeader(context),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.only(bottom: tokens.size(16) + ShellBottomSpacing.value(context)),
+        padding: EdgeInsets.only(
+          bottom: tokens.size(16) + ShellBottomSpacing.value(context),
+        ),
         children: [
           SizedBox(height: MediaQuery.sizeOf(context).height * 0.28),
           Center(
@@ -396,9 +458,16 @@ class _DownloaderErrorView extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(shadcn.LucideIcons.circleAlert, size: tokens.font(44), color: cs.destructive),
+                  Icon(
+                    shadcn.LucideIcons.circleAlert,
+                    size: tokens.font(44),
+                    color: cs.destructive,
+                  ),
                   tokens.vGap(12),
-                  Text('下载器加载失败', style: typo.large.copyWith(fontWeight: FontWeight.w600)),
+                  Text(
+                    '下载器加载失败',
+                    style: typo.large.copyWith(fontWeight: FontWeight.w600),
+                  ),
                   tokens.vGap(6),
                   Text(
                     '$error',
@@ -408,7 +477,10 @@ class _DownloaderErrorView extends StatelessWidget {
                     style: typo.xSmall.copyWith(color: cs.mutedForeground),
                   ),
                   tokens.vGap(16),
-                  shadcn.Button.primary(onPressed: onRetry, child: const Text('重新加载')),
+                  shadcn.Button.primary(
+                    onPressed: onRetry,
+                    child: const Text('重新加载'),
+                  ),
                 ],
               ),
             ),

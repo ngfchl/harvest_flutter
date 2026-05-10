@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../search/model/search_torrent_info.dart';
@@ -139,7 +139,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.88),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.68),
       decoration: BoxDecoration(
         color: cs.background,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -196,17 +196,9 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
     final typo = shadcn.Theme.of(context).typography;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       child: Column(
         children: [
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(color: cs.border, borderRadius: BorderRadius.circular(2)),
-            ),
-          ),
-          const SizedBox(height: 16),
           Row(
             children: [
               Text('添加种子', style: typo.large.copyWith(fontWeight: FontWeight.w700)),
@@ -874,25 +866,26 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
 
   Widget _buildButtons() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
       child: Row(
         spacing: 12,
         children: [
           Expanded(
-            child: SizedBox(
-              height: 44,
-              child: shadcn.Button.primary(onPressed: () => closeAppSheet(context), child: const Text('取消')),
+            child: shadcn.Button.outline(
+              onPressed: () => closeAppSheet(context),
+              child: Center(child: const Text('取消')),
             ),
           ),
           Expanded(
-            child: SizedBox(
-              height: 44,
-              child: shadcn.Button.primary(
-                onPressed: _submitting ? null : _submit,
-                child: _submitting
-                    ? const SizedBox(width: 20, height: 20, child: shadcn.CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('下载'),
-              ),
+            child: shadcn.Button.primary(
+              onPressed: _submitting ? null : _submit,
+              child: _submitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
+                    )
+                  : Center(child: const Text('下载')),
             ),
           ),
         ],
