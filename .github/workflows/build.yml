@@ -414,7 +414,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 确保 Xcode 26 + 最新 iOS SDK
+      - name: 确保 Xcode 26 + 最新 iOS SDK/Simulator
         shell: bash
         run: |
           set -euo pipefail
@@ -463,6 +463,10 @@ jobs:
 
           SDK_VER=$(xcrun --sdk iphoneos --show-sdk-version 2>/dev/null || echo "none")
           SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || echo "none")
+          SIM_RUNTIME_OK="false"
+          if xcrun simctl list runtimes 2>/dev/null | grep -E "iOS ${LATEST_IOS_SDK}([ .(]|$)" | grep -Evi 'unavailable|not available' >/dev/null; then
+            SIM_RUNTIME_OK="true"
+          fi
 
           echo "::group::Current iOS SDK"
           echo "Required latest: $LATEST_IOS_SDK"
@@ -473,10 +477,11 @@ jobs:
           echo "::group::SDK analysis"
           echo "Latest SDK bundled in selected Xcode: ${LATEST_IOS_SDK:-none}"
           echo "Current active iOS SDK:               $SDK_VER"
+          echo "Matching iOS Simulator runtime:       $SIM_RUNTIME_OK"
           echo "::endgroup::"
 
-          if [ "$SDK_VER" != "$LATEST_IOS_SDK" ]; then
-            echo "iOS SDK is $SDK_VER, expected latest $LATEST_IOS_SDK. Downloading iOS platform..."
+          if [ "$SDK_VER" != "$LATEST_IOS_SDK" ] || [ "$SIM_RUNTIME_OK" != "true" ]; then
+            echo "iOS SDK/runtime is incomplete. Expected SDK and Simulator runtime for iOS $LATEST_IOS_SDK. Downloading iOS platform..."
             sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
             sudo killall -9 Simulator 2>/dev/null || true
             sudo rm -rf ~/Library/Developer/CoreSimulator/Caches 2>/dev/null || true
@@ -499,16 +504,22 @@ jobs:
             xcrun simctl list 2>/dev/null || true
             sleep 3
           else
-            echo "iOS SDK is already latest $LATEST_IOS_SDK."
+            echo "iOS SDK and Simulator runtime are already latest $LATEST_IOS_SDK."
           fi
 
           FINAL_VER=$(xcrun --sdk iphoneos --show-sdk-version 2>/dev/null || echo "none")
           FINAL_PATH=$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || echo "none")
+          FINAL_SIM_RUNTIME_OK="false"
+          if xcrun simctl list runtimes 2>/dev/null | grep -E "iOS ${LATEST_IOS_SDK}([ .(]|$)" | grep -Evi 'unavailable|not available' >/dev/null; then
+            FINAL_SIM_RUNTIME_OK="true"
+          fi
 
           echo "::group::Final SDK verification"
           echo "Xcode:      $(xcodebuild -version | head -1)"
           echo "iOS SDK:    $FINAL_VER"
           echo "SDK path:   $FINAL_PATH"
+          echo "Simulator:  $FINAL_SIM_RUNTIME_OK"
+          xcrun simctl list runtimes 2>/dev/null || true
           echo "::endgroup::"
 
           if [ "$FINAL_VER" = "none" ]; then
@@ -518,6 +529,11 @@ jobs:
 
           if [ "$FINAL_VER" != "$LATEST_IOS_SDK" ]; then
             echo "::error::Expected latest iOS SDK $LATEST_IOS_SDK, but active SDK is $FINAL_VER. The selected Xcode image does not provide the latest iPhoneOS platform."
+            exit 1
+          fi
+
+          if [ "$FINAL_SIM_RUNTIME_OK" != "true" ]; then
+            echo "::error::Expected latest iOS Simulator runtime $LATEST_IOS_SDK, but it is not installed or not available. Xcode may fail while compiling assets with the iphonesimulator SDK."
             exit 1
           fi
 
