@@ -19,13 +19,16 @@ Future<T?> showAppSheet<T>({
       ? media.size.height
       : media.size.height * 0.65;
 
-  return shadcn.openSheet<T>(
+  return showModalBottomSheet<T>(
     context: context,
-    position: shadcn.OverlayPosition.bottom,
-    barrierDismissible: isDismissible,
-    draggable: enableDrag,
+    isScrollControlled: isScrollControlled,
+    isDismissible: isDismissible,
+    enableDrag: enableDrag,
+    showDragHandle: showDragHandle,
+    backgroundColor: backgroundColor,
+    shape: shape,
     constraints: constraints ?? (maxHeight == null ? null : BoxConstraints(maxHeight: maxHeight)),
-    builder: (sheetContext) => builder(sheetContext),
+    builder: builder,
   );
 }
 
