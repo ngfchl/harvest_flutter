@@ -1080,64 +1080,64 @@ extension _PhoneDashboardView on _DashboardPageState {
       child: GestureDetector(
         onTap: onTap,
         child: SizedBox(
-            height: 92,
-            child: shadcn.Card(
-              padding: const EdgeInsets.all(10),
-              filled: true,
-              fillColor: color.withValues(alpha: 0.055),
-              borderColor: color.withValues(alpha: 0.10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      _DashboardIconTooltip(
-                        message: tooltip ?? '$label\n$value\n$caption',
-                        child: SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: shadcn.Card(
-                            padding: EdgeInsets.zero,
-                            filled: true,
-                            fillColor: color.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(999),
-                            borderColor: color.withValues(alpha: 0.08),
-                            child: Icon(icon, size: 14, color: color),
-                          ),
+          height: 92,
+          child: shadcn.Card(
+            padding: const EdgeInsets.all(10),
+            filled: true,
+            fillColor: color.withValues(alpha: 0.055),
+            borderColor: color.withValues(alpha: 0.10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _DashboardIconTooltip(
+                      message: tooltip ?? '$label\n$value\n$caption',
+                      child: SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: shadcn.Card(
+                          padding: EdgeInsets.zero,
+                          filled: true,
+                          fillColor: color.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(999),
+                          borderColor: color.withValues(alpha: 0.08),
+                          child: Icon(icon, size: 14, color: color),
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: _phonePrimaryTextStyle(fontSize: 11, fontWeight: FontWeight.w800),
-                        ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: _phonePrimaryTextStyle(fontSize: 11, fontWeight: FontWeight.w800),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: shadcn.Theme.of(
-                      context,
-                    ).typography.xSmall.copyWith(fontSize: 13, fontWeight: FontWeight.w900, color: color, height: 1),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    caption,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: shadcn.Theme.of(
-                      context,
-                    ).typography.xSmall.copyWith(fontWeight: FontWeight.w700, color: cs.mutedForeground),
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: shadcn.Theme.of(
+                    context,
+                  ).typography.xSmall.copyWith(fontSize: 13, fontWeight: FontWeight.w900, color: color, height: 1),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: shadcn.Theme.of(
+                    context,
+                  ).typography.xSmall.copyWith(fontWeight: FontWeight.w700, color: cs.mutedForeground),
+                ),
+              ],
             ),
+          ),
         ),
       ),
     );
@@ -1190,45 +1190,45 @@ extension _PhoneDashboardView on _DashboardPageState {
       child: GestureDetector(
         onTap: onTap,
         child: SizedBox(
-            height: 102,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _DashboardIconTooltip(
-                  message: '$title\n$subtitle',
-                  child: SizedBox(
-                    width: 44,
-                    height: 44,
-                    child: shadcn.Card(
-                      padding: EdgeInsets.zero,
-                      filled: true,
-                      fillColor: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(999),
-                      borderColor: color.withValues(alpha: 0.10),
-                      child: loading
-                          ? shadcn.CircularProgressIndicator(size: 22, color: color)
-                          : Icon(icon, size: 27, color: color),
-                    ),
+          height: 102,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _DashboardIconTooltip(
+                message: '$title\n$subtitle',
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: shadcn.Card(
+                    padding: EdgeInsets.zero,
+                    filled: true,
+                    fillColor: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(999),
+                    borderColor: color.withValues(alpha: 0.10),
+                    child: loading
+                        ? shadcn.CircularProgressIndicator(size: 22, color: color)
+                        : Icon(icon, size: 27, color: color),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: _phonePrimaryTextStyle(fontSize: 14, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: shadcn.Theme.of(
-                    context,
-                  ).typography.xSmall.copyWith(fontWeight: FontWeight.w700, color: cs.mutedForeground),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: _phonePrimaryTextStyle(fontSize: 14, fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: shadcn.Theme.of(
+                  context,
+                ).typography.xSmall.copyWith(fontWeight: FontWeight.w700, color: cs.mutedForeground),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1336,7 +1336,7 @@ extension _PhoneDashboardView on _DashboardPageState {
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: 120,
+          height: 87,
           child: _buildTodaySiteDonutChart(
             chartItems,
             total,
@@ -1385,7 +1385,7 @@ extension _PhoneDashboardView on _DashboardPageState {
           _scheduleDashboardOverlayTooltip(tooltip);
         },
         child: SizedBox.square(
-          dimension: 118,
+          dimension: 86,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -1431,7 +1431,7 @@ extension _PhoneDashboardView on _DashboardPageState {
           _scheduleDashboardOverlayTooltip(tooltip);
         },
         child: SizedBox.square(
-          dimension: 118,
+          dimension: 86,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -1543,7 +1543,7 @@ extension _PhoneDashboardView on _DashboardPageState {
           ),
           const SizedBox(height: 4),
           Padding(
-            padding: const EdgeInsets.only(left: 36),
+            padding: const EdgeInsets.only(left: 0),
             child: Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: _phoneTitleStyle(19)),
           ),
           const SizedBox(height: 20),
@@ -2315,49 +2315,49 @@ extension _PhoneDashboardView on _DashboardPageState {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-          children: [
-            _DashboardIconTooltip(
-              message: item.tooltip ?? '${item.name}\n数值\t$valueText\n占比\t${pct.toStringAsFixed(1)}%',
-              child: SizedBox(
-                width: 9,
-                height: 9,
-                child: shadcn.Card(
-                  padding: EdgeInsets.zero,
-                  filled: true,
-                  fillColor: item.color,
-                  borderColor: item.color,
-                  child: const SizedBox.expand(),
-                ),
+        children: [
+          _DashboardIconTooltip(
+            message: item.tooltip ?? '${item.name}\n数值\t$valueText\n占比\t${pct.toStringAsFixed(1)}%',
+            child: SizedBox(
+              width: 9,
+              height: 9,
+              child: shadcn.Card(
+                padding: EdgeInsets.zero,
+                filled: true,
+                fillColor: item.color,
+                borderColor: item.color,
+                child: const SizedBox.expand(),
               ),
             ),
-            const SizedBox(width: 7),
-            Expanded(
-              child: Text(
-                item.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: _phonePrimaryTextStyle(fontSize: 11, fontWeight: FontWeight.w700),
-              ),
+          ),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Text(
+              item.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: _phonePrimaryTextStyle(fontSize: 11, fontWeight: FontWeight.w700),
             ),
-            const SizedBox(width: 6),
-            Text(
-              valueText,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            valueText,
+            style: shadcn.Theme.of(
+              context,
+            ).typography.xSmall.copyWith(fontWeight: FontWeight.w700, color: cs.mutedForeground),
+          ),
+          const SizedBox(width: 6),
+          SizedBox(
+            width: 42,
+            child: Text(
+              '${pct.toStringAsFixed(1)}%',
+              textAlign: TextAlign.right,
               style: shadcn.Theme.of(
                 context,
               ).typography.xSmall.copyWith(fontWeight: FontWeight.w700, color: cs.mutedForeground),
             ),
-            const SizedBox(width: 6),
-            SizedBox(
-              width: 42,
-              child: Text(
-                '${pct.toStringAsFixed(1)}%',
-                textAlign: TextAlign.right,
-                style: shadcn.Theme.of(
-                  context,
-                ).typography.xSmall.copyWith(fontWeight: FontWeight.w700, color: cs.mutedForeground),
-              ),
-            ),
-          ],
+          ),
+        ],
       ),
     );
   }
