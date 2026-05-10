@@ -406,7 +406,7 @@ jobs:
           prerelease: false
 
 
-  ios: # 构建 iOS 应用（需要 macOS 系统）
+  ios:
     runs-on: macos-26
     steps:
       - name: 签出仓库
@@ -414,64 +414,114 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 指定最新 Xcode 26 并初始化 iOS Platform
+      - name: 确保 Xcode 26 + 最新 iOS 26 SDK
         shell: bash
         run: |
           set -euo pipefail
 
-          echo "::group::Available Xcode 26 apps"
-          ls -1d /Applications/Xcode_26*.app 2>/dev/null || true
-          echo "::endgroup::"
-
-          XCODE_PATH=$(ls -1d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -n 1 || true)
-          if [ -z "$XCODE_PATH" ]; then
-            echo "Xcode 26 not found under /Applications"
-            ls -1d /Applications/Xcode*.app 2>/dev/null || true
+          # ============================================================
+          #  第一步：确认 Xcode 26 存在
+          # ============================================================
+          XCODE_APP=$(ls -1d /Applications/Xcode_26*.app 2>/dev/null | head -1 || true)
+          if [ -z "$XCODE_APP" ]; then
+            echo "::error::Xcode 26 不存在，请先上传 Xcode 26.xip 到仓库 Release (tag: tools)"
             exit 1
           fi
 
-          DEVELOPER_DIR="$XCODE_PATH/Contents/Developer"
-          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          sudo xcode-select -s "$XCODE_APP/Contents/Developer"
+          sudo xcodebuild -license accept
+          sudo xcodebuild -runFirstLaunch
 
-          echo "::group::Selected Xcode"
-          echo "XCODE_PATH=$XCODE_PATH"
-          echo "DEVELOPER_DIR=$DEVELOPER_DIR"
-          sudo xcode-select -s "$DEVELOPER_DIR"
+          echo "::group::Xcode 信息"
           xcodebuild -version
-          echo "xcode-select -p: $(xcode-select -p)"
           echo "::endgroup::"
 
-          sudo xcodebuild -license accept || true
-          sudo xcodebuild -runFirstLaunch || true
+          # ============================================================
+          #  第二步：检查当前 iOS SDK 版本
+          # ============================================================
+          SDK_VER=$(xcrun --sdk iphoneos --show-sdk-version 2>/dev/null || echo "none")
+          SDK_PATH=$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || echo "none")
 
-          echo "::group::Xcode SDKs before platform init"
-          xcodebuild -showsdks
+          echo "::group::当前 iOS SDK"
+          echo "版本: $SDK_VER"
+          echo "路径: $SDK_PATH"
           echo "::endgroup::"
 
-          echo "::group::Install latest iOS platform"
-          xcodebuild -downloadPlatform iOS
+          # ============================================================
+          #  第三步：检查所有可用的 SDK，确定 iOS 最新版本号
+          # ============================================================
+          # xcodebuild -showsdks 输出所有 SDK，解析最新 iOS 版本
+          LATEST_IOS_SDK=$(xcodebuild -showsdks 2>/dev/null \
+            | grep -oE 'iphoneos[0-9]+\.[0-9]+' \
+            | sort -t'.' -k1,1n -k2,2n \
+            | tail -1 \
+            | sed 's/iphoneos//' || echo "")
+
+          echo "::group::SDK 分析"
+          echo "Xcode 内置最新 iOS SDK:  $LATEST_IOS_SDK"
+          echo "当前实际使用 iOS SDK:    $SDK_VER"
           echo "::endgroup::"
 
-          if ! xcrun --sdk iphoneos --show-sdk-path >/dev/null 2>&1; then
-            echo "iPhoneOS SDK is still unavailable after platform install"
+          # ============================================================
+          #  第四步：判断是否需要更新
+          # ============================================================
+          if [ "$SDK_VER" = "$LATEST_IOS_SDK" ] && [ "$SDK_VER" != "none" ]; then
+            echo "✅ iOS SDK 已是最新版本 $SDK_VER，无需更新"
+          else
+            echo "⚠️ 当前 $SDK_VER ≠ 最新 $LATEST_IOS_SDK，开始更新..."
+
+            # 彻底清理 CoreSimulator 环境（downloadPlatform 报错的根因）
+            sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+            sudo killall -9 Simulator 2>/dev/null || true
+            sudo rm -rf ~/Library/Developer/CoreSimulator/Caches 2>/dev/null || true
+            sudo rm -rf /tmp/com.apple.CoreSimulator* 2>/dev/null || true
+
+            # 重新初始化 CoreSimulator 服务
+            xcrun simctl list 2>/dev/null || true
+            sleep 8
+
+            # 尝试方式一：xcodebuild -downloadPlatform
+            echo "::group::尝试 downloadPlatform"
+            if xcodebuild -downloadPlatform iOS 2>&1; then
+              echo "✅ downloadPlatform 成功"
+            else
+              echo "⚠️ downloadPlatform 失败，尝试 softwareupdate..."
+              echo "::endgroup::"
+
+              # 尝试方式二：softwareupdate（不同机制，可能成功）
+              echo "::group::尝试 softwareupdate"
+              sudo softwareupdate -ia 2>&1 || true
+              echo "::endgroup::"
+            fi
+
+            # 再次清理 + 重新初始化，让新 SDK 生效
+            sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService 2>/dev/null || true
+            xcrun simctl list 2>/dev/null || true
+            sleep 3
+          fi
+
+          # ============================================================
+          #  第五步：最终验证
+          # ============================================================
+          FINAL_VER=$(xcrun --sdk iphoneos --show-sdk-version 2>/dev/null || echo "none")
+          FINAL_PATH=$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || echo "none")
+
+          echo "::group::最终验证结果"
+          echo "Xcode:          $(xcodebuild -version | head -1)"
+          echo "iOS SDK 版本:   $FINAL_VER"
+          echo "iOS SDK 路径:   $FINAL_PATH"
+          echo "::endgroup::"
+
+          if [ "$FINAL_VER" = "none" ]; then
+            echo "::error::iOS SDK 完全不可用"
             exit 1
           fi
 
-          echo "::group::Xcode SDKs after platform init"
-          xcodebuild -showsdks
-          echo "::endgroup::"
+          if [[ "$FINAL_VER" != 26* ]]; then
+            echo "::warning::iOS SDK 版本为 $FINAL_VER，非 26.x"
+          fi
 
-          echo "::group::iOS platform diagnostics"
-          ls -la "$DEVELOPER_DIR/Platforms" || true
-          ls -la "$DEVELOPER_DIR/Platforms/iPhoneOS.platform" || true
-          xcrun --sdk iphoneos --show-sdk-path || true
-          xcrun --sdk iphoneos --show-sdk-version || true
-          xcrun --sdk iphoneos --find clang || true
-          echo "::endgroup::"
-
-          echo "::group::Runner destinations"
-          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -showdestinations
-          echo "::endgroup::"
+          echo "DEVELOPER_DIR=$(xcode-select -p)" >> "$GITHUB_ENV"
 
       - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
@@ -481,64 +531,52 @@ jobs:
       - name: 安装 Flutter 依赖
         run: flutter pub get
 
-      - name: 输出 Flutter / Xcode 诊断信息
-        shell: bash
-        run: |
-          echo "::group::Flutter doctor"
-          flutter doctor -v
-          echo "::endgroup::"
-          echo "::group::Flutter devices"
-          flutter devices
-          echo "::endgroup::"
-          echo "::group::Effective Xcode"
-          echo "DEVELOPER_DIR=${DEVELOPER_DIR:-}"
-          xcode-select -p
-          xcodebuild -version
-          xcrun --sdk iphoneos --show-sdk-path || true
-          echo "::endgroup::"
+      - name: 打包 iOS arm64
+        run: flutter build ios --release --no-codesign
 
-      - name: 打包 iOS arm64 发行版
-        run: flutter build ios --release --no-codesign  # 构建 iOS 应用，但不签名（用于测试）
-
-      - name: 生成 iOS arm64 发行版文件名
-        id: build_ios  # 定义一个步骤 ID，用于后续引用
+      - name: 生成 IPA
+        id: build_ios
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-          ARCH="arm64"
-          SYSTEM="ios"
-          FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}.ipa"
-          BUILD_PATH="build/ios/iphoneos"
-          APP_PATH="${BUILD_PATH}/Runner.app"
+          FILE_NAME="harvest_${VERSION}_arm64-ios.ipa"
           mkdir Payload
-          cp -R $APP_PATH ./Payload/Runner.app
-          zip -r $FILE_NAME Payload
+          cp -R build/ios/iphoneos/Runner.app ./Payload/Runner.app
+          zip -r "$FILE_NAME" Payload
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT
-          ls -l $FILE_NAME
+          ls -l "$FILE_NAME"
 
       - name: 发布 iOS arm64 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
-          files: ${{ github.workspace }}/${{ steps.build_ios.outputs.file_name }}  # 上传 IPA 文件
+          files: ${{ github.workspace }}/${{ steps.build_ios.outputs.file_name }}
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
           name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
           draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
           prerelease: false
 
 
-  web: # 构建 Web 版本
-    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 系统执行
-    needs: [ linux, android, windows, macos_intel, macos_arm ]
+  web:
+    runs-on: ubuntu-latest
+    needs: [ linux, android, windows, macos_intel, macos_arm, ios ]
+    if: >-
+      always() &&
+      !cancelled() &&
+      (needs.linux.result == 'success') &&
+      (needs.android.result == 'success') &&
+      (needs.windows.result == 'success') &&
+      (needs.macos_intel.result == 'success') &&
+      (needs.macos_arm.result == 'success')
 
     steps:
       - name: 签出仓库
-        uses: actions/checkout@v6  # 拉取代码仓库
+        uses: actions/checkout@v6
         with:
-          fetch-depth: 0  # 获取完整的提交历史（用于生成变更日志等）
+          fetch-depth: 0
 
       - name: 指定 Flutter 版本
-        uses: subosito/flutter-action@v2  # 安装 Flutter 环境
+        uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.35.7'
 
@@ -549,107 +587,59 @@ jobs:
           CURRENT_TAG=${GITHUB_REF#refs/tags/}
           PREV_TAG=$(git describe --tags --abbrev=0 ${CURRENT_TAG}^ 2>/dev/null || echo "")
 
-          echo "当前 TAG: $CURRENT_TAG"
-          echo "上一个 TAG: $PREV_TAG"
-
           if [ -z "$PREV_TAG" ]; then
             RANGE=""
           else
             RANGE="$PREV_TAG..$CURRENT_TAG"
           fi
 
-          # 获取原始 git log（排除 chore 和 merge）
           RAW_LOG=$(git log $RANGE --pretty=format:"%H|%s" --no-merges | grep -v -E '^.*\|(chore|chore:)' || true)
 
-          # 分类存储
-          FEAT=""
-          FIX=""
-          DOCS=""
-          REFACTOR=""
-          PERF=""
-          TEST=""
-          UPDATE=""
-          OTHER=""
+          FEAT="" FIX="" DOCS="" REFACTOR="" PERF="" TEST="" UPDATE="" OTHER=""
 
           while IFS='|' read -r HASH MSG; do
             [ -z "$HASH" ] && continue
-
-            # 如果是 GitHub PR merge 提交，跳过（已被上方 --no-merges 排除）
-            # 查询 PR 标题（如果 commit 提到 #PR_NUMBER）
             PR_TITLE=""
             if [[ "$MSG" =~ \#([0-9]+) ]]; then
               PR_NUM="${BASH_REMATCH[1]}"
               PR_TITLE=$(gh pr view "$PR_NUM" --json title --jq '.title' 2>/dev/null || echo "")
             fi
-
             DISPLAY_MSG="$MSG"
-            if [ -n "$PR_TITLE" ]; then
-              DISPLAY_MSG="$PR_TITLE (#$PR_NUM)"
-            fi
-          
-            # 清洗危险字符（防止 GitHub Actions / Shell / API 出问题）
+            [ -n "$PR_TITLE" ] && DISPLAY_MSG="$PR_TITLE (#$PR_NUM)"
             DISPLAY_MSG="${DISPLAY_MSG//\"/}"
             DISPLAY_MSG="$(printf '%s' "$DISPLAY_MSG")"
-          
             SHORT_HASH=$(echo "$HASH" | cut -c1-7)
 
-            if [[ "$MSG" =~ ^feat ]]; then
-                FEAT+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
-            elif [[ "$MSG" =~ ^fix ]]; then
-                FIX+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
-            elif [[ "$MSG" =~ ^docs ]]; then
-                DOCS+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
-            elif [[ "$MSG" =~ ^refactor ]]; then
-                REFACTOR+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
-            elif [[ "$MSG" =~ ^perf ]]; then
-                PERF+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
-            elif [[ "$MSG" =~ ^test ]]; then
-                TEST+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
-            elif [[ "$MSG" =~ ^update ]]; then
-                UPDATE+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
-            else
-                OTHER+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            if [[ "$MSG" =~ ^feat ]]; then FEAT+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^fix ]]; then FIX+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^docs ]]; then DOCS+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^refactor ]]; then REFACTOR+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^perf ]]; then PERF+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^test ]]; then TEST+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            elif [[ "$MSG" =~ ^update ]]; then UPDATE+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
+            else OTHER+="\n- ${DISPLAY_MSG} (${SHORT_HASH})"
             fi
           done <<< "$RAW_LOG"
 
-          # 组合中文日志
           FINAL_LOG=""
+          [ -n "$FEAT" ] && FINAL_LOG+="\n### ✨ 新增功能\n${FEAT}\n"
+          [ -n "$FIX" ] && FINAL_LOG+="\n### 🐛 修复问题\n${FIX}\n"
+          [ -n "$DOCS" ] && FINAL_LOG+="\n### 📖 文档更新\n${DOCS}\n"
+          [ -n "$REFACTOR" ] && FINAL_LOG+="\n### 🔨 重构\n${REFACTOR}\n"
+          [ -n "$PERF" ] && FINAL_LOG+="\n### ⚡ 性能优化\n${PERF}\n"
+          [ -n "$TEST" ] && FINAL_LOG+="\n### 🧪 测试相关\n${TEST}\n"
+          [ -n "$UPDATE" ] && FINAL_LOG+="\n### 🔄 更新\n${UPDATE}\n"
+          [ -n "$OTHER" ] && FINAL_LOG+="\n### 📌 其他变更\n${OTHER}\n"
 
-          if [ -n "$FEAT" ]; then
-            FINAL_LOG+="\n### ✨ 新增功能\n${FEAT}\n"
-          fi
-          if [ -n "$FIX" ]; then
-            FINAL_LOG+="\n### 🐛 修复问题\n${FIX}\n"
-          fi
-          if [ -n "$DOCS" ]; then
-            FINAL_LOG+="\n### 📖 文档更新\n${DOCS}\n"
-          fi
-          if [ -n "$REFACTOR" ]; then
-            FINAL_LOG+="\n### 🔨 重构\n${REFACTOR}\n"
-          fi
-          if [ -n "$PERF" ]; then
-            FINAL_LOG+="\n### ⚡ 性能优化\n${PERF}\n"
-          fi
-          if [ -n "$TEST" ]; then
-            FINAL_LOG+="\n### 🧪 测试相关\n${TEST}\n"
-          fi
-          if [ -n "$UPDATE" ]; then
-            FINAL_LOG+="\n### 🔄 更新\n${UPDATE}\n"
-          fi
-          if [ -n "$OTHER" ]; then
-            FINAL_LOG+="\n### 📌 其他变更\n${OTHER}\n"
-          fi
-
-          # 回写到 GitHub 输出
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo -e "$FINAL_LOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: 安装 Flutter 依赖
-        run: flutter pub get  # 下载项目依赖
+        run: flutter pub get
 
       - name: 打包 Web 发行版
-        run: flutter build web --release --no-tree-shake-icons # 构建 Web 版本的发布包
+        run: flutter build web --release --no-tree-shake-icons
 
       - name: Deploy to web branch
         uses: peaceiris/actions-gh-pages@v4
@@ -659,31 +649,31 @@ jobs:
           publish_branch: web-dist
 
       - name: 生成 Web 发行版文件名
-        id: build_web  # 定义一个步骤 ID，用于后续引用
+        id: build_web
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-          ARCH="web"
-          FILE_NAME="harvest_${VERSION}_${ARCH}.tar.gz"
+          FILE_NAME="harvest_${VERSION}_web.tar.gz"
           tar -czvf $FILE_NAME -C build/web .
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
-          echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "app_version=$VERSION" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME
 
       - name: 发布 Web 发行版到 GitHub Releases
-        uses: softprops/action-gh-release@v2  # 发布 GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
-          files: ${{ github.workspace }}/${{ steps.build_web.outputs.file_name }}  # 上传文件
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}  # 使用 tag 或提交哈希命名
+          files: ${{ github.workspace }}/${{ steps.build_web.outputs.file_name }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
           name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}  # 如果不是 tag，作为草稿
-          prerelease: false  # 不标记为预发布版本
+          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          prerelease: false
           body: |
             ## 📌 更新日志
             ${{ steps.changelog.outputs.changelog }}
 
       - name: 生成链接并发布到 Repeat Publish API
         id: gen_links
+        shell: bash
         run: |
           CHANGELOG="${{ steps.changelog.outputs.changelog }}"
           PUBLISH_URL="https://repeat.ptools.fun/api/app/upload"
@@ -691,61 +681,55 @@ jobs:
           EMAIL="${{ secrets.HARVEST_EMAIL }}"
           VERSION="${{ steps.build_web.outputs.app_version }}"
           BASE_URL="https://github.com/ngfchl/harvest_flutter/releases/download/$VERSION"
-          # 使用 jq 自动构建 links JSON
+
+          # ============================================
+          # 根据各 job 结果，动态生成下载链接
+          # ============================================
           LINKS_JSON=$(jq -n --arg v "$VERSION" --arg base "$BASE_URL" '
           {
-            # Linux
-            ("harvest_\($v)_x64_linux.tar.gz"): "\($base)/harvest_\($v)_x64_linux.tar.gz",
-            # ("harvest_\($v)_arm64_linux.tar.gz"): "\($base)/harvest_\($v)_arm64_linux.tar.gz",
-          
-            # Android
-            # ("harvest_\($v)_arm32-android.apk"): "\($base)/harvest_\($v)_arm32-android.apk",
-            ("harvest_\($v)_arm64-android.apk"): "\($base)/harvest_\($v)_arm64-android.apk",
-            # ("harvest_\($v)_x86_64-android.apk"): "\($base)/harvest_\($v)_x86_64-android.apk",
-          
-            # Windows
-            ("harvest_\($v)_x86_64-windows.zip"): "\($base)/harvest_\($v)_x86_64-windows.zip",
+            ("harvest_\($v)_x64_linux.tar.gz"):   "\($base)/harvest_\($v)_x64_linux.tar.gz",
+            ("harvest_\($v)_arm64-android.apk"):  "\($base)/harvest_\($v)_arm64-android.apk",
+            ("harvest_\($v)_x86_64-windows.zip"):  "\($base)/harvest_\($v)_x86_64-windows.zip",
             ("harvest_\($v)_x86_64-windows-setup.exe"): "\($base)/harvest_\($v)_x86_64-windows-setup.exe",
-          
-            # macOS
-            ("harvest_\($v)_x86_64-macos.dmg"): "\($base)/harvest_\($v)_x86_64-macos.dmg",
-            ("harvest_\($v)_arm64-macos.dmg"): "\($base)/harvest_\($v)_arm64-macos.dmg",
-            ("harvest_\($v)_x86_64-macos.pkg"): "\($base)/harvest_\($v)_x86_64-macos.pkg",
-            ("harvest_\($v)_arm64-macos.pkg"): "\($base)/harvest_\($v)_arm64-macos.pkg",
-          
-            # iOS
-            ("harvest_\($v)_arm64-ios.ipa"): "\($base)/harvest_\($v)_arm64-ios.ipa",
-          
-            # Web
-            ("harvest_\($v)_web.tar.gz"): "\($base)/harvest_\($v)_web.tar.gz"
+            ("harvest_\($v)_x86_64-macos.dmg"):    "\($base)/harvest_\($v)_x86_64-macos.dmg",
+            ("harvest_\($v)_arm64-macos.dmg"):     "\($base)/harvest_\($v)_arm64-macos.dmg",
+            ("harvest_\($v)_x86_64-macos.pkg"):    "\($base)/harvest_\($v)_x86_64-macos.pkg",
+            ("harvest_\($v)_arm64-macos.pkg"):     "\($base)/harvest_\($v)_arm64-macos.pkg",
+            ("harvest_\($v)_web.tar.gz"):          "\($base)/harvest_\($v)_web.tar.gz"
           }
           ')
-          
-          echo "生成的下载链接 JSON:"
-          echo "$LINKS_JSON"
-          
-          # ⬅⬅⬅⬅⬅ 关键点：links 需要变成字符串，而不是对象
-          LINKS_STRING=$(jq -n --argjson links "$LINKS_JSON" '$links | @json')
-          echo "LINKS_STRING: $LINKS_STRING"  
-          # 构建最终请求 JSON
+
+          # 只有 iOS 成功时才加入 iOS 链接
+          IOS_RESULT="${{ needs.ios.result }}"
+          echo "iOS job 状态: $IOS_RESULT"
+
+          if [ "$IOS_RESULT" = "success" ]; then
+            LINKS_JSON=$(echo "$LINKS_JSON" | jq \
+              --arg v "$VERSION" \
+              --arg base "$BASE_URL" \
+              '. + {
+                ("harvest_\($v)_arm64-ios.ipa"): "\($base)/harvest_\($v)_arm64-ios.ipa"
+              }')
+            echo "✅ 已添加 iOS 下载链接"
+          else
+            echo "⚠️ iOS 构建失败 ($IOS_RESULT)，跳过 iOS 下载链接"
+          fi
+
+          echo "最终下载链接:"
+          echo "$LINKS_JSON" | jq .
+
           REQUEST_JSON=$(jq -n \
             --arg version "$VERSION" \
             --arg changelog "$CHANGELOG" \
-            --arg links "$LINKS_JSON" \
-            '
-          {
-            version: $version,
-            changelog: $changelog,
-            downloadLinks: $links
-          }
-          ')
-          
-          echo "请求 JSON:"
-          echo "$REQUEST_JSON"
-          
-          # 发送发布请求
+            --argjson links "$LINKS_JSON" \
+            '{
+              version: $version,
+              changelog: $changelog,
+              downloadLinks: $links
+            }')
+
           curl -X POST "$PUBLISH_URL" \
-          -H "Authorization: $TOKEN" \
-          -H "EMAIL: $EMAIL" \
-          -H "Content-Type: application/json" \
-          -d "$REQUEST_JSON"
+            -H "Authorization: $TOKEN" \
+            -H "EMAIL: $EMAIL" \
+            -H "Content-Type: application/json" \
+            -d "$REQUEST_JSON"
