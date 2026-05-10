@@ -278,6 +278,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
   bool _saving = false;
   bool _available = false;
   bool _configApplied = false;
+  bool _mirrorOptionsExpanded = false;
 
   bool get _isEdit => widget.site != null;
 
@@ -500,7 +501,11 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
                 child: shadcn.Button.primary(
                   onPressed: _saving ? null : _save,
                   child: _saving
-                      ? const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(strokeWidth: 2.2))
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2.2)),
+                        )
                       : Center(child: const Text('保存')),
                 ),
               ),
@@ -667,6 +672,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final selected = configUrls.contains(_mirrorCtrl.text) ? _mirrorCtrl.text : null;
+    final displayText = selected ?? '选择镜像地址';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -677,20 +683,91 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
         ),
         const SizedBox(height: 8),
         if (configUrls.isNotEmpty) ...[
-          shadcn.Select<String>(
-            value: selected,
-            placeholder: const Text('选择镜像地址'),
-            itemBuilder: (_, value) => Text(value),
-            popupConstraints: const BoxConstraints(maxHeight: 300),
-            popup: shadcn.SelectPopup<String>(
-              items: shadcn.SelectItemList(
-                children: [for (final url in configUrls) shadcn.SelectItemButton<String>(value: url, child: Text(url))],
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => setState(() => _mirrorOptionsExpanded = !_mirrorOptionsExpanded),
+            child: Container(
+              height: 38,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: cs.background,
+                borderRadius: siteRadius(context, size: "md"),
+                border: Border.all(color: cs.border.withValues(alpha: 0.72), width: 0.6),
               ),
-            ).call,
-            onChanged: (value) {
-              if (value != null) setState(() => _mirrorCtrl.text = value);
-            },
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      displayText,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.typography.small.copyWith(
+                        color: selected == null ? cs.mutedForeground : cs.foreground,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  AnimatedRotation(
+                    turns: _mirrorOptionsExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 160),
+                    child: Icon(shadcn.LucideIcons.chevronDown, size: 16, color: cs.mutedForeground),
+                  ),
+                ],
+              ),
+            ),
           ),
+          if (_mirrorOptionsExpanded) ...[
+            const SizedBox(height: 6),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 220),
+              decoration: BoxDecoration(
+                color: cs.background,
+                borderRadius: siteRadius(context, size: "md"),
+                border: Border.all(color: cs.border.withValues(alpha: 0.62), width: 0.6),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                itemCount: configUrls.length,
+                separatorBuilder: (_, _) => Divider(height: 1, color: cs.border.withValues(alpha: 0.32)),
+                itemBuilder: (context, index) {
+                  final url = configUrls[index];
+                  final active = url == selected;
+                  return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => setState(() {
+                      _mirrorCtrl.text = url;
+                      _mirrorOptionsExpanded = false;
+                    }),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+                      color: active ? cs.primary.withValues(alpha: 0.08) : cs.background,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              url,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.typography.small.copyWith(
+                                color: active ? cs.primary : cs.foreground,
+                                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          if (active) ...[
+                            const SizedBox(width: 8),
+                            Icon(shadcn.LucideIcons.check, size: 15, color: cs.primary),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
         ],
         shadcn.TextField(controller: _mirrorCtrl, hintText: 'https://mirror.example.com'),
