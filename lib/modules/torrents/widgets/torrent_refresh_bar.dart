@@ -24,34 +24,25 @@ class TorrentRefreshBar extends ConsumerWidget {
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final enabled = ref.watch(speedEnabledProvider);
-    final paused = ref.watch(
-      torrentRefreshPausedProvider(downloaderId),
-    );
-    final remaining = ref.watch(
-      torrentRefreshRemainingProvider(downloaderId),
-    );
+    final paused = ref.watch(torrentRefreshPausedProvider(downloaderId));
+    final remaining = ref.watch(torrentRefreshRemainingProvider(downloaderId));
 
     final running = enabled && !paused;
     final min = remaining ~/ 60;
     final sec = remaining % 60;
-    final countdown =
-    remaining > 0 ? '$min:${sec.toString().padLeft(2, '0')}' : '';
+    final countdown = remaining > 0 ? '$min:${sec.toString().padLeft(2, '0')}' : '';
     final pauseButtonColor = !enabled
         ? cs.mutedForeground.withValues(alpha: 0.35)
         : paused
         ? const Color(0xFF10B981)
         : const Color(0xFFF59E0B);
-    final pauseButtonBg = !enabled
-        ? cs.foreground.withValues(alpha: 0.04)
-        : pauseButtonColor.withValues(alpha: 0.1);
+    final pauseButtonBg = !enabled ? cs.foreground.withValues(alpha: 0.04) : pauseButtonColor.withValues(alpha: 0.1);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
       decoration: BoxDecoration(
         color: cs.background,
-        border: Border(
-          bottom: BorderSide(color: cs.border, width: 0.5),
-        ),
+        border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
       ),
       child: Row(
         children: [
@@ -59,9 +50,7 @@ class TorrentRefreshBar extends ConsumerWidget {
             width: 6,
             height: 6,
             decoration: BoxDecoration(
-              color: running
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFFF59E0B),
+              color: running ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
               shape: BoxShape.circle,
             ),
           ),
@@ -72,18 +61,12 @@ class TorrentRefreshBar extends ConsumerWidget {
                 : enabled
                 ? '种子数据已暂停'
                 : '自动刷新已关闭',
-            style: typo.xSmall.copyWith(
-              color: cs.mutedForeground.withValues(alpha: 0.55),
-              fontSize: 11,
-            ),
+            style: typo.xSmall.copyWith(color: cs.mutedForeground.withValues(alpha: 0.55), fontSize: 11),
           ),
           if (running && countdown.isNotEmpty) ...[
             const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 6,
-                vertical: 2,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: remaining <= 60
                     ? const Color(0xFFF59E0B).withValues(alpha: 0.1)
@@ -96,21 +79,15 @@ class TorrentRefreshBar extends ConsumerWidget {
                   Icon(
                     shadcn.LucideIcons.timer,
                     size: 10,
-                    color: remaining <= 60
-                        ? const Color(0xFFF59E0B)
-                        : cs.mutedForeground.withValues(alpha: 0.5),
+                    color: remaining <= 60 ? const Color(0xFFF59E0B) : cs.mutedForeground.withValues(alpha: 0.5),
                   ),
                   const SizedBox(width: 3),
                   Text(
                     countdown,
                     style: typo.xSmall.copyWith(
                       fontSize: 10,
-                      color: remaining <= 60
-                          ? const Color(0xFFF59E0B)
-                          : cs.mutedForeground.withValues(alpha: 0.5),
-                      fontFeatures: const [
-                        FontFeature.tabularFigures(),
-                      ],
+                      color: remaining <= 60 ? const Color(0xFFF59E0B) : cs.mutedForeground.withValues(alpha: 0.5),
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ],
@@ -123,11 +100,7 @@ class TorrentRefreshBar extends ConsumerWidget {
             behavior: HitTestBehavior.opaque,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Icon(
-                shadcn.LucideIcons.refreshCw,
-                size: 14,
-                color: cs.mutedForeground.withValues(alpha: 0.45),
-              ),
+              child: Icon(shadcn.LucideIcons.refreshCw, size: 14, color: cs.mutedForeground.withValues(alpha: 0.45)),
             ),
           ),
           GestureDetector(
@@ -135,58 +108,29 @@ class TorrentRefreshBar extends ConsumerWidget {
             behavior: HitTestBehavior.opaque,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Icon(
-                shadcn.LucideIcons.settings,
-                size: 14,
-                color: cs.mutedForeground.withValues(alpha: 0.45),
-              ),
+              child: Icon(shadcn.LucideIcons.settings, size: 14, color: cs.mutedForeground.withValues(alpha: 0.45)),
             ),
           ),
           GestureDetector(
             onTap: enabled
                 ? () {
-              final nextPaused = !paused;
-              ref
-                  .read(
-                torrentRefreshPausedProvider(downloaderId)
-                    .notifier,
-              )
-                  .state = nextPaused;
-              ref
-                  .read(
-                torrentListProvider(downloaderId).notifier,
-              )
-                  .setWsPaused(nextPaused);
-              onRefreshStateChanged();
-            }
+                    final nextPaused = !paused;
+                    ref.read(torrentRefreshPausedProvider(downloaderId).notifier).state = nextPaused;
+                    ref.read(torrentListProvider(downloaderId).notifier).setWsPaused(nextPaused);
+                    onRefreshStateChanged();
+                  }
                 : null,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 5,
-              ),
-              decoration: BoxDecoration(
-                color: pauseButtonBg,
-                borderRadius: BorderRadius.circular(6),
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(color: pauseButtonBg, borderRadius: BorderRadius.circular(6)),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    paused
-                        ? shadcn.LucideIcons.play
-                        : shadcn.LucideIcons.pause,
-                    size: 12,
-                    color: pauseButtonColor,
-                  ),
+                  Icon(paused ? shadcn.LucideIcons.play : shadcn.LucideIcons.pause, size: 12, color: pauseButtonColor),
                   const SizedBox(width: 4),
                   Text(
                     paused ? '恢复' : '暂停',
-                    style: typo.xSmall.copyWith(
-                      color: pauseButtonColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 11,
-                    ),
+                    style: typo.xSmall.copyWith(color: pauseButtonColor, fontWeight: FontWeight.w600, fontSize: 11),
                   ),
                 ],
               ),

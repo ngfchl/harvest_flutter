@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../provider/downloader_speed_provider.dart';
@@ -14,6 +14,7 @@ void showSpeedSettings(BuildContext context, WidgetRef ref) {
     backgroundColor: cs.background,
     isScrollControlled: true,
     builder: (ctx) => SafeArea(
+      top: false,
       child: shadcn.Card(
         filled: true,
         fillColor: cs.background,
@@ -27,11 +28,6 @@ void showSpeedSettings(BuildContext context, WidgetRef ref) {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 拖拽条
-            shadcn.SecondaryBadge(
-              child: SizedBox(width: theme.scaling * 28, height: theme.scaling * 2),
-            ),
-            SizedBox(height: theme.density.baseGap * theme.scaling),
             // 标题
             Padding(
               padding: EdgeInsets.symmetric(vertical: theme.density.baseGap * theme.scaling * 0.5),
@@ -65,6 +61,7 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     final duration = ref.watch(speedDurationProvider);
     final enabled = ref.watch(speedEnabledProvider);
     final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: theme.density.baseGap * theme.scaling),
@@ -86,52 +83,31 @@ class DownloaderSpeedSettings extends ConsumerWidget {
           if (enabled) ...[
             // ── 刷新间隔 ──
             SizedBox(height: theme.density.baseGap * theme.scaling * 1.5),
-            _settingRow(
+            _sliderSetting(
               context,
               icon: shadcn.LucideIcons.timer,
               label: '刷新间隔',
-              trailing: _NumberPicker(
-                value: interval,
-                unit: 's',
-                min: kMinInterval,
-                max: kMaxInterval,
-                onMinus: () => ref.read(speedIntervalProvider.notifier).update(interval - 1),
-                onPlus: () => ref.read(speedIntervalProvider.notifier).update(interval + 1),
-              ),
+              valueLabel: '${interval}s',
+              value: interval.toDouble(),
+              min: kMinInterval.toDouble(),
+              max: kMaxInterval.toDouble(),
+              divisions: kMaxInterval - kMinInterval,
+              onChanged: (v) => ref.read(speedIntervalProvider.notifier).update(v.round()),
             ),
             SizedBox(height: theme.density.baseGap * theme.scaling),
-            _presetChips(
-              context,
-              ref,
-              current: interval,
-              presets: const [3, 5, 10, 30],
-              unit: 's',
-              onTap: (v) => ref.read(speedIntervalProvider.notifier).update(v),
-            ),
 
             // ── 自动停止时长 ──
             SizedBox(height: theme.density.baseGap * theme.scaling * 2),
-            _settingRow(
+            _sliderSetting(
               context,
               icon: shadcn.LucideIcons.clock,
               label: '自动停止',
-              trailing: _NumberPicker(
-                value: duration,
-                unit: 'min',
-                min: kMinDuration,
-                max: kMaxDuration,
-                onMinus: () => ref.read(speedDurationProvider.notifier).update(duration - 1),
-                onPlus: () => ref.read(speedDurationProvider.notifier).update(duration + 1),
-              ),
-            ),
-            SizedBox(height: theme.density.baseGap * theme.scaling),
-            _presetChips(
-              context,
-              ref,
-              current: duration,
-              presets: const [1, 3, 5, 10, 30],
-              unit: 'min',
-              onTap: (v) => ref.read(speedDurationProvider.notifier).update(v),
+              valueLabel: '${duration}min',
+              value: duration.toDouble(),
+              min: kMinDuration.toDouble(),
+              max: kMaxDuration.toDouble(),
+              divisions: kMaxDuration - kMinDuration,
+              onChanged: (v) => ref.read(speedDurationProvider.notifier).update(v.round()),
             ),
           ],
           SizedBox(height: theme.density.baseGap * theme.scaling),
@@ -158,27 +134,83 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     );
   }
 
+  Widget _sliderSetting(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String valueLabel,
+    required double value,
+    required double min,
+    required double max,
+    required int divisions,
+    required ValueChanged<double> onChanged,
+  }) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final theme = shadcn.Theme.of(context);
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: theme.scaling * 16, color: cs.mutedForeground),
+            SizedBox(width: theme.density.baseGap * theme.scaling),
+            Expanded(
+              child: Text(
+                label,
+                style: theme.typography.xSmall.copyWith(color: cs.foreground, fontWeight: FontWeight.w500),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: cs.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: cs.primary.withValues(alpha: 0.2), width: 0.5),
+              ),
+              child: Text(
+                valueLabel,
+                style: theme.typography.xSmall.copyWith(
+                  color: cs.primary,
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: theme.density.baseGap * theme.scaling),
+        shadcn.Slider(
+          value: shadcn.SliderValue.single(value),
+          min: min,
+          max: max,
+          divisions: divisions,
+          onChanged: (v) => onChanged(v.value),
+        ),
+      ],
+    );
+  }
+
   Widget _presetChips(
-    BuildContext context,
-    WidgetRef ref, {
+    BuildContext context, {
     required int current,
     required List<int> presets,
     required String unit,
     required ValueChanged<int> onTap,
   }) {
     final theme = shadcn.Theme.of(context);
-    return Row(
-      children: [
-        SizedBox(width: theme.scaling * 26),
-        ...presets.map(
-          (v) => Padding(
-            padding: EdgeInsets.only(right: theme.density.baseGap * theme.scaling),
-            child: current == v
-                ? shadcn.Button.secondary(onPressed: () => onTap(v), child: Text('$v$unit'))
-                : shadcn.Button.outline(onPressed: () => onTap(v), child: Text('$v$unit')),
-          ),
-        ),
-      ],
+    return Padding(
+      padding: EdgeInsets.only(left: theme.scaling * 26),
+      child: Wrap(
+        spacing: theme.density.baseGap * theme.scaling,
+        runSpacing: theme.density.baseGap * theme.scaling * 0.5,
+        children: presets
+            .map(
+              (v) => current == v
+                  ? shadcn.Button.secondary(onPressed: () => onTap(v), child: Text('$v$unit'))
+                  : shadcn.Button.outline(onPressed: () => onTap(v), child: Text('$v$unit')),
+            )
+            .toList(),
+      ),
     );
   }
 }

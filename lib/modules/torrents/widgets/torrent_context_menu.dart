@@ -366,15 +366,23 @@ Future<String?> showTorrentBatchContextMenuMobile({
   );
 }
 
-class _MobileContextMenu extends StatelessWidget {
+class _MobileContextMenu extends StatefulWidget {
   final List<TorrentContextMenuItem> items;
   final Map<String, List<TorrentContextMenuItem>> submenus;
 
   const _MobileContextMenu({required this.items, required this.submenus});
 
   @override
+  State<_MobileContextMenu> createState() => _MobileContextMenuState();
+}
+
+class _MobileContextMenuState extends State<_MobileContextMenu> {
+  final List<List<TorrentContextMenuItem>> _stack = [];
+
+  List<TorrentContextMenuItem> get _items => _stack.isEmpty ? widget.items : _stack.last;
+
+  @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
     final maxHeight = MediaQuery.of(context).size.height * 0.65;
 
     return ConstrainedBox(
@@ -384,28 +392,28 @@ class _MobileContextMenu extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 10, bottom: 6),
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: cs.foreground.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
+            if (_stack.isNotEmpty) _buildBackRow(context),
             Flexible(
               child: ListView.builder(
                 shrinkWrap: true,
-                padding: const EdgeInsets.only(bottom: 16),
-                itemCount: items.length,
-                itemBuilder: (context, index) => _buildItem(context, items[index]),
+                padding: EdgeInsets.fromLTRB(0, _stack.isEmpty ? 8 : 0, 0, 16),
+                itemCount: _items.length,
+                itemBuilder: (context, index) => _buildItem(context, _items[index]),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBackRow(BuildContext context) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    return ListTile(
+      dense: true,
+      leading: Icon(shadcn.LucideIcons.chevronLeft, size: 20, color: cs.foreground),
+      title: Text('返回', style: TextStyle(fontSize: 14, color: cs.foreground, fontWeight: FontWeight.w600)),
+      onTap: () => setState(() => _stack.removeLast()),
     );
   }
 
@@ -439,18 +447,9 @@ class _MobileContextMenu extends StatelessWidget {
   }
 
   void _showSubmenu(BuildContext context, TorrentContextMenuItem submenuItem) {
-    final subItems = submenus[submenuItem.value] ?? const <TorrentContextMenuItem>[];
+    final subItems = widget.submenus[submenuItem.value] ?? const <TorrentContextMenuItem>[];
     if (subItems.isEmpty) return;
-
-    showAppSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => _MobileContextMenu(items: subItems, submenus: submenus),
-    ).then((action) {
-      if (action != null && context.mounted) {
-        closeAppSheet(context, action);
-      }
-    });
+    setState(() => _stack.add(subItems));
   }
 }
 

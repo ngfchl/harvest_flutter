@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/crontab.dart';
@@ -131,22 +131,68 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
     required String Function(T) labelBuilder,
     required ValueChanged<T?> onSelected,
   }) {
+    if (!context.isMobile) {
+      shadcn.showDialog<void>(
+        context: context,
+        builder: (dialogContext) => shadcn.ModalContainer(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360, maxHeight: 420),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 8, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      ),
+                      shadcn.IconButton.ghost(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        icon: const Icon(shadcn.LucideIcons.x, size: 16),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                    children: [
+                      for (final option in options)
+                        _SheetTile(
+                          title: Text(labelBuilder(option)),
+                          onTap: () {
+                            onSelected(option);
+                            Navigator.of(dialogContext).pop();
+                          },
+                          trailing: option == selected
+                              ? Icon(
+                                  shadcn.LucideIcons.check,
+                                  size: 18,
+                                  color: shadcn.Theme.of(dialogContext).colorScheme.primary,
+                                )
+                              : null,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
     showAppSheet(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => SafeArea(
+        top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: shadcn.Theme.of(context).colorScheme.border,
-                borderRadius: BorderRadius.circular(99),
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),

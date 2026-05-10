@@ -7,6 +7,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../widgets/cache_status_banner.dart';
 import '../shell/provider/screenshot_provider.dart';
 import '../shell/widgets/shell_scaffold.dart';
+import '../torrents/widgets/torrent_stats_bar.dart';
 import 'model/downloader.dart';
 import 'provider/downloader_provider.dart';
 import 'provider/downloader_speed_provider.dart';
@@ -131,16 +132,23 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
 
   Widget _buildStatusBar(double horizontalInset) {
     final theme = shadcn.Theme.of(context);
-    final typo = theme.typography;
+    final cs = theme.colorScheme;
     final tokens = _DownloaderPageTokens.of(context);
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(horizontalInset, tokens.size(12), horizontalInset, tokens.size(4)),
+    return Container(
+      padding: EdgeInsets.fromLTRB(horizontalInset, tokens.size(8), horizontalInset, tokens.size(8)),
+      decoration: BoxDecoration(
+        color: cs.background,
+        border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
+      ),
       child: Consumer(
         builder: (context, ref, _) {
           final cs = shadcn.Theme.of(context).colorScheme;
           final paused = ref.watch(speedPausedProvider);
           final remaining = ref.watch(speedRemainingProvider);
+          final downloaders = ref.watch(downloaderListProvider).valueOrNull ?? const <Downloader>[];
+          final activeCount = downloaders.where((d) => d.isActive).length;
+          final brushCount = downloaders.where((d) => !d.brush).length;
 
           final min = remaining ~/ 60;
           final sec = remaining % 60;
@@ -148,24 +156,32 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
 
           return Row(
             children: [
-              Icon(
-                shadcn.LucideIcons.circle,
-                size: tokens.iconXs,
-                color: paused ? cs.destructive : cs.primary,
-              ),
-              tokens.hGap(6),
-              Text(
-                paused ? '实时数据已暂停' : '实时数据接收中',
-                style: typo.xSmall.copyWith(color: cs.mutedForeground),
-              ),
-              if (!paused && remaining > 0) ...[
-                tokens.hGap(8),
-                shadcn.SecondaryBadge(
-                  leading: Icon(shadcn.LucideIcons.timer, size: tokens.iconXs),
-                  child: Text(countdown),
+              Expanded(
+                child: Wrap(
+                  spacing: 14,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    StatusBarMetric(
+                      icon: paused ? shadcn.LucideIcons.pause : shadcn.LucideIcons.radio,
+                      label: '实时',
+                      value: paused ? '已暂停' : '接收中',
+                      color: paused ? cs.destructive : cs.primary,
+                    ),
+                    if (!paused && remaining > 0)
+                      StatusBarMetric(
+                        icon: shadcn.LucideIcons.timer,
+                        label: '剩余',
+                        value: countdown,
+                        color: cs.primary,
+                      ),
+                    StatusBarCount(label: '启用', count: activeCount),
+                    StatusBarCount(label: '辅种', count: brushCount),
+                    StatusBarCount(label: '总数', count: downloaders.length),
+                  ],
                 ),
-              ],
-              const Spacer(),
+              ),
+              tokens.hGap(8),
               shadcn.IconButton.ghost(
                 onPressed: () => showSpeedSettings(context, ref),
                 icon: Icon(

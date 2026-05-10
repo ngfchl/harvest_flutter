@@ -241,7 +241,6 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
                               child: _switchRow(
                                 icon: shadcn.LucideIcons.power,
                                 title: '启用',
-                                subtitle: '是否激活',
                                 value: _isActive,
                                 onChanged: (v) => setState(() => _isActive = v),
                               ),
@@ -255,7 +254,6 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
                               child: _switchRow(
                                 icon: shadcn.LucideIcons.zap,
                                 title: '辅种',
-                                subtitle: '是否启用',
                                 value: !_brush,
                                 onChanged: (v) => setState(() => _brush = !v),
                               ),
@@ -416,7 +414,6 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
   Widget _switchRow({
     required IconData icon,
     required String title,
-    required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
@@ -427,13 +424,7 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
           Icon(icon, size: 14),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title),
-                Text(subtitle, style: const TextStyle(fontSize: 12)),
-              ],
-            ),
+            child: Text(title),
           ),
           Switch(value: value, onChanged: onChanged),
         ],
