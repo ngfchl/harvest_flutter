@@ -1149,16 +1149,16 @@ extension _PhoneDashboardView on _DashboardPageState {
       child: Row(
         children: [
           _buildActionShortcut(
-            '刷新任务',
-            '一键刷新所有',
+            '抓取数据',
+            '刷新站点数据',
             shadcn.LucideIcons.refreshCw,
             _phoneTreemapChartColor(5),
             _hasRunningSummaryAction ? null : _refreshSiteData,
             _isRefreshingSiteData,
           ),
           _buildActionShortcut(
-            '重新拉取',
-            '更新站点数据',
+            '拉取数据',
+            '拉取Docker数据',
             shadcn.LucideIcons.rotateCw,
             _phoneCpuChartColor,
             _hasRunningSummaryAction ? null : _refreshDashboardData,
