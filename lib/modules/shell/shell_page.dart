@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -900,7 +901,7 @@ class _AccountMenuButton extends ConsumerWidget {
               const shadcn.MenuDivider(),
               shadcn.MenuLabel(child: const Text('设置')),
               _item(context, icon: shadcn.LucideIcons.palette, title: '主题设置', onTap: () => showThemeDialog(context)),
-              _item(context, icon: shadcn.LucideIcons.camera, title: '截图分享', onTap: onScreenshot),
+              if (!kIsWeb) _item(context, icon: shadcn.LucideIcons.camera, title: '截图分享', onTap: onScreenshot),
               _item(
                 context,
                 icon: shadcn.LucideIcons.download,
