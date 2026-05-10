@@ -63,6 +63,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   bool _resourceFilterHrOnly = false;
   bool _resourceFilterSizeEnabled = false;
   RangeValues _resourceFilterSizeGb = const RangeValues(0, 100);
+  OverlayEntry? _resourceFilterOverlay;
 
   _ResourceFilterData _resourceFilterData() {
     final results = ref.read(resourceSearchProvider).results;
@@ -105,6 +106,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
 
   @override
   void dispose() {
+    _closeResourceFilterPopover();
     _ctrl.dispose();
     _focusNode.dispose();
     _scrollController.dispose();
@@ -508,6 +510,10 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
             '${state.results.length} 条',
             style: typo.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
           ),
+          if (state.results.isNotEmpty) ...[
+            const SizedBox(width: 8),
+            _buildResourceFilterButton(),
+          ],
         ],
       ),
     );
@@ -1022,6 +1028,10 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               '${state.results.length} 条',
               style: typo.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
             ),
+            if (state.results.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              _buildResourceFilterButton(),
+            ],
           ],
         ),
         children: [_buildMessagesList(state)],
@@ -1110,8 +1120,6 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               if (field != _ResourceSortField.values.last) const SizedBox(width: 6),
             ],
             const SizedBox(width: 10),
-            _buildResourceFilterButton(),
-            const SizedBox(width: 6),
             _buildResourceFilterResultCount(filteredCount),
           ],
         ),
@@ -1143,82 +1151,129 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     final count = _resourceFilterCount;
     final active = count > 0;
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: _showResourceFilterSheet,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-        decoration: BoxDecoration(
-          color: active ? cs.primary.withValues(alpha: 0.12) : cs.mutedForeground.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(7),
-          border: Border.all(color: active ? cs.primary.withValues(alpha: 0.55) : cs.border.withValues(alpha: 0.45)),
+    return Builder(
+      builder: (buttonContext) => GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _showResourceFilterPopover(buttonContext),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+          decoration: BoxDecoration(
+            color: active ? cs.primary.withValues(alpha: 0.12) : cs.mutedForeground.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(7),
+            border: Border.all(color: active ? cs.primary.withValues(alpha: 0.55) : cs.border.withValues(alpha: 0.45)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(shadcn.LucideIcons.listFilter, size: 12, color: active ? cs.primary : cs.foreground),
+              const SizedBox(width: 4),
+              Text(
+                active ? '筛选 $count' : '筛选',
+                style: typo.xSmall.copyWith(
+                  color: active ? cs.primary : cs.foreground,
+                  fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+      ),
+    );
+  }
+
+  void _showResourceFilterPopover(BuildContext anchorContext) {
+    if (_resourceFilterOverlay != null) {
+      _closeResourceFilterPopover();
+      return;
+    }
+
+    final overlay = Overlay.of(anchorContext, rootOverlay: true);
+    final anchorBox = anchorContext.findRenderObject() as RenderBox?;
+    final overlayBox = overlay.context.findRenderObject() as RenderBox?;
+    if (anchorBox == null || overlayBox == null || !anchorBox.hasSize || !overlayBox.hasSize) return;
+
+    final anchorOffset = anchorBox.localToGlobal(Offset.zero, ancestor: overlayBox);
+    final anchorSize = anchorBox.size;
+    final overlaySize = overlayBox.size;
+    final compact = overlaySize.width < 600;
+    final belowTop = anchorOffset.dy + anchorSize.height + 8;
+    final belowSpace = overlaySize.height - belowTop - 12;
+    final aboveBottom = overlaySize.height - anchorOffset.dy + 8;
+    final aboveSpace = anchorOffset.dy - 12;
+    final showAbove = !compact && belowSpace < 280 && aboveSpace > belowSpace;
+    final panelMaxHeight = (showAbove ? aboveSpace : belowSpace)
+        .clamp(compact ? 160.0 : 220.0, compact ? overlaySize.height - 24 : 520.0)
+        .toDouble();
+    final panelLeft = compact ? 12.0 : null;
+    final panelRight = compact ? 12.0 : (overlaySize.width - anchorOffset.dx - anchorSize.width).clamp(8.0, overlaySize.width);
+
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (overlayContext) => SizedBox.expand(
+        child: Stack(
           children: [
-            Icon(shadcn.LucideIcons.listFilter, size: 12, color: active ? cs.primary : cs.foreground),
-            const SizedBox(width: 4),
-            Text(
-              active ? '筛选 $count' : '筛选',
-              style: typo.xSmall.copyWith(
-                color: active ? cs.primary : cs.foreground,
-                fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: _closeResourceFilterPopover,
+                child: const SizedBox.expand(),
+              ),
+            ),
+            Positioned(
+              top: showAbove ? null : belowTop,
+              bottom: showAbove ? aboveBottom : null,
+              left: panelLeft,
+              right: panelRight,
+              child: StatefulBuilder(
+                builder: (popoverContext, popoverSetState) {
+                  void update(VoidCallback fn) {
+                    setState(fn);
+                    popoverSetState(() {});
+                  }
+
+                  return _ResourceFilterPanel(
+                    data: _resourceFilterData(),
+                    selectedSites: _resourceFilterSites,
+                    selectedSales: _resourceFilterSales,
+                    selectedCategories: _resourceFilterCategories,
+                    selectedResolutions: _resourceFilterResolutions,
+                    selectedTags: _resourceFilterTags,
+                    selectedSeasons: _resourceFilterSeasons,
+                    selectedEpisodes: _resourceFilterEpisodes,
+                    hrOnly: _resourceFilterHrOnly,
+                    sizeEnabled: _resourceFilterSizeEnabled,
+                    sizeGb: _resourceFilterSizeGb,
+                    maxHeight: panelMaxHeight,
+                    siteLabel: _siteLabel,
+                    categoryLabel: _categoryLabel,
+                    onToggleSite: (value) => update(() => _toggleFilterValue(_resourceFilterSites, value)),
+                    onToggleSale: (value) => update(() => _toggleFilterValue(_resourceFilterSales, value)),
+                    onToggleCategory: (value) => update(() => _toggleFilterValue(_resourceFilterCategories, value)),
+                    onToggleResolution: (value) => update(() => _toggleFilterValue(_resourceFilterResolutions, value)),
+                    onToggleTag: (value) => update(() => _toggleFilterValue(_resourceFilterTags, value)),
+                    onToggleSeason: (value) => update(() => _toggleFilterValue(_resourceFilterSeasons, value)),
+                    onToggleEpisode: (value) => update(() => _toggleFilterValue(_resourceFilterEpisodes, value)),
+                    onToggleHr: () => update(() => _resourceFilterHrOnly = !_resourceFilterHrOnly),
+                    onToggleSize: () => update(() => _resourceFilterSizeEnabled = !_resourceFilterSizeEnabled),
+                    onSizeChanged: (value) => update(() => _resourceFilterSizeGb = value),
+                    onClear: () => update(_resetResourceFilters),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
     );
+    _resourceFilterOverlay = entry;
+    overlay.insert(entry);
   }
 
-  void _showResourceFilterSheet() {
-    showAppSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (sheetContext, sheetSetState) {
-          void update(VoidCallback fn) {
-            setState(fn);
-            sheetSetState(() {});
-          }
-
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
-              child: _ResourceFilterPanel(
-                data: _resourceFilterData(),
-                selectedSites: _resourceFilterSites,
-                selectedSales: _resourceFilterSales,
-                selectedCategories: _resourceFilterCategories,
-                selectedResolutions: _resourceFilterResolutions,
-                selectedTags: _resourceFilterTags,
-                selectedSeasons: _resourceFilterSeasons,
-                selectedEpisodes: _resourceFilterEpisodes,
-                hrOnly: _resourceFilterHrOnly,
-                sizeEnabled: _resourceFilterSizeEnabled,
-                sizeGb: _resourceFilterSizeGb,
-                siteLabel: _siteLabel,
-                categoryLabel: _categoryLabel,
-                onToggleSite: (value) => update(() => _toggleFilterValue(_resourceFilterSites, value)),
-                onToggleSale: (value) => update(() => _toggleFilterValue(_resourceFilterSales, value)),
-                onToggleCategory: (value) => update(() => _toggleFilterValue(_resourceFilterCategories, value)),
-                onToggleResolution: (value) => update(() => _toggleFilterValue(_resourceFilterResolutions, value)),
-                onToggleTag: (value) => update(() => _toggleFilterValue(_resourceFilterTags, value)),
-                onToggleSeason: (value) => update(() => _toggleFilterValue(_resourceFilterSeasons, value)),
-                onToggleEpisode: (value) => update(() => _toggleFilterValue(_resourceFilterEpisodes, value)),
-                onToggleHr: () => update(() => _resourceFilterHrOnly = !_resourceFilterHrOnly),
-                onToggleSize: () => update(() => _resourceFilterSizeEnabled = !_resourceFilterSizeEnabled),
-                onSizeChanged: (value) => update(() => _resourceFilterSizeGb = value),
-                onClear: () => update(_resetResourceFilters),
-              ),
-            ),
-          );
-        },
-      ),
-    );
+  void _closeResourceFilterPopover() {
+    _resourceFilterOverlay?.remove();
+    _resourceFilterOverlay = null;
   }
 
   Widget _buildResourceSortChip(_ResourceSortField field) {
@@ -1440,10 +1495,10 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   Set<String> _extractResourceSeasons(SearchTorrentInfo item) {
     final text = '${item.title} ${item.subtitle}'.toUpperCase();
     final values = <String>{};
-    final pattern = RegExp(r'(^|[^A-Z0-9])S(\d{1,2})(?=[^A-Z0-9]|$)');
+    final pattern = RegExp(r'(^|[^A-Z0-9])S(\d{1,2})(?=[^0-9]|$)');
     for (final match in pattern.allMatches(text)) {
       final number = int.tryParse(match.group(2) ?? '');
-      if (number != null && number > 0) values.add('S${number.toString().padLeft(2, '0')}');
+      if (number != null && number >= 0) values.add('S${number.toString().padLeft(2, '0')}');
     }
     return values;
   }
@@ -1451,7 +1506,24 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   Set<String> _extractResourceEpisodes(SearchTorrentInfo item) {
     final text = '${item.title} ${item.subtitle}'.toUpperCase();
     final values = <String>{};
-    final pattern = RegExp(r'(^|[^A-Z0-9])EP?(\d{1,3})(?=[^A-Z0-9]|$)');
+    final rangePattern = RegExp(
+      r'(^|[^A-Z0-9])(?:S\d{1,2})?E(?:P)?(\d{1,3})\s*[-~－–—]\s*(?:(?:S\d{1,2})?E(?:P)?)?(\d{1,3}|\*\*)(?=[^A-Z0-9]|$)',
+    );
+    for (final match in rangePattern.allMatches(text)) {
+      final start = int.tryParse(match.group(2) ?? '');
+      final endRaw = match.group(3) ?? '';
+      final end = int.tryParse(endRaw);
+      if (start == null || start <= 0) continue;
+      if (end == null || end < start || end - start > 80) {
+        values.add('E${start.toString().padLeft(2, '0')}');
+        continue;
+      }
+      for (var number = start; number <= end; number++) {
+        values.add('E${number.toString().padLeft(2, '0')}');
+      }
+    }
+
+    final pattern = RegExp(r'(^|[^A-Z0-9])(?:S\d{1,2})?E(?:P)?(\d{1,3})(?=[^0-9]|$)');
     for (final match in pattern.allMatches(text)) {
       final number = int.tryParse(match.group(2) ?? '');
       if (number != null && number > 0) values.add('E${number.toString().padLeft(2, '0')}');
@@ -1746,7 +1818,7 @@ class _ResourceFilterData {
   });
 }
 
-class _ResourceFilterPanel extends StatelessWidget {
+class _ResourceFilterPanel extends StatefulWidget {
   final _ResourceFilterData data;
   final Set<String> selectedSites;
   final Set<String> selectedSales;
@@ -1758,6 +1830,7 @@ class _ResourceFilterPanel extends StatelessWidget {
   final bool hrOnly;
   final bool sizeEnabled;
   final RangeValues sizeGb;
+  final double maxHeight;
   final String Function(String value) siteLabel;
   final String Function(String value) categoryLabel;
   final ValueChanged<String> onToggleSite;
@@ -1784,6 +1857,7 @@ class _ResourceFilterPanel extends StatelessWidget {
     required this.hrOnly,
     required this.sizeEnabled,
     required this.sizeGb,
+    this.maxHeight = 520,
     required this.siteLabel,
     required this.categoryLabel,
     required this.onToggleSite,
@@ -1800,20 +1874,34 @@ class _ResourceFilterPanel extends StatelessWidget {
   });
 
   @override
+  State<_ResourceFilterPanel> createState() => _ResourceFilterPanelState();
+}
+
+class _ResourceFilterPanelState extends State<_ResourceFilterPanel> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final typo = shadcn.Theme.of(context).typography;
-    final panelWidth = (MediaQuery.sizeOf(context).width - 24).clamp(280.0, 520.0).toDouble();
+    final mediaWidth = MediaQuery.sizeOf(context).width;
+    final panelWidth = mediaWidth < 600 ? double.infinity : (mediaWidth - 24).clamp(280.0, 520.0).toDouble();
     final activeCount =
-        selectedSites.length +
-        selectedSales.length +
-        selectedCategories.length +
-        selectedResolutions.length +
-        selectedTags.length +
-        selectedSeasons.length +
-        selectedEpisodes.length +
-        (sizeEnabled ? 1 : 0) +
-        (hrOnly ? 1 : 0);
+        widget.selectedSites.length +
+        widget.selectedSales.length +
+        widget.selectedCategories.length +
+        widget.selectedResolutions.length +
+        widget.selectedTags.length +
+        widget.selectedSeasons.length +
+        widget.selectedEpisodes.length +
+        (widget.sizeEnabled ? 1 : 0) +
+        (widget.hrOnly ? 1 : 0);
 
     return Container(
       width: panelWidth,
@@ -1825,7 +1913,7 @@ class _ResourceFilterPanel extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 520),
+        constraints: BoxConstraints(maxHeight: widget.maxHeight),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1847,69 +1935,76 @@ class _ResourceFilterPanel extends StatelessWidget {
                     ),
                   ],
                   const Spacer(),
-                  if (activeCount > 0) shadcn.Button.outline(onPressed: onClear, child: const Text('清除')),
+                  if (activeCount > 0) shadcn.Button.outline(onPressed: widget.onClear, child: const Text('清除')),
                 ],
               ),
             ),
             Divider(height: 1, thickness: 0.5, color: cs.border.withValues(alpha: 0.35)),
             Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-                children: [
-                  _ResourceFilterSwitchTile(label: '只看 HR', value: hrOnly, onToggle: onToggleHr),
-                  _ResourceSizeRangeFilter(
-                    enabled: sizeEnabled,
-                    value: sizeGb,
-                    onToggle: onToggleSize,
-                    onChanged: onSizeChanged,
-                  ),
-                  _ResourceFilterSection(
-                    title: '站点',
-                    values: data.sites,
-                    selected: selectedSites,
-                    labelOf: siteLabel,
-                    onToggle: onToggleSite,
-                  ),
-                  _ResourceFilterSection(
-                    title: '优惠',
-                    values: data.sales,
-                    selected: selectedSales,
-                    onToggle: onToggleSale,
-                  ),
-                  _ResourceFilterSection(
-                    title: '分类',
-                    values: data.categories,
-                    selected: selectedCategories,
-                    labelOf: categoryLabel,
-                    onToggle: onToggleCategory,
-                  ),
-                  _ResourceFilterSection(
-                    title: '分辨率',
-                    values: data.resolutions,
-                    selected: selectedResolutions,
-                    onToggle: onToggleResolution,
-                  ),
-                  _ResourceHorizontalFilterSection(
-                    title: '季',
-                    values: data.seasons,
-                    selected: selectedSeasons,
-                    onToggle: onToggleSeason,
-                  ),
-                  _ResourceHorizontalFilterSection(
-                    title: '集',
-                    values: data.episodes,
-                    selected: selectedEpisodes,
-                    onToggle: onToggleEpisode,
-                  ),
-                  _ResourceFilterSection(
-                    title: '标签',
-                    values: data.tags,
-                    selected: selectedTags,
-                    onToggle: onToggleTag,
-                    prefix: '#',
-                  ),
-                ],
+              child: Scrollbar(
+                controller: _scrollController,
+                thumbVisibility: true,
+                child: ListView(
+                  controller: _scrollController,
+                  shrinkWrap: true,
+                  primary: false,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+                  children: [
+                    _ResourceFilterSwitchTile(label: '只看 HR', value: widget.hrOnly, onToggle: widget.onToggleHr),
+                    _ResourceSizeRangeFilter(
+                      enabled: widget.sizeEnabled,
+                      value: widget.sizeGb,
+                      onToggle: widget.onToggleSize,
+                      onChanged: widget.onSizeChanged,
+                    ),
+                    _ResourceFilterSection(
+                      title: '站点',
+                      values: widget.data.sites,
+                      selected: widget.selectedSites,
+                      labelOf: widget.siteLabel,
+                      onToggle: widget.onToggleSite,
+                    ),
+                    _ResourceFilterSection(
+                      title: '优惠',
+                      values: widget.data.sales,
+                      selected: widget.selectedSales,
+                      onToggle: widget.onToggleSale,
+                    ),
+                    _ResourceFilterSection(
+                      title: '分类',
+                      values: widget.data.categories,
+                      selected: widget.selectedCategories,
+                      labelOf: widget.categoryLabel,
+                      onToggle: widget.onToggleCategory,
+                    ),
+                    _ResourceFilterSection(
+                      title: '分辨率',
+                      values: widget.data.resolutions,
+                      selected: widget.selectedResolutions,
+                      onToggle: widget.onToggleResolution,
+                    ),
+                    _ResourceHorizontalFilterSection(
+                      title: '季',
+                      values: widget.data.seasons,
+                      selected: widget.selectedSeasons,
+                      onToggle: widget.onToggleSeason,
+                    ),
+                    _ResourceHorizontalFilterSection(
+                      title: '集',
+                      values: widget.data.episodes,
+                      selected: widget.selectedEpisodes,
+                      onToggle: widget.onToggleEpisode,
+                    ),
+                    _ResourceFilterSection(
+                      title: '标签',
+                      values: widget.data.tags,
+                      selected: widget.selectedTags,
+                      onToggle: widget.onToggleTag,
+                      prefix: '#',
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
