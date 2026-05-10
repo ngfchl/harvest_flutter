@@ -334,7 +334,7 @@ jobs:
 
 
   macos_arm: # 构建 macOS 桌面应用
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - name: 签出仓库
         uses: actions/checkout@v6
@@ -407,23 +407,36 @@ jobs:
 
 
   ios: # 构建 iOS 应用（需要 macOS 系统）
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - name: 签出仓库
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: 使用默认 Xcode 并初始化 iOS Platform
+      - name: 指定最新 Xcode 26 并初始化 iOS Platform
         shell: bash
         run: |
           set -euo pipefail
 
-          DEVELOPER_DIR=$(xcode-select -p)
+          echo "::group::Available Xcode 26 apps"
+          ls -1d /Applications/Xcode_26*.app 2>/dev/null || true
+          echo "::endgroup::"
+
+          XCODE_PATH=$(ls -1d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -n 1 || true)
+          if [ -z "$XCODE_PATH" ]; then
+            echo "Xcode 26 not found under /Applications"
+            ls -1d /Applications/Xcode*.app 2>/dev/null || true
+            exit 1
+          fi
+
+          DEVELOPER_DIR="$XCODE_PATH/Contents/Developer"
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
 
           echo "::group::Selected Xcode"
+          echo "XCODE_PATH=$XCODE_PATH"
           echo "DEVELOPER_DIR=$DEVELOPER_DIR"
+          sudo xcode-select -s "$DEVELOPER_DIR"
           xcodebuild -version
           echo "xcode-select -p: $(xcode-select -p)"
           echo "::endgroup::"
@@ -516,7 +529,7 @@ jobs:
 
   web: # 构建 Web 版本
     runs-on: ubuntu-latest  # 使用最新的 Ubuntu 系统执行
-    needs: [ linux, android, windows, macos_intel, macos_arm, ios ]
+    needs: [ linux, android, windows, macos_intel, macos_arm ]
 
     steps:
       - name: 签出仓库
