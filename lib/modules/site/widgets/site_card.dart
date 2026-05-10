@@ -203,58 +203,79 @@ class SiteCard extends ConsumerWidget {
     WebSite? config,
   ) {
     final milestone = _siteLevelMilestone(config, status);
+    final hasInvite = (status?.invitation ?? 0) > 0;
     final hasMail = site.mail > 0;
     final hasNotice = site.notice > 0;
-    final hasRight = hasMail || hasNotice || milestone != null;
+    final hasRight = hasMail || hasNotice || hasInvite || milestone != null;
     return Row(
       children: [
         Expanded(
           child: Align(
             alignment: Alignment.centerLeft,
-            child: site.durationText.isEmpty
-                ? const SizedBox.shrink()
-                : _tooltipWrap(
-                    context,
-                    '注册时长',
-                    _infoTag(context, Icons.access_time, site.durationText),
-                  ),
-          ),
-        ),
-        if (hasRight)
-          Align(
-            alignment: Alignment.centerRight,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (hasMail)
-                  _tooltipWrap(
-                    context,
-                    '短消息',
-                    _indicator(
-                      shadcn.LucideIcons.mail,
-                      fmtCompact(site.mail.toDouble()),
-                      siteInfo(context),
+            child: SizedBox(
+              height: 18,
+              child: site.durationText.isEmpty
+                  ? const SizedBox.shrink()
+                  : _tooltipWrap(
+                      context,
+                      '注册时长',
+                      _infoTag(context, Icons.access_time, site.durationText),
                     ),
-                  ),
-                if (hasNotice) ...[
-                  if (hasMail) const SizedBox(width: 6),
-                  _tooltipWrap(
-                    context,
-                    '公告通知',
-                    _indicator(
-                      shadcn.LucideIcons.bell,
-                      fmtCompact(site.notice.toDouble()),
-                      siteWarning(context),
-                    ),
-                  ),
-                ],
-                if (milestone != null) ...[
-                  if (hasMail || hasNotice) const SizedBox(width: 8),
-                  _levelMilestoneBadge(context, milestone),
-                ],
-              ],
             ),
           ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: SizedBox(
+            height: 18,
+            child: hasRight
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (hasMail)
+                        _tooltipWrap(
+                          context,
+                          '短消息',
+                          _indicator(
+                            shadcn.LucideIcons.mail,
+                            fmtCompact(site.mail.toDouble()),
+                            siteInfo(context),
+                          ),
+                        ),
+                      if (hasNotice) ...[
+                        if (hasMail) const SizedBox(width: 6),
+                        _tooltipWrap(
+                          context,
+                          '公告通知',
+                          _indicator(
+                            shadcn.LucideIcons.bell,
+                            fmtCompact(site.notice.toDouble()),
+                            siteWarning(context),
+                          ),
+                        ),
+                      ],
+                      if (hasInvite) ...[
+                        if (hasMail || hasNotice) const SizedBox(width: 6),
+                        _tooltipWrap(
+                          context,
+                          '邀请数',
+                          _indicator(
+                            Icons.person_outline,
+                            fmtCompact((status?.invitation ?? 0).toDouble()),
+                            siteInfo(context),
+                          ),
+                        ),
+                      ],
+                      if (milestone != null) ...[
+                        if (hasMail || hasNotice || hasInvite)
+                          const SizedBox(width: 8),
+                        _levelMilestoneBadge(context, milestone),
+                      ],
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ),
       ],
     );
   }
@@ -1066,6 +1087,43 @@ Widget _siteLevelMilestoneBadge(
   );
 }
 
+Widget _siteInvitePill(BuildContext context, int invitation) {
+  final accent = siteInfo(context);
+  final isDark = shadcn.Theme.of(context).brightness == Brightness.dark;
+  final foreground = shadcn.Theme.of(context).colorScheme.foreground;
+  return _siteTooltip(
+    '邀请数 $invitation',
+    Container(
+      height: 24,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: isDark ? 0.14 : 0.10),
+        borderRadius: siteRadius(context, size: "xl"),
+        border: Border.all(
+          color: accent.withValues(alpha: isDark ? 0.22 : 0.16),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.person, size: 12, color: accent.withValues(alpha: 0.68)),
+          const SizedBox(width: 4),
+          Text(
+            '邀请 ${fmtCompact(invitation.toDouble())}',
+            style: TextStyle(
+              color: foreground.withValues(alpha: 0.80),
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              height: 1,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class SiteCard2 extends ConsumerWidget {
   final SiteInfo site;
   final bool privacy;
@@ -1207,6 +1265,7 @@ class SiteCard2 extends ConsumerWidget {
     final updateText = site.latestStatusUpdatedText;
     final milestone = _siteLevelMilestone(config, status);
     final signStatus = _siteSignStatus(site, config);
+    final hasInvite = status.invitation > 0;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1272,6 +1331,10 @@ class SiteCard2 extends ConsumerWidget {
                   if (_hasSiteUnread(site)) ...[
                     const SizedBox(width: 8),
                     _siteUnreadIndicators(context, site),
+                  ],
+                  if (hasInvite) ...[
+                    const SizedBox(width: 8),
+                    _siteInvitePill(context, status.invitation),
                   ],
                   if (milestone != null) ...[
                     const SizedBox(width: 8),
@@ -1749,8 +1812,10 @@ class SiteCard3 extends ConsumerWidget {
                     const SizedBox(width: 8),
                     _levelPill(context, status.myLevel),
                   ],
-                  const SizedBox(width: 6),
-                  _invitePill(context, status.invitation),
+                  if (status.invitation > 0) ...[
+                    const SizedBox(width: 6),
+                    _invitePill(context, status.invitation),
+                  ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 6),
                     _siteSignBadge(context, signStatus),
@@ -2054,9 +2119,10 @@ class SiteCard3 extends ConsumerWidget {
   }
 
   Widget _footer(BuildContext context, WidgetRef ref, SiteDailyStatus status) {
-    final text = status.updated_at.trim().isNotEmpty
+    final rawText = status.updated_at.trim().isNotEmpty
         ? status.updated_at.trim()
         : (site.latestStatusUpdatedAt ?? '').trim();
+    final text = _trimMilliseconds(rawText);
     return Row(
       children: [
         Expanded(
@@ -2106,6 +2172,11 @@ class SiteCard3 extends ConsumerWidget {
         _actionMenuButton(context, ref),
       ],
     );
+  }
+
+  String _trimMilliseconds(String text) {
+    if (text.isEmpty) return text;
+    return text.replaceFirst(RegExp(r'\.(\d+)(?=(?:Z|[+-]\d{2}:?\d{2})?$)'), '');
   }
 
   Widget _actionMenuButton(BuildContext context, WidgetRef ref) {
@@ -2216,37 +2287,7 @@ class SiteCard3 extends ConsumerWidget {
   }
 
   Widget _invitePill(BuildContext context, int invitation) {
-    final accent = siteInfo(context);
-    return Container(
-      height: 24,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: _softTileColor(context, siteInfo(context, alpha: 0.08), accent),
-        borderRadius: siteRadius(context, size: "xl"),
-        border: Border.all(
-          color: _isDark(context)
-              ? accent.withValues(alpha: 0.22)
-              : siteInfo(context, alpha: 0.16),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.person, size: 12, color: accent.withValues(alpha: 0.68)),
-          const SizedBox(width: 4),
-          Text(
-            '邀请 ${fmtCompact(invitation.toDouble())}',
-            style: TextStyle(
-              color: _mutedText(context).withValues(alpha: 0.80),
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              height: 1,
-            ),
-          ),
-        ],
-      ),
-    );
+    return _siteInvitePill(context, invitation);
   }
 
   Widget _moreCircle(BuildContext context) {

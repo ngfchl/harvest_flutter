@@ -1,11 +1,11 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_menu.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../widgets/cache_status_banner.dart';
@@ -72,7 +72,7 @@ class _SitePageState extends ConsumerState<SitePage> {
       child: Column(
         children: [
           // 筛选面板（桌面端展开时显示）
-          if (!mobile && _showFilter) const SiteFilterPanel(),
+          if (!mobile && _showFilter) SiteFilterPanel(onClose: () => setState(() => _showFilter = false)),
           // 工具栏统一放顶部
           _buildToolbar(context, filteredSites.length, totalCount, hasFilters, mobile),
           CacheStatusBanner(info: cacheInfo, margin: EdgeInsets.fromLTRB(mobile ? 12 : 16, 0, mobile ? 12 : 16, 6)),
@@ -897,19 +897,6 @@ class _MobileFilterSheet extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 拖拽条
-            Padding(
-              padding: const EdgeInsets.only(top: 10, bottom: 8),
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: cs.mutedForeground.withValues(alpha: 0.3),
-                  borderRadius: siteRadius(context, size: "xs"),
-                ),
-              ),
-            ),
-
             // 搜索 + 计数
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
