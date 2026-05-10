@@ -64,6 +64,13 @@ extension _DashboardThemeRadius on BuildContext {
   BorderRadius get _dashRadiusXl => _dashTheme.borderRadiusXl;
 }
 
+bool _isDashboardTooltipSummaryLine(String line) {
+  final tabIndex = line.indexOf('\t');
+  if (tabIndex <= 0) return false;
+  final label = line.substring(0, tabIndex).trim();
+  return label == '汇总' || label == '今日汇总' || label == '数值' || label == '总数' || label == '总值' || label == '占比';
+}
+
 class _DashboardIconTooltip extends StatelessWidget {
   final String message;
   final Widget child;
@@ -1839,130 +1846,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   // ———————————————— Tooltip ————————————————
 
   Widget _buildTooltipWidget(String text) {
-    final theme = shadcn.Theme.of(context);
-    final lines = text.split('\n');
-    final hideTitle = lines.isNotEmpty && lines.first == '__NO_HEADER__';
-    final hasTitle = lines.isNotEmpty && lines.first.startsWith('📅');
-    final bodyLines = hideTitle || hasTitle ? lines.skip(1).toList() : lines;
-
-    Widget buildLine(String line) {
-      final isSummary = line.startsWith('汇总') || line.startsWith('今日汇总');
-      final tabIndex = line.indexOf('\t');
-      if (tabIndex > 0) {
-        final name = line.substring(0, tabIndex);
-        final value = line.substring(tabIndex + 1);
-        return Container(
-          margin: const EdgeInsets.symmetric(vertical: 1),
-          padding: EdgeInsets.symmetric(horizontal: isSummary ? 7 : 0, vertical: isSummary ? 5 : 2),
-          decoration: isSummary
-              ? BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                  borderRadius: context._dashRadiusSm,
-                )
-              : null,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  name,
-                  style: theme.typography.small.copyWith(
-                    fontWeight: isSummary ? FontWeight.w800 : FontWeight.w400,
-                    color: isSummary ? theme.colorScheme.primary : theme.colorScheme.mutedForeground,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                value,
-                textAlign: TextAlign.right,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.typography.small.copyWith(
-                  fontWeight: isSummary ? FontWeight.w800 : FontWeight.w500,
-                  color: isSummary ? theme.colorScheme.primary : theme.colorScheme.foreground,
-                ),
-              ),
-            ],
-          ),
-        );
-      }
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: Text(line, style: theme.typography.small.copyWith(color: theme.colorScheme.mutedForeground)),
-      );
-    }
-
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 280, maxHeight: 260),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.background.withValues(alpha: 0.98),
-        borderRadius: context._dashRadiusMd,
-        border: Border.all(color: theme.colorScheme.border.withValues(alpha: 0.78)),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.foreground.withValues(alpha: 0.18),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-            spreadRadius: -4,
-          ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: ClipRRect(
-        borderRadius: context._dashRadiusMd,
-        child: ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.zero,
-          children: [
-            if (hideTitle)
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: _hideDashboardOverlayTooltip,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8, bottom: 4),
-                    child: Icon(shadcn.LucideIcons.x, size: 14, color: theme.colorScheme.mutedForeground),
-                  ),
-                ),
-              )
-            else
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        hasTitle ? lines.first : '详情',
-                        style: theme.typography.small.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: theme.colorScheme.foreground,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: _hideDashboardOverlayTooltip,
-                      child: Padding(
-                        padding: const EdgeInsets.all(3),
-                        child: Icon(shadcn.LucideIcons.x, size: 14, color: theme.colorScheme.mutedForeground),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ...bodyLines.map(buildLine),
-          ],
-        ),
-      ),
-    );
+    return _DashboardPagedTooltip(text: text, onClose: _hideDashboardOverlayTooltip);
   }
 
   void _rememberDashboardTooltipPosition(PointerDownEvent event) {
@@ -1987,34 +1871,75 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final size = MediaQuery.sizeOf(context);
     final padding = MediaQuery.viewPaddingOf(context);
     const margin = 12.0;
-    final tooltipWidth = size.width < 304 ? size.width - margin * 2 : 280.0;
-    const tooltipHeight = 260.0;
+    final availableWidth = (size.width - margin * 2).clamp(160.0, size.width).toDouble();
+    final availableHeight = (size.height - padding.top - padding.bottom - margin * 2).clamp(160.0, size.height).toDouble();
+    final tooltipWidth = availableWidth.clamp(160.0, 420.0).toDouble();
+    final tooltipHeight = _dashboardTooltipPreferredHeight(text, availableHeight);
     final position = _dashboardTooltipPosition ?? Offset(size.width / 2, size.height / 2);
 
-    var left = position.dx - tooltipWidth / 2;
-    final maxLeft = size.width - tooltipWidth - margin;
-    if (left < margin) left = margin;
-    if (maxLeft > margin && left > maxLeft) left = maxLeft;
-
     final minTop = padding.top + margin;
-    final maxTop = size.height - padding.bottom - tooltipHeight - margin;
+    final maxTop = (size.height - padding.bottom - tooltipHeight - margin).clamp(minTop, size.height).toDouble();
     final aboveTop = position.dy - tooltipHeight - 14;
     final belowTop = position.dy + 14;
     var top = aboveTop >= minTop ? aboveTop : belowTop;
-    if (top < minTop) top = minTop;
-    if (maxTop > minTop && top > maxTop) top = maxTop;
+    top = top.clamp(minTop, maxTop).toDouble();
+
+    final minLeft = margin;
+    final maxLeft = (size.width - tooltipWidth - margin).clamp(minLeft, size.width).toDouble();
+    var left = position.dx - tooltipWidth / 2;
+    left = left.clamp(minLeft, maxLeft).toDouble();
 
     _hideDashboardOverlayTooltip();
     _dashboardTooltipEntry = OverlayEntry(
-      builder: (_) => Positioned(
-        left: left,
-        top: top,
-        width: tooltipWidth,
-        child: Material(type: MaterialType.transparency, child: _buildTooltipWidget(text)),
+      builder: (_) => Positioned.fill(
+        child: Material(
+          type: MaterialType.transparency,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: _hideDashboardOverlayTooltip,
+                  child: const SizedBox.expand(),
+                ),
+              ),
+              Positioned(
+                left: left,
+                top: top,
+                width: tooltipWidth,
+                height: tooltipHeight,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {},
+                  child: _buildTooltipWidget(text),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
     overlay.insert(_dashboardTooltipEntry!);
-    _dashboardTooltipTimer = Timer(const Duration(seconds: 5), _hideDashboardOverlayTooltip);
+    _dashboardTooltipTimer = Timer(const Duration(seconds: 12), _hideDashboardOverlayTooltip);
+  }
+
+  double _dashboardTooltipPreferredHeight(String text, double availableHeight) {
+    final lines = text.split('\n');
+    final hideTitle = lines.isNotEmpty && lines.first == '__NO_HEADER__';
+    final hasDateTitle = lines.isNotEmpty && lines.first.startsWith('📅');
+    final hasPlainTitle = lines.isNotEmpty && !hideTitle && !hasDateTitle && !lines.first.contains('\t');
+    final bodyLines = (hideTitle || hasDateTitle || hasPlainTitle ? lines.skip(1) : lines)
+        .where((line) => line.trim().isNotEmpty)
+        .toList();
+    final summaryCount = bodyLines.where(_isDashboardTooltipSummaryLine).length;
+    final detailCount = bodyLines.length - summaryCount;
+    if (detailCount <= 0) {
+      return 58.0.clamp(52.0, availableHeight.clamp(52.0, 380.0)).toDouble();
+    }
+    final visibleDetails = detailCount.clamp(1, 8).toInt();
+    final pagerHeight = detailCount > 8 ? 40.0 : 0.0;
+    final preferred = 64.0 + visibleDetails * 32.0 + pagerHeight;
+    return preferred.clamp(112.0, availableHeight.clamp(112.0, 380.0)).toDouble();
   }
 
   void _hideDashboardOverlayTooltip() {
@@ -2434,6 +2359,262 @@ class _DistributionGroup {
   final List<KV> items;
 
   const _DistributionGroup(this.label, this.items);
+}
+
+class _DashboardPagedTooltip extends StatefulWidget {
+  final String text;
+  final VoidCallback onClose;
+
+  const _DashboardPagedTooltip({required this.text, required this.onClose});
+
+  @override
+  State<_DashboardPagedTooltip> createState() => _DashboardPagedTooltipState();
+}
+
+class _DashboardPagedTooltipState extends State<_DashboardPagedTooltip> {
+  static const _linesPerPage = 8;
+
+  late final PageController _pageController;
+  late final String _title;
+  late final List<String> _summaryLines;
+  late final List<String> _detailLines;
+  late final List<List<String>> _pages;
+  int _page = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    final rawLines = widget.text.split('\n');
+    final hideTitle = rawLines.isNotEmpty && rawLines.first == '__NO_HEADER__';
+    final hasDateTitle = rawLines.isNotEmpty && rawLines.first.startsWith('📅');
+    final hasPlainTitle = rawLines.isNotEmpty && !hideTitle && !hasDateTitle && !rawLines.first.contains('\t');
+    _title = hideTitle ? '详情' : (hasDateTitle || hasPlainTitle) ? rawLines.first : '详情';
+    final bodyLines = (hideTitle || hasDateTitle || hasPlainTitle ? rawLines.skip(1) : rawLines)
+        .where((line) => line.trim().isNotEmpty)
+        .toList();
+    _summaryLines = bodyLines.where(_isDashboardTooltipSummaryLine).toList();
+    _detailLines = bodyLines.where((line) => !_isDashboardTooltipSummaryLine(line)).toList();
+    _pages = _chunkLines(_detailLines);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  List<List<String>> _chunkLines(List<String> lines) {
+    final pages = <List<String>>[];
+    for (var i = 0; i < lines.length; i += _linesPerPage) {
+      final end = (i + _linesPerPage).clamp(0, lines.length).toInt();
+      pages.add(lines.sublist(i, end));
+    }
+    return pages;
+  }
+
+  void _goToPage(int page) {
+    if (page < 0 || page >= _pages.length) return;
+    _pageController.animateToPage(page, duration: const Duration(milliseconds: 180), curve: Curves.easeOutCubic);
+  }
+
+  Widget _buildLine(BuildContext context, String line) {
+    final theme = shadcn.Theme.of(context);
+    final tabIndex = line.indexOf('\t');
+    if (tabIndex > 0) {
+      final name = line.substring(0, tabIndex);
+      final value = line.substring(tabIndex + 1);
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                name,
+                style: theme.typography.small.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: theme.colorScheme.mutedForeground,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Text(
+              value,
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.typography.small.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.foreground,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Text(line, style: theme.typography.small.copyWith(color: theme.colorScheme.mutedForeground)),
+    );
+  }
+
+  Widget _buildSummaryChip(BuildContext context, String line) {
+    final theme = shadcn.Theme.of(context);
+    final tabIndex = line.indexOf('\t');
+    final label = tabIndex > 0 ? line.substring(0, tabIndex) : line;
+    final value = tabIndex > 0 ? line.substring(tabIndex + 1) : '';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withValues(alpha: 0.08),
+        borderRadius: context._dashRadiusSm,
+        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.12), width: 0.6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: theme.typography.xSmall.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          if (value.isNotEmpty) ...[
+            const SizedBox(width: 6),
+            Text(
+              value,
+              style: theme.typography.xSmall.copyWith(
+                color: theme.colorScheme.foreground,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final hasDetails = _pages.isNotEmpty;
+    final hasPager = _pages.length > 1;
+    final canPrev = _page > 0;
+    final canNext = _page < _pages.length - 1;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.background.withValues(alpha: 0.98),
+        borderRadius: context._dashRadiusMd,
+        border: Border.all(color: theme.colorScheme.border.withValues(alpha: 0.78)),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.foreground.withValues(alpha: 0.18),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+            spreadRadius: -4,
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                flex: _summaryLines.isEmpty ? 1 : 4,
+                child: Text(
+                  _title,
+                  style: theme.typography.small.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: theme.colorScheme.foreground,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (_summaryLines.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                Flexible(
+                  flex: 5,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (var i = 0; i < _summaryLines.length; i++) ...[
+                          if (i > 0) const SizedBox(width: 6),
+                          _buildSummaryChip(context, _summaryLines[i]),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(width: 6),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: widget.onClose,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(shadcn.LucideIcons.x, size: 15, color: theme.colorScheme.mutedForeground),
+                ),
+              ),
+            ],
+          ),
+          if (hasDetails) ...[
+            Divider(height: 18, color: theme.colorScheme.border.withValues(alpha: 0.45)),
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: _pages.length,
+                onPageChanged: (value) => setState(() => _page = value),
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: _pages[index].map((line) => _buildLine(context, line)).toList(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            if (hasPager) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  shadcn.IconButton.ghost(
+                    onPressed: canPrev ? () => _goToPage(_page - 1) : null,
+                    icon: Icon(shadcn.LucideIcons.chevronLeft, size: 16, color: canPrev ? theme.colorScheme.foreground : theme.colorScheme.mutedForeground),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '${_page + 1} / ${_pages.length}',
+                      textAlign: TextAlign.center,
+                      style: theme.typography.xSmall.copyWith(
+                        color: theme.colorScheme.mutedForeground,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  shadcn.IconButton.ghost(
+                    onPressed: canNext ? () => _goToPage(_page + 1) : null,
+                    icon: Icon(shadcn.LucideIcons.chevronRight, size: 16, color: canNext ? theme.colorScheme.foreground : theme.colorScheme.mutedForeground),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 class _DistributionItem {
