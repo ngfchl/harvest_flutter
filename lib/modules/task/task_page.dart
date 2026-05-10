@@ -101,19 +101,22 @@ void _openEdit(
       : ScheduleEditSheet(task: task);
 
   if (isMobile) {
-    showAppSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: shadcn.Theme.of(context).colorScheme.background,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (_) => sheet,
     );
   } else {
-    shadcn.showDialog(
+    showDialog<void>(
       context: context,
-      builder: (_) => shadcn.ModalContainer(
+      builder: (_) => Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        backgroundColor: shadcn.Theme.of(context).colorScheme.background,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480, maxHeight: 640),
           child: sheet,

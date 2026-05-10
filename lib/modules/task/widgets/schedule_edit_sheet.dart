@@ -233,19 +233,24 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     final taskTypesAsync = ref.watch(taskTypeListProvider);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-      child: Padding(
-        padding: EdgeInsets.only(bottom: bottom),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildHeader(),
-            Flexible(child: _buildForm(taskTypesAsync)),
-            const Divider(height: 1),
-            _buildButtons(),
-          ],
+    return shadcn.OverlayManagerLayer(
+      popoverHandler: const shadcn.PopoverOverlayHandler(),
+      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+      menuHandler: const shadcn.PopoverOverlayHandler(),
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Padding(
+          padding: EdgeInsets.only(bottom: bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildHeader(),
+              Flexible(child: _buildForm(taskTypesAsync)),
+              const Divider(height: 1),
+              _buildButtons(),
+            ],
+          ),
         ),
       ),
     );
@@ -285,6 +290,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                   _SheetTile(
                     title: const Text('选择任务'),
                     subtitle: Text(_selectedTaskType ?? '请选择'),
+                    helper: const Text('选择要执行的后台任务类型'),
                     trailing: const Icon(shadcn.LucideIcons.chevronRight, size: 18),
                     onTap: () => _showSelectSheet<String>(
                       title: '选择任务',
@@ -297,27 +303,53 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                 ],
               ),
               const SizedBox(height: 12),
-              _SheetTextField(controller: _nameCtrl, label: '任务名称'),
+              _SheetTextField(
+                controller: _nameCtrl,
+                label: '任务名称',
+                hintText: '例如：每日签到、每小时同步数据',
+                helperText: '用于列表展示，建议填写清晰易懂的名称',
+              ),
               const SizedBox(height: 12),
-              _SheetTextField(controller: _minuteCtrl, label: '分钟'),
+              _SheetTextField(
+                controller: _minuteCtrl,
+                label: '分钟',
+                hintText: '1 或 */5',
+                helperText: 'Cron 分钟位，支持 *、*/5、1,15,30 这类写法',
+              ),
               const SizedBox(height: 12),
-              _SheetTextField(controller: _hourCtrl, label: '小时'),
+              _SheetTextField(controller: _hourCtrl, label: '小时', hintText: '* 或 0-23', helperText: 'Cron 小时位，* 表示每小时'),
               const SizedBox(height: 8),
               _SheetGroup(
                 children: [
                   _SheetTile(
                     title: const Text('开启任务'),
+                    helper: const Text('关闭后任务不会被调度执行'),
                     trailing: Switch(value: _enabled, onChanged: (v) => setState(() => _enabled = v)),
                   ),
                 ],
               ),
               if (_advance) ...[
                 const SizedBox(height: 12),
-                _SheetTextField(controller: _dayOfWeekCtrl, label: '周几'),
+                _SheetTextField(
+                  controller: _dayOfWeekCtrl,
+                  label: '周几',
+                  hintText: '* 或 0-6',
+                  helperText: 'Cron 星期位，0/7 一般表示周日',
+                ),
                 const SizedBox(height: 12),
-                _SheetTextField(controller: _dayOfMonthCtrl, label: '几号'),
+                _SheetTextField(
+                  controller: _dayOfMonthCtrl,
+                  label: '几号',
+                  hintText: '* 或 1-31',
+                  helperText: 'Cron 日期位，指定每月的第几天执行',
+                ),
                 const SizedBox(height: 12),
-                _SheetTextField(controller: _monthOfYearCtrl, label: '几月'),
+                _SheetTextField(
+                  controller: _monthOfYearCtrl,
+                  label: '几月',
+                  hintText: '* 或 1-12',
+                  helperText: 'Cron 月份位，* 表示每月',
+                ),
               ],
             ],
           ),
@@ -342,7 +374,11 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
             child: shadcn.Button.primary(
               onPressed: _saving ? null : _save,
               child: _saving
-                  ? const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
+                    )
                   : Center(child: const Text('保存')),
             ),
           ),
@@ -355,12 +391,26 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
 class _SheetTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
+  final String hintText;
+  final String? helperText;
 
-  const _SheetTextField({required this.controller, required this.label});
+  const _SheetTextField({required this.controller, required this.label, required this.hintText, this.helperText});
 
   @override
   Widget build(BuildContext context) {
-    return shadcn.TextField(controller: controller, hintText: "");
+    final cs = shadcn.Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        if (helperText != null) ...[
+          const SizedBox(height: 4),
+          Text(helperText!, style: TextStyle(fontSize: 12, color: cs.mutedForeground)),
+        ],
+        const SizedBox(height: 8),
+        shadcn.TextField(controller: controller, hintText: hintText),
+      ],
+    );
   }
 }
 
@@ -385,10 +435,11 @@ class _SheetGroup extends StatelessWidget {
 class _SheetTile extends StatelessWidget {
   final Widget title;
   final Widget? subtitle;
+  final Widget? helper;
   final Widget? trailing;
   final VoidCallback? onTap;
 
-  const _SheetTile({required this.title, this.subtitle, this.trailing, this.onTap});
+  const _SheetTile({required this.title, this.subtitle, this.helper, this.trailing, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -404,6 +455,13 @@ class _SheetTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   title,
+                  if (helper != null) ...[
+                    const SizedBox(height: 2),
+                    DefaultTextStyle.merge(
+                      style: TextStyle(fontSize: 12, color: cs.mutedForeground),
+                      child: helper!,
+                    ),
+                  ],
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
                     DefaultTextStyle.merge(
