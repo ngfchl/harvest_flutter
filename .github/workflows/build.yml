@@ -407,44 +407,42 @@ jobs:
 
 
   ios: # 构建 iOS 应用（需要 macOS 系统）
-    runs-on: macos-26
+    runs-on: macos-latest
     steps:
       - name: 签出仓库
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: 指定 Xcode 26 并初始化 iOS Platform
+      - name: 使用默认 Xcode 并初始化 iOS Platform
         shell: bash
         run: |
-          echo "::group::Available Xcode apps"
-          ls -la /Applications | grep Xcode || true
-          echo "::endgroup::"
+          set -euo pipefail
 
-          XCODE_PATH=$(find /Applications -maxdepth 1 -name 'Xcode_26*.app' -print | sort -V | tail -n 1)
-          if [ -z "$XCODE_PATH" ]; then
-            echo "Xcode 26 not found"
-            ls -1 /Applications | grep Xcode || true
-            exit 1
-          fi
-          DEVELOPER_DIR="$XCODE_PATH/Contents/Developer"
+          DEVELOPER_DIR=$(xcode-select -p)
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
 
           echo "::group::Selected Xcode"
-          echo "XCODE_PATH=$XCODE_PATH"
           echo "DEVELOPER_DIR=$DEVELOPER_DIR"
-          sudo xcode-select -s "$DEVELOPER_DIR"
+          xcodebuild -version
           echo "xcode-select -p: $(xcode-select -p)"
+          echo "::endgroup::"
+
           sudo xcodebuild -license accept || true
           sudo xcodebuild -runFirstLaunch || true
-          xcodebuild -version
-          echo "::endgroup::"
 
           echo "::group::Xcode SDKs before platform init"
           xcodebuild -showsdks
           echo "::endgroup::"
 
-          xcodebuild -downloadPlatform iOS || true
+          echo "::group::Install latest iOS platform"
+          xcodebuild -downloadPlatform iOS
+          echo "::endgroup::"
+
+          if ! xcrun --sdk iphoneos --show-sdk-path >/dev/null 2>&1; then
+            echo "iPhoneOS SDK is still unavailable after platform install"
+            exit 1
+          fi
 
           echo "::group::Xcode SDKs after platform init"
           xcodebuild -showsdks
