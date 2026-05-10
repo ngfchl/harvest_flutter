@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 
-import '../../shell/widgets/shell_scaffold.dart';
+import '../widgets/news_bottom_padding.dart';
 import 'provider/douban_provider.dart';
 import 'widgets/douban_card.dart';
 import 'widgets/douban_detail_sheet.dart';
@@ -21,7 +21,7 @@ class DoubanPage extends ConsumerWidget {
       header: appRefreshHeader(context),
       child: ListView(
         controller: scrollController,
-        padding: EdgeInsets.only(bottom: ShellBottomSpacing.value(context)),
+        padding: EdgeInsets.only(bottom: newsBottomPadding(context)),
         children: [
           _hotMoviesSection(ref, context),
           _hotTvsSection(ref, context),

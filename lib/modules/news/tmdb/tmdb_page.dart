@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 
-import '../../shell/widgets/shell_scaffold.dart';
+import '../widgets/news_bottom_padding.dart';
 import 'model/search_results.dart';
 import 'provider/tmdb_provider.dart';
 import 'widgets/media_section.dart';
@@ -21,7 +21,7 @@ class TmdbPage extends ConsumerWidget {
       header: appRefreshHeader(context),
       child: ListView(
         controller: scrollController,
-        padding: EdgeInsets.only(bottom: ShellBottomSpacing.value(context)),
+        padding: EdgeInsets.only(bottom: newsBottomPadding(context)),
         children: [
           _section(context, ref, '正在热映', playingMoviesProvider),
           _section(context, ref, '热门电影', popularMoviesProvider),
