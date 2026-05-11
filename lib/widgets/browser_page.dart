@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
+import 'package:harvest/modules/search/widgets/downloader_select_sheet.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -22,6 +24,7 @@ class BrowserPage extends StatefulWidget {
   final String? title;
   final String? cookie;
   final String? userAgent;
+  final String? siteId;
 
   const BrowserPage({
     super.key,
@@ -29,6 +32,7 @@ class BrowserPage extends StatefulWidget {
     this.title,
     this.cookie,
     this.userAgent,
+    this.siteId,
   });
 
   /// 快捷打开
@@ -38,6 +42,7 @@ class BrowserPage extends StatefulWidget {
     String? title,
     String? cookie,
     String? userAgent,
+    String? siteId,
   }) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -46,6 +51,7 @@ class BrowserPage extends StatefulWidget {
           title: title,
           cookie: cookie,
           userAgent: userAgent,
+          siteId: siteId,
         ),
       ),
     );
@@ -68,6 +74,8 @@ class _BrowserPageState extends State<BrowserPage> {
   bool _isLoading = true;
   bool _cookiesReady = false;
   bool _closing = false;
+  bool _torrentSheetOpen = false;
+  String? _activeTorrentUrl;
   String? _error;
 
   @override
@@ -463,6 +471,7 @@ class _BrowserPageState extends State<BrowserPage> {
         builtInZoomControls: true,
         displayZoomControls: false,
         transparentBackground: true,
+        useOnDownloadStart: true,
       ),
       onWebViewCreated: (controller) {
         if (_closing) {
@@ -473,8 +482,14 @@ class _BrowserPageState extends State<BrowserPage> {
       },
       onLoadStart: (controller, url) {
         if (!mounted || _closing) return;
+        final urlText = url?.toString() ?? '';
+        if (_isTorrentUrl(urlText)) {
+          unawaited(controller.stopLoading());
+          _showTorrentDownloadFlow(urlText);
+          return;
+        }
         setState(() {
-          _currentUrl = url?.toString() ?? '';
+          _currentUrl = urlText;
           _isLoading = true;
           _error = null;
         });
@@ -502,9 +517,26 @@ class _BrowserPageState extends State<BrowserPage> {
           _isLoading = false;
         });
       },
+      onDownloadStartRequest: (controller, request) async {
+        if (_closing) return;
+        final url = request.url.toString();
+        if (_isTorrentDownloadRequest(
+          url: url,
+          mimeType: request.mimeType,
+          contentDisposition: request.contentDisposition,
+          suggestedFilename: request.suggestedFilename,
+        )) {
+          await controller.stopLoading();
+          _showTorrentDownloadFlow(url);
+        }
+      },
       shouldOverrideUrlLoading: (controller, action) async {
         if (_closing) return NavigationActionPolicy.CANCEL;
         final url = action.request.url?.toString() ?? '';
+        if (_isTorrentUrl(url)) {
+          _showTorrentDownloadFlow(url);
+          return NavigationActionPolicy.CANCEL;
+        }
         if (url.startsWith('http://') || url.startsWith('https://')) {
           return NavigationActionPolicy.ALLOW;
         }
@@ -701,6 +733,119 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   // ────────────────── 工具栏 ──────────────────
+  bool _isTorrentUrl(String url) {
+    final trimmed = url.trim();
+    if (trimmed.isEmpty) return false;
+
+    final lower = trimmed.toLowerCase();
+    if (lower.startsWith('magnet:?')) return true;
+
+    final uri = Uri.tryParse(trimmed);
+    final path = uri?.path.toLowerCase() ?? lower;
+    return path.endsWith('.torrent') || lower.contains('.torrent?');
+  }
+
+  bool _isTorrentDownloadRequest({
+    required String url,
+    String? mimeType,
+    String? contentDisposition,
+    String? suggestedFilename,
+  }) {
+    if (_isTorrentUrl(url)) return true;
+
+    final mime = mimeType?.toLowerCase().trim();
+    if (mime == 'application/x-bittorrent' || mime == 'application/torrent') {
+      return true;
+    }
+
+    final filename = suggestedFilename?.toLowerCase().trim();
+    if (filename != null && filename.endsWith('.torrent')) return true;
+
+    final disposition = contentDisposition?.toLowerCase() ?? '';
+    return disposition.contains('.torrent');
+  }
+
+  void _showTorrentDownloadFlow(String url) {
+    final torrentUrl = url.trim();
+    if (torrentUrl.isEmpty || !mounted || _closing) return;
+    if (_torrentSheetOpen && _activeTorrentUrl == torrentUrl) return;
+
+    _torrentSheetOpen = true;
+    _activeTorrentUrl = torrentUrl;
+    if (mounted) {
+      setState(() {
+        _currentUrl = torrentUrl;
+        _isLoading = false;
+        _progress = 0;
+      });
+    }
+
+    var selectedDownloader = false;
+    showAppSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => DownloaderSelectSheet(
+        onSelected: (downloader) {
+          selectedDownloader = true;
+          closeAppSheet(sheetContext);
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            if (!mounted || _closing) return;
+            final cookie = await _cookieHeaderFor(torrentUrl);
+            if (!mounted || _closing) return;
+
+            showAppSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (_) => PushTorrentSheet(
+                downloader: downloader,
+                initialUrl: torrentUrl,
+                initialCookie: cookie,
+                initialSiteId: widget.siteId,
+              ),
+            ).whenComplete(() {
+              _torrentSheetOpen = false;
+              _activeTorrentUrl = null;
+            });
+          });
+        },
+      ),
+    ).whenComplete(() {
+      if (!selectedDownloader) {
+        _torrentSheetOpen = false;
+        _activeTorrentUrl = null;
+      }
+    });
+  }
+
+  Future<String?> _cookieHeaderFor(String url) async {
+    final configuredCookie = widget.cookie?.trim();
+    if (configuredCookie != null && configuredCookie.isNotEmpty) {
+      return configuredCookie;
+    }
+
+    final uri = Uri.tryParse(url);
+    if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) {
+      return null;
+    }
+
+    try {
+      final cookies = await CookieManager.instance().getCookies(
+        url: WebUri(url),
+      );
+      final pairs = cookies
+          .where((cookie) => cookie.name.isNotEmpty)
+          .map((cookie) => '${cookie.name}=${cookie.value}')
+          .toList();
+      if (pairs.isEmpty) return null;
+      return pairs.join('; ');
+    } catch (e, st) {
+      AppLogger.warn('读取种子下载 Cookie 失败: $e\n$st');
+      return null;
+    }
+  }
+
   String _displayUrl(String url) {
     if (url.startsWith('about:')) return url;
     try {
