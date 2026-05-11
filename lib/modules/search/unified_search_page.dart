@@ -1692,6 +1692,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
           title: item.title,
           cookie: site?.cookie,
           userAgent: site?.userAgent,
+          siteId: site?.site ?? item.siteId,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),

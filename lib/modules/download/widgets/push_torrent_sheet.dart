@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/modules/site/model/site_info.dart';
+import 'package:harvest/modules/site/provider/site_provider.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -16,9 +18,20 @@ import '../service/downloader_service.dart';
 class PushTorrentSheet extends ConsumerStatefulWidget {
   final SearchTorrentInfo? torrent;
   final Downloader downloader;
+  final String? initialUrl;
+  final String? initialCookie;
+  final String? initialSiteId;
   final VoidCallback? onSuccess;
 
-  const PushTorrentSheet({super.key, this.torrent, required this.downloader, this.onSuccess});
+  const PushTorrentSheet({
+    super.key,
+    this.torrent,
+    required this.downloader,
+    this.initialUrl,
+    this.initialCookie,
+    this.initialSiteId,
+    this.onSuccess,
+  });
 
   @override
   ConsumerState<PushTorrentSheet> createState() => _PushTorrentSheetState();
@@ -29,6 +42,8 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
   final _savePathCtrl = TextEditingController();
   final _manualUrlCtrl = TextEditingController();
   final _renameCtrl = TextEditingController();
+  final _siteIdCtrl = TextEditingController();
+  final _cookieCtrl = TextEditingController();
   final _uploadLimitCtrl = TextEditingController();
   final _downloadLimitCtrl = TextEditingController();
   final _ratioLimitCtrl = TextEditingController();
@@ -68,13 +83,48 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
 
   bool get _hasTorrent => widget.torrent != null;
 
+  SiteInfo? _siteFor(String siteId) {
+    final sites = ref.read(siteInfoListProvider).valueOrNull ?? [];
+    for (final site in sites) {
+      if (site.id.toString() == siteId || site.site == siteId) return site;
+    }
+    return null;
+  }
+
+  String _resolvedSiteId(SearchTorrentInfo torrent) {
+    final site = _siteFor(torrent.siteId);
+    return (site?.site ?? torrent.siteId).trim();
+  }
+
+  String _defaultSiteId() {
+    if (_hasTorrent) {
+      return _resolvedSiteId(widget.torrent!);
+    }
+    return widget.initialSiteId?.trim() ?? '';
+  }
+
+  void _setGenTorrentUrl(bool value) {
+    setState(() {
+      _genTorrentUrl = value;
+      _siteIdCtrl.text = value ? _defaultSiteId() : '';
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     if (_hasTorrent) {
       final t = widget.torrent!;
+      final site = _siteFor(t.siteId);
       _selectedTags.addAll(t.tags);
       _genTorrentUrl = !t.magnetUrl.contains('passkey') && !t.magnetUrl.contains('sign');
+      _siteIdCtrl.text = _genTorrentUrl ? _resolvedSiteId(t) : '';
+      _cookieCtrl.text = (site?.cookie ?? t.cookie ?? '').trim();
+    } else {
+      _manualUrlCtrl.text = widget.initialUrl?.trim() ?? '';
+      _siteIdCtrl.text = '';
+      _cookieCtrl.text = widget.initialCookie?.trim() ?? '';
+      _genTorrentUrl = false;
     }
     _fetchData();
   }
@@ -84,6 +134,8 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
     _savePathCtrl.dispose();
     _manualUrlCtrl.dispose();
     _renameCtrl.dispose();
+    _siteIdCtrl.dispose();
+    _cookieCtrl.dispose();
     _uploadLimitCtrl.dispose();
     _downloadLimitCtrl.dispose();
     _ratioLimitCtrl.dispose();
@@ -275,8 +327,13 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
               ],
             ),
           ),
+        ] else ...[
+          shadcn.TextField(
+            controller: _manualUrlCtrl,
+            hintText: '输入 magnet 链接或种子下载地址',
+            maxLines: 2,
+          ),
           const SizedBox(height: 8),
-          // 自动生成下载链接开关
           Row(
             children: [
               Expanded(
@@ -286,16 +343,22 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
                     Text('自动生成下载链接', style: typo.small),
                     Text(
                       '通过站点重新生成种子下载链接',
-                      style: typo.xSmall.copyWith(color: cs.mutedForeground.withValues(alpha: 0.5), fontSize: 10),
+                      style: typo.xSmall.copyWith(
+                        color: cs.mutedForeground.withValues(alpha: 0.5),
+                        fontSize: 10,
+                      ),
                     ),
                   ],
                 ),
               ),
-              Switch(value: _genTorrentUrl, onChanged: (v) => setState(() => _genTorrentUrl = v)),
+              Switch(value: _genTorrentUrl, onChanged: _setGenTorrentUrl),
             ],
           ),
-        ] else
-          shadcn.TextField(controller: _manualUrlCtrl, hintText: '输入 magnet 链接或种子下载地址', maxLines: 2),
+          if (_genTorrentUrl) ...[
+            const SizedBox(height: 8),
+            _buildInlineField('站点', _siteIdCtrl, hint: '站点标识'),
+          ],
+        ],
       ],
     );
   }
@@ -622,6 +685,23 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
                 ]),
 
                 const SizedBox(height: 12),
+
+                if (_hasTorrent) ...[
+                  _buildOptionGroup('下载链接', [
+                    _optionTile('自动生成下载链接', _genTorrentUrl, _setGenTorrentUrl),
+                    if (_genTorrentUrl) ...[
+                      _buildInlineField('站点', _siteIdCtrl, hint: '站点标识'),
+                      const SizedBox(height: 8),
+                    ],
+                    _buildInlineField('Cookie', _cookieCtrl, hint: '站点 Cookie'),
+                  ]),
+                  const SizedBox(height: 12),
+                ] else ...[
+                  _buildOptionGroup('下载链接', [
+                    _buildInlineField('Cookie', _cookieCtrl, hint: '站点 Cookie'),
+                  ]),
+                  const SizedBox(height: 12),
+                ],
 
                 // 重命名
                 _buildOptionGroup('重命名', [_buildInlineField('任务名称', _renameCtrl, hint: '留空使用原始名称')]),
@@ -1050,13 +1130,26 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
         final t = widget.torrent!;
         params['urls'] = t.magnetUrl;
         params['tid'] = t.tid;
-        // 自动生成链接时传 site_id，否则不传
         if (_genTorrentUrl) {
-          params['site_id'] = t.siteId;
+          final siteId = _siteIdCtrl.text.trim();
+          if (siteId.isNotEmpty) {
+            params['site_id'] = siteId;
+          }
         }
-        params['cookie'] = t.cookie;
+        final cookie = _cookieCtrl.text.trim();
+        if (cookie != null && cookie.isNotEmpty) {
+          params['cookie'] = cookie;
+        }
       } else {
         params['urls'] = _manualUrlCtrl.text.trim();
+        final siteId = _siteIdCtrl.text.trim();
+        if (_genTorrentUrl && siteId.isNotEmpty) {
+          params['site_id'] = siteId;
+        }
+        final cookie = _cookieCtrl.text.trim();
+        if (cookie.isNotEmpty) {
+          params['cookie'] = cookie;
+        }
       }
 
       // 保存路径
