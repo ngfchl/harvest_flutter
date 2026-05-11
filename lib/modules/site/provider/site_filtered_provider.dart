@@ -46,8 +46,8 @@ List<SiteInfo> _applyFilter(
   } else {
     result = sites.where((s) {
       if (query.isNotEmpty) {
-        if (!s.site.toLowerCase().contains(query) &&
-            !s.nickname.toLowerCase().contains(query)) {
+        final config = _siteConfigFor(configs, s.site);
+        if (!_matchesSiteQuery(s, config, query)) {
           return false;
         }
       }
@@ -83,6 +83,29 @@ List<SiteInfo> _applyFilter(
   });
 
   return result;
+}
+
+bool _matchesSiteQuery(SiteInfo site, WebSite? config, String query) {
+  final q = query.trim().toLowerCase();
+  if (q.isEmpty) return true;
+
+  bool contains(String? value) {
+    final text = value?.trim().toLowerCase();
+    return text != null && text.isNotEmpty && text.contains(q);
+  }
+
+  if (contains(site.site)) return true;
+  if (contains(site.nickname)) return true;
+  if (contains(site.mirror)) return true;
+  if (contains(config?.name)) return true;
+  if (contains(config?.nickname)) return true;
+
+  final urls = config?.url ?? const <String>[];
+  for (final url in urls) {
+    if (contains(url)) return true;
+  }
+
+  return false;
 }
 
 int _noticeCount(SiteInfo s) => s.mail + s.notice;
