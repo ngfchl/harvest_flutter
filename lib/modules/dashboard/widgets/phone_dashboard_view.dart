@@ -1643,10 +1643,12 @@ extension _PhoneDashboardView on _DashboardPageState {
           Row(
             children: [
               Expanded(child: Text('上传量分布', style: _phoneTitleStyle(17))),
-              Icon(
-                shadcn.LucideIcons.chevronRight,
-                size: 18,
-                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+              Text(
+                formatBytes(total),
+                style: shadcn.Theme.of(context).typography.small.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                ),
               ),
             ],
           ),
@@ -1946,7 +1948,6 @@ extension _PhoneDashboardView on _DashboardPageState {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
-    final subtitle = !compactOverflow && items.length > legendItems.length ? '图例显示前 ${legendItems.length} 项' : null;
     return _buildBeautyCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1954,11 +1955,7 @@ extension _PhoneDashboardView on _DashboardPageState {
           Row(
             children: [
               Expanded(child: Text(title, style: _phoneTitleStyle(17))),
-              if (subtitle != null)
-                Text(
-                  subtitle,
-                  style: typo.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w700),
-                ),
+              Text(totalFormatter(total), style: typo.small.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w900)),
             ],
           ),
           const SizedBox(height: 16),
@@ -2275,15 +2272,32 @@ extension _PhoneDashboardView on _DashboardPageState {
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              centerLabel,
-              style: shadcn.Theme.of(context).typography.small.copyWith(
-                fontWeight: FontWeight.w700,
-                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+            SizedBox(
+              width: 78,
+              child: Text(
+                centerLabel,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: shadcn.Theme.of(context).typography.xSmall.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                ),
               ),
             ),
-            const SizedBox(height: 6),
-            Text(totalFormatter(total), style: _phonePrimaryTextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+            const SizedBox(height: 4),
+            SizedBox(
+              width: 82,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  totalFormatter(total),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: _phonePrimaryTextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+                ),
+              ),
+            ),
           ],
         ),
       ],
