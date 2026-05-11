@@ -1,12 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
 import 'package:harvest/modules/search/widgets/downloader_select_sheet.dart';
+import 'package:harvest/modules/site/model/site_config.dart';
+import 'package:harvest/modules/site/provider/site_provider.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:share_plus/share_plus.dart';
 
@@ -36,8 +40,7 @@ class BrowserPage extends StatefulWidget {
   });
 
   /// 快捷打开
-  static void open(
-    BuildContext context, {
+  static void open(BuildContext context, {
     required String url,
     String? title,
     String? cookie,
@@ -46,13 +49,14 @@ class BrowserPage extends StatefulWidget {
   }) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => BrowserPage(
-          url: url,
-          title: title,
-          cookie: cookie,
-          userAgent: userAgent,
-          siteId: siteId,
-        ),
+        builder: (_) =>
+            BrowserPage(
+              url: url,
+              title: title,
+              cookie: cookie,
+              userAgent: userAgent,
+              siteId: siteId,
+            ),
       ),
     );
   }
@@ -77,6 +81,7 @@ class _BrowserPageState extends State<BrowserPage> {
   bool _torrentSheetOpen = false;
   String? _activeTorrentUrl;
   String? _error;
+  bool _extractingTorrentList = false;
 
   @override
   void initState() {
@@ -203,6 +208,8 @@ class _BrowserPageState extends State<BrowserPage> {
   @override
   Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
+    final torrentWebsite = _currentTorrentWebsiteConfig();
+    final showTorrentFab = torrentWebsite != null && !_closing && !_isLoading;
 
     return PopScope(
       canPop: _closing,
@@ -217,29 +224,55 @@ class _BrowserPageState extends State<BrowserPage> {
       child: Scaffold(
         backgroundColor: cs.background,
         body: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              // ── 顶部：标题 + 进度条 ──
-              _buildTopBar(cs),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                height: (_progress > 0 && _progress < 1) ? 2 : 0,
-                child: LinearProgressIndicator(
-                  value: _progress,
-                  backgroundColor: Colors.transparent,
-                  valueColor: AlwaysStoppedAnimation(cs.primary),
+              Column(
+                children: [
+                  _buildTopBar(cs),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    height: (_progress > 0 && _progress < 1) ? 2 : 0,
+                    child: LinearProgressIndicator(
+                      value: _progress,
+                      backgroundColor: Colors.transparent,
+                      valueColor: AlwaysStoppedAnimation(cs.primary),
+                    ),
+                  ),
+                  Expanded(
+                    child: _closing
+                        ? const SizedBox.shrink()
+                        : _cookiesReady
+                            ? _buildWebView()
+                            : const Center(
+                                child: shadcn.CircularProgressIndicator(),
+                              ),
+                  ),
+                  _buildBottomBar(cs),
+                ],
+              ),
+              if (showTorrentFab)
+                Positioned(
+                  right: 16,
+                  bottom: MediaQuery.of(context).padding.bottom + 64,
+                  child: FloatingActionButton.small(
+                    heroTag: 'browser_torrent_list_fab',
+                    onPressed: _extractingTorrentList
+                        ? null
+                        : () => _extractTorrentList(torrentWebsite),
+                    backgroundColor: cs.primary,
+                    foregroundColor: cs.primaryForeground,
+                    child: _extractingTorrentList
+                        ? SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: shadcn.CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: cs.primaryForeground,
+                            ),
+                          )
+                        : const Icon(shadcn.LucideIcons.listChecks, size: 18),
+                  ),
                 ),
-              ),
-              // ── WebView ──
-              Expanded(
-                child: _closing
-                    ? const SizedBox.shrink()
-                    : _cookiesReady
-                    ? _buildWebView()
-                    : const Center(child: shadcn.CircularProgressIndicator()),
-              ),
-              // ── 底部工具栏 ──
-              _buildBottomBar(cs),
             ],
           ),
         ),
@@ -381,14 +414,14 @@ class _BrowserPageState extends State<BrowserPage> {
             shadcn.LucideIcons.arrowRight,
             '前进',
             _canGoForward,
-            () => _controller?.goForward(),
+                () => _controller?.goForward(),
           ),
           _bottomBtn(
             cs,
             shadcn.LucideIcons.refreshCw,
             '刷新',
             true,
-            () => _controller?.reload(),
+                () => _controller?.reload(),
           ),
           _bottomBtn(cs, shadcn.LucideIcons.copy, '复制', true, () {
             Clipboard.setData(ClipboardData(text: _currentUrl));
@@ -411,13 +444,11 @@ class _BrowserPageState extends State<BrowserPage> {
     );
   }
 
-  Widget _bottomBtn(
-    shadcn.ColorScheme cs,
-    IconData icon,
-    String label,
-    bool enabled,
-    VoidCallback onTap,
-  ) {
+  Widget _bottomBtn(shadcn.ColorScheme cs,
+      IconData icon,
+      String label,
+      bool enabled,
+      VoidCallback onTap,) {
     return GestureDetector(
       onTap: enabled ? onTap : null,
       behavior: HitTestBehavior.opaque,
@@ -576,42 +607,45 @@ class _BrowserPageState extends State<BrowserPage> {
     ];
   }
 
-  List<_UserAgentPreset> get _fallbackUserAgentPresets => const [
-    _UserAgentPreset(
-      id: 'chrome_android',
-      label: 'Chrome Android',
-      description: 'Android Chrome Mobile',
-      userAgent:
+  List<_UserAgentPreset> get _fallbackUserAgentPresets =>
+      const [
+        _UserAgentPreset(
+          id: 'chrome_android',
+          label: 'Chrome Android',
+          description: 'Android Chrome Mobile',
+          userAgent:
           'Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36',
-    ),
-    _UserAgentPreset(
-      id: 'chrome_windows',
-      label: 'Chrome Windows',
-      description: 'Windows Chrome Desktop',
-      userAgent:
+        ),
+        _UserAgentPreset(
+          id: 'chrome_windows',
+          label: 'Chrome Windows',
+          description: 'Windows Chrome Desktop',
+          userAgent:
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    ),
-    _UserAgentPreset(
-      id: 'edge_windows',
-      label: 'Edge Windows',
-      description: 'Windows Microsoft Edge',
-      userAgent:
+        ),
+        _UserAgentPreset(
+          id: 'edge_windows',
+          label: 'Edge Windows',
+          description: 'Windows Microsoft Edge',
+          userAgent:
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0',
-    ),
-    _UserAgentPreset(
-      id: 'firefox_windows',
-      label: 'Firefox Windows',
-      description: 'Windows Firefox Desktop',
-      userAgent:
+        ),
+        _UserAgentPreset(
+          id: 'firefox_windows',
+          label: 'Firefox Windows',
+          description: 'Windows Firefox Desktop',
+          userAgent:
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0',
-    ),
-  ];
+        ),
+      ];
 
   Future<void> _showUserAgentPicker() async {
     if (_defaultUserAgent == null) await _loadDefaultUserAgent();
     if (!mounted) return;
 
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = shadcn.Theme
+        .of(context)
+        .colorScheme;
     await showAppSheet<void>(
       context: context,
       showDragHandle: true,
@@ -733,6 +767,934 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   // ────────────────── 工具栏 ──────────────────
+
+  WebSite? _currentTorrentWebsiteConfig() {
+    final siteId = widget.siteId?.trim();
+    final currentUrl = _currentUrl.trim();
+    if (siteId == null || siteId.isEmpty || currentUrl.isEmpty || !mounted) {
+      return null;
+    }
+    final container = ProviderScope.containerOf(context, listen: false);
+    final configs = container
+        .read(websiteListProvider)
+        .valueOrNull ?? const <WebSite>[];
+    WebSite? website;
+    for (final config in configs) {
+      if (config.name == siteId) {
+        website = config;
+        break;
+      }
+    }
+    if (website == null) return null;
+    if (website.pageTorrents
+        .trim()
+        .isEmpty || website.torrentsRule
+        .trim()
+        .isEmpty) {
+      return null;
+    }
+    return _matchesTorrentPage(currentUrl, website) ? website : null;
+  }
+
+  bool _matchesTorrentPage(String currentUrl, WebSite website) {
+    final current = Uri.tryParse(currentUrl);
+    if (current == null || !current.hasScheme) return false;
+    final target = _resolveWebsitePageUri(current, website.pageTorrents);
+    if (target == null) return false;
+    final currentPath = _normalizePath(current.path);
+    final targetPath = _normalizePath(target.path);
+    return targetPath.isNotEmpty &&
+        (currentPath == targetPath || currentPath.startsWith('$targetPath/'));
+  }
+
+  Uri? _resolveWebsitePageUri(Uri current, String pageRule) {
+    final value = pageRule.trim();
+    if (value.isEmpty) return null;
+    final absolute = Uri.tryParse(value);
+    if (absolute != null && absolute.hasScheme) return absolute;
+    final origin = Uri(
+      scheme: current.scheme,
+      host: current.host,
+      port: current.hasPort ? current.port : null,
+      path: '/',
+    );
+    return origin.resolve(value);
+  }
+
+  String _normalizePath(String path) {
+    final normalized = path
+        .trim()
+        .isEmpty ? '/' : path.trim();
+    if (normalized.length > 1 && normalized.endsWith('/')) {
+      return normalized.substring(0, normalized.length - 1);
+    }
+    return normalized;
+  }
+
+  Future<void> _extractTorrentList(WebSite website) async {
+    final controller = _controller;
+    if (controller == null || _closing || !mounted) return;
+
+    setState(() => _extractingTorrentList = true);
+    try {
+      final raw = await controller.evaluateJavascript(
+        source: _buildTorrentExtractScript(website),
+      );
+      if (!mounted || _closing) return;
+      final items = _parseExtractedTorrents(raw);
+      if (items.isEmpty) {
+        Toast.warning('未提取到种子列表');
+        return;
+      }
+      await _showExtractedTorrentDialog(items);
+    } catch (e, st) {
+      AppLogger.error('提取种子列表失败', e, st);
+      if (mounted) Toast.error('提取种子列表失败');
+    } finally {
+      if (mounted) setState(() => _extractingTorrentList = false);
+    }
+  }
+
+  String _buildTorrentExtractScript(WebSite website) {
+    String encode(String value) => jsonEncode(value);
+    return '''
+(() => {
+  const ruleVariants = (rule) => {
+    const raw = (rule || '').trim();
+    if (!raw) return [];
+    const values = new Set();
+    const push = (value) => {
+      const text = (value || '').trim();
+      if (text) values.add(text);
+    };
+    const removeTbody = (value) => value.replace(/\\/tbody(?=\\/|\$)/gi, '');
+    const addTbody = (value) => value.replace(
+      /(\\/table(?:\\[[^\\]]+\\])?)(?=\\/tr(?:\\[[^\\]]+\\])?(?:\\/|\$))/gi,
+      '\$1/tbody',
+    );
+    push(raw);
+    push(removeTbody(raw));
+    push(addTbody(raw));
+    push(addTbody(removeTbody(raw)));
+    return Array.from(values);
+  };
+
+  const readNodeValue = (node) => {
+    if (!node) return '';
+    if (node.nodeType === Node.ATTRIBUTE_NODE || node.nodeType === Node.TEXT_NODE || node.nodeType === Node.CDATA_SECTION_NODE) {
+      return (node.nodeValue || '').trim();
+    }
+    if (node instanceof HTMLAnchorElement) {
+      return (node.getAttribute('href') || node.href || node.textContent || '').trim();
+    }
+    if (node instanceof HTMLImageElement) {
+      return (node.getAttribute('src') || node.src || '').trim();
+    }
+    return (node.textContent || '').trim();
+  };
+
+  const absoluteUrl = (value) => {
+    const text = (value || '').trim();
+    if (!text) return '';
+    try {
+      return new URL(text, window.location.href).toString();
+    } catch (_) {
+      return text;
+    }
+  };
+
+  const evaluateNodes = (contextNode, rule) => {
+    if (!rule) return [];
+    for (const candidate of ruleVariants(rule)) {
+      try {
+        const result = document.evaluate(candidate, contextNode, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        const nodes = [];
+        for (let i = 0; i < result.snapshotLength; i += 1) {
+          nodes.push(result.snapshotItem(i));
+        }
+        if (nodes.length) return nodes;
+      } catch (_) {}
+    }
+    return [];
+  };
+
+  const evaluateValue = (contextNode, rule) => {
+    if (!rule) return '';
+    for (const candidate of ruleVariants(rule)) {
+      try {
+        const result = document.evaluate(candidate, contextNode, null, XPathResult.ANY_TYPE, null);
+        switch (result.resultType) {
+          case XPathResult.STRING_TYPE: {
+            const value = (result.stringValue || '').trim();
+            if (value) return value;
+            break;
+          }
+          case XPathResult.NUMBER_TYPE:
+            if (Number.isFinite(result.numberValue)) {
+              return String(result.numberValue);
+            }
+            break;
+          case XPathResult.BOOLEAN_TYPE:
+            if (result.booleanValue) return 'true';
+            break;
+          default: {
+            const node = result.singleNodeValue || result.iterateNext?.();
+            const value = readNodeValue(node);
+            if (value) return value;
+            break;
+          }
+        }
+      } catch (_) {}
+    }
+    const nodes = evaluateNodes(contextNode, rule);
+    return nodes.length ? readNodeValue(nodes[0]) : '';
+  };
+
+  const evaluateJoinedValue = (contextNode, rule) => {
+    if (!rule) return '';
+    const nodes = evaluateNodes(contextNode, rule);
+    if (nodes.length > 1) {
+      return nodes
+        .map((node) => readNodeValue(node))
+        .filter((value) => value)
+        .join(' ')
+        .replace(/\\s+/g, ' ')
+        .trim();
+    }
+    return evaluateValue(contextNode, rule);
+  };
+
+  const rows = evaluateNodes(document, ${encode(website.torrentsRule)});
+  return rows.map((row) => {
+    const detailUrl = absoluteUrl(evaluateValue(row, ${encode(website.torrentDetailUrlRule)}));
+    const magnetUrl = absoluteUrl(evaluateValue(row, ${encode(website.torrentMagnetUrlRule)}));
+    const poster = absoluteUrl(evaluateValue(row, ${encode(website.torrentPosterRule)}));
+    return {
+      title: evaluateValue(row, ${encode(website.torrentTitleRule)}),
+      subtitle: evaluateValue(row, ${encode(website.torrentSubtitleRule)}),
+      detailUrl,
+      magnetUrl,
+      category: evaluateValue(row, ${encode(website.torrentCategoryRule)}),
+      poster,
+      size: evaluateJoinedValue(row, ${encode(website.torrentSizeRule)}),
+      progress: evaluateValue(row, ${encode(website.torrentProgressRule)}),
+      hr: evaluateValue(row, ${encode(website.torrentHrRule)}),
+      sale: evaluateValue(row, ${encode(website.torrentSaleRule)}),
+      saleExpire: evaluateValue(row, ${encode(website.torrentSaleExpireRule)}),
+      release: evaluateValue(row, ${encode(website.torrentReleaseRule)}),
+      seeders: evaluateValue(row, ${encode(website.torrentSeedersRule)}),
+      leechers: evaluateValue(row, ${encode(website.torrentLeechersRule)}),
+      completers: evaluateValue(row, ${encode(website.torrentCompletersRule)}),
+      tags: evaluateNodes(row, ${encode(website.torrentTagsRule)}).map((node) => readNodeValue(node)).filter(Boolean),
+    };
+  }).filter((item) => item.title || item.detailUrl || item.magnetUrl);
+})()
+''';
+  }
+
+  List<_BrowserExtractedTorrent> _parseExtractedTorrents(dynamic raw) {
+    dynamic data = raw;
+    if (raw is String) {
+      try {
+        data = jsonDecode(raw);
+      } catch (_) {
+        data = const [];
+      }
+    }
+    if (data is! List) return const [];
+    return data
+        .whereType<Object?>()
+        .map((item) {
+      if (item is Map) {
+        return _BrowserExtractedTorrent.fromMap(
+          Map<String, dynamic>.from(item as Map),
+        );
+      }
+      return null;
+    })
+        .whereType<_BrowserExtractedTorrent>()
+        .where((item) => item.title.isNotEmpty || item.detailUrl.isNotEmpty || item.magnetUrl.isNotEmpty)
+        .toList();
+  }
+
+  Future<void> _showExtractedTorrentDialog(List<_BrowserExtractedTorrent> items) async {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final selected = <int>{for (var i = 0; i < items.length; i += 1) i};
+    String saleFilter = '';
+    String categoryFilter = '';
+    String tagFilter = '';
+    _BrowserTorrentSortKey sortKey = _BrowserTorrentSortKey.seeders;
+    bool sortAscending = false;
+    bool panelExpanded = false;
+
+    final saleOptions = items
+        .map((item) => item.sale.trim())
+        .where((item) => item.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+    final categoryOptions = items
+        .map((item) => item.category.trim())
+        .where((item) => item.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+    final tagOptions = items
+        .expand((item) => item.tags)
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+
+    Widget content(BuildContext dialogContext, StateSetter setDialogState) {
+      final visibleEntries = items.asMap().entries.where((entry) {
+        final item = entry.value;
+        final saleOk = saleFilter.isEmpty || item.sale.trim() == saleFilter;
+        final categoryOk = categoryFilter.isEmpty || item.category.trim() == categoryFilter;
+        final tagOk = tagFilter.isEmpty || item.tags.any((tag) => tag.trim() == tagFilter);
+        return saleOk && categoryOk && tagOk;
+      }).toList()
+        ..sort((a, b) {
+          final left = a.value;
+          final right = b.value;
+          final result = switch (sortKey) {
+            _BrowserTorrentSortKey.name => left.titleSortValue.compareTo(right.titleSortValue),
+            _BrowserTorrentSortKey.seeders => left.seedersValue.compareTo(right.seedersValue),
+            _BrowserTorrentSortKey.size => left.sizeBytes.compareTo(right.sizeBytes),
+          };
+          if (result == 0) {
+            return left.titleSortValue.compareTo(right.titleSortValue);
+          }
+          return sortAscending ? result : -result;
+        });
+
+      final allVisibleSelected = visibleEntries.isNotEmpty &&
+          visibleEntries.every((entry) => selected.contains(entry.key));
+
+      Widget filterChip({
+        required String label,
+        required bool selectedValue,
+        required VoidCallback onTap,
+        Color? accent,
+      }) {
+        final activeColor = accent ?? cs.primary;
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: selectedValue
+                  ? activeColor.withValues(alpha: 0.12)
+                  : cs.muted.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: selectedValue
+                    ? activeColor.withValues(alpha: 0.32)
+                    : cs.border.withValues(alpha: 0.7),
+              ),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: selectedValue ? FontWeight.w700 : FontWeight.w500,
+                color: selectedValue ? activeColor : cs.foreground.withValues(alpha: 0.72),
+              ),
+            ),
+          ),
+        );
+      }
+
+      Widget sectionTitle(String text) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: cs.foreground.withValues(alpha: 0.56),
+            ),
+          ),
+        );
+      }
+
+      Color saleColor(String sale) {
+        final value = sale.toLowerCase();
+        if (value.contains('免费') || value.contains('free') || value.contains('0')) {
+          return const Color(0xFF10B981);
+        }
+        if (value.contains('2x') || value.contains('双倍')) {
+          return const Color(0xFFF59E0B);
+        }
+        if (value.contains('30%') || value.contains('50%')) {
+          return const Color(0xFF8B5CF6);
+        }
+        return cs.primary;
+      }
+
+      String sortLabel() {
+        return switch (sortKey) {
+          _BrowserTorrentSortKey.name => '名称',
+          _BrowserTorrentSortKey.seeders => '做种人数',
+          _BrowserTorrentSortKey.size => '大小',
+        };
+      }
+
+      final filterSummary = [
+        '排序: ${sortLabel()}${sortAscending ? '↑' : '↓'}',
+        if (saleFilter.isNotEmpty) '优惠: $saleFilter',
+        if (categoryFilter.isNotEmpty) '分类: $categoryFilter',
+        if (tagFilter.isNotEmpty) '标签: $tagFilter',
+      ].join('  ·  ');
+
+      return ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 720,
+          maxHeight: MediaQuery.of(dialogContext).size.height * 0.82,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('种子列表'),
+                            const SizedBox(height: 4),
+                            Text(
+                              '共 ${items.length} 条，当前 ${visibleEntries.length} 条，可多选（已选 ${selected.length} 条）',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: cs.foreground.withValues(alpha: 0.56),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: visibleEntries.isEmpty
+                            ? null
+                            : () {
+                                setDialogState(() {
+                                  if (allVisibleSelected) {
+                                    for (final entry in visibleEntries) {
+                                      selected.remove(entry.key);
+                                    }
+                                  } else {
+                                    for (final entry in visibleEntries) {
+                                      selected.add(entry.key);
+                                    }
+                                  }
+                                });
+                              },
+                        child: Text(allVisibleSelected ? '取消本页' : '全选本页'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: cs.border),
+            Flexible(
+              child: visibleEntries.isEmpty
+                  ? Center(
+                      child: Text(
+                        '没有符合当前筛选条件的种子',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: cs.foreground.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                shrinkWrap: true,
+                itemCount: visibleEntries.length,
+                separatorBuilder: (_, _) => Divider(height: 1, color: cs.border),
+                itemBuilder: (itemContext, index) {
+                  final entry = visibleEntries[index];
+                  final item = entry.value;
+                  final itemIndex = entry.key;
+                  final isSelected = selected.contains(itemIndex);
+                  final compact = dialogContext.isMobile;
+                  Widget metricBadge({
+                    required String text,
+                    IconData? icon,
+                    Color? color,
+                    bool filled = false,
+                  }) {
+                    final accent = color ?? cs.foreground.withValues(alpha: 0.72);
+                    return Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: compact ? 7 : 8,
+                        vertical: compact ? 3 : 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: filled
+                            ? accent.withValues(alpha: 0.12)
+                            : cs.background.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: filled
+                              ? accent.withValues(alpha: 0.26)
+                              : cs.border.withValues(alpha: 0.7),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (icon != null) ...[
+                            Icon(icon, size: compact ? 10 : 11, color: accent),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            text,
+                            style: TextStyle(
+                              fontSize: compact ? 9.5 : 10,
+                              fontWeight: FontWeight.w600,
+                              color: accent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final metricBadges = <Widget>[
+                    if (item.formattedCategory.isNotEmpty)
+                      metricBadge(
+                        text: item.formattedCategory,
+                        icon: shadcn.LucideIcons.folder,
+                      ),
+                    if (item.displaySize.isNotEmpty)
+                      metricBadge(
+                        text: item.displaySize,
+                        icon: shadcn.LucideIcons.hardDrive,
+                        color: const Color(0xFF2563EB),
+                        filled: true,
+                      ),
+                    if (item.seeders.isNotEmpty)
+                      metricBadge(
+                        text: item.seeders,
+                        icon: shadcn.LucideIcons.arrowUp,
+                        color: const Color(0xFF10B981),
+                        filled: true,
+                      ),
+                    if (item.leechers.isNotEmpty)
+                      metricBadge(
+                        text: item.leechers,
+                        icon: shadcn.LucideIcons.arrowDown,
+                        color: const Color(0xFFF59E0B),
+                        filled: true,
+                      ),
+                    if (item.completers.isNotEmpty)
+                      metricBadge(
+                        text: item.completers,
+                        icon: shadcn.LucideIcons.badgeCheck,
+                        color: const Color(0xFF8B5CF6),
+                        filled: true,
+                      ),
+                  ];
+
+                  final saleBadge = item.sale.isEmpty
+                      ? null
+                      : metricBadge(
+                          text: item.sale,
+                          color: saleColor(item.sale),
+                          filled: true,
+                        );
+
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? cs.primary.withValues(alpha: 0.08)
+                          : cs.background,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isSelected
+                            ? cs.primary.withValues(alpha: 0.45)
+                            : cs.border.withValues(alpha: 0.75),
+                        width: isSelected ? 1 : 0.8,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: cs.primary.withValues(alpha: 0.12),
+                                blurRadius: 14,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () {
+                          setDialogState(() {
+                            if (isSelected) {
+                              selected.remove(itemIndex);
+                            } else {
+                              selected.add(itemIndex);
+                            }
+                          });
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            compact ? 8 : 10,
+                            compact ? 6 : 7,
+                            compact ? 12 : 14,
+                            compact ? 6 : 7,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2, right: 8),
+                                child: Transform.scale(
+                                  scale: compact ? 0.82 : 0.88,
+                                  child: Checkbox(
+                                    value: isSelected,
+                                    onChanged: (value) {
+                                      setDialogState(() {
+                                        if (value ?? false) {
+                                          selected.add(itemIndex);
+                                        } else {
+                                          selected.remove(itemIndex);
+                                        }
+                                      });
+                                    },
+                                    visualDensity: const VisualDensity(
+                                      horizontal: -4,
+                                      vertical: -4,
+                                    ),
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    side: BorderSide(
+                                      color: isSelected
+                                          ? cs.primary
+                                          : cs.border.withValues(alpha: 0.9),
+                                    ),
+                                    activeColor: cs.primary,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            item.title.isEmpty ? item.primaryUrl : item.title,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: compact ? 12.5 : 13.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: cs.foreground,
+                                            ),
+                                          ),
+                                        ),
+                                        if (saleBadge != null) ...[
+                                          const SizedBox(width: 8),
+                                          saleBadge,
+                                        ],
+                                      ],
+                                    ),
+                                    if (item.subtitle.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 2),
+                                        child: Text(
+                                          item.subtitle,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: compact ? 10.5 : 11.5,
+                                            color: cs.foreground.withValues(alpha: 0.68),
+                                          ),
+                                        ),
+                                      ),
+                                    if (metricBadges.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 6),
+                                        child: Wrap(
+                                          spacing: 6,
+                                          runSpacing: 6,
+                                          children: metricBadges,
+                                        ),
+                                      ),
+                                    if (item.tags.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 6),
+                                        child: Wrap(
+                                          spacing: 6,
+                                          runSpacing: 6,
+                                          children: [
+                                            for (final tag in item.tags.take(6))
+                                              metricBadge(
+                                                text: tag,
+                                                color: const Color(0xFF8B5CF6),
+                                                filled: true,
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Divider(height: 1, color: cs.border),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+              decoration: BoxDecoration(
+                color: cs.muted.withValues(alpha: 0.22),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: () => setDialogState(() => panelExpanded = !panelExpanded),
+                    behavior: HitTestBehavior.opaque,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '筛选与排序',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: cs.foreground,
+                                ),
+                              ),
+                              if (filterSummary.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 3),
+                                  child: Text(
+                                    filterSummary,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: cs.foreground.withValues(alpha: 0.58),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          panelExpanded
+                              ? shadcn.LucideIcons.chevronDown
+                              : shadcn.LucideIcons.chevronUp,
+                          size: 16,
+                          color: cs.foreground.withValues(alpha: 0.72),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (panelExpanded) ...[
+                    const SizedBox(height: 12),
+                    sectionTitle('排序'),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              filterChip(
+                                label: '名称',
+                                selectedValue: sortKey == _BrowserTorrentSortKey.name,
+                                onTap: () => setDialogState(() {
+                                  sortKey = _BrowserTorrentSortKey.name;
+                                  sortAscending = true;
+                                }),
+                              ),
+                              filterChip(
+                                label: '做种人数',
+                                selectedValue: sortKey == _BrowserTorrentSortKey.seeders,
+                                onTap: () => setDialogState(() {
+                                  sortKey = _BrowserTorrentSortKey.seeders;
+                                  sortAscending = false;
+                                }),
+                              ),
+                              filterChip(
+                                label: '大小',
+                                selectedValue: sortKey == _BrowserTorrentSortKey.size,
+                                onTap: () => setDialogState(() {
+                                  sortKey = _BrowserTorrentSortKey.size;
+                                  sortAscending = false;
+                                }),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => setDialogState(() => sortAscending = !sortAscending),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: cs.background,
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(color: cs.border.withValues(alpha: 0.7)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  sortAscending
+                                      ? shadcn.LucideIcons.arrowUpNarrowWide
+                                      : shadcn.LucideIcons.arrowDownWideNarrow,
+                                  size: 12,
+                                  color: cs.foreground.withValues(alpha: 0.72),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  sortAscending ? '升序' : '降序',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: cs.foreground.withValues(alpha: 0.72),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    sectionTitle('优惠'),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        filterChip(
+                          label: '全部',
+                          selectedValue: saleFilter.isEmpty,
+                          onTap: () => setDialogState(() => saleFilter = ''),
+                        ),
+                        for (final sale in saleOptions)
+                          filterChip(
+                            label: sale,
+                            selectedValue: saleFilter == sale,
+                            onTap: () => setDialogState(() => saleFilter = saleFilter == sale ? '' : sale),
+                            accent: saleColor(sale),
+                          ),
+                      ],
+                    ),
+                    if (categoryOptions.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      sectionTitle('分类'),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          filterChip(
+                            label: '全部',
+                            selectedValue: categoryFilter.isEmpty,
+                            onTap: () => setDialogState(() => categoryFilter = ''),
+                          ),
+                          for (final category in categoryOptions)
+                            filterChip(
+                              label: category,
+                              selectedValue: categoryFilter == category,
+                              onTap: () => setDialogState(
+                                () => categoryFilter = categoryFilter == category ? '' : category,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                    if (tagOptions.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      sectionTitle('标签'),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          filterChip(
+                            label: '全部',
+                            selectedValue: tagFilter.isEmpty,
+                            onTap: () => setDialogState(() => tagFilter = ''),
+                          ),
+                          for (final tag in tagOptions)
+                            filterChip(
+                              label: tag,
+                              selectedValue: tagFilter == tag,
+                              onTap: () => setDialogState(
+                                () => tagFilter = tagFilter == tag ? '' : tag,
+                              ),
+                              accent: const Color(0xFF8B5CF6),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (context.isMobile) {
+      await showAppSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: cs.background,
+        builder: (sheetContext) =>
+            StatefulBuilder(
+              builder: (sheetContext, setDialogState) =>
+                  SafeArea(
+                    child: content(sheetContext, setDialogState),
+                  ),
+            ),
+      );
+      return;
+    }
+
+    await shadcn.showDialog<void>(
+      context: context,
+      builder: (dialogContext) =>
+          StatefulBuilder(
+            builder: (dialogContext, setDialogState) =>
+                shadcn.AlertDialog(
+                  content: content(dialogContext, setDialogState),
+                ),
+          ),
+    );
+  }
+
   bool _isTorrentUrl(String url) {
     final trimmed = url.trim();
     if (trimmed.isEmpty) return false;
@@ -785,32 +1747,34 @@ class _BrowserPageState extends State<BrowserPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => DownloaderSelectSheet(
-        onSelected: (downloader) {
-          selectedDownloader = true;
-          closeAppSheet(sheetContext);
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            if (!mounted || _closing) return;
-            final cookie = await _cookieHeaderFor(torrentUrl);
-            if (!mounted || _closing) return;
+      builder: (sheetContext) =>
+          DownloaderSelectSheet(
+            onSelected: (downloader) {
+              selectedDownloader = true;
+              closeAppSheet(sheetContext);
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                if (!mounted || _closing) return;
+                final cookie = await _cookieHeaderFor(torrentUrl);
+                if (!mounted || _closing) return;
 
-            showAppSheet<void>(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              builder: (_) => PushTorrentSheet(
-                downloader: downloader,
-                initialUrl: torrentUrl,
-                initialCookie: cookie,
-                initialSiteId: widget.siteId,
-              ),
-            ).whenComplete(() {
-              _torrentSheetOpen = false;
-              _activeTorrentUrl = null;
-            });
-          });
-        },
-      ),
+                showAppSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) =>
+                      PushTorrentSheet(
+                        downloader: downloader,
+                        initialUrl: torrentUrl,
+                        initialCookie: cookie,
+                        initialSiteId: widget.siteId,
+                      ),
+                ).whenComplete(() {
+                  _torrentSheetOpen = false;
+                  _activeTorrentUrl = null;
+                });
+              });
+            },
+          ),
     ).whenComplete(() {
       if (!selectedDownloader) {
         _torrentSheetOpen = false;
@@ -872,4 +1836,156 @@ class _UserAgentPreset {
     required this.description,
     required this.userAgent,
   });
+}
+
+enum _BrowserTorrentSortKey { name, seeders, size }
+
+class _BrowserExtractedTorrent {
+  final String title;
+  final String subtitle;
+  final String detailUrl;
+  final String magnetUrl;
+  final String category;
+  final String poster;
+  final String size;
+  final String progress;
+  final String hr;
+  final String sale;
+  final String saleExpire;
+  final String release;
+  final String seeders;
+  final String leechers;
+  final String completers;
+  final List<String> tags;
+
+  const _BrowserExtractedTorrent({
+    required this.title,
+    required this.subtitle,
+    required this.detailUrl,
+    required this.magnetUrl,
+    required this.category,
+    required this.poster,
+    required this.size,
+    required this.progress,
+    required this.hr,
+    required this.sale,
+    required this.saleExpire,
+    required this.release,
+    required this.seeders,
+    required this.leechers,
+    required this.completers,
+    required this.tags,
+  });
+
+  String get primaryUrl => magnetUrl.isNotEmpty ? magnetUrl : detailUrl;
+  String get titleSortValue => (title.isNotEmpty ? title : primaryUrl).toLowerCase();
+  int get seedersValue => _parseCompactInt(seeders);
+  int get sizeBytes => _parseSizeToBytes(size);
+  String get displaySize => _normalizeSizeText(size, sizeBytes);
+  String get formattedCategory => _formatCategory(category);
+
+  factory _BrowserExtractedTorrent.fromMap(Map<String, dynamic> map) {
+    List<String> parseTags(dynamic value) {
+      if (value is Iterable) {
+        return value
+            .map((item) => item?.toString().trim() ?? '')
+            .where((item) => item.isNotEmpty)
+            .toList();
+      }
+      final text = value?.toString().trim() ?? '';
+      return text.isEmpty ? const [] : <String>[text];
+    }
+
+    String text(dynamic value) => value?.toString().trim() ?? '';
+
+    return _BrowserExtractedTorrent(
+      title: text(map['title']),
+      subtitle: text(map['subtitle']),
+      detailUrl: text(map['detailUrl']),
+      magnetUrl: text(map['magnetUrl']),
+      category: text(map['category']),
+      poster: text(map['poster']),
+      size: text(map['size']),
+      progress: text(map['progress']),
+      hr: text(map['hr']),
+      sale: text(map['sale']),
+      saleExpire: text(map['saleExpire']),
+      release: text(map['release']),
+      seeders: text(map['seeders']),
+      leechers: text(map['leechers']),
+      completers: text(map['completers']),
+      tags: parseTags(map['tags']),
+    );
+  }
+
+  static int _parseCompactInt(String value) {
+    final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+    return int.tryParse(digits) ?? 0;
+  }
+
+  static String _formatCategory(String value) {
+    var text = value.trim();
+    if (text.isEmpty) return '';
+    text = text
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .replaceAll(RegExp(r'\s*[/|>]+\s*'), ' · ')
+        .replaceAll('_', ' ')
+        .replaceAll(RegExp(r'\s*-\s*'), ' · ')
+        .replaceAll(RegExp(r'\s*·\s*'), ' · ');
+    return text.trim();
+  }
+
+  static int _parseSizeToBytes(String value) {
+    final normalized = value.trim().replaceAll(',', '');
+    final match = RegExp(
+      r'([0-9]+(?:\.[0-9]+)?)\s*([kmgtpe]?i?b?|bytes?)',
+      caseSensitive: false,
+    ).firstMatch(normalized);
+    if (match == null) return 0;
+    final number = double.tryParse(match.group(1) ?? '') ?? 0;
+    var unit = (match.group(2) ?? '').toUpperCase();
+    if (unit == 'BYTE' || unit == 'BYTES') unit = 'B';
+    if (unit.length == 1 && unit != 'B') unit = '${unit}B';
+    const powers = {
+      'B': 0,
+      'KB': 1,
+      'KIB': 1,
+      'MB': 2,
+      'MIB': 2,
+      'GB': 3,
+      'GIB': 3,
+      'TB': 4,
+      'TIB': 4,
+      'PB': 5,
+      'PIB': 5,
+      'EB': 6,
+      'EIB': 6,
+    };
+    final power = powers[unit] ?? 0;
+    var multiplier = 1.0;
+    for (var i = 0; i < power; i += 1) {
+      multiplier *= 1024;
+    }
+    return (number * multiplier).round();
+  }
+
+  static String _normalizeSizeText(String raw, int bytes) {
+    final text = raw.trim();
+    if (text.isEmpty) return bytes > 0 ? formatBytes(bytes) : '';
+    if (RegExp(r'[a-zA-Z\u4e00-\u9fa5]').hasMatch(text)) {
+      return text
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .replaceAllMapped(
+            RegExp(r'([0-9]+(?:\.[0-9]+)?)\s*([kmgtpe]?i?b?|bytes?)', caseSensitive: false),
+            (match) {
+              final number = match.group(1) ?? '';
+              var unit = (match.group(2) ?? '').toUpperCase();
+              if (unit == 'BYTE' || unit == 'BYTES') unit = 'B';
+              if (unit.length == 1 && unit != 'B') unit = '${unit}B';
+              return '$number $unit';
+            },
+          );
+    }
+    return bytes > 0 ? formatBytes(bytes) : text;
+  }
 }
