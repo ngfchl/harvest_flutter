@@ -897,6 +897,7 @@ class _MobileFilterSheet extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const SizedBox(height: 8),
             // 搜索 + 计数
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
