@@ -25,26 +25,44 @@ class AppDropdownMenu extends StatelessWidget {
         theme.density.baseContentPadding * theme.scaling;
     final isSheetOverlay = shadcn.SheetOverlayHandler.isSheetOverlay(context);
 
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: 192),
-      child: shadcn.MenuGroup(
-        autofocus: false,
-        regionGroupId:
-            regionGroupId ??
-            shadcn.Data.maybeOf<shadcn.DropdownMenuData>(context)?.key,
-        subMenuOffset: Offset(densityGap, -densityGap * 0.5),
-        itemPadding: isSheetOverlay
-            ? EdgeInsets.symmetric(horizontal: densityContentPadding * 0.5)
-            : EdgeInsets.zero,
-        onDismissed: () => shadcn.closeOverlay(context),
-        direction: direction,
-        builder: (context, children) => shadcn.MenuPopup(
-          surfaceOpacity: surfaceOpacity,
-          surfaceBlur: surfaceBlur,
+    return _AppPopoverMenuLayer(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 192),
+        child: shadcn.MenuGroup(
+          autofocus: false,
+          regionGroupId:
+              regionGroupId ??
+              shadcn.Data.maybeOf<shadcn.DropdownMenuData>(context)?.key,
+          subMenuOffset: Offset(densityGap, -densityGap * 0.5),
+          itemPadding: isSheetOverlay
+              ? EdgeInsets.symmetric(horizontal: densityContentPadding * 0.5)
+              : EdgeInsets.zero,
+          onDismissed: () => shadcn.closeOverlay(context),
+          direction: direction,
+          builder: (context, children) => shadcn.MenuPopup(
+            surfaceOpacity: surfaceOpacity,
+            surfaceBlur: surfaceBlur,
+            children: children,
+          ),
           children: children,
         ),
-        children: children,
       ),
+    );
+  }
+}
+
+class _AppPopoverMenuLayer extends StatelessWidget {
+  final Widget child;
+
+  const _AppPopoverMenuLayer({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return shadcn.OverlayManagerLayer(
+      popoverHandler: const shadcn.PopoverOverlayHandler(),
+      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+      menuHandler: const shadcn.PopoverOverlayHandler(),
+      child: child,
     );
   }
 }
