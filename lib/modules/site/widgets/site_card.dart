@@ -2,23 +2,23 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-
-import 'site_theme.dart';
 import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/modules/site/widgets/site_browser.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
+import '../../dashboard/provider/privacy_provider.dart';
 import '../model/site_config.dart';
 import '../model/site_info.dart';
-import '../../dashboard/provider/privacy_provider.dart';
 import '../provider/site_card_style_provider.dart';
 import '../provider/site_provider.dart';
 import '../utils/site_level_milestone.dart';
 import 'site_action_menu.dart';
 import 'site_detail_sheet.dart';
 import 'site_level_sheet.dart';
+import 'site_theme.dart';
 
 String _maskSiteName(String name, bool privacy) {
   if (!privacy) return name;
@@ -36,14 +36,10 @@ class SiteCard extends ConsumerWidget {
   (int up, int down) _calcDailyDelta() {
     final statuses = site.status;
     if (statuses == null || statuses.length < 2) return (0, 0);
-    final sorted = statuses.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+    final sorted = statuses.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
     final newest = sorted.last.value;
     final prev = sorted[sorted.length - 2].value;
-    return (
-      newest.uploaded - prev.uploaded,
-      newest.downloaded - prev.downloaded,
-    );
+    return (newest.uploaded - prev.uploaded, newest.downloaded - prev.downloaded);
   }
 
   @override
@@ -98,16 +94,9 @@ class SiteCard extends ConsumerWidget {
             _firstRow(context, status, config, privacy),
             const SizedBox(height: 3),
             _secondRow(context, status, config),
-            if (status != null) ...[
-              const SizedBox(height: 3),
-              _thirdRow(context, status, dailyUp, dailyDown),
-            ],
-            if (status != null) ...[
-              const SizedBox(height: 4),
-              _fourthRow(context, status, spFull),
-            ],
-            if (site.tags.isNotEmpty ||
-                site.latestStatusUpdatedText.isNotEmpty) ...[
+            if (status != null) ...[const SizedBox(height: 3), _thirdRow(context, status, dailyUp, dailyDown)],
+            if (status != null) ...[const SizedBox(height: 4), _fourthRow(context, status, spFull)],
+            if (site.tags.isNotEmpty || site.latestStatusUpdatedText.isNotEmpty) ...[
               const SizedBox(height: 6),
               _fifthRow(context),
             ],
@@ -121,15 +110,8 @@ class SiteCard extends ConsumerWidget {
   //  各行布局
   // ═══════════════════════════════════════════
 
-  Widget _firstRow(
-    BuildContext context,
-    SiteDailyStatus? status,
-    WebSite? config,
-    bool privacy,
-  ) {
-    final hasRight =
-        (status != null && status.myLevel.isNotEmpty) ||
-        site.signInText != null;
+  Widget _firstRow(BuildContext context, SiteDailyStatus? status, WebSite? config, bool privacy) {
+    final hasRight = (status != null && status.myLevel.isNotEmpty) || site.signInText != null;
     return Row(
       children: [
         _siteLogo(context, config, privacy),
@@ -142,20 +124,12 @@ class SiteCard extends ConsumerWidget {
               children: [
                 TextSpan(
                   text: _maskSiteName(site.site, privacy),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
                 ),
                 if (site.nickname.isNotEmpty && site.nickname != site.site)
                   TextSpan(
                     text: ' ${_maskSiteName(site.nickname, privacy)}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: shadcn.Theme.of(
-                        context,
-                      ).colorScheme.mutedForeground,
-                    ),
+                    style: TextStyle(fontSize: 11, color: shadcn.Theme.of(context).colorScheme.mutedForeground),
                   ),
               ],
             ),
@@ -165,12 +139,8 @@ class SiteCard extends ConsumerWidget {
         ),
         if (hasRight) ...[
           const SizedBox(width: 6),
-          if (status != null && status.myLevel.isNotEmpty)
-            _levelBadge(context, status.myLevel),
-          if (site.signInText != null) ...[
-            const SizedBox(width: 4),
-            _signBadge(context, site.signInText!),
-          ],
+          if (status != null && status.myLevel.isNotEmpty) _levelBadge(context, status.myLevel),
+          if (site.signInText != null) ...[const SizedBox(width: 4), _signBadge(context, site.signInText!)],
         ],
       ],
     );
@@ -185,10 +155,7 @@ class SiteCard extends ConsumerWidget {
     decoration: BoxDecoration(
       shape: BoxShape.circle,
       color: shadcn.Theme.of(context).colorScheme.muted,
-      border: Border.all(
-        color: shadcn.Theme.of(context).colorScheme.border,
-        width: 0.8,
-      ),
+      border: Border.all(color: shadcn.Theme.of(context).colorScheme.border, width: 0.8),
     ),
     fallbackStyle: TextStyle(
       color: shadcn.Theme.of(context).colorScheme.foreground,
@@ -197,11 +164,7 @@ class SiteCard extends ConsumerWidget {
     ),
   );
 
-  Widget _secondRow(
-    BuildContext context,
-    SiteDailyStatus? status,
-    WebSite? config,
-  ) {
+  Widget _secondRow(BuildContext context, SiteDailyStatus? status, WebSite? config) {
     final milestone = _siteLevelMilestone(config, status);
     final hasInvite = (status?.invitation ?? 0) > 0;
     final hasMail = site.mail > 0;
@@ -216,11 +179,7 @@ class SiteCard extends ConsumerWidget {
               height: 18,
               child: site.durationText.isEmpty
                   ? const SizedBox.shrink()
-                  : _tooltipWrap(
-                      context,
-                      '注册时长',
-                      _infoTag(context, Icons.access_time, site.durationText),
-                    ),
+                  : _tooltipWrap(context, '注册时长', _infoTag(context, Icons.access_time, site.durationText)),
             ),
           ),
         ),
@@ -236,22 +195,14 @@ class SiteCard extends ConsumerWidget {
                         _tooltipWrap(
                           context,
                           '短消息',
-                          _indicator(
-                            shadcn.LucideIcons.mail,
-                            fmtCompact(site.mail.toDouble()),
-                            siteInfo(context),
-                          ),
+                          _indicator(shadcn.LucideIcons.mail, fmtCompact(site.mail.toDouble()), siteInfo(context)),
                         ),
                       if (hasNotice) ...[
                         if (hasMail) const SizedBox(width: 6),
                         _tooltipWrap(
                           context,
                           '公告通知',
-                          _indicator(
-                            shadcn.LucideIcons.bell,
-                            fmtCompact(site.notice.toDouble()),
-                            siteWarning(context),
-                          ),
+                          _indicator(shadcn.LucideIcons.bell, fmtCompact(site.notice.toDouble()), siteWarning(context)),
                         ),
                       ],
                       if (hasInvite) ...[
@@ -267,8 +218,7 @@ class SiteCard extends ConsumerWidget {
                         ),
                       ],
                       if (milestone != null) ...[
-                        if (hasMail || hasNotice || hasInvite)
-                          const SizedBox(width: 8),
+                        if (hasMail || hasNotice || hasInvite) const SizedBox(width: 8),
                         _levelMilestoneBadge(context, milestone),
                       ],
                     ],
@@ -280,18 +230,12 @@ class SiteCard extends ConsumerWidget {
     );
   }
 
-  Widget _thirdRow(
-    BuildContext context,
-    SiteDailyStatus status,
-    int dailyUp,
-    int dailyDown,
-  ) {
+  Widget _thirdRow(BuildContext context, SiteDailyStatus status, int dailyUp, int dailyDown) {
     final statuses = site.status;
     final hasDailyDelta = dailyUp != 0 || dailyDown != 0;
     int yesterdaySeedVolume = 0;
     if (statuses != null && statuses.length >= 2) {
-      final sorted = statuses.entries.toList()
-        ..sort((a, b) => a.key.compareTo(b.key));
+      final sorted = statuses.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
       yesterdaySeedVolume = sorted[sorted.length - 2].value.seedVolume;
     }
 
@@ -312,117 +256,64 @@ class SiteCard extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  '总量',
-                  style: TextStyle(
-                    fontSize: 8,
-                    color: cs.mutedForeground.withValues(alpha: 0.6),
-                  ),
-                ),
+                Text('总量', style: TextStyle(fontSize: 8, color: cs.mutedForeground.withValues(alpha: 0.6))),
                 const SizedBox(height: 2),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _miniStat(
-                      Icons.arrow_circle_up_outlined,
-                      fmtBytes(status.uploaded),
-                      siteSuccess(context),
-                    ),
+                    _miniStat(Icons.arrow_circle_up_outlined, fmtBytes(status.uploaded), siteSuccess(context)),
                     const SizedBox(width: 6),
-                    _miniStat(
-                      Icons.arrow_circle_down_outlined,
-                      fmtBytes(status.downloaded),
-                      siteDanger(context),
-                    ),
+                    _miniStat(Icons.arrow_circle_down_outlined, fmtBytes(status.downloaded), siteDanger(context)),
                   ],
                 ),
               ],
             ),
           ),
           // 分隔
-          Container(
-            width: 0.5,
-            height: 24,
-            color: cs.border.withValues(alpha: 0.4),
-          ),
+          Container(width: 0.5, height: 24, color: cs.border.withValues(alpha: 0.4)),
           // ── 今日增量 ──
           if (hasDailyDelta) ...[
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    '今日',
-                    style: TextStyle(
-                      fontSize: 8,
-                      color: cs.primary.withValues(alpha: 0.7),
-                    ),
-                  ),
+                  Text('今日', style: TextStyle(fontSize: 8, color: cs.primary.withValues(alpha: 0.7))),
                   const SizedBox(height: 2),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _miniStat(
-                        Icons.arrow_circle_up_outlined,
-                        _fmtSignedBytes(dailyUp),
-                        siteSuccess(context),
-                      ),
+                      _miniStat(Icons.arrow_circle_up_outlined, _fmtSignedBytes(dailyUp), siteSuccess(context)),
                       const SizedBox(width: 6),
-                      _miniStat(
-                        Icons.arrow_circle_down_outlined,
-                        _fmtSignedBytes(dailyDown),
-                        siteDanger(context),
-                      ),
+                      _miniStat(Icons.arrow_circle_down_outlined, _fmtSignedBytes(dailyDown), siteDanger(context)),
                     ],
                   ),
                 ],
               ),
             ),
             // 分隔
-            Container(
-              width: 0.5,
-              height: 24,
-              color: cs.border.withValues(alpha: 0.4),
-            ),
+            Container(width: 0.5, height: 24, color: cs.border.withValues(alpha: 0.4)),
           ],
           // ── 做种量对比 ──
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  '做种量',
-                  style: TextStyle(
-                    fontSize: 8,
-                    color: cs.mutedForeground.withValues(alpha: 0.6),
-                  ),
-                ),
+                Text('做种量', style: TextStyle(fontSize: 8, color: cs.mutedForeground.withValues(alpha: 0.6))),
                 const SizedBox(height: 2),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       fmtBytes(yesterdaySeedVolume),
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: cs.mutedForeground.withValues(alpha: 0.5),
-                      ),
+                      style: TextStyle(fontSize: 10, color: cs.mutedForeground.withValues(alpha: 0.5)),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: Icon(
-                        Icons.arrow_forward,
-                        size: 9,
-                        color: cs.mutedForeground.withValues(alpha: 0.3),
-                      ),
+                      child: Icon(Icons.arrow_forward, size: 9, color: cs.mutedForeground.withValues(alpha: 0.3)),
                     ),
                     Text(
                       fmtBytes(status.seedVolume),
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: cs.mutedForeground,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: TextStyle(fontSize: 10, color: cs.mutedForeground, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -434,65 +325,21 @@ class SiteCard extends ConsumerWidget {
     );
   }
 
-  Widget _fourthRow(
-    BuildContext context,
-    SiteDailyStatus status,
-    double spFull,
-  ) {
+  Widget _fourthRow(BuildContext context, SiteDailyStatus status, double spFull) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _tooltipWrap(
-          context,
-          '做种数',
-          _labeledStat(
-            context,
-            Icons.eco_outlined,
-            fmtCompact(status.seed.toDouble()),
-          ),
-        ),
+        _tooltipWrap(context, '做种数', _labeledStat(context, Icons.eco_outlined, fmtCompact(status.seed.toDouble()))),
         _tooltipWrap(
           context,
           '下载数',
-          _labeledStat(
-            context,
-            Icons.leak_add_outlined,
-            fmtCompact(status.leech.toDouble()),
-          ),
+          _labeledStat(context, Icons.leak_add_outlined, fmtCompact(status.leech.toDouble())),
         ),
-        _tooltipWrap(
-          context,
-          '做种积分',
-          _labeledStat(context, Icons.star_outline, fmtCompact(status.myScore)),
-        ),
-        _tooltipWrap(
-          context,
-          '魔力值',
-          _labeledStat(
-            context,
-            Icons.diamond_outlined,
-            fmtCompact(status.myBonus),
-          ),
-        ),
-        _tooltipWrap(
-          context,
-          '发布数',
-          _labeledStat(
-            context,
-            Icons.edit_note,
-            fmtCompact(status.publish.toDouble()),
-          ),
-        ),
-        _tooltipWrap(
-          context,
-          '分享率',
-          _labeledStat(context, Icons.show_chart, _fmtRatio(status.ratio)),
-        ),
-        _tooltipWrap(
-          context,
-          '时魔比率',
-          _magicBadge(context, status.bonusHour, spFull),
-        ),
+        _tooltipWrap(context, '做种积分', _labeledStat(context, Icons.star_outline, fmtCompact(status.myScore))),
+        _tooltipWrap(context, '魔力值', _labeledStat(context, Icons.diamond_outlined, fmtCompact(status.myBonus))),
+        _tooltipWrap(context, '发布数', _labeledStat(context, Icons.edit_note, fmtCompact(status.publish.toDouble()))),
+        _tooltipWrap(context, '分享率', _labeledStat(context, Icons.show_chart, _fmtRatio(status.ratio))),
+        _tooltipWrap(context, '时魔比率', _magicBadge(context, status.bonusHour, spFull)),
       ],
     );
   }
@@ -511,23 +358,12 @@ class SiteCard extends ConsumerWidget {
                 .take(4)
                 .map(
                   (t) => Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 1,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                     decoration: BoxDecoration(
-                      color: shadcn.Theme.of(
-                        context,
-                      ).colorScheme.primary.withValues(alpha: 0.08),
+                      color: shadcn.Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
                       borderRadius: siteRadius(context, size: "xs"),
                     ),
-                    child: Text(
-                      t,
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: shadcn.Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
+                    child: Text(t, style: TextStyle(fontSize: 9, color: shadcn.Theme.of(context).colorScheme.primary)),
                   ),
                 )
                 .toList(),
@@ -537,9 +373,7 @@ class SiteCard extends ConsumerWidget {
           const SizedBox(width: 8),
           _tooltipWrap(
             context,
-            updateAt == null || updateAt.isEmpty
-                ? '最后更新：$updateText'
-                : '最后更新：$updateAt',
+            updateAt == null || updateAt.isEmpty ? '最后更新：$updateText' : '最后更新：$updateAt',
             _infoTag(context, Icons.update, updateText),
           ),
         ],
@@ -578,19 +412,12 @@ class SiteCard extends ConsumerWidget {
       ),
       child: Text(
         lv,
-        style: TextStyle(
-          fontSize: 9,
-          color: levelColor(lv),
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(fontSize: 9, color: levelColor(lv), fontWeight: FontWeight.w600),
       ),
     ),
   );
 
-  Widget _levelMilestoneBadge(
-    BuildContext context,
-    _SiteLevelMilestone milestone,
-  ) {
+  Widget _levelMilestoneBadge(BuildContext context, _SiteLevelMilestone milestone) {
     return _siteLevelMilestoneBadge(
       context,
       milestone,
@@ -624,21 +451,9 @@ class SiteCard extends ConsumerWidget {
   Widget _infoTag(BuildContext context, IconData icon, String text) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Icon(
-        icon,
-        size: 9,
-        color: shadcn.Theme.of(
-          context,
-        ).colorScheme.mutedForeground.withValues(alpha: 0.6),
-      ),
+      Icon(icon, size: 9, color: shadcn.Theme.of(context).colorScheme.mutedForeground.withValues(alpha: 0.6)),
       const SizedBox(width: 2),
-      Text(
-        text,
-        style: TextStyle(
-          fontSize: 10,
-          color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-        ),
-      ),
+      Text(text, style: TextStyle(fontSize: 10, color: shadcn.Theme.of(context).colorScheme.mutedForeground)),
     ],
   );
 
@@ -651,11 +466,7 @@ class SiteCard extends ConsumerWidget {
         const SizedBox(width: 2),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 10,
-            color: color,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -664,21 +475,9 @@ class SiteCard extends ConsumerWidget {
   Widget _labeledStat(BuildContext context, IconData icon, String value) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Icon(
-        icon,
-        size: 11,
-        color: shadcn.Theme.of(
-          context,
-        ).colorScheme.mutedForeground.withValues(alpha: 0.6),
-      ),
+      Icon(icon, size: 11, color: shadcn.Theme.of(context).colorScheme.mutedForeground.withValues(alpha: 0.6)),
       const SizedBox(width: 1),
-      Text(
-        value,
-        style: TextStyle(
-          fontSize: 10,
-          color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-        ),
-      ),
+      Text(value, style: TextStyle(fontSize: 10, color: shadcn.Theme.of(context).colorScheme.mutedForeground)),
     ],
   );
 
@@ -700,9 +499,7 @@ class SiteCard extends ConsumerWidget {
         : ratio >= 0.5
         ? siteWarning(context)
         : siteDanger(context, alpha: 0.82);
-    final display = full > 0
-        ? '${fmtCompact(current)}($pct%)'
-        : fmtCompact(current);
+    final display = full > 0 ? '${fmtCompact(current)}($pct%)' : fmtCompact(current);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
       decoration: BoxDecoration(
@@ -711,11 +508,7 @@ class SiteCard extends ConsumerWidget {
       ),
       child: Text(
         display,
-        style: TextStyle(
-          fontSize: 9,
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(fontSize: 9, color: color, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -724,14 +517,10 @@ class SiteCard extends ConsumerWidget {
 ({int up, int down}) _siteDailyDelta(SiteInfo site) {
   final statuses = site.status;
   if (statuses == null || statuses.length < 2) return (up: 0, down: 0);
-  final sorted = statuses.entries.toList()
-    ..sort((a, b) => a.key.compareTo(b.key));
+  final sorted = statuses.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
   final newest = sorted.last.value;
   final prev = sorted[sorted.length - 2].value;
-  return (
-    up: newest.uploaded - prev.uploaded,
-    down: newest.downloaded - prev.downloaded,
-  );
+  return (up: newest.uploaded - prev.uploaded, down: newest.downloaded - prev.downloaded);
 }
 
 String _fmtSignedBytes(int value) {
@@ -752,9 +541,7 @@ String _localSiteIconUrl(String siteName) {
 
   final baseUri = Uri.tryParse(base.endsWith('/') ? base : '$base/');
   if (baseUri == null || !baseUri.hasScheme) return '';
-  return baseUri
-      .resolve('local/icons/${Uri.encodeComponent(name)}.png')
-      .toString();
+  return baseUri.resolve('local/icons/${Uri.encodeComponent(name)}.png').toString();
 }
 
 Map<String, String>? _localSiteIconHeaders() {
@@ -811,8 +598,7 @@ class _SiteLogoImage extends StatelessWidget {
               httpHeaders: _localSiteIconHeaders(),
               fit: BoxFit.cover,
               placeholder: (_, __) => fallback,
-              errorWidget: (_, __, ___) =>
-                  _cachedImage(siteLogo, fallback: fallback),
+              errorWidget: (_, __, ___) => _cachedImage(siteLogo, fallback: fallback),
             ),
     );
   }
@@ -876,18 +662,16 @@ enum _SiteLevelMilestone {
   final String label;
   final String tooltip;
   final IconData icon;
+
   const _SiteLevelMilestone(this.label, this.tooltip, this.icon);
 
   Color color(BuildContext context) => switch (this) {
-        _SiteLevelMilestone.keepAccount => siteSuccess(context),
-        _SiteLevelMilestone.graduation => siteWarning(context),
-      };
+    _SiteLevelMilestone.keepAccount => siteSuccess(context),
+    _SiteLevelMilestone.graduation => siteWarning(context),
+  };
 }
 
-_SiteLevelMilestone? _siteLevelMilestone(
-  WebSite? config,
-  SiteDailyStatus? status,
-) {
+_SiteLevelMilestone? _siteLevelMilestone(WebSite? config, SiteDailyStatus? status) {
   return switch (siteLevelMilestone(config, status)) {
     SiteLevelMilestoneType.keepAccount => _SiteLevelMilestone.keepAccount,
     SiteLevelMilestoneType.graduation => _SiteLevelMilestone.graduation,
@@ -898,8 +682,7 @@ _SiteLevelMilestone? _siteLevelMilestone(
 String? _siteSignStatus(SiteInfo site, WebSite? config) {
   if (config?.signIn != true || !site.signIn) return null;
   final today = DateTime.now();
-  final todayKey =
-      '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+  final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
   return site.signInfo?.containsKey(todayKey) == true ? '已签到' : '未签到';
 }
 
@@ -917,12 +700,7 @@ Widget _siteSignBadge(BuildContext context, String text) {
       text,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        fontSize: 10,
-        color: color,
-        fontWeight: FontWeight.w800,
-        height: 1.1,
-      ),
+      style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w800, height: 1.1),
     ),
   );
 }
@@ -1006,12 +784,7 @@ Widget _siteUnreadIndicator(
           const SizedBox(width: 3),
           Text(
             value,
-            style: TextStyle(
-              color: color,
-              fontSize: fontSize,
-              fontWeight: FontWeight.w800,
-              height: 1,
-            ),
+            style: TextStyle(color: color, fontSize: fontSize, fontWeight: FontWeight.w800, height: 1),
           ),
         ],
       ),
@@ -1099,10 +872,7 @@ Widget _siteInvitePill(BuildContext context, int invitation) {
       decoration: BoxDecoration(
         color: accent.withValues(alpha: isDark ? 0.14 : 0.10),
         borderRadius: siteRadius(context, size: "xl"),
-        border: Border.all(
-          color: accent.withValues(alpha: isDark ? 0.22 : 0.16),
-          width: 1,
-        ),
+        border: Border.all(color: accent.withValues(alpha: isDark ? 0.22 : 0.16), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1150,9 +920,7 @@ class SiteCard2 extends ConsumerWidget {
           border: Border.all(color: _borderColor(context), width: 0.7),
           boxShadow: [
             BoxShadow(
-              color: _isDark(context)
-                  ? Colors.black.withValues(alpha: 0.22)
-                  : siteShadow(context, alpha: 0.07),
+              color: _isDark(context) ? Colors.black.withValues(alpha: 0.22) : siteShadow(context, alpha: 0.07),
               blurRadius: 22,
               offset: const Offset(0, 8),
               spreadRadius: -4,
@@ -1191,18 +959,8 @@ class SiteCard2 extends ConsumerWidget {
                   ]),
                   Divider(height: 1, thickness: 0.6, color: dividerColor),
                   _minorRow(context, [
-                    _MinorMetric(
-                      shadcn.LucideIcons.diamond,
-                      '魔力值',
-                      fmtCompact(status.myBonus),
-                      siteAccent(context, 3),
-                    ),
-                    _MinorMetric(
-                      Icons.star_outline,
-                      '做种积分',
-                      fmtCompact(status.myScore),
-                      siteWarning(context),
-                    ),
+                    _MinorMetric(shadcn.LucideIcons.diamond, '魔力值', fmtCompact(status.myBonus), siteAccent(context, 3)),
+                    _MinorMetric(Icons.star_outline, '做种积分', fmtCompact(status.myScore), siteWarning(context)),
                     _MinorMetric(
                       Icons.schedule_outlined,
                       '时魔',
@@ -1229,38 +987,21 @@ class SiteCard2 extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(child: _siteTitle(context)),
-                  if (_hasSiteUnread(site)) ...[
-                    const SizedBox(width: 8),
-                    _siteUnreadIndicators(context, site),
-                  ],
-                  if (signStatus != null) ...[
-                    const SizedBox(width: 8),
-                    _siteSignBadge(context, signStatus),
-                  ],
+                  if (_hasSiteUnread(site)) ...[const SizedBox(width: 8), _siteUnreadIndicators(context, site)],
+                  if (signStatus != null) ...[const SizedBox(width: 8), _siteSignBadge(context, signStatus)],
                 ],
               ),
               const SizedBox(height: 4),
-              Text(
-                '暂无站点数据',
-                style: TextStyle(fontSize: 12, color: _mutedText(context)),
-              ),
+              Text('暂无站点数据', style: TextStyle(fontSize: 12, color: _mutedText(context))),
             ],
           ),
         ),
-        Icon(
-          shadcn.LucideIcons.chevronRight,
-          color: _mutedText(context),
-          size: 20,
-        ),
+        Icon(shadcn.LucideIcons.chevronRight, color: _mutedText(context), size: 20),
       ],
     );
   }
 
-  Widget _header(
-    BuildContext context,
-    SiteDailyStatus status,
-    WebSite? config,
-  ) {
+  Widget _header(BuildContext context, SiteDailyStatus status, WebSite? config) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final updateText = site.latestStatusUpdatedText;
     final milestone = _siteLevelMilestone(config, status);
@@ -1285,31 +1026,19 @@ class SiteCard2 extends ConsumerWidget {
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 96),
                     child: _siteTooltip(
-                      updateText.isEmpty
-                          ? '-'
-                          : '更新于 ${site.latestStatusUpdatedAt ?? updateText}',
+                      updateText.isEmpty ? '-' : '更新于 ${site.latestStatusUpdatedAt ?? updateText}',
                       Text(
                         updateText.isEmpty ? '-' : '更新于 $updateText',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.right,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: cs.mutedForeground,
-                        ),
+                        style: TextStyle(fontSize: 11, color: cs.mutedForeground),
                       ),
                     ),
                   ),
-                  if (signStatus != null) ...[
-                    const SizedBox(width: 6),
-                    _siteSignBadge(context, signStatus),
-                  ],
+                  if (signStatus != null) ...[const SizedBox(width: 6), _siteSignBadge(context, signStatus)],
                   const SizedBox(width: 6),
-                  Icon(
-                    shadcn.LucideIcons.chevronRight,
-                    color: _mutedText(context),
-                    size: 20,
-                  ),
+                  Icon(shadcn.LucideIcons.chevronRight, color: _mutedText(context), size: 20),
                 ],
               ),
               const SizedBox(height: 4),
@@ -1321,21 +1050,11 @@ class SiteCard2 extends ConsumerWidget {
                           ? '注册于 -'
                           : '注册于 ${_dateOnly(site.timeJoin!)}',
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: _mutedText(context).withValues(alpha: 0.86),
-                        height: 1.1,
-                      ),
+                      style: TextStyle(fontSize: 11, color: _mutedText(context).withValues(alpha: 0.86), height: 1.1),
                     ),
                   ),
-                  if (_hasSiteUnread(site)) ...[
-                    const SizedBox(width: 8),
-                    _siteUnreadIndicators(context, site),
-                  ],
-                  if (hasInvite) ...[
-                    const SizedBox(width: 8),
-                    _siteInvitePill(context, status.invitation),
-                  ],
+                  if (_hasSiteUnread(site)) ...[const SizedBox(width: 8), _siteUnreadIndicators(context, site)],
+                  if (hasInvite) ...[const SizedBox(width: 8), _siteInvitePill(context, status.invitation)],
                   if (milestone != null) ...[
                     const SizedBox(width: 8),
                     _siteLevelMilestoneBadge(
@@ -1357,11 +1076,7 @@ class SiteCard2 extends ConsumerWidget {
     );
   }
 
-  Widget _mainMetrics(
-    BuildContext context,
-    SiteDailyStatus status,
-    ({int up, int down}) delta,
-  ) {
+  Widget _mainMetrics(BuildContext context, SiteDailyStatus status, ({int up, int down}) delta) {
     return Row(
       children: [
         Expanded(
@@ -1388,12 +1103,7 @@ class SiteCard2 extends ConsumerWidget {
         _verticalDivider(context),
         Expanded(
           flex: 3,
-          child: _largeMetric(
-            context,
-            value: _fmtRatio(status.ratio),
-            label: '分享率',
-            color: siteInfo(context),
-          ),
+          child: _largeMetric(context, value: _fmtRatio(status.ratio), label: '分享率', color: siteInfo(context)),
         ),
       ],
     );
@@ -1415,22 +1125,12 @@ class SiteCard2 extends ConsumerWidget {
             children: [
               TextSpan(
                 text: parts.value,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: color,
-                  height: 1,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: color, height: 1),
               ),
               if (parts.unit.isNotEmpty)
                 TextSpan(
                   text: ' ${parts.unit}',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: color,
-                    height: 1,
-                  ),
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color, height: 1),
                 ),
             ],
           ),
@@ -1448,12 +1148,7 @@ class SiteCard2 extends ConsumerWidget {
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: _mutedText(context),
-                  height: 1,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 11, color: _mutedText(context), height: 1, fontWeight: FontWeight.w500),
               ),
             ),
             if (delta != null && delta.isNotEmpty) ...[
@@ -1506,12 +1201,7 @@ class SiteCard2 extends ConsumerWidget {
             item.label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 10,
-              color: _mutedText(context),
-              fontWeight: FontWeight.w600,
-              height: 1,
-            ),
+            style: TextStyle(fontSize: 10, color: _mutedText(context), fontWeight: FontWeight.w600, height: 1),
           ),
         ),
         const SizedBox(width: 3),
@@ -1545,27 +1235,14 @@ class SiteCard2 extends ConsumerWidget {
         shape: BoxShape.circle,
         color: siteColors(context).foreground,
         border: Border.all(color: _logoBorder(context), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: siteShadow(context, alpha: 0.10),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: siteShadow(context, alpha: 0.10), blurRadius: 10, offset: const Offset(0, 4))],
       ),
-      fallbackStyle: TextStyle(
-        color: siteColors(context).background,
-        fontSize: 15,
-        fontWeight: FontWeight.w800,
-      ),
+      fallbackStyle: TextStyle(color: siteColors(context).background, fontSize: 15, fontWeight: FontWeight.w800),
     );
   }
 
   Widget _siteTitle(BuildContext context) {
-    final title = _maskSiteName(
-      site.nickname.isNotEmpty ? site.nickname : site.site,
-      privacy,
-    );
+    final title = _maskSiteName(site.nickname.isNotEmpty ? site.nickname : site.site, privacy);
     return Text(
       title,
       overflow: TextOverflow.ellipsis,
@@ -1594,11 +1271,9 @@ class SiteCard2 extends ConsumerWidget {
     ),
   );
 
-  Widget _verticalDivider(BuildContext context) =>
-      Container(width: 1, height: 38, color: _dividerColor(context));
+  Widget _verticalDivider(BuildContext context) => Container(width: 1, height: 38, color: _dividerColor(context));
 
-  bool _isDark(BuildContext context) =>
-      shadcn.Theme.of(context).colorScheme.brightness == Brightness.dark;
+  bool _isDark(BuildContext context) => shadcn.Theme.of(context).colorScheme.brightness == Brightness.dark;
 
   Color _cardColor(BuildContext context) => _isDark(context)
       ? Color.alphaBlend(
@@ -1615,13 +1290,11 @@ class SiteCard2 extends ConsumerWidget {
       ? shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.38)
       : siteColors(context).border.withValues(alpha: 0.74);
 
-  Color _titleText(BuildContext context) => _isDark(context)
-      ? shadcn.Theme.of(context).colorScheme.foreground
-      : siteColors(context).foreground;
+  Color _titleText(BuildContext context) =>
+      _isDark(context) ? shadcn.Theme.of(context).colorScheme.foreground : siteColors(context).foreground;
 
-  Color _mutedText(BuildContext context) => _isDark(context)
-      ? shadcn.Theme.of(context).colorScheme.mutedForeground
-      : siteColors(context).mutedForeground;
+  Color _mutedText(BuildContext context) =>
+      _isDark(context) ? shadcn.Theme.of(context).colorScheme.mutedForeground : siteColors(context).mutedForeground;
 
   Color _logoBorder(BuildContext context) => _isDark(context)
       ? shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.9)
@@ -1675,9 +1348,7 @@ class SiteCard3 extends ConsumerWidget {
           border: Border.all(color: _borderColor(context), width: 0.8),
           boxShadow: [
             BoxShadow(
-              color: _isDark(context)
-                  ? Colors.black.withValues(alpha: 0.24)
-                  : siteShadow(context, alpha: 0.06),
+              color: _isDark(context) ? Colors.black.withValues(alpha: 0.24) : siteShadow(context, alpha: 0.06),
               blurRadius: 24,
               offset: const Offset(0, 10),
               spreadRadius: -5,
@@ -1703,11 +1374,7 @@ class SiteCard3 extends ConsumerWidget {
                           caption: '总计上传流量',
                           icon: shadcn.LucideIcons.cloudUpload,
                           accent: siteInfo(context),
-                          background: _softTileColor(
-                            context,
-                            siteInfo(context, alpha: 0.14),
-                            siteInfo(context),
-                          ),
+                          background: _softTileColor(context, siteInfo(context, alpha: 0.14), siteInfo(context)),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -1721,11 +1388,7 @@ class SiteCard3 extends ConsumerWidget {
                           caption: '总计下载流量',
                           icon: shadcn.LucideIcons.cloudDownload,
                           accent: siteSuccess(context),
-                          background: _softTileColor(
-                            context,
-                            siteSuccess(context, alpha: 0.14),
-                            siteSuccess(context),
-                          ),
+                          background: _softTileColor(context, siteSuccess(context, alpha: 0.14), siteSuccess(context)),
                         ),
                       ),
                     ],
@@ -1733,11 +1396,7 @@ class SiteCard3 extends ConsumerWidget {
                   const SizedBox(height: 5),
                   _smallGrid(context, status, spFull),
                   const SizedBox(height: 8),
-                  Divider(
-                    height: 1,
-                    thickness: 0.6,
-                    color: _dividerColor(context),
-                  ),
+                  Divider(height: 1, thickness: 0.6, color: _dividerColor(context)),
                   const SizedBox(height: 8),
                   _footer(context, ref, status),
                 ],
@@ -1761,29 +1420,15 @@ class SiteCard3 extends ConsumerWidget {
                   Expanded(child: _title(context)),
                   if (_hasSiteUnread(site)) ...[
                     const SizedBox(width: 8),
-                    _siteUnreadIndicators(
-                      context,
-                      site,
-                      iconSize: 13,
-                      fontSize: 11,
-                      height: 24,
-                      horizontal: 7,
-                    ),
+                    _siteUnreadIndicators(context, site, iconSize: 13, fontSize: 11, height: 24, horizontal: 7),
                   ],
-                  if (signStatus != null) ...[
-                    const SizedBox(width: 8),
-                    _siteSignBadge(context, signStatus),
-                  ],
+                  if (signStatus != null) ...[const SizedBox(width: 8), _siteSignBadge(context, signStatus)],
                 ],
               ),
               const SizedBox(height: 5),
               Text(
                 '暂无站点数据',
-                style: TextStyle(
-                  color: _mutedText(context),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(color: _mutedText(context), fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -1808,28 +1453,15 @@ class SiteCard3 extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(child: _title(context)),
-                  if (status.myLevel.isNotEmpty) ...[
-                    const SizedBox(width: 8),
-                    _levelPill(context, status.myLevel),
-                  ],
-                  if (status.invitation > 0) ...[
-                    const SizedBox(width: 6),
-                    _invitePill(context, status.invitation),
-                  ],
-                  if (signStatus != null) ...[
-                    const SizedBox(width: 6),
-                    _siteSignBadge(context, signStatus),
-                  ],
+                  if (status.myLevel.isNotEmpty) ...[const SizedBox(width: 8), _levelPill(context, status.myLevel)],
+                  if (status.invitation > 0) ...[const SizedBox(width: 6), _invitePill(context, status.invitation)],
+                  if (signStatus != null) ...[const SizedBox(width: 6), _siteSignBadge(context, signStatus)],
                 ],
               ),
               const SizedBox(height: 6),
               Row(
                 children: [
-                  Icon(
-                    Icons.badge_outlined,
-                    size: 14,
-                    color: _mutedText(context),
-                  ),
+                  Icon(Icons.badge_outlined, size: 14, color: _mutedText(context)),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
@@ -1845,14 +1477,7 @@ class SiteCard3 extends ConsumerWidget {
                   ),
                   if (_hasSiteUnread(site)) ...[
                     const SizedBox(width: 8),
-                    _siteUnreadIndicators(
-                      context,
-                      site,
-                      iconSize: 13,
-                      fontSize: 11,
-                      height: 24,
-                      horizontal: 7,
-                    ),
+                    _siteUnreadIndicators(context, site, iconSize: 13, fontSize: 11, height: 24, horizontal: 7),
                   ],
                   if (milestone != null) ...[
                     const SizedBox(width: 8),
@@ -1886,9 +1511,7 @@ class SiteCard3 extends ConsumerWidget {
     required Color accent,
     required Color background,
   }) {
-    final tooltip = delta.isEmpty
-        ? '$label: $value'
-        : '$label: $value ($delta)';
+    final tooltip = delta.isEmpty ? '$label: $value' : '$label: $value ($delta)';
     return _siteTooltip(
       tooltip,
       Container(
@@ -1918,12 +1541,7 @@ class SiteCard3 extends ConsumerWidget {
                 const SizedBox(width: 6),
                 Text(
                   label,
-                  style: TextStyle(
-                    color: accent,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    height: 1,
-                  ),
+                  style: TextStyle(color: accent, fontSize: 13, fontWeight: FontWeight.w800, height: 1),
                 ),
               ],
             ),
@@ -1970,12 +1588,7 @@ class SiteCard3 extends ConsumerWidget {
             const SizedBox(height: 5),
             Text(
               caption,
-              style: TextStyle(
-                color: _mutedText(context),
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                height: 1,
-              ),
+              style: TextStyle(color: _mutedText(context), fontSize: 11, fontWeight: FontWeight.w500, height: 1),
             ),
           ],
         ),
@@ -1983,11 +1596,7 @@ class SiteCard3 extends ConsumerWidget {
     );
   }
 
-  Widget _smallGrid(
-    BuildContext context,
-    SiteDailyStatus status,
-    double spFull,
-  ) {
+  Widget _smallGrid(BuildContext context, SiteDailyStatus status, double spFull) {
     final tiles = [
       _MetricTile(
         shadcn.LucideIcons.leaf,
@@ -2092,12 +1701,7 @@ class SiteCard3 extends ConsumerWidget {
             item.label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: item.color,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              height: 1,
-            ),
+            style: TextStyle(color: item.color, fontSize: 10, fontWeight: FontWeight.w800, height: 1),
           ),
           const SizedBox(height: 3),
           Text(
@@ -2132,12 +1736,7 @@ class SiteCard3 extends ConsumerWidget {
               '同步： ${text.isEmpty ? '-' : text}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: _mutedText(context),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                height: 1,
-              ),
+              style: TextStyle(color: _mutedText(context), fontSize: 13, fontWeight: FontWeight.w600, height: 1),
             ),
           ),
         ),
@@ -2150,21 +1749,12 @@ class SiteCard3 extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: _softTileColor(
-                context,
-                siteInfo(context, alpha: 0.14),
-                siteInfo(context),
-              ),
+              color: _softTileColor(context, siteInfo(context, alpha: 0.14), siteInfo(context)),
               borderRadius: siteRadius(context, size: "xl"),
             ),
             child: Text(
               '详情',
-              style: TextStyle(
-                color: siteInfo(context),
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                height: 1,
-              ),
+              style: TextStyle(color: siteInfo(context), fontSize: 14, fontWeight: FontWeight.w700, height: 1),
             ),
           ),
         ),
@@ -2188,12 +1778,7 @@ class SiteCard3 extends ConsumerWidget {
           final position = renderObject is RenderBox
               ? renderObject.localToGlobal(Offset(renderObject.size.width, 0))
               : Offset.zero;
-          showSiteActionMenu(
-            context: buttonContext,
-            ref: ref,
-            site: site,
-            position: position,
-          );
+          showSiteActionMenu(context: buttonContext, ref: ref, site: site, position: position);
         },
         child: _moreCircle(context),
       ),
@@ -2214,13 +1799,7 @@ class SiteCard3 extends ConsumerWidget {
           end: Alignment.bottomRight,
           colors: [siteSuccess(context), siteInfo(context)],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: siteSuccess(context, alpha: 0.22),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: siteSuccess(context, alpha: 0.22), blurRadius: 12, offset: const Offset(0, 6))],
       ),
       fallbackStyle: TextStyle(
         color: siteColors(context).background,
@@ -2232,10 +1811,7 @@ class SiteCard3 extends ConsumerWidget {
   }
 
   Widget _title(BuildContext context) {
-    final title = _maskSiteName(
-      site.nickname.isNotEmpty ? site.nickname : site.site,
-      privacy,
-    );
+    final title = _maskSiteName(site.nickname.isNotEmpty ? site.nickname : site.site, privacy);
     return Text(
       title,
       maxLines: 1,
@@ -2260,9 +1836,7 @@ class SiteCard3 extends ConsumerWidget {
           color: _softTileColor(context, siteWarning(context, alpha: 0.08), accent),
           borderRadius: siteRadius(context, size: "xl"),
           border: Border.all(
-            color: _isDark(context)
-                ? accent.withValues(alpha: 0.22)
-                : siteWarning(context, alpha: 0.18),
+            color: _isDark(context) ? accent.withValues(alpha: 0.22) : siteWarning(context, alpha: 0.18),
             width: 1,
           ),
         ),
@@ -2298,24 +1872,19 @@ class SiteCard3 extends ConsumerWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: _isDark(context)
-              ? shadcn.Theme.of(context).colorScheme.border
-              : siteInfo(context, alpha: 0.34),
+          color: _isDark(context) ? shadcn.Theme.of(context).colorScheme.border : siteInfo(context, alpha: 0.34),
           width: 1.4,
         ),
       ),
       child: Icon(
         Icons.more_horiz,
         size: 20,
-        color: _isDark(context)
-            ? shadcn.Theme.of(context).colorScheme.mutedForeground
-            : siteInfo(context),
+        color: _isDark(context) ? shadcn.Theme.of(context).colorScheme.mutedForeground : siteInfo(context),
       ),
     );
   }
 
-  bool _isDark(BuildContext context) =>
-      shadcn.Theme.of(context).colorScheme.brightness == Brightness.dark;
+  bool _isDark(BuildContext context) => shadcn.Theme.of(context).colorScheme.brightness == Brightness.dark;
 
   Color _cardColor(BuildContext context) => _isDark(context)
       ? Color.alphaBlend(
@@ -2332,13 +1901,11 @@ class SiteCard3 extends ConsumerWidget {
       ? shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.36)
       : siteColors(context).border.withValues(alpha: 0.74);
 
-  Color _titleText(BuildContext context) => _isDark(context)
-      ? shadcn.Theme.of(context).colorScheme.foreground
-      : siteColors(context).foreground;
+  Color _titleText(BuildContext context) =>
+      _isDark(context) ? shadcn.Theme.of(context).colorScheme.foreground : siteColors(context).foreground;
 
-  Color _mutedText(BuildContext context) => _isDark(context)
-      ? shadcn.Theme.of(context).colorScheme.mutedForeground
-      : siteColors(context).mutedForeground;
+  Color _mutedText(BuildContext context) =>
+      _isDark(context) ? shadcn.Theme.of(context).colorScheme.mutedForeground : siteColors(context).mutedForeground;
 
   Color _softTileColor(BuildContext context, Color light, Color accent) {
     if (!_isDark(context)) return light;
@@ -2357,13 +1924,7 @@ class _MetricTile {
   final Color color;
   final Color background;
 
-  const _MetricTile(
-    this.icon,
-    this.label,
-    this.value,
-    this.color,
-    this.background,
-  );
+  const _MetricTile(this.icon, this.label, this.value, this.color, this.background);
 }
 
 String _fmtRatio(num value) => fmtRatio(value);
