@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
@@ -122,7 +124,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
       _cookieCtrl.text = (site?.cookie ?? t.cookie ?? '').trim();
     } else {
       _manualUrlCtrl.text = widget.initialUrl?.trim() ?? '';
-      _siteIdCtrl.text = '';
+      _siteIdCtrl.text = widget.initialSiteId?.trim() ?? '';
       _cookieCtrl.text = widget.initialCookie?.trim() ?? '';
       _genTorrentUrl = false;
     }
@@ -330,8 +332,8 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
         ] else ...[
           shadcn.TextField(
             controller: _manualUrlCtrl,
-            hintText: '输入 magnet 链接或种子下载地址',
-            maxLines: 2,
+            hintText: '输入 magnet 或种子链接（支持多条，换行/空格/逗号分隔）',
+            maxLines: 4,
           ),
           const SizedBox(height: 8),
           Row(
@@ -1111,8 +1113,50 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
   // Submit
   // ═══════════════════════════════════════════════════════════════
 
+  List<String> _parseUrlInputs(String raw) {
+    return raw
+        .split(RegExp(r'[\s,;，；]+'))
+        .map((item) => item.trim())
+        .where((item) => item.isNotEmpty)
+        .toSet()
+        .toList();
+  }
+
+  String _extractTorrentIdFromInput(String value) {
+    final raw = value.trim();
+    if (raw.isEmpty) return '';
+    if (RegExp(r'^\d+$').hasMatch(raw)) return raw;
+
+    final uri = Uri.tryParse(raw);
+    if (uri != null) {
+      const queryKeys = <String>['tid', 'id', 'torrentid', 'topicid'];
+      for (final key in queryKeys) {
+        final v = uri.queryParameters[key]?.trim() ?? '';
+        if (v.isNotEmpty) return v;
+      }
+      for (final segment in uri.pathSegments.reversed) {
+        final text = segment.trim();
+        if (text.isNotEmpty && RegExp(r'^\d+$').hasMatch(text)) {
+          return text;
+        }
+      }
+    }
+
+    final match = RegExp(
+      r'([?&](?:tid|id|torrentid|topicid)=)([^&#]+)',
+      caseSensitive: false,
+    ).firstMatch(raw);
+    if (match != null) {
+      return (match.group(2) ?? '').trim();
+    }
+    return '';
+  }
+
   Future<void> _submit() async {
-    if (!_hasTorrent && _manualUrlCtrl.text.trim().isEmpty) {
+    final manualUrls = _hasTorrent
+        ? const <String>[]
+        : _parseUrlInputs(_manualUrlCtrl.text);
+    if (!_hasTorrent && manualUrls.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('请输入种子链接'), behavior: SnackBarBehavior.floating));
@@ -1141,7 +1185,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
           params['cookie'] = cookie;
         }
       } else {
-        params['urls'] = _manualUrlCtrl.text.trim();
+        params['urls'] = manualUrls.length == 1 ? manualUrls.first : manualUrls;
         final siteId = _siteIdCtrl.text.trim();
         if (_genTorrentUrl && siteId.isNotEmpty) {
           params['site_id'] = siteId;
@@ -1209,7 +1253,35 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
         }
       }
 
-      await DownloaderService.pushTorrent(widget.downloader.id, params);
+      final isBatchManualPush = !_hasTorrent && manualUrls.length > 1;
+      if (isBatchManualPush) {
+        final siteRaw = _siteIdCtrl.text.trim();
+        final site = siteRaw.isEmpty ? null : _siteFor(siteRaw);
+        final mySiteId = site?.id ?? int.tryParse(siteRaw);
+        if (mySiteId == null || mySiteId <= 0) {
+          throw Exception('批量推送需要可识别的站点 ID（my_site_id）');
+        }
+
+        final monkeyParams = Map<String, dynamic>.from(params);
+        final torrentIds = manualUrls
+            .map(_extractTorrentIdFromInput)
+            .where((id) => id.isNotEmpty)
+            .toList();
+        if (torrentIds.isEmpty) {
+          throw Exception('批量推送未解析到种子 ID，请输入 tid/id 或详情链接');
+        }
+        monkeyParams['urls'] = torrentIds.length == 1
+            ? torrentIds.first
+            : torrentIds;
+        monkeyParams['tags'] = jsonEncode(_selectedTags.toList());
+        await DownloaderService.pushTorrentFromMonkey(
+          widget.downloader.id,
+          mySiteId,
+          monkeyParams,
+        );
+      } else {
+        await DownloaderService.pushTorrent(widget.downloader.id, params);
+      }
 
       if (mounted) {
         closeAppSheet(context);

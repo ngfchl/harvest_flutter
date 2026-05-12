@@ -213,4 +213,16 @@ class DownloaderService {
   ) async {
     await addData('${API.PUSH_TORRENT_URL}$downloaderId', params);
   }
+
+  /// 批量推送（油猴接口）
+  static Future<void> pushTorrentFromMonkey(
+    int downloaderId,
+    int mySiteId,
+    Map<String, dynamic> params,
+  ) async {
+    await addData(
+      '${API.PUSH_TORRENT_MONKEY_URL}$downloaderId/$mySiteId',
+      params,
+    );
+  }
 }
