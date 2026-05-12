@@ -29,6 +29,7 @@ class PushTorrentSheet extends ConsumerStatefulWidget {
   final String? initialCookie;
   final String? initialSiteId;
   final VoidCallback? onSuccess;
+  final bool embedded;
 
   const PushTorrentSheet({
     super.key,
@@ -38,6 +39,7 @@ class PushTorrentSheet extends ConsumerStatefulWidget {
     this.initialCookie,
     this.initialSiteId,
     this.onSuccess,
+    this.embedded = false,
   });
 
   @override
@@ -202,58 +204,63 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
         : (screenHeight - 48).clamp(420.0, PushTorrentSheet.desktopHeight);
     final sheetWidth = context.isMobile ? double.infinity : PushTorrentSheet.desktopWidth;
 
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: SizedBox(
-        width: sheetWidth,
-        height: sheetHeight,
-        child: Container(
-          decoration: BoxDecoration(
-            color: cs.background,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-          ),
-          padding: const EdgeInsets.only(bottom: 8),
-          child: _loadingData
-              ? Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2))
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildHeader(),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.fromLTRB(14, 0, 14, bottom),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // ── 链接 ──
-                            _buildLinkSection(),
-                            const SizedBox(height: 14),
-
-                            // ── 路径（分类选择 + 输入框）──
-                            _buildPathSection(),
-                            const SizedBox(height: 14),
-
-                            // ── 标签 ──
-                            _buildTagsSection(),
-                            const SizedBox(height: 14),
-
-                            // ── 暂停下载 ──
-                            _buildPauseToggle(),
-                            const SizedBox(height: 10),
-
-                            // ── 高级选项 ──
-                            _buildAdvancedOptions(),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // ── 按钮 ──
-                    _buildButtons(),
-                  ],
-                ),
-        ),
+    final content = Container(
+      decoration: BoxDecoration(
+        color: cs.background,
+        borderRadius: widget.embedded
+            ? BorderRadius.circular(16)
+            : const BorderRadius.vertical(top: Radius.circular(16)),
       ),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: _loadingData
+          ? Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2))
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(14, 0, 14, bottom),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ── 链接 ──
+                        _buildLinkSection(),
+                        const SizedBox(height: 14),
+
+                        // ── 路径（分类选择 + 输入框）──
+                        _buildPathSection(),
+                        const SizedBox(height: 14),
+
+                        // ── 标签 ──
+                        _buildTagsSection(),
+                        const SizedBox(height: 14),
+
+                        // ── 暂停下载 ──
+                        _buildPauseToggle(),
+                        const SizedBox(height: 10),
+
+                        // ── 高级选项 ──
+                        _buildAdvancedOptions(),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                ),
+                // ── 按钮 ──
+                _buildButtons(),
+              ],
+            ),
+    );
+
+    if (widget.embedded) {
+      return SizedBox(width: sheetWidth, height: double.infinity, child: content);
+    }
+
+    return SizedBox(
+      width: sheetWidth,
+      height: sheetHeight,
+      child: content,
     );
   }
 

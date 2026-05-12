@@ -3169,6 +3169,7 @@ class _BrowserPageState extends State<BrowserPage> {
                     initialUrl: urls.join('\n'),
                     initialCookie: cookie,
                     initialSiteId: widget.siteId,
+                    embedded: true,
                   ),
                 ),
               ),
@@ -3182,8 +3183,9 @@ class _BrowserPageState extends State<BrowserPage> {
   SearchTorrentInfo _toSearchTorrentInfo(
     _BrowserExtractedTorrent item, {
     String? cookie,
+    String? overrideUrl,
   }) {
-    final primaryUrl = item.primaryUrl.trim();
+    final primaryUrl = (overrideUrl?.trim().isNotEmpty == true ? overrideUrl!.trim() : item.primaryUrl.trim());
     final detailUrl = item.detailUrl.trim();
     final siteId = widget.siteId?.trim() ?? '';
     return SearchTorrentInfo(
@@ -3206,6 +3208,86 @@ class _BrowserPageState extends State<BrowserPage> {
       leechers: _BrowserExtractedTorrent._parseCompactInt(item.leechers),
       completers: _BrowserExtractedTorrent._parseCompactInt(item.completers),
     );
+  }
+
+  Future<SearchTorrentInfo?> _extractInterceptedTorrentInfo(
+    String torrentUrl, {
+    String? cookie,
+  }) async {
+    final controller = _controller;
+    if (controller == null || _closing || !mounted) return null;
+
+    final detailWebsite = _currentDetailWebsiteConfig();
+    if (detailWebsite != null) {
+      try {
+        final raw = await controller.evaluateJavascript(
+          source: _buildTorrentDetailExtractScript(detailWebsite),
+        );
+        final item = _parseExtractedTorrentDetail(raw);
+        if (item != null) {
+          return _toSearchTorrentInfo(item, cookie: cookie, overrideUrl: torrentUrl);
+        }
+      } catch (e, st) {
+        AppLogger.warn('拦截种子下载时解析详情页种子信息失败: $e\n$st');
+      }
+    }
+
+    final listWebsite = _currentTorrentWebsiteConfig();
+    if (listWebsite != null) {
+      try {
+        final raw = await controller.evaluateJavascript(
+          source: _buildTorrentExtractScript(listWebsite),
+        );
+        final items = _parseExtractedTorrents(raw);
+        final matched = _matchInterceptedTorrent(items, torrentUrl);
+        if (matched != null) {
+          return _toSearchTorrentInfo(matched, cookie: cookie, overrideUrl: torrentUrl);
+        }
+      } catch (e, st) {
+        AppLogger.warn('拦截种子下载时解析列表页种子信息失败: $e\n$st');
+      }
+    }
+
+    return null;
+  }
+
+  _BrowserExtractedTorrent? _matchInterceptedTorrent(
+    List<_BrowserExtractedTorrent> items,
+    String torrentUrl,
+  ) {
+    final targetUrl = _normalizeTorrentCompareUrl(torrentUrl);
+    final targetId = _extractTorrentIdFromBrowserUrl(torrentUrl);
+    for (final item in items) {
+      final candidates = <String>[
+        item.magnetUrl,
+        item.detailUrl,
+        item.primaryUrl,
+      ];
+      for (final candidate in candidates) {
+        final normalized = _normalizeTorrentCompareUrl(candidate);
+        if (normalized.isNotEmpty && normalized == targetUrl) return item;
+        final id = _extractTorrentIdFromBrowserUrl(candidate);
+        if (targetId.isNotEmpty && id.isNotEmpty && id == targetId) return item;
+      }
+    }
+    return null;
+  }
+
+  String _normalizeTorrentCompareUrl(String value) {
+    final text = value.trim();
+    if (text.isEmpty) return '';
+    final uri = Uri.tryParse(text);
+    if (uri == null || !uri.hasScheme) return text;
+    final query = Map<String, String>.from(uri.queryParameters)
+      ..removeWhere((key, _) {
+        final normalized = key.toLowerCase();
+        return normalized == 'passkey' ||
+            normalized == 'sign' ||
+            normalized == 'authkey' ||
+            normalized == 'auth' ||
+            normalized == 'token';
+      });
+    return uri.replace(queryParameters: query.isEmpty ? null : query).toString();
   }
 
   String _extractTorrentIdFromBrowserUrl(String value) {
@@ -3314,6 +3396,11 @@ class _BrowserPageState extends State<BrowserPage> {
               if (!mounted || _closing) return;
               final cookie = await _cookieHeaderFor(torrentUrl);
               if (!mounted || _closing) return;
+              final torrent = await _extractInterceptedTorrentInfo(
+                torrentUrl,
+                cookie: cookie,
+              );
+              if (!mounted || _closing) return;
 
               await showAppSheet<void>(
                 context: context,
@@ -3325,6 +3412,7 @@ class _BrowserPageState extends State<BrowserPage> {
                 builder: (_) =>
                     PushTorrentSheet(
                       downloader: downloader,
+                      torrent: torrent,
                       initialUrl: torrentUrl,
                       initialCookie: cookie,
                       initialSiteId: widget.siteId,
