@@ -1812,12 +1812,15 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   void _onTorrentTap(SearchTorrentInfo item) {
     showAppSheet(
       context: context, // 直接用页面 context，不要用 navigatorKey
+      title: '选择下载器',
+      showDefaultHeader: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       constraints: const BoxConstraints(
         maxWidth: DownloaderSelectSheet.desktopWidth,
       ),
       builder: (ctx) => DownloaderSelectSheet(
+        useDefaultHeader: true,
         onSelected: (downloader) {
           closeAppSheet(ctx);
           WidgetsBinding.instance.addPostFrameCallback((_) {

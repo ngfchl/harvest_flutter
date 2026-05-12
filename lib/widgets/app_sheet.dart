@@ -16,6 +16,9 @@ Future<T?> showAppSheet<T>({
 }) {
   final media = MediaQuery.maybeOf(context);
   final cs = shadcn.Theme.of(context).colorScheme;
+  final effectiveSheetColor = (backgroundColor == null || backgroundColor.alpha == 0)
+      ? cs.background
+      : backgroundColor;
   final maxHeight = media == null
       ? null
       : isScrollControlled
@@ -27,7 +30,8 @@ Future<T?> showAppSheet<T>({
     isScrollControlled: isScrollControlled,
     isDismissible: isDismissible,
     enableDrag: enableDrag,
-    showDragHandle: showDragHandle,
+    barrierColor: Colors.black.withValues(alpha: 0.26),
+    showDragHandle: showDragHandle ?? true,
     backgroundColor: Colors.transparent,
     shape: shape,
     constraints: constraints ?? (maxHeight == null ? null : BoxConstraints(maxHeight: maxHeight)),
@@ -48,7 +52,7 @@ Future<T?> showAppSheet<T>({
                 constraints: BoxConstraints(maxHeight: maxSheetHeight),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: backgroundColor ?? cs.background,
+                    color: effectiveSheetColor,
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                     border: Border(
                       top: BorderSide(color: cs.border.withValues(alpha: 0.78), width: 0.8),
@@ -83,18 +87,6 @@ Future<T?> showAppSheet<T>({
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                      if (showDragHandle ?? true)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 5, bottom: 4),
-                          child: Container(
-                            width: 34,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: cs.mutedForeground.withValues(alpha: 0.32),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
                           ),
                         ),
                       Flexible(

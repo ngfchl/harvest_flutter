@@ -311,40 +311,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
         Text('链接', style: typo.small.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         if (_hasTorrent) ...[
-          // 种子信息预览
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: cs.mutedForeground.withValues(alpha: 0.04),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: cs.border.withValues(alpha: 0.4)),
-            ),
-            child: Row(
-              children: [
-                Icon(shadcn.LucideIcons.file, size: 16, color: cs.primary),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.torrent!.title,
-                        style: typo.small.copyWith(fontWeight: FontWeight.w600),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${widget.torrent!.siteId}  ·  ${formatBytes(widget.torrent!.size)}',
-                        style: typo.xSmall.copyWith(color: cs.mutedForeground, fontSize: 11),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildTorrentPreview(widget.torrent!),
         ] else ...[
           ShadTextField(
             controller: _manualUrlCtrl,
@@ -380,6 +347,140 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
         ],
       ],
     );
+  }
+
+  Widget _buildTorrentPreview(SearchTorrentInfo torrent) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final typo = shadcn.Theme.of(context).typography;
+    final meta = <Widget>[
+      if (torrent.size > 0)
+        Text(
+          formatBytes(torrent.size),
+          style: typo.xSmall.copyWith(fontWeight: FontWeight.w600, color: cs.foreground),
+        ),
+      _buildTorrentSeedRow(torrent),
+      _torrentBadge(_siteLabel(torrent.siteId), cs.primary),
+      if (torrent.category.isNotEmpty && torrent.category != '无分类')
+        _torrentBadge(torrent.category, cs.mutedForeground),
+      if (torrent.hr) _torrentBadge('HR', Colors.orange),
+      if (torrent.saleStatus.isNotEmpty && torrent.saleStatus != '无优惠')
+        _torrentBadge(torrent.saleStatus, Colors.green),
+      if (torrent.published.isNotEmpty)
+        Text(
+          formatMonthDay(torrent.published),
+          style: typo.xSmall.copyWith(color: cs.mutedForeground.withValues(alpha: 0.62), fontSize: 10),
+        ),
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+      decoration: BoxDecoration(
+        color: cs.mutedForeground.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: cs.border.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(shadcn.LucideIcons.file, size: 16, color: cs.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  torrent.title.isEmpty ? torrent.magnetUrl : torrent.title,
+                  style: typo.small.copyWith(fontWeight: FontWeight.w600),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (torrent.subtitle.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    torrent.subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: typo.xSmall.copyWith(
+                      color: cs.mutedForeground.withValues(alpha: 0.68),
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 5),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: meta,
+                ),
+                if (torrent.tags.isNotEmpty) ...[
+                  const SizedBox(height: 5),
+                  Wrap(
+                    spacing: 5,
+                    runSpacing: 4,
+                    children: [
+                      for (final tag in torrent.tags.take(6))
+                        _torrentBadge(tag, const Color(0xFF8B5CF6)),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTorrentSeedRow(SearchTorrentInfo torrent) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(shadcn.LucideIcons.arrowUp, size: 10, color: Colors.green),
+        const SizedBox(width: 1),
+        Text(
+          '${torrent.seeders}',
+          style: const TextStyle(fontSize: 10, color: Colors.green, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(width: 4),
+        const Icon(shadcn.LucideIcons.arrowDown, size: 10, color: Colors.red),
+        const SizedBox(width: 1),
+        Text(
+          '${torrent.leechers}',
+          style: const TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(width: 4),
+        const Icon(shadcn.LucideIcons.check, size: 10, color: Colors.grey),
+        const SizedBox(width: 1),
+        Text(
+          '${torrent.completers}',
+          style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
+  }
+
+  Widget _torrentBadge(String text, Color color) {
+    final label = text.trim();
+    if (label.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 9, color: color, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  String _siteLabel(String siteId) {
+    final site = _siteFor(siteId);
+    if (site == null) return siteId;
+    return site.nickname.isNotEmpty ? site.nickname : site.site;
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -1205,7 +1306,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
       // 种子来源
       if (_hasTorrent) {
         final t = widget.torrent!;
-        params['urls'] = t.magnetUrl;
+        params['urls'] = t.magnetUrl.trim().isNotEmpty ? t.magnetUrl : t.detailUrl;
         params['tid'] = t.tid;
         if (_genTorrentUrl) {
           final siteId = _siteIdCtrl.text.trim();
