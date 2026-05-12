@@ -95,6 +95,14 @@ class DownloaderService {
     return removeData('$_endpoint/$id');
   }
 
+  /// 执行下载器辅种任务
+  static Future<String> runRepeatTask(int downloaderId) async {
+    final data = await fetchBasic('${API.DOWNLOADER_REAPEAT}/$downloaderId');
+    final msg = data?['msg']?.toString().trim() ?? '';
+    if (msg.isNotEmpty) return msg;
+    return '辅种任务已提交';
+  }
+
   /// 获取下载器标签列表
   static Future<List<String>> fetchTags(int downloaderId) async {
     final data = await Http.get<dynamic>('${API.DOWNLOADER_TAGS}$downloaderId');

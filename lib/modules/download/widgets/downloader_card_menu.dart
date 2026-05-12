@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../torrents/torrent_list_page.dart';
 import '../model/downloader.dart';
+import '../service/downloader_service.dart';
 import 'push_torrent_sheet.dart';
 import 'qb_category_tag_manager.dart';
 import 'qb_settings_dialog.dart';
@@ -121,7 +123,41 @@ class DownloaderCardMenu {
           onToggleBrush();
         },
       ),
-      if (!d.brush) item(icon: shadcn.LucideIcons.copy, title: '执行辅种', onPressed: close),
+      if (!d.brush)
+        item(
+          icon: shadcn.LucideIcons.copy,
+          title: '执行辅种',
+          onPressed: (ctx) async {
+            await close(ctx);
+            if (!hostContext.mounted) return;
+            shadcn.showDialog(
+              context: hostContext,
+              builder: (dialogContext) => shadcn.AlertDialog(
+                title: const Text('确认执行辅种'),
+                content: Text('确定对下载器「${d.name}」执行辅种任务吗？'),
+                actions: [
+                  shadcn.Button.outline(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('取消'),
+                  ),
+                  shadcn.Button.primary(
+                    onPressed: () async {
+                      Navigator.of(dialogContext).pop();
+                      try {
+                        final msg = await DownloaderService.runRepeatTask(d.id);
+                        Toast.success(msg);
+                      } catch (e, st) {
+                        AppLogger.error('执行下载器辅种失败', e, st);
+                        Toast.error('执行辅种失败: $e');
+                      }
+                    },
+                    child: const Text('执行'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       const shadcn.MenuDivider(),
       item(
         icon: shadcn.LucideIcons.settings,

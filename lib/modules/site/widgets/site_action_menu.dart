@@ -147,8 +147,28 @@ List<shadcn.MenuItem> _buildActionItems(BuildContext context, WidgetRef ref, Sit
       icon: shadcn.LucideIcons.copy,
       label: '辅种',
       onPressed: () async {
-        final notifier = ref.read(siteInfoListProvider.notifier);
-        await notifier.repeat(site.id);
+        shadcn.showDialog(
+          context: context,
+          builder: (dialogContext) => shadcn.AlertDialog(
+            title: const Text('确认执行辅种'),
+            content: Text('确定对站点「${site.site}」执行辅种任务吗？'),
+            actions: [
+              shadcn.Button.outline(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('取消'),
+              ),
+              shadcn.Button.primary(
+                onPressed: () async {
+                  Navigator.of(dialogContext).pop();
+                  final notifier = ref.read(siteInfoListProvider.notifier);
+                  final message = await notifier.repeat(site.id);
+                  Toast.success(message);
+                },
+                child: const Text('执行'),
+              ),
+            ],
+          ),
+        );
       },
     ),
     ...browseItems,

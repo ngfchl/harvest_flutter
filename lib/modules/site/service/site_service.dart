@@ -4,6 +4,7 @@ import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/dio_client.dart';
 import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/http/hooks.dart';
+import 'package:harvest/core/http/interceptors/response_interceptor.dart';
 import 'package:harvest/core/utils/utils.dart';
 
 import '../model/site_config.dart';
@@ -95,8 +96,8 @@ class SiteService {
     return _operateSite('$_mysiteSignin$siteId', fallback: '签到成功');
   }
 
-  static Future<void> repeatTorrents(int siteId) {
-    return fetchBasic('$_mysiteRepeat$siteId');
+  static Future<String> repeatTorrents(int siteId) {
+    return _operateSite('$_mysiteRepeat$siteId', fallback: '辅种任务已提交');
   }
 
   static Future<void> clearCache() {
@@ -108,29 +109,11 @@ class SiteService {
     required String fallback,
   }) async {
     final response = await DioClient.dio.get<dynamic>(apiEndpoint);
-    final body = response.data;
-    final message = _extractMessage(body) ?? fallback;
+    final message =
+        response.extra[ResponseInterceptor.responseMessageKey]?.toString() ??
+        response.requestOptions.extra[ResponseInterceptor.responseMessageKey]
+            ?.toString() ??
+        fallback;
     return message.trim().isEmpty ? fallback : message.trim();
-  }
-
-  static String? _extractMessage(dynamic value) {
-    if (value == null) return null;
-    if (value is String) return value.trim().isEmpty ? null : value.trim();
-    if (value is Map) {
-      for (final key in const ['message', 'msg', 'info', 'detail', 'result']) {
-        final message = _extractMessage(value[key]);
-        if (message != null) return message;
-      }
-      return _extractMessage(value['data']);
-    }
-    if (value is Iterable) {
-      final messages = value
-          .map(_extractMessage)
-          .whereType<String>()
-          .where((message) => message.trim().isNotEmpty)
-          .toList();
-      return messages.isEmpty ? null : messages.join('\n');
-    }
-    return null;
   }
 }

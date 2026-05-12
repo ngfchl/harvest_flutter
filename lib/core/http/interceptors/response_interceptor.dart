@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:harvest/core/utils/utils.dart';
 
 class ResponseInterceptor extends Interceptor {
+  static const String responseMessageKey = '__response_message__';
+
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     final data = response.data;
@@ -15,6 +17,11 @@ class ResponseInterceptor extends Interceptor {
 
     final allowAnySucceed =
         response.requestOptions.extra['allowAnySucceed'] == true;
+    final message = extractMessage(data);
+    if (message != null && message.isNotEmpty) {
+      response.extra[responseMessageKey] = message;
+      response.requestOptions.extra[responseMessageKey] = message;
+    }
 
     /// 👉 你的后端规范
     if (data is Map &&
@@ -23,7 +30,7 @@ class ResponseInterceptor extends Interceptor {
       return handler.next(response);
     }
 
-    final msg = data is Map ? data['msg'] : null;
+    final msg = message;
     AppLogger.warn(
       '[HTTP] business failure: ${response.requestOptions.method} '
       '${response.requestOptions.path} status=${response.statusCode} '
@@ -38,5 +45,26 @@ class ResponseInterceptor extends Interceptor {
         error: msg,
       ),
     );
+  }
+
+  static String? extractMessage(dynamic value) {
+    if (value == null) return null;
+    if (value is String) return value.trim().isEmpty ? null : value.trim();
+    if (value is Map) {
+      for (final key in const ['message', 'msg', 'info', 'detail', 'result']) {
+        final message = extractMessage(value[key]);
+        if (message != null) return message;
+      }
+      return extractMessage(value['data']);
+    }
+    if (value is Iterable) {
+      final messages = value
+          .map(extractMessage)
+          .whereType<String>()
+          .where((message) => message.trim().isNotEmpty)
+          .toList();
+      return messages.isEmpty ? null : messages.join('\n');
+    }
+    return null;
   }
 }

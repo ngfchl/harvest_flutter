@@ -134,9 +134,10 @@ class SiteInfoList extends _$SiteInfoList {
   }
 
   /// 执行辅种
-  Future<void> repeat(int siteId) async {
-    await SiteService.repeatTorrents(siteId);
+  Future<String> repeat(int siteId) async {
+    final message = await SiteService.repeatTorrents(siteId);
     await refresh();
+    return message;
   }
 }
 
