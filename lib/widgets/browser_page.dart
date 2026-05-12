@@ -74,12 +74,144 @@ class BrowserPage extends StatefulWidget {
   State<BrowserPage> createState() => _BrowserPageState();
 }
 
+class BrowserCookieQuickMenu extends StatelessWidget {
+  final List<SiteBrowseTarget> targets;
+  final ValueChanged<SiteBrowseTarget> onSelected;
+  final Widget? badge;
+  final String menuLabel;
+
+  const BrowserCookieQuickMenu({
+    super.key,
+    required this.targets,
+    required this.onSelected,
+    this.badge,
+    this.menuLabel = '快速跳转',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final effectiveBadge = badge ?? _defaultCookieBadge(targets.isNotEmpty);
+
+    if (targets.isEmpty) return effectiveBadge;
+
+    return shadcn.OverlayManagerLayer(
+      popoverHandler: const shadcn.PopoverOverlayHandler(),
+      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+      menuHandler: const shadcn.PopoverOverlayHandler(),
+      child: Builder(
+        builder: (menuContext) => GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => shadcn.showDropdown<void>(
+            context: menuContext,
+            alignment: Alignment.topCenter,
+            offset: const Offset(0, 8),
+            widthConstraint: shadcn.PopoverConstraint.intrinsic,
+            heightConstraint: shadcn.PopoverConstraint.intrinsic,
+            consumeOutsideTaps: false,
+            builder: (_) => AppDropdownMenu(
+              children: [
+                shadcn.MenuLabel(child: Text(menuLabel)),
+                const shadcn.MenuDivider(),
+                for (final target in targets)
+                  shadcn.MenuButton(
+                    leading: Icon(target.icon),
+                    onPressed: (itemContext) {
+                      shadcn.closeOverlay(itemContext);
+                      onSelected(target);
+                    },
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 240),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            target.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _browserDisplayUrl(target.url),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: cs.foreground.withValues(alpha: 0.48),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          child: effectiveBadge,
+        ),
+      ),
+    );
+  }
+
+  Widget _defaultCookieBadge(bool hasTargets) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 5,
+            height: 5,
+            decoration: const BoxDecoration(
+              color: Color(0xFF10B981),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 4),
+          const Text(
+            'Cookie',
+            style: TextStyle(
+              color: Color(0xFF10B981),
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (hasTargets) ...[
+            const SizedBox(width: 3),
+            const Icon(
+              shadcn.LucideIcons.chevronDown,
+              size: 10,
+              color: Color(0xFF10B981),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 String _normalizeInitialBrowserUrl(String value) {
   final text = value.trim();
   final uri = Uri.tryParse(text);
   if (uri == null || !uri.hasScheme || uri.host.isEmpty) return text;
   final normalizedPath = uri.path.replaceAll(RegExp(r'/+'), '/');
   return uri.replace(path: normalizedPath.isEmpty ? null : normalizedPath).toString();
+}
+
+String _browserDisplayUrl(String url) {
+  if (url.startsWith('about:')) return url;
+  try {
+    final uri = Uri.parse(url);
+    final display = uri.host + uri.path;
+    return display.endsWith('/') ? display.substring(0, display.length - 1) : display;
+  } catch (_) {
+    return url;
+  }
 }
 
 class _BrowserPageState extends State<BrowserPage> {
@@ -463,102 +595,9 @@ class _BrowserPageState extends State<BrowserPage> {
 
   Widget _buildCookieQuickMenu(shadcn.ColorScheme cs) {
     final targets = _siteQuickBrowseTargets();
-    final badge = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-      decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 5,
-            height: 5,
-            decoration: const BoxDecoration(
-              color: Color(0xFF10B981),
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 4),
-          const Text(
-            'Cookie',
-            style: TextStyle(
-              color: Color(0xFF10B981),
-              fontSize: 9,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (targets.isNotEmpty) ...[
-            const SizedBox(width: 3),
-            const Icon(
-              shadcn.LucideIcons.chevronDown,
-              size: 10,
-              color: Color(0xFF10B981),
-            ),
-          ],
-        ],
-      ),
-    );
-
-    if (targets.isEmpty) return badge;
-
-    return shadcn.OverlayManagerLayer(
-      popoverHandler: const shadcn.PopoverOverlayHandler(),
-      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-      menuHandler: const shadcn.PopoverOverlayHandler(),
-      child: Builder(
-        builder: (menuContext) => GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => shadcn.showDropdown<void>(
-            context: menuContext,
-            alignment: Alignment.topCenter,
-            offset: const Offset(0, 8),
-            widthConstraint: shadcn.PopoverConstraint.intrinsic,
-            heightConstraint: shadcn.PopoverConstraint.intrinsic,
-            consumeOutsideTaps: false,
-            builder: (_) => AppDropdownMenu(
-              children: [
-                const shadcn.MenuLabel(child: Text('快速跳转')),
-                const shadcn.MenuDivider(),
-                for (final target in targets)
-                  shadcn.MenuButton(
-                    leading: Icon(target.icon),
-                    onPressed: (itemContext) {
-                      shadcn.closeOverlay(itemContext);
-                      _openQuickBrowseTarget(target);
-                    },
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 240),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            target.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _displayUrl(target.url),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: cs.foreground.withValues(alpha: 0.48),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          child: badge,
-        ),
-      ),
+    return BrowserCookieQuickMenu(
+      targets: targets,
+      onSelected: _openQuickBrowseTarget,
     );
   }
 
@@ -3459,16 +3498,7 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   String _displayUrl(String url) {
-    if (url.startsWith('about:')) return url;
-    try {
-      final uri = Uri.parse(url);
-      final display = uri.host + uri.path;
-      return display.endsWith('/')
-          ? display.substring(0, display.length - 1)
-          : display;
-    } catch (_) {
-      return url;
-    }
+    return _browserDisplayUrl(url);
   }
 
   Future<void> _showSiteTimeline() async {

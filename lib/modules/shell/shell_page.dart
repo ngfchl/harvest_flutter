@@ -27,6 +27,7 @@ import '../option/provider/update_provider.dart';
 import '../option/widgets/option_page.dart';
 import '../option/widgets/update_page.dart';
 import '../site/site_page.dart';
+import '../site/site_timeline_page.dart';
 import '../task/task_page.dart';
 import '../user/provider/user_management_provider.dart';
 import '../user/user_management_page.dart';
@@ -364,6 +365,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                   onDashboard: () => _openDrawerTab(2),
                   onNews: () => _openDrawerTab(0),
                   onSites: () => _openDrawerTab(1),
+                  onSiteTimeline: () => _openDrawerPage(const SiteTimelinePage()),
                   onDownloads: () => _openDrawerTab(3),
                   onTasks: () => _openDrawerTab(4),
                   onOptions: () => _openDrawerPage(const OptionPage()),
@@ -1033,6 +1035,7 @@ class _ShellDrawerPanel extends StatelessWidget {
   final bool showAdminUser;
   final VoidCallback onClose;
   final VoidCallback onDashboard, onNews, onSites, onDownloads, onTasks;
+  final VoidCallback onSiteTimeline;
   final VoidCallback onOptions, onUsers, onAdminUsers, onUpdate, onAppUpgrade, onLogs;
 
   const _ShellDrawerPanel({
@@ -1042,6 +1045,7 @@ class _ShellDrawerPanel extends StatelessWidget {
     required this.onDashboard,
     required this.onNews,
     required this.onSites,
+    required this.onSiteTimeline,
     required this.onDownloads,
     required this.onTasks,
     required this.onOptions,
@@ -1134,6 +1138,11 @@ class _ShellDrawerPanel extends StatelessWidget {
                           icon: shadcn.LucideIcons.globe,
                           selected: currentIndex == 1,
                           onTap: onSites,
+                        ),
+                        _DrawerTile(
+                          label: '站点时间轴',
+                          icon: shadcn.LucideIcons.gitBranchPlus,
+                          onTap: onSiteTimeline,
                         ),
                         _DrawerTile(
                           label: '下载器',

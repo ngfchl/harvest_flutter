@@ -26,6 +26,7 @@ import 'widgets/site_filter_panel.dart';
 import 'widgets/site_form_sheet.dart';
 import 'widgets/site_list_view.dart';
 import 'widgets/site_theme.dart';
+import 'site_timeline_page.dart';
 
 class SitePage extends ConsumerStatefulWidget {
   const SitePage({super.key});
@@ -556,7 +557,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                   label: '站点时间轴',
                   onPressed: () {
                     if (!anchorContext.mounted) return;
-                    _showSiteTimeline(anchorContext);
+                    showSiteTimelineDialog(anchorContext);
                   },
                 ),
               ],
@@ -620,8 +621,8 @@ class _SitePageState extends ConsumerState<SitePage> {
     final savedVisibleFields = HiveManager.get<Map>(StorageKeys.siteTimelineVisibleFields);
     final visibleFields = <String, bool>{
       'duration': false,
-      'uploaded': true,
-      'downloaded': true,
+      'uploaded': false,
+      'downloaded': false,
       'invitation': true,
       'username': false,
       'email': false,
@@ -1459,13 +1460,39 @@ Widget _siteTimelineRow({
 }) {
   final theme = shadcn.Theme.of(context);
   final cs = theme.colorScheme;
-  final items = <MapEntry<String, String>>[
-    if (visibleFields['uploaded'] == true) MapEntry('上传量', entry.uploadedText),
-    if (visibleFields['downloaded'] == true) MapEntry('下载量', entry.downloadedText),
-    if (visibleFields['invitation'] == true) MapEntry('邀请数', '${entry.invitationCount}'),
-    if (visibleFields['username'] == true) MapEntry('用户名', entry.usernameText),
-    if (visibleFields['email'] == true) MapEntry('邮箱', entry.emailText),
-    if (visibleFields['uid'] == true) MapEntry('UID', entry.uidText),
+  final titleTime = showDurationOnTitle ? entry.durationText : entry.registeredAtText;
+  final showStates = entry.isDisabled || !entry.isOwned;
+  final items = <_TimelineMetric>[
+    if (visibleFields['uploaded'] == true)
+      _TimelineMetric(
+        label: '上传量',
+        value: entry.uploadedText,
+        icon: shadcn.LucideIcons.upload,
+      ),
+    if (visibleFields['downloaded'] == true)
+      _TimelineMetric(
+        label: '下载量',
+        value: entry.downloadedText,
+        icon: shadcn.LucideIcons.download,
+      ),
+    if (visibleFields['username'] == true)
+      _TimelineMetric(
+        label: '用户名',
+        value: entry.usernameText,
+        icon: shadcn.LucideIcons.userRound,
+      ),
+    if (visibleFields['email'] == true)
+      _TimelineMetric(
+        label: '邮箱',
+        value: entry.emailText,
+        icon: shadcn.LucideIcons.mail,
+      ),
+    if (visibleFields['uid'] == true)
+      _TimelineMetric(
+        label: 'UID',
+        value: entry.uidText,
+        icon: shadcn.LucideIcons.hash,
+      ),
   ];
 
   return Container(
@@ -1499,90 +1526,245 @@ Widget _siteTimelineRow({
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              showDurationOnTitle ? entry.durationText : entry.registeredAtText,
-              style: theme.typography.xSmall.copyWith(
-                color: cs.mutedForeground,
-                fontWeight: FontWeight.w600,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (visibleFields['invitation'] == true) ...[
+                  _timelineInvitationBadge(
+                    context,
+                    count: entry.invitationCount,
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                _timelineTitleMeta(
+                  context,
+                  icon: showDurationOnTitle ? shadcn.LucideIcons.clock : shadcn.LucideIcons.calendar,
+                  text: titleTime,
+                  tooltip: showDurationOnTitle ? '注册时长：$titleTime' : '注册时间：$titleTime',
+                ),
+                const SizedBox(width: 6),
+                _timelineLinksIndicator(context, entry.website.url),
+              ],
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            if (entry.isDisabled) ...[
-              _timelineStateTag(context, '已禁用'),
-              const SizedBox(width: 6),
-            ],
-            if (!entry.isOwned) ...[
-              _timelineStateTag(context, '未添加'),
-              const SizedBox(width: 8),
-              openUnownedAction(entry),
-            ],
-          ],
-        ),
-        Container(
-          margin: const EdgeInsets.only(top: 8, bottom: 8),
-          height: 1,
-          color: cs.border.withValues(alpha: 0.35),
-        ),
-        for (var i = 0; i < items.length; i += 3) ...[
+        if (showStates) ...[
+          const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(
-                child: _timelineMetricTile(context, items[i].key, items[i].value),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: i + 1 < items.length
-                    ? _timelineMetricTile(context, items[i + 1].key, items[i + 1].value)
-                    : const SizedBox.shrink(),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: i + 2 < items.length
-                    ? _timelineMetricTile(context, items[i + 2].key, items[i + 2].value)
-                    : const SizedBox.shrink(),
-              ),
+              if (entry.isDisabled) ...[
+                _timelineStateTag(context, '已禁用'),
+                const SizedBox(width: 6),
+              ],
+              if (!entry.isOwned) ...[
+                _timelineStateTag(context, '未添加'),
+                const SizedBox(width: 8),
+                openUnownedAction(entry),
+              ],
             ],
           ),
-          if (i + 3 < items.length) const SizedBox(height: 6),
+        ],
+        if (items.isNotEmpty) ...[
+          Container(
+            margin: const EdgeInsets.only(top: 8, bottom: 8),
+            height: 1,
+            color: cs.border.withValues(alpha: 0.35),
+          ),
+          for (var i = 0; i < items.length; i += 2) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: _timelineMetricTile(context, items[i]),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: i + 1 < items.length ? _timelineMetricTile(context, items[i + 1]) : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+            if (i + 2 < items.length) const SizedBox(height: 8),
+          ],
         ],
       ],
     ),
   );
 }
 
-Widget _timelineMetricChip(BuildContext context, String label, String value) {
+Widget _timelineLinksIndicator(BuildContext context, List<String> urls) {
   final theme = shadcn.Theme.of(context);
   final cs = theme.colorScheme;
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+  final availableUrls = urls.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+  final tooltip = availableUrls.isEmpty
+      ? '暂无可访问链接'
+      : [
+          '可访问链接',
+          for (final url in availableUrls) '${_timelineUrlHost(url)}\n$url',
+        ].join('\n\n');
+  final child = Container(
+    width: 20,
+    height: 20,
+    alignment: Alignment.center,
     decoration: BoxDecoration(
-      color: cs.muted.withValues(alpha: 0.42),
+      color: cs.muted.withValues(alpha: 0.18),
       borderRadius: BorderRadius.circular(999),
-      border: Border.all(color: cs.border.withValues(alpha: 0.8)),
     ),
-    child: RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text: '$label ',
-            style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+    child: Icon(
+      availableUrls.isEmpty ? shadcn.LucideIcons.globeLock : shadcn.LucideIcons.globe,
+      size: 12,
+      color: availableUrls.isEmpty ? cs.mutedForeground.withValues(alpha: 0.58) : cs.primary,
+    ),
+  );
+
+  return shadcn.Tooltip(
+    tooltip: (_) => Text(
+      tooltip,
+      style: theme.typography.xSmall.copyWith(color: cs.foreground),
+    ),
+    child: child,
+  );
+}
+
+Widget _timelineInvitationBadge(BuildContext context, {required int count}) {
+  final theme = shadcn.Theme.of(context);
+  final cs = theme.colorScheme;
+  final child = shadcn.SecondaryBadge(
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(shadcn.LucideIcons.ticket, size: 11, color: cs.foreground),
+        const SizedBox(width: 4),
+        Text(
+          '$count',
+          style: theme.typography.xSmall.copyWith(
+            color: cs.foreground,
+            fontWeight: FontWeight.w800,
+            fontSize: 10.5,
           ),
-          TextSpan(
-            text: value,
+        ),
+      ],
+    ),
+  );
+
+  return shadcn.Tooltip(
+    tooltip: (_) => Text('邀请数：$count'),
+    child: child,
+  );
+}
+
+Widget _timelineTitleMeta(
+  BuildContext context, {
+  required IconData icon,
+  required String text,
+  required String tooltip,
+}) {
+  final theme = shadcn.Theme.of(context);
+  final cs = theme.colorScheme;
+  final child = Container(
+    constraints: const BoxConstraints(maxWidth: 120),
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+    decoration: BoxDecoration(
+      color: cs.muted.withValues(alpha: 0.24),
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 11, color: cs.mutedForeground),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            text,
             style: theme.typography.xSmall.copyWith(
-              color: cs.foreground,
+              color: cs.mutedForeground,
               fontWeight: FontWeight.w700,
+              fontSize: 10.5,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
-      ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+        ),
+      ],
     ),
+  );
+
+  return shadcn.Tooltip(
+    tooltip: (_) => Text(tooltip),
+    child: child,
+  );
+}
+
+class _TimelineMetric {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _TimelineMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  String get tooltip => '$label：$value';
+}
+
+Widget _timelineMetricTile(BuildContext context, _TimelineMetric metric) {
+  final theme = shadcn.Theme.of(context);
+  final cs = theme.colorScheme;
+  final tile = Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+    decoration: BoxDecoration(
+      color: cs.muted.withValues(alpha: 0.16),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: cs.border.withValues(alpha: 0.42)),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: cs.primary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(7),
+          ),
+          child: Icon(metric.icon, size: 13, color: cs.primary),
+        ),
+        const SizedBox(width: 7),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                metric.label,
+                style: theme.typography.xSmall.copyWith(
+                  color: cs.mutedForeground,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 1),
+              Text(
+                metric.value,
+                style: theme.typography.xSmall.copyWith(
+                  color: cs.foreground,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+
+  return shadcn.Tooltip(
+    tooltip: (_) => Text(metric.tooltip),
+    child: tile,
   );
 }
 
@@ -1602,48 +1784,6 @@ Widget _timelineStateTag(BuildContext context, String text) {
         color: cs.mutedForeground,
         fontWeight: FontWeight.w600,
       ),
-    ),
-  );
-}
-
-Widget _timelineMetricTile(BuildContext context, String label, String value) {
-  final theme = shadcn.Theme.of(context);
-  final cs = theme.colorScheme;
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-    decoration: BoxDecoration(
-      color: cs.muted.withValues(alpha: 0.16),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Row(
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: theme.typography.xSmall.copyWith(
-              color: cs.mutedForeground,
-              fontSize: 10.5,
-              fontWeight: FontWeight.w600,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            value,
-            style: theme.typography.xSmall.copyWith(
-              color: cs.foreground,
-              fontSize: 10.5,
-              fontWeight: FontWeight.w700,
-            ),
-            textAlign: TextAlign.right,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
     ),
   );
 }
