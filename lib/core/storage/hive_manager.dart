@@ -12,6 +12,7 @@ class HiveManager {
     StorageKeys.baseUrl,
     StorageKeys.authState,
     StorageKeys.loggerLevel,
+    StorageKeys.appAutoRefreshIntervalMinutes,
     'canConnectInternet',
   };
   static const Set<String> _authSessionKeys = {

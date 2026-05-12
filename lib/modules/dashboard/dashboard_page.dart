@@ -7,6 +7,7 @@ import 'package:harvest/core/cache/session_cache.dart';
 import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/hooks.dart';
+import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
@@ -74,14 +75,10 @@ bool _isDashboardTooltipSummaryLine(String line) {
 class _DashboardIconTooltip extends StatelessWidget {
   final String message;
   final Widget child;
-  final Alignment alignment;
-  final Alignment anchorAlignment;
 
   const _DashboardIconTooltip({
     required this.message,
     required this.child,
-    this.alignment = Alignment.topCenter,
-    this.anchorAlignment = Alignment.bottomCenter,
   });
 
   @override
@@ -92,8 +89,6 @@ class _DashboardIconTooltip extends StatelessWidget {
       onTap: () => _showDashboardIconTooltip(
         context,
         message,
-        alignment: alignment,
-        anchorAlignment: anchorAlignment,
       ),
       child: child,
     );
@@ -102,15 +97,13 @@ class _DashboardIconTooltip extends StatelessWidget {
 
 void _showDashboardIconTooltip(
   BuildContext anchorContext,
-  String message, {
-  Alignment alignment = Alignment.topCenter,
-  Alignment anchorAlignment = Alignment.bottomCenter,
-}) {
+  String message,
+) {
   shadcn.showPopover<void>(
     context: anchorContext,
     handler: const shadcn.PopoverOverlayHandler(),
-    alignment: alignment,
-    anchorAlignment: anchorAlignment,
+    alignment: Alignment.topCenter,
+    anchorAlignment: Alignment.bottomCenter,
     offset: const Offset(0, 8),
     consumeOutsideTaps: false,
     builder: (context) => _DashboardIconTooltipPanel(message: message),
@@ -246,7 +239,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     return Color.lerp(a, b, t) ?? a;
   }
 
-  final Map<String, Set<int>> _hiddenSeries = {};
   late EasyRefreshController _refreshController;
   late List<String> _chartOrder;
   late Map<String, bool> _chartVisibility;
@@ -263,19 +255,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   bool _isSigningInSites = false;
 
   bool get _hasRunningSummaryAction => _isRefreshingDashboardData || _isRefreshingSiteData || _isSigningInSites;
-
-  bool _isHidden(String key, int index) => _hiddenSeries[key]?.contains(index) ?? false;
-
-  void _toggleHidden(String key, int index) {
-    setState(() {
-      _hiddenSeries.putIfAbsent(key, () => {});
-      if (_hiddenSeries[key]!.contains(index)) {
-        _hiddenSeries[key]!.remove(index);
-      } else {
-        _hiddenSeries[key]!.add(index);
-      }
-    });
-  }
 
   @override
   void initState() {
@@ -356,8 +335,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   }
 
   Future<void> _onRefresh() async {
-    await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
-    _refreshController.finishRefresh();
+    try {
+      await ref.read(appAutoRefreshControllerProvider).refresh(dashboardDays: _phoneDashboardFetchDays);
+    } finally {
+      _refreshController.finishRefresh();
+    }
   }
 
   Future<void> _refreshDashboardData() async {
@@ -365,24 +347,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     setState(() => _isRefreshingDashboardData = true);
 
     try {
-      await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
+      await ref.read(appAutoRefreshControllerProvider).refresh(dashboardDays: _phoneDashboardFetchDays);
       Toast.success('刷新数据完成');
     } catch (e, st) {
       AppLogger.error('刷新首页数据失败', e, st);
       Toast.error('刷新数据失败');
-    } finally {
-      if (mounted) setState(() => _isRefreshingDashboardData = false);
-    }
-  }
-
-  Future<void> _loadPhoneDashboardData({bool showErrorToast = true}) async {
-    if (_hasRunningSummaryAction) return;
-    setState(() => _isRefreshingDashboardData = true);
-    try {
-      await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
-    } catch (e, st) {
-      AppLogger.error('刷新首页美化版数据失败', e, st);
-      if (showErrorToast) Toast.error('切换数据范围失败');
     } finally {
       if (mounted) setState(() => _isRefreshingDashboardData = false);
     }
@@ -443,11 +412,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     return '$month月';
   }
 
-  String _formatDay(String date) {
-    if (date.length >= 10) return date.substring(8);
-    return date;
-  }
-
   String _formatCount(num value) {
     if (value <= 0) return '0';
     if (value >= 1e6) return '${(value / 1e6).toStringAsFixed(1)}M';
@@ -496,72 +460,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       return '0天';
     }
   }
-
-  // ———————————————— 构建单个图表（按 ID） ————————————————
-
-  Widget? _buildChartById(String id, DashboardData data, bool privacy) {
-    switch (id) {
-      case 'status':
-        return _buildStatusChart('站点状态', data.statusList, privacy);
-      case 'email':
-        return _buildEmailPieChart(data.emailCount, privacy);
-      case 'username':
-        return _buildUsernamePieChart(data.usernameCount, privacy);
-      case 'uploaded':
-        return _buildUploadedPieChart(data.statusList, privacy);
-      case 'todayUpload':
-        return _buildTodayUploadPieChart(data.uploadIncrementDataList, privacy);
-      case 'todayDownload':
-        return _buildTodayDownloadPieChart(data.downloadIncrementDataList, privacy);
-      case 'publishedCount':
-        return _buildPublishedCountPieChart(data.statusList, privacy);
-      case 'seed':
-        return _buildSeedChart(data.seedDataList, privacy);
-      case 'monthUpload':
-        return _buildMonthUploadChart(data.uploadMonthIncrementDataList, privacy);
-      case 'monthDownload':
-        return _buildMonthDownloadChart(data.uploadMonthIncrementDataList, privacy);
-      case 'monthPublished':
-        return _buildMonthPublishedChart(data.uploadMonthIncrementDataList, privacy);
-      case 'dailyStack':
-        return _buildDailyStackChart('每日上传趋势', data.stackChartDataList, privacy);
-      default:
-        return null;
-    }
-  }
-
-  Widget _buildChartBoundary(Widget child) {
-    return RepaintBoundary(child: child);
-  }
-
-  Widget _buildChartItem(String id, DashboardData data, bool privacy) {
-    final chart = _buildChartById(id, data, privacy);
-    if (chart == null) return const SizedBox.shrink();
-    return _buildChartBoundary(chart);
-  }
-
-  TextStyle _chartAxisTextStyle() {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    return shadcn.Theme.of(
-      context,
-    ).typography.xSmall.copyWith(fontSize: 10, color: cs.mutedForeground.withValues(alpha: 0.72));
-  }
-
-  Legend _chartLegend() => Legend(
-    isVisible: true,
-    position: LegendPosition.bottom,
-    overflowMode: LegendItemOverflowMode.scroll,
-    orientation: LegendItemOrientation.horizontal,
-    textStyle: shadcn.Theme.of(context).typography.xSmall.copyWith(
-      fontSize: 10,
-      color: shadcn.Theme.of(context).colorScheme.mutedForeground.withValues(alpha: 0.9),
-    ),
-    iconHeight: 8,
-    iconWidth: 8,
-    itemPadding: 12,
-    padding: 6,
-    toggleSeriesVisibility: true,
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -1052,209 +950,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     );
   }
 
-  // ———————————————— 概览统计 ————————————————
-
-  Widget _buildSummaryStats(DashboardData data) {
-    final accountAge = _showAccountAgeWeeks
-        ? _formatAccountAgeWeeks(data.earliestSite?.timeJoin)
-        : _formatAccountAgeYears(data.earliestSite?.timeJoin);
-    final designation = _getDesignation(data.siteCount);
-    final lastRefresh = formatDateStringToMinute(data.updatedAt, empty: '-');
-
-    final actionItems = [
-      _StatItem(
-        '站点数据',
-        _isRefreshingSiteData ? '执行中' : '刷新任务',
-        shadcn.LucideIcons.refreshCw,
-        _colors[7 % _colors.length],
-        onTap: _hasRunningSummaryAction ? null : _refreshSiteData,
-        loading: _isRefreshingSiteData,
-        action: true,
-      ),
-      _StatItem(
-        '刷新数据',
-        _isRefreshingDashboardData ? '刷新中' : '重新拉取',
-        shadcn.LucideIcons.rotateCw,
-        _colors[4 % _colors.length],
-        onTap: _hasRunningSummaryAction ? null : _refreshDashboardData,
-        loading: _isRefreshingDashboardData,
-        action: true,
-      ),
-      _StatItem(
-        '站点签到',
-        _isSigningInSites ? '执行中' : '签到任务',
-        shadcn.LucideIcons.calendarCheck,
-        _colors[1 % _colors.length],
-        onTap: _hasRunningSummaryAction ? null : _signInSites,
-        loading: _isSigningInSites,
-        action: true,
-      ),
-    ];
-    final statItems = [
-      _StatItem('总上传', formatBytes(data.totalUploaded), shadcn.LucideIcons.arrowUp, _colors[0]),
-      _StatItem(
-        '总下载',
-        formatBytes(data.totalDownloaded),
-        shadcn.LucideIcons.arrowDown,
-        shadcn.Theme.of(context).colorScheme.destructive,
-      ),
-      _StatItem('站点数', '${data.siteCount}', shadcn.LucideIcons.globe, _colors[5 % _colors.length]),
-      _StatItem('发种数', '${data.totalPublished}', shadcn.LucideIcons.hardDrive, _colors[4 % _colors.length]),
-      _StatItem(
-        '做种量',
-        formatBytes(data.totalSeedVol),
-        shadcn.LucideIcons.database,
-        shadcn.Theme.of(context).colorScheme.primary,
-      ),
-      _StatItem('做种数', '${data.totalSeeding}', shadcn.LucideIcons.hardDrive, _colors[4 % _colors.length]),
-      // _StatItem('今日上传', formatBytes(data.todayUploadIncrement), shadcn.LucideIcons.trendingUp, _colors[1 % _colors.length]),
-      _StatItem(
-        'P龄',
-        accountAge,
-        shadcn.LucideIcons.calendar,
-        _colors[8 % _colors.length],
-        onTap: () => setState(() => _showAccountAgeWeeks = !_showAccountAgeWeeks),
-      ),
-    ];
-    final lastRefreshItem = _StatItem(
-      '最后刷新',
-      lastRefresh,
-      shadcn.LucideIcons.clock,
-      shadcn.Theme.of(context).colorScheme.mutedForeground,
-    );
-
-    const spacing = 10.0;
-    const minItemWidth = 150.0;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final availableWidth = constraints.maxWidth;
-        final maxPerRow = ((availableWidth + spacing) / (minItemWidth + spacing))
-            .floor()
-            .clamp(1, actionItems.length + statItems.length + 2)
-            .toInt();
-        final cards = [
-          ...actionItems.map(_buildSummaryStatCard),
-          ...statItems.map(_buildSummaryStatCard),
-          // 称号
-          SizedBox(
-            height: 70,
-            child: _DesignationCard(designation: designation, siteCount: data.siteCount.toInt()),
-          ),
-          _buildSummaryStatCard(lastRefreshItem),
-        ];
-        final rows = <Widget>[];
-        for (var start = 0; start < cards.length; start += maxPerRow) {
-          final rowItems = cards.skip(start).take(maxPerRow).toList();
-          rows.add(
-            Row(
-              children: [
-                for (var index = 0; index < rowItems.length; index++) ...[
-                  Expanded(child: rowItems[index]),
-                  if (index != rowItems.length - 1) const SizedBox(width: spacing),
-                ],
-              ],
-            ),
-          );
-          if (start + maxPerRow < cards.length) {
-            rows.add(const SizedBox(height: spacing));
-          }
-        }
-
-        return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: rows);
-      },
-    );
-  }
-
-  Widget _buildSummaryStatCard(_StatItem item) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final disabledAction = item.action && item.onTap == null && !item.loading;
-
-    return GestureDetector(
-      onTap: item.onTap,
-      child: Container(
-        height: 70,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: cs.background,
-          borderRadius: context._dashRadiusMd,
-          border: Border.all(color: cs.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Icon(item.icon, size: 15, color: disabledAction ? item.color.withValues(alpha: 0.45) : item.color),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    item.label,
-                    style: TextStyle(fontSize: 12, color: cs.mutedForeground),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (item.action) ...[
-                  const Spacer(),
-                  Text(
-                    item.loading ? '执行中' : '点击执行',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: item.loading
-                          ? item.color
-                          : cs.mutedForeground.withValues(alpha: disabledAction ? 0.35 : 0.7),
-                    ),
-                  ),
-                  if (!item.loading) ...[
-                    const SizedBox(width: 2),
-                    Icon(
-                      shadcn.LucideIcons.chevronRight,
-                      size: 12,
-                      color: cs.mutedForeground.withValues(alpha: disabledAction ? 0.25 : 0.55),
-                    ),
-                  ],
-                ],
-              ],
-            ),
-            const Spacer(),
-            if (item.loading)
-              Row(
-                children: [
-                  const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(size: 18)),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      item.value,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, height: 1.05),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              )
-            else
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  item.value,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    height: 1.05,
-                    color: disabledAction ? cs.foreground.withValues(alpha: 0.45) : null,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ———————————————— 卡片容器 ————————————————
 
   Widget _buildCard({required String title, required Widget child, Widget? legend}) {
@@ -1339,484 +1034,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ———————————————— 通用饼图 ————————————————
-
-  Widget _buildPieChart({
-    required String title,
-    required List<dynamic> items,
-    required String Function(int i) getName,
-    String Function(int i)? getRawName,
-    required num Function(int i) getValue,
-    required String Function(int i, num value) getTooltipValue,
-    required String chartKey,
-    required bool privacy,
-  }) {
-    final indexed = <MapEntry<int, dynamic>>[];
-    for (int i = 0; i < items.length; i++) {
-      final v = getValue(i);
-      if (v > 0) indexed.add(MapEntry(i, items[i]));
-    }
-
-    if (indexed.isEmpty) return _buildEmptyPlaceholder(title);
-
-    indexed.sort((a, b) => getValue(b.key).compareTo(getValue(a.key)));
-    final total = indexed.fold<num>(0, (sum, e) => sum + getValue(e.key));
-    final rawNameFn = getRawName ?? getName;
-
-    final chartData = <_PieData>[];
-    for (final entry in indexed) {
-      final i = entry.key;
-      if (_isHidden(chartKey, i)) continue;
-      final v = getValue(i);
-      final pct = total > 0 ? (v / total * 100).toStringAsFixed(1) : '0';
-      chartData.add(
-        _PieData(
-          name: getName(i),
-          value: v.toDouble(),
-          tooltip: '📅 ${rawNameFn(i)}\n${getTooltipValue(i, v)} ($pct%)',
-          color: _colors[i % _colors.length],
-        ),
-      );
-    }
-
-    if (chartData.isEmpty) return _buildEmptyPlaceholder(title);
-    final visibleTotal = chartData.fold<num>(0, (sum, e) => sum + e.value);
-    final totalValue = visibleTotal == visibleTotal.roundToDouble() ? visibleTotal.round() : visibleTotal;
-    final totalLabel = getTooltipValue(0, totalValue);
-
-    return _buildCard(
-      title: title,
-      child: SizedBox(
-        height: _chartHeight,
-        child: Row(
-          spacing: 4,
-          children: [
-            Expanded(
-              flex: 6,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Listener(
-                    onPointerDown: _rememberDashboardTooltipPosition,
-                    child: SfCircularChart(
-                      margin: EdgeInsets.zero,
-                      tooltipBehavior: TooltipBehavior(
-                        enable: true,
-                        activationMode: ActivationMode.singleTap,
-                        tooltipPosition: TooltipPosition.auto,
-                        header: '',
-                        canShowMarker: false,
-                        duration: 10000,
-                        builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) =>
-                            _buildDashboardOverlayTooltip((data as _PieData).tooltip),
-                      ),
-                      series: <DoughnutSeries<_PieData, String>>[
-                        DoughnutSeries<_PieData, String>(
-                          dataSource: chartData,
-                          xValueMapper: (d, _) => d.name,
-                          yValueMapper: (d, _) => d.value,
-                          pointColorMapper: (d, _) => d.color,
-                          dataLabelSettings: const DataLabelSettings(isVisible: false),
-                          radius: '88%',
-                          innerRadius: '62%',
-                          cornerStyle: CornerStyle.bothCurve,
-                          explode: false,
-                        ),
-                      ],
-                    ),
-                  ),
-                  IgnorePointer(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '汇总',
-                          style: TextStyle(fontSize: 10, color: shadcn.Theme.of(context).colorScheme.mutedForeground),
-                        ),
-                        const SizedBox(height: 2),
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 88),
-                          child: Text(
-                            totalLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              flex: 3,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: SizedBox(
-                  height: _chartHeight,
-                  child: ListView.builder(
-                    padding: EdgeInsets.zero,
-                    itemCount: indexed.length,
-                    itemBuilder: (context, idx) {
-                      final i = indexed[idx].key;
-                      return _buildLegendItem(
-                        getName(i),
-                        getTooltipValue(i, getValue(i)),
-                        _colors[i % _colors.length],
-                        hidden: _isHidden(chartKey, i),
-                        onTap: () => _toggleHidden(chartKey, i),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ———————————————— 通用月度柱图 ————————————————
-
-  Widget _buildMonthChart({
-    required String title,
-    required List<MonthSiteData> data,
-    required num Function(StatusRecord record) getValue,
-    required String Function(num value) formatValue,
-    required String chartKey,
-    required bool privacy,
-  }) {
-    if (data.isEmpty) return _buildEmptyPlaceholder(title);
-
-    final allDates = <String>{};
-    for (final site in data) {
-      for (final r in site.value) {
-        allDates.add(r.createdAt);
-      }
-    }
-    final sortedDates = allDates.toList()..sort();
-
-    if (sortedDates.isEmpty) return _buildEmptyPlaceholder(title);
-
-    final hasAnyData = data.any((site) => site.value.any((r) => getValue(r) > 0));
-    if (!hasAnyData) return _buildEmptyPlaceholder(title);
-
-    final tooltipMap = <String, String>{};
-    for (final date in sortedDates) {
-      num total = 0;
-      final siteLines = <String>[];
-      for (int j = 0; j < data.length; j++) {
-        final records = data[j].value.where((r) => r.createdAt == date);
-        final v = records.isNotEmpty ? getValue(records.first) : 0;
-        total += v;
-        if (v > 0) siteLines.add('${data[j].name}\t${formatValue(v)}');
-      }
-      tooltipMap[date] = '📅 ${_formatMonth(date)}\n汇总\t${formatValue(total)}\n${siteLines.join('\n')}';
-    }
-
-    final series = <StackedColumnSeries<_BarData, String>>[];
-    for (int i = 0; i < data.length; i++) {
-      if (_isHidden(chartKey, i)) continue;
-      final site = data[i];
-      final seriesData = sortedDates.map((date) {
-        final records = site.value.where((r) => r.createdAt == date);
-        final v = records.isNotEmpty ? getValue(records.first).toDouble() : 0.0;
-        return _BarData(label: _formatMonth(date), value: v, tooltip: tooltipMap[date] ?? '');
-      }).toList();
-      series.add(
-        StackedColumnSeries<_BarData, String>(
-          dataSource: seriesData,
-          xValueMapper: (d, _) => d.label,
-          yValueMapper: (d, _) => d.value,
-          name: _mask(site.name, privacy),
-          color: _colors[i % _colors.length],
-          borderRadius: BorderRadius.vertical(top: shadcn.Theme.of(context).radiusXsRadius),
-          width: 0.72,
-          spacing: 0.08,
-        ),
-      );
-    }
-
-    return _buildCard(
-      title: title,
-      child: SizedBox(
-        height: _chartHeight,
-        child: ClipRect(
-          clipBehavior: Clip.none,
-          child: Listener(
-            onPointerDown: _rememberDashboardTooltipPosition,
-            child: SfCartesianChart(
-              plotAreaBorderWidth: 0,
-              legend: _chartLegend(),
-              primaryXAxis: CategoryAxis(
-                labelIntersectAction: AxisLabelIntersectAction.wrap,
-                maximumLabels: sortedDates.length,
-                labelStyle: _chartAxisTextStyle(),
-                axisLine: const AxisLine(width: 0),
-                majorGridLines: const MajorGridLines(width: 0),
-                majorTickLines: const MajorTickLines(size: 0),
-              ),
-              primaryYAxis: NumericAxis(
-                labelStyle: _chartAxisTextStyle(),
-                axisLine: const AxisLine(width: 0),
-                majorTickLines: const MajorTickLines(size: 0),
-                majorGridLines: MajorGridLines(
-                  width: 0.5,
-                  color: shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.45),
-                ),
-                axisLabelFormatter: (AxisLabelRenderDetails details) =>
-                    ChartAxisLabel(formatValue(details.value), details.textStyle),
-              ),
-              series: series,
-              tooltipBehavior: TooltipBehavior(
-                enable: true,
-                activationMode: ActivationMode.singleTap,
-                tooltipPosition: TooltipPosition.auto,
-                header: '',
-                canShowMarker: false,
-                duration: 10000,
-                builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) =>
-                    _buildDashboardOverlayTooltip((data as _BarData).tooltip),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ———————————————— Wrapper 方法 ————————————————
-
-  Widget _buildEmailPieChart(List<KV> list, bool privacy) => _buildPieChart(
-    title: '邮箱分布',
-    items: list,
-    chartKey: 'email',
-    privacy: privacy,
-    getName: (i) => _mask(list[i].name, privacy),
-    getRawName: (i) => list[i].name,
-    getValue: (i) => list[i].value,
-    getTooltipValue: (i, v) => '$v',
-  );
-
-  Widget _buildUsernamePieChart(List<KV> list, bool privacy) => _buildPieChart(
-    title: '用户名分布',
-    items: list,
-    chartKey: 'username',
-    privacy: privacy,
-    getName: (i) => _mask(list[i].name, privacy),
-    getRawName: (i) => list[i].name,
-    getValue: (i) => list[i].value,
-    getTooltipValue: (i, v) => '$v',
-  );
-
-  Widget _buildUploadedPieChart(List<SiteStatusData> list, bool privacy) => _buildPieChart(
-    title: '站点上传量',
-    items: list,
-    chartKey: 'uploaded',
-    privacy: privacy,
-    getName: (i) => _mask(list[i].name, privacy),
-    getRawName: (i) => list[i].name,
-    getValue: (i) => list[i].value.uploaded,
-    getTooltipValue: (i, v) => formatBytes(v),
-  );
-
-  Widget _buildTodayUploadPieChart(List<KV> list, bool privacy) => _buildPieChart(
-    title: '今日上传增量',
-    items: list,
-    chartKey: 'todayUpload',
-    privacy: privacy,
-    getName: (i) => _mask(list[i].name, privacy),
-    getRawName: (i) => list[i].name,
-    getValue: (i) => list[i].value,
-    getTooltipValue: (i, v) => formatBytes(v),
-  );
-
-  Widget _buildTodayDownloadPieChart(List<KV> list, bool privacy) => _buildPieChart(
-    title: '今日下载增量',
-    items: list,
-    chartKey: 'todayDownload',
-    privacy: privacy,
-    getName: (i) => _mask(list[i].name, privacy),
-    getRawName: (i) => list[i].name,
-    getValue: (i) => list[i].value,
-    getTooltipValue: (i, v) => formatBytes(v),
-  );
-
-  Widget _buildPublishedCountPieChart(List<SiteStatusData> list, bool privacy) => _buildPieChart(
-    title: '站点发种数量',
-    items: list,
-    chartKey: 'publishedCount',
-    privacy: privacy,
-    getName: (i) => _mask(list[i].name, privacy),
-    getRawName: (i) => list[i].name,
-    getValue: (i) => list[i].value.published,
-    getTooltipValue: (i, v) => '${_formatCount(v)} 个',
-  );
-
-  Widget _buildSeedChart(List<KV> list, bool privacy) {
-    final grouped = _seedAverageKvGroups(list);
-    return _buildPieChart(
-      title: '做种分布',
-      items: grouped,
-      chartKey: 'seed',
-      privacy: privacy,
-      getName: (i) => _mask(grouped[i].name, privacy),
-      getRawName: (i) => grouped[i].name,
-      getValue: (i) => grouped[i].value,
-      getTooltipValue: (i, v) => formatBytes(v),
-    );
-  }
-
-  List<KV> _seedAverageKvGroups(List<KV> list) {
-    final seeds = list.where((item) => item.value > 0).toList()..sort((a, b) => b.value.compareTo(a.value));
-    if (seeds.isEmpty) return const [];
-
-    final total = seeds.fold<num>(0, (sum, item) => sum + item.value);
-    final average = total / seeds.length;
-    final visible = seeds.where((item) => item.value >= average).toList();
-    final belowAverage = seeds.where((item) => item.value < average).toList();
-
-    return [
-      ...visible,
-      if (belowAverage.isNotEmpty)
-        KV(name: '低于平均 ${belowAverage.length} 个站点', value: belowAverage.fold<num>(0, (sum, item) => sum + item.value)),
-    ];
-  }
-
-  Widget _buildMonthUploadChart(List<MonthSiteData> list, bool privacy) => _buildMonthChart(
-    title: '月度上传增量趋势',
-    data: list,
-    chartKey: 'monthUpload',
-    privacy: privacy,
-    getValue: (r) => r.uploaded,
-    formatValue: formatYAxis,
-  );
-
-  Widget _buildMonthDownloadChart(List<MonthSiteData> list, bool privacy) => _buildMonthChart(
-    title: '月度下载增量趋势',
-    data: list,
-    chartKey: 'monthDownload',
-    privacy: privacy,
-    getValue: (r) => r.downloaded,
-    formatValue: formatYAxis,
-  );
-
-  Widget _buildMonthPublishedChart(List<MonthSiteData> list, bool privacy) => _buildMonthChart(
-    title: '月度发种增量趋势',
-    data: list,
-    chartKey: 'monthPublished',
-    privacy: privacy,
-    getValue: (r) => r.published,
-    formatValue: _formatCount,
-  );
-
-  // ———————————————— 每日上传柱图 ————————————————
-
-  Widget _buildDailyStackChart(String title, List<StackSiteData> data, bool privacy) {
-    if (data.isEmpty) return _buildEmptyPlaceholder(title);
-
-    const chartKey = 'dailyStack';
-
-    final allDates = <String>{};
-    for (final site in data) {
-      for (final r in site.value) {
-        allDates.add(r.createdAt);
-      }
-    }
-    final sortedDates = allDates.toList()..sort();
-
-    if (sortedDates.isEmpty) return _buildEmptyPlaceholder(title);
-
-    final hasAnyData = data.any((site) => site.value.any((r) => r.uploaded > 0));
-    if (!hasAnyData) return _buildEmptyPlaceholder(title);
-
-    final tooltipMap = <String, String>{};
-    for (final date in sortedDates) {
-      num totalUpload = 0;
-      final siteLines = <String>[];
-      for (int j = 0; j < data.length; j++) {
-        final records = data[j].value.where((r) => r.createdAt == date);
-        final u = records.isNotEmpty ? records.first.uploaded : 0;
-        totalUpload += u;
-        if (u > 0) siteLines.add('${data[j].name}\t${formatBytes(u)}');
-      }
-      tooltipMap[date] = '📅 $date\n汇总\t${formatBytes(totalUpload)}\n${siteLines.join('\n')}';
-    }
-
-    final series = <StackedColumnSeries<_BarData, String>>[];
-    for (int i = 0; i < data.length; i++) {
-      if (_isHidden(chartKey, i)) continue;
-      final site = data[i];
-      final seriesData = sortedDates.map((date) {
-        final records = site.value.where((r) => r.createdAt == date);
-        final uploaded = records.isNotEmpty ? records.first.uploaded.toDouble() : 0.0;
-        return _BarData(label: _formatDay(date), value: uploaded, tooltip: tooltipMap[date] ?? '');
-      }).toList();
-      series.add(
-        StackedColumnSeries<_BarData, String>(
-          dataSource: seriesData,
-          xValueMapper: (d, _) => d.label,
-          yValueMapper: (d, _) => d.value,
-          name: _mask(site.name, privacy),
-          color: _colors[i % _colors.length],
-          borderRadius: BorderRadius.vertical(top: shadcn.Theme.of(context).radiusXsRadius),
-          width: 0.72,
-          spacing: 0.08,
-        ),
-      );
-    }
-
-    return _buildCard(
-      title: title,
-      child: SizedBox(
-        height: _chartHeight,
-        child: ClipRect(
-          clipBehavior: Clip.none,
-          child: Listener(
-            onPointerDown: _rememberDashboardTooltipPosition,
-            child: SfCartesianChart(
-              plotAreaBorderWidth: 0,
-              legend: _chartLegend(),
-              primaryXAxis: CategoryAxis(
-                labelIntersectAction: AxisLabelIntersectAction.wrap,
-                maximumLabels: sortedDates.length,
-                labelStyle: _chartAxisTextStyle(),
-                axisLine: const AxisLine(width: 0),
-                majorGridLines: const MajorGridLines(width: 0),
-                majorTickLines: const MajorTickLines(size: 0),
-              ),
-              primaryYAxis: NumericAxis(
-                labelStyle: _chartAxisTextStyle(),
-                axisLine: const AxisLine(width: 0),
-                majorTickLines: const MajorTickLines(size: 0),
-                majorGridLines: MajorGridLines(
-                  width: 0.5,
-                  color: shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.45),
-                ),
-                axisLabelFormatter: (AxisLabelRenderDetails details) =>
-                    ChartAxisLabel(formatYAxis(details.value), details.textStyle),
-              ),
-              series: series,
-              tooltipBehavior: TooltipBehavior(
-                enable: true,
-                activationMode: ActivationMode.singleTap,
-                tooltipPosition: TooltipPosition.auto,
-                header: '',
-                canShowMarker: false,
-                duration: 10000,
-                builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) =>
-                    _buildDashboardOverlayTooltip((data as _BarData).tooltip),
-              ),
-            ),
           ),
         ),
       ),
@@ -1949,64 +1166,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     _dashboardTooltipEntry = null;
   }
 
-  // ———————————————— 图例 ————————————————
-
-  Widget _buildLegendItem(
-    String name,
-    String? value,
-    Color color, {
-    required bool hidden,
-    required VoidCallback onTap,
-  }) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 2),
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-        decoration: BoxDecoration(
-          color: hidden ? cs.background.withValues(alpha: 0) : color.withValues(alpha: 0.06),
-          borderRadius: context._dashRadiusSm,
-          border: Border.all(
-            color: hidden ? cs.border.withValues(alpha: 0.35) : color.withValues(alpha: 0.12),
-            width: 0.6,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 7,
-              height: 7,
-              decoration: BoxDecoration(color: hidden ? color.withValues(alpha: 0.3) : color, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                name,
-                style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: hidden ? cs.mutedForeground.withValues(alpha: 0.5) : cs.foreground.withValues(alpha: 0.84),
-                  decoration: hidden ? TextDecoration.lineThrough : null,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (value != null)
-              Text(
-                value,
-                style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: hidden ? cs.mutedForeground.withValues(alpha: 0.5) : cs.mutedForeground,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _DesignationCard extends StatefulWidget {
@@ -2677,22 +1836,12 @@ class _PieData {
   _PieData({required this.name, required this.value, required this.tooltip, required this.color});
 }
 
-class _BarData {
-  final String label;
-  final double value;
-  final String tooltip;
-
-  _BarData({required this.label, required this.value, required this.tooltip});
-}
-
 class _StatItem {
   final String label;
   final String value;
   final IconData icon;
   final Color color;
   final VoidCallback? onTap;
-  final bool loading;
-  final bool action;
 
   const _StatItem(
     this.label,
@@ -2700,7 +1849,5 @@ class _StatItem {
     this.icon,
     this.color, {
     this.onTap,
-    this.loading = false,
-    this.action = false,
   });
 }

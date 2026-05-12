@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:harvest/widgets/shad_text_field.dart';
 
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:file_picker/file_picker.dart';
@@ -8,10 +7,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/option/widgets/app_upgrade_page.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -34,7 +35,6 @@ BorderRadius _optionRadius(BuildContext context, {String size = 'md'}) {
     _ => theme.borderRadiusMd,
   };
 }
-
 
 // ══════════════════════════════════════════════════════════
 //  表单配置表
@@ -402,9 +402,10 @@ class OptionPage extends ConsumerWidget {
                           if (!kIsWeb) _buildAppUpgradeCard(context),
                           _buildUpdateCard(context),
                           const _CookieBackupImportCard(),
-                          const _BulkUpgradeCard(),
+                          const _AppAutoRefreshIntervalCard(),
                           _buildSpeedTest(context, ref),
                           _buildNoticeTest(context, ref),
+                          const _BulkUpgradeCard(),
                           _buildTelegramWebhook(context, ref),
                           ..._formConfigs.entries.map((entry) {
                             final optionName = entry.key;
@@ -846,6 +847,162 @@ class _ImportActionTile extends StatelessWidget {
   }
 }
 
+class _AppAutoRefreshIntervalCard extends ConsumerStatefulWidget {
+  const _AppAutoRefreshIntervalCard();
+
+  @override
+  ConsumerState<_AppAutoRefreshIntervalCard> createState() => _AppAutoRefreshIntervalCardState();
+}
+
+class _AppAutoRefreshIntervalCardState extends ConsumerState<_AppAutoRefreshIntervalCard> {
+  static const _presets = [5, 10, 15, 30, 60];
+
+  late final TextEditingController _minutesCtrl;
+  final FocusNode _minutesFocus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _minutesCtrl = TextEditingController(text: '${ref.read(appAutoRefreshIntervalProvider)}');
+  }
+
+  @override
+  void dispose() {
+    _minutesCtrl.dispose();
+    _minutesFocus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _setMinutes(int value) async {
+    final next = normalizeAppAutoRefreshMinutes(value);
+    _minutesCtrl.text = '$next';
+    await ref.read(appAutoRefreshIntervalProvider.notifier).update(next);
+  }
+
+  Future<void> _commitInput() async {
+    final parsed = int.tryParse(_minutesCtrl.text.trim());
+    if (parsed == null) {
+      _minutesCtrl.text = '${ref.read(appAutoRefreshIntervalProvider)}';
+      return;
+    }
+    await _setMinutes(parsed);
+    _minutesFocus.unfocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = _optionColors(context);
+    final typo = shadcn.Theme.of(context).typography;
+    final minutes = ref.watch(appAutoRefreshIntervalProvider);
+
+    if (!_minutesFocus.hasFocus && _minutesCtrl.text != '$minutes') {
+      _minutesCtrl.text = '$minutes';
+    }
+
+    return ExpandableCard(
+      title: '自动刷新频率',
+      icon: shadcn.LucideIcons.timerReset,
+      builder: (_) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'APP 在前台每隔设定时间自动刷新一次数据；从后台回到前台时也会按同一间隔节流刷新。',
+            style: typo.small.copyWith(
+              color: cs.mutedForeground,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: cs.background,
+              borderRadius: _optionRadius(context),
+              border: Border.all(color: cs.border.withValues(alpha: 0.7), width: 0.5),
+            ),
+            child: Row(
+              children: [
+                Icon(shadcn.LucideIcons.clock, size: 18, color: cs.foreground.withValues(alpha: 0.62)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '刷新间隔',
+                        style: typo.small.copyWith(
+                          color: cs.foreground,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        minutes == kDefaultAppAutoRefreshMinutes
+                            ? '当前 $minutes 分钟，默认频率'
+                            : '当前 $minutes 分钟',
+                        style: typo.xSmall.copyWith(color: cs.mutedForeground),
+                      ),
+                    ],
+                  ),
+                ),
+                shadcn.IconButton.outline(
+                  onPressed: minutes <= kMinAppAutoRefreshMinutes
+                      ? null
+                      : () => _setMinutes(minutes - 1),
+                  icon: const Icon(shadcn.LucideIcons.minus, size: 16),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 78,
+                  child: ShadTextField(
+                    controller: _minutesCtrl,
+                    focusNode: _minutesFocus,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    onSubmitted: (_) => _commitInput(),
+                    features: [
+                      shadcn.InputFeature.trailing(
+                        Text('分', style: typo.xSmall.copyWith(color: cs.mutedForeground)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                shadcn.IconButton.outline(
+                  onPressed: minutes >= kMaxAppAutoRefreshMinutes
+                      ? null
+                      : () => _setMinutes(minutes + 1),
+                  icon: const Icon(shadcn.LucideIcons.plus, size: 16),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final preset in _presets)
+                shadcn.Button.outline(
+                  onPressed: minutes == preset ? null : () => _setMinutes(preset),
+                  child: Text('$preset 分钟'),
+                ),
+              shadcn.Button.outline(
+                onPressed: minutes == kDefaultAppAutoRefreshMinutes
+                    ? null
+                    : () => _setMinutes(kDefaultAppAutoRefreshMinutes),
+                child: const Text('恢复默认'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _BulkUpgradeCard extends ConsumerStatefulWidget {
   const _BulkUpgradeCard();
 
@@ -874,7 +1031,7 @@ class _BulkUpgradeCardState extends ConsumerState<_BulkUpgradeCard> {
     final cs = _optionColors(context);
 
     return ExpandableCard(
-      title: '批量替换站点配置',
+      title: '批量替换',
       icon: shadcn.LucideIcons.replace,
       builder: (_) => Column(
         mainAxisSize: MainAxisSize.min,

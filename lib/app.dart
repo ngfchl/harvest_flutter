@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 // ignore: implementation_imports
 import 'package:shadcn_flutter/src/components/locale/shadcn_localizations_en.dart';
@@ -18,16 +21,21 @@ class MyApp extends ConsumerStatefulWidget {
 
 class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   late Brightness _platformBrightness;
+  AppLifecycleState _lifecycleState = AppLifecycleState.resumed;
+  Timer? _foregroundRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _platformBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    _lifecycleState = WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed;
+    _scheduleForegroundRefreshTimer();
   }
 
   @override
   void dispose() {
+    _foregroundRefreshTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -40,7 +48,46 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _lifecycleState = state;
+    if (state == AppLifecycleState.resumed) {
+      _refreshForegroundDataIfDue();
+      return;
+    }
+
+    _foregroundRefreshTimer?.cancel();
+    _foregroundRefreshTimer = null;
+  }
+
+  void _refreshForegroundDataIfDue() {
+    unawaited(ref.read(appAutoRefreshControllerProvider).refreshIfDue());
+    _scheduleForegroundRefreshTimer();
+  }
+
+  void _scheduleForegroundRefreshTimer() {
+    _foregroundRefreshTimer?.cancel();
+    if (_lifecycleState != AppLifecycleState.resumed) return;
+
+    final delay = ref.read(appAutoRefreshControllerProvider).timeUntilNextRefresh;
+
+    _foregroundRefreshTimer = Timer(delay, () {
+      if (!mounted || _lifecycleState != AppLifecycleState.resumed) return;
+      unawaited(ref.read(appAutoRefreshControllerProvider).refreshIfDue());
+      _scheduleForegroundRefreshTimer();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    ref.listen<int>(appAutoRefreshIntervalProvider, (previous, next) {
+      if (previous == next) return;
+      _scheduleForegroundRefreshTimer();
+    });
+    ref.listen<int>(appAutoRefreshRevisionProvider, (previous, next) {
+      if (previous == next) return;
+      _scheduleForegroundRefreshTimer();
+    });
+
     final themeState = ref.watch(themeNotifierProvider);
 
     return shadcn.ShadcnApp.router(

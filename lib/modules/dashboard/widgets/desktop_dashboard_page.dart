@@ -8,6 +8,7 @@ import 'package:harvest/core/cache/session_cache.dart';
 import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/hooks.dart';
+import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/theme/theme_provider.dart';
@@ -213,8 +214,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   }
 
   Future<void> _onRefresh() async {
-    await ref.read(dashboardNotifierProvider.notifier).refresh();
-    _refreshController.finishRefresh();
+    try {
+      await ref.read(appAutoRefreshControllerProvider).refresh();
+    } finally {
+      _refreshController.finishRefresh();
+    }
   }
 
   bool _isChartVisible(String id) => _chartVisibility[id] ?? true;
@@ -299,7 +303,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     if (_busy) return;
     setState(() => _refreshingDashboard = true);
     try {
-      await ref.read(dashboardNotifierProvider.notifier).refresh();
+      await ref.read(appAutoRefreshControllerProvider).refresh();
       Toast.success('刷新数据完成');
     } catch (e, st) {
       AppLogger.error('刷新首页数据失败', e, st);

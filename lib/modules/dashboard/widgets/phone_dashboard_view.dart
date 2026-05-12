@@ -1188,27 +1188,25 @@ extension _PhoneDashboardView on _DashboardPageState {
     final cs = shadcn.Theme.of(context).colorScheme;
     return Expanded(
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: SizedBox(
           height: 102,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _DashboardIconTooltip(
-                message: '$title\n$subtitle',
-                child: SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: shadcn.Card(
-                    padding: EdgeInsets.zero,
-                    filled: true,
-                    fillColor: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(999),
-                    borderColor: color.withValues(alpha: 0.10),
-                    child: loading
-                        ? shadcn.CircularProgressIndicator(size: 22, color: color)
-                        : Icon(icon, size: 27, color: color),
-                  ),
+              SizedBox(
+                width: 44,
+                height: 44,
+                child: shadcn.Card(
+                  padding: EdgeInsets.zero,
+                  filled: true,
+                  fillColor: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999),
+                  borderColor: color.withValues(alpha: 0.10),
+                  child: loading
+                      ? shadcn.CircularProgressIndicator(size: 22, color: color)
+                      : Icon(icon, size: 27, color: color),
                 ),
               ),
               const SizedBox(height: 12),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class ShadTextField extends StatelessWidget {
@@ -14,6 +15,7 @@ class ShadTextField extends StatelessWidget {
   final int? minLines;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
+  final List<TextInputFormatter>? inputFormatters;
   final TextStyle? style;
   final List<shadcn.InputFeature> features;
   final ValueChanged<String>? onChanged;
@@ -34,6 +36,7 @@ class ShadTextField extends StatelessWidget {
     this.minLines,
     this.keyboardType,
     this.textInputAction,
+    this.inputFormatters,
     this.style,
     this.features = const [],
     this.onChanged,
@@ -56,6 +59,7 @@ class ShadTextField extends StatelessWidget {
       minLines: minLines ?? 1,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
+      inputFormatters: inputFormatters,
       style: style,
       features: features,
       onChanged: onChanged,
