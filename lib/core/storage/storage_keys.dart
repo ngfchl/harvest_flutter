@@ -37,4 +37,6 @@ class StorageKeys {
   static const String serverResourceInterval = 'server_resource_interval';
   static const String serverResourceDuration = 'server_resource_duration';
   static const String serverResourceAutoStart = 'server_resource_auto_start';
+  static const String torrentDeleteFilesWhenUnpreserved =
+      'torrent_delete_files_when_unpreserved';
 }

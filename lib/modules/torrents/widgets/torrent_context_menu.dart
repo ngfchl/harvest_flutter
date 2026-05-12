@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:harvest/core/storage/hive_manager.dart';
+import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -61,6 +63,22 @@ class TorrentContextMenuItem {
 const torrentCategorySubmenuAction = '__category_submenu__';
 const torrentTagSubmenuAction = '__tag_submenu__';
 const torrentCopySubmenuAction = '__copy_submenu__';
+
+bool _loadDeleteFilesWhenUnpreservedPref() {
+  return HiveManager.get<bool>(
+        StorageKeys.torrentDeleteFilesWhenUnpreserved,
+      ) ??
+      true;
+}
+
+void _saveDeleteFilesWhenUnpreservedPref(bool value) {
+  unawaited(
+    HiveManager.set(
+      StorageKeys.torrentDeleteFilesWhenUnpreserved,
+      value,
+    ),
+  );
+}
 
 // ══════════════════════════════════════════════════════════
 //  构建菜单项
@@ -747,7 +765,7 @@ void _confirmDeleteTorrents(
   List<Torrent> torrents,
   OnTorrentAction onAction,
 ) {
-  var deleteFilesWhenUnpreserved = false;
+  var deleteFilesWhenUnpreserved = _loadDeleteFilesWhenUnpreservedPref();
   showDialog(
     context: context,
     builder: (ctx) {
@@ -768,7 +786,10 @@ void _confirmDeleteTorrents(
                   ),
                   shadcn.Switch(
                     value: deleteFilesWhenUnpreserved,
-                    onChanged: (value) => setDialogState(() => deleteFilesWhenUnpreserved = value),
+                    onChanged: (value) => setDialogState(() {
+                      deleteFilesWhenUnpreserved = value;
+                      _saveDeleteFilesWhenUnpreservedPref(value);
+                    }),
                   ),
                 ],
               ),
@@ -987,7 +1008,7 @@ void _confirmDeleteTorrent(
   Torrent torrent,
   OnTorrentAction onAction,
 ) {
-  var deleteFilesWhenUnpreserved = false;
+  var deleteFilesWhenUnpreserved = _loadDeleteFilesWhenUnpreservedPref();
   showDialog(
     context: context,
     builder: (ctx) {
@@ -1008,7 +1029,10 @@ void _confirmDeleteTorrent(
                   ),
                   shadcn.Switch(
                     value: deleteFilesWhenUnpreserved,
-                    onChanged: (value) => setDialogState(() => deleteFilesWhenUnpreserved = value),
+                    onChanged: (value) => setDialogState(() {
+                      deleteFilesWhenUnpreserved = value;
+                      _saveDeleteFilesWhenUnpreservedPref(value);
+                    }),
                   ),
                 ],
               ),
