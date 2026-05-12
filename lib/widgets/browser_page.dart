@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
 import 'package:harvest/modules/search/widgets/downloader_select_sheet.dart';
 import 'package:harvest/modules/site/model/site_config.dart';
+import 'package:harvest/modules/site/model/site_info.dart';
 import 'package:harvest/modules/site/provider/site_provider.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
@@ -30,6 +31,7 @@ class BrowserPage extends StatefulWidget {
   final String? cookie;
   final String? userAgent;
   final String? siteId;
+  final WebSite? website;
 
   const BrowserPage({
     super.key,
@@ -38,6 +40,7 @@ class BrowserPage extends StatefulWidget {
     this.cookie,
     this.userAgent,
     this.siteId,
+    this.website,
   });
 
   /// 快捷打开
@@ -47,16 +50,19 @@ class BrowserPage extends StatefulWidget {
     String? cookie,
     String? userAgent,
     String? siteId,
+    WebSite? website,
   }) {
+    final normalizedUrl = _normalizeInitialBrowserUrl(url);
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) =>
             BrowserPage(
-              url: url,
+              url: normalizedUrl,
               title: title,
               cookie: cookie,
               userAgent: userAgent,
               siteId: siteId,
+              website: website,
             ),
       ),
     );
@@ -64,6 +70,14 @@ class BrowserPage extends StatefulWidget {
 
   @override
   State<BrowserPage> createState() => _BrowserPageState();
+}
+
+String _normalizeInitialBrowserUrl(String value) {
+  final text = value.trim();
+  final uri = Uri.tryParse(text);
+  if (uri == null || !uri.hasScheme || uri.host.isEmpty) return text;
+  final normalizedPath = uri.path.replaceAll(RegExp(r'/+'), '/');
+  return uri.replace(path: normalizedPath.isEmpty ? null : normalizedPath).toString();
 }
 
 class _BrowserPageState extends State<BrowserPage> {
@@ -83,6 +97,7 @@ class _BrowserPageState extends State<BrowserPage> {
   String? _activeTorrentUrl;
   String? _error;
   bool _extractingTorrentList = false;
+  bool _extractingUserProfile = false;
 
   @override
   void initState() {
@@ -211,8 +226,13 @@ class _BrowserPageState extends State<BrowserPage> {
     final cs = shadcn.Theme.of(context).colorScheme;
     final torrentWebsite = _currentTorrentWebsiteConfig();
     final detailWebsite = _currentDetailWebsiteConfig();
+    final userWebsite = _currentUserWebsiteConfig();
     final showTorrentFab =
         (torrentWebsite != null || detailWebsite != null) &&
+        !_closing &&
+        !_isLoading;
+    final showUserProfileFab =
+        userWebsite != null &&
         !_closing &&
         !_isLoading;
 
@@ -255,40 +275,67 @@ class _BrowserPageState extends State<BrowserPage> {
                   _buildBottomBar(cs),
                 ],
               ),
-              if (showTorrentFab)
+              if (showTorrentFab || showUserProfileFab)
                 Positioned(
                   right: 16,
                   bottom: MediaQuery.of(context).padding.bottom + 64,
-                  child: FloatingActionButton.small(
-                    heroTag: 'browser_torrent_list_fab',
-                    onPressed: _extractingTorrentList
-                        ? null
-                        : () async {
-                            if (detailWebsite != null) {
-                              await _extractSingleTorrentDetail(detailWebsite);
-                              return;
-                            }
-                            if (torrentWebsite != null) {
-                              await _extractTorrentList(torrentWebsite);
-                            }
-                          },
-                    backgroundColor: cs.primary,
-                    foregroundColor: cs.primaryForeground,
-                    child: _extractingTorrentList
-                        ? SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: shadcn.CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: cs.primaryForeground,
-                            ),
-                          )
-                        : Icon(
-                            detailWebsite != null
-                                ? shadcn.LucideIcons.download
-                                : shadcn.LucideIcons.listChecks,
-                            size: 18,
-                          ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (showUserProfileFab) ...[
+                        FloatingActionButton.small(
+                          heroTag: 'browser_user_profile_fab',
+                          onPressed: _extractingUserProfile
+                              ? null
+                              : () => _extractUserProfile(userWebsite!),
+                          backgroundColor: cs.primary,
+                          foregroundColor: cs.primaryForeground,
+                          child: _extractingUserProfile
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: shadcn.CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: cs.primaryForeground,
+                                  ),
+                                )
+                              : const Icon(shadcn.LucideIcons.userRound, size: 18),
+                        ),
+                        if (showTorrentFab) const SizedBox(height: 10),
+                      ],
+                      if (showTorrentFab)
+                        FloatingActionButton.small(
+                          heroTag: 'browser_torrent_list_fab',
+                          onPressed: _extractingTorrentList
+                              ? null
+                              : () async {
+                                  if (detailWebsite != null) {
+                                    await _extractSingleTorrentDetail(detailWebsite);
+                                    return;
+                                  }
+                                  if (torrentWebsite != null) {
+                                    await _extractTorrentList(torrentWebsite);
+                                  }
+                                },
+                          backgroundColor: cs.primary,
+                          foregroundColor: cs.primaryForeground,
+                          child: _extractingTorrentList
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: shadcn.CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: cs.primaryForeground,
+                                  ),
+                                )
+                              : Icon(
+                                  detailWebsite != null
+                                      ? shadcn.LucideIcons.download
+                                      : shadcn.LucideIcons.listChecks,
+                                  size: 18,
+                                ),
+                        ),
+                    ],
                   ),
                 ),
             ],
@@ -786,23 +833,39 @@ class _BrowserPageState extends State<BrowserPage> {
 
   // ────────────────── 工具栏 ──────────────────
 
-  WebSite? _currentTorrentWebsiteConfig() {
+  WebSite? _websiteConfigForCurrentSite() {
+    final specifiedWebsite = widget.website;
+    if (specifiedWebsite != null) return specifiedWebsite;
     final siteId = widget.siteId?.trim();
     final currentUrl = _currentUrl.trim();
-    if (siteId == null || siteId.isEmpty || currentUrl.isEmpty || !mounted) {
-      return null;
-    }
+    if ((siteId == null || siteId.isEmpty) && currentUrl.isEmpty) return null;
+
     final container = ProviderScope.containerOf(context, listen: false);
-    final configs = container
-        .read(websiteListProvider)
-        .valueOrNull ?? const <WebSite>[];
-    WebSite? website;
+    final configs = container.read(websiteListProvider).valueOrNull ?? const <WebSite>[];
+    final siteKey = siteId?.toLowerCase() ?? '';
+    final currentHost = _uriHost(currentUrl);
+
     for (final config in configs) {
-      if (config.name == siteId) {
-        website = config;
-        break;
+      if (config.name.toLowerCase() == siteKey || config.nickname.toLowerCase() == siteKey) {
+        return config;
       }
     }
+
+    if (currentHost == null) return null;
+    for (final config in configs) {
+      for (final url in config.url) {
+        if (_uriHost(url) == currentHost) return config;
+      }
+    }
+    return null;
+  }
+
+  WebSite? _currentTorrentWebsiteConfig() {
+    final currentUrl = _currentUrl.trim();
+    if (currentUrl.isEmpty || !mounted) {
+      return null;
+    }
+    final website = _websiteConfigForCurrentSite();
     if (website == null) return null;
     if (website.pageTorrents.trim().isEmpty || website.torrentsRule.trim().isEmpty) {
       return null;
@@ -811,20 +874,11 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   WebSite? _currentDetailWebsiteConfig() {
-    final siteId = widget.siteId?.trim();
     final currentUrl = _currentUrl.trim();
-    if (siteId == null || siteId.isEmpty || currentUrl.isEmpty || !mounted) {
+    if (currentUrl.isEmpty || !mounted) {
       return null;
     }
-    final container = ProviderScope.containerOf(context, listen: false);
-    final configs = container.read(websiteListProvider).valueOrNull ?? const <WebSite>[];
-    WebSite? website;
-    for (final config in configs) {
-      if (config.name == siteId) {
-        website = config;
-        break;
-      }
-    }
+    final website = _websiteConfigForCurrentSite();
     if (website == null) return null;
     if (website.pageDetail.trim().isEmpty) return null;
     if (website.detailDownloadUrlRule.trim().isEmpty &&
@@ -834,9 +888,105 @@ class _BrowserPageState extends State<BrowserPage> {
     return _matchesWebsitePage(currentUrl, website.pageDetail) ? website : null;
   }
 
+  WebSite? _currentUserWebsiteConfig() {
+    final currentUrl = _currentUrl.trim();
+    if (currentUrl.isEmpty || !mounted) return null;
+    final website = _websiteConfigForCurrentSite();
+    if (website == null) return null;
+    if (!_hasUserProfileRules(website)) return null;
+    final pageUser = website.pageUser.trim();
+    final pageControlPanel = website.pageControlPanel.trim();
+    final matchesUser = pageUser.isNotEmpty && _matchesWebsitePage(currentUrl, pageUser);
+    final matchesControlPanel = pageControlPanel.isNotEmpty && _matchesWebsitePage(currentUrl, pageControlPanel);
+    return matchesUser || matchesControlPanel ? website : null;
+  }
+
+  bool _hasUserProfileRules(WebSite website) {
+    return website.pageUser.contains('{}') ||
+        _userProfileRuleSpecs(website).any((spec) => spec.rule.trim().isNotEmpty);
+  }
+
+  List<_BrowserUserProfileRule> _userProfileRuleSpecs(WebSite website) {
+    return [
+      _BrowserUserProfileRule('username', '用户名', '账号', website.myUsernameRule),
+      _BrowserUserProfileRule('email', '邮箱', '账号', website.myEmailRule),
+      _BrowserUserProfileRule('uid', 'UID', '账号', website.myUidRule),
+      _BrowserUserProfileRule('passkey', 'Passkey', '账号', website.myPasskeyRule),
+      _BrowserUserProfileRule('time_join', '注册时间', '时间', website.myTimeJoinRule),
+      _BrowserUserProfileRule('latest_active', '最后活动', '时间', website.myLatestActiveRule),
+      _BrowserUserProfileRule('level', '等级', '账号', website.myLevelRule),
+      _BrowserUserProfileRule('uploaded', '上传量', '流量', website.myUploadedRule),
+      _BrowserUserProfileRule('downloaded', '下载量', '流量', website.myDownloadedRule),
+      _BrowserUserProfileRule('ratio', '分享率', '账号', website.myRatioRule),
+      _BrowserUserProfileRule('bonus', '魔力值', '魔力/积分', website.myBonusRule),
+      _BrowserUserProfileRule('bonus_hour', '时魔', '魔力/积分', website.myPerHourBonusRule),
+      _BrowserUserProfileRule('score', '积分', '魔力/积分', website.myScoreRule),
+      _BrowserUserProfileRule('invitation', '邀请', '统计', website.myInvitationRule),
+      _BrowserUserProfileRule('hr', 'HR', '统计', website.myHrRule),
+      _BrowserUserProfileRule('leech', '下载中', '统计', website.myLeechRule),
+      _BrowserUserProfileRule('publish', '发布数', '统计', website.myPublishRule),
+      _BrowserUserProfileRule('seed', '做种数', '统计', website.mySeedRule),
+      _BrowserUserProfileRule('seed_volume', '做种量', '统计', website.mySeedVolRule),
+    ];
+  }
+
+  _BrowserUserProfileDisplay _userProfileDisplay(String key) {
+    return switch (key) {
+      'username' => const _BrowserUserProfileDisplay(Icons.person_outline, Color(0xFF2563EB)),
+      'email' => const _BrowserUserProfileDisplay(Icons.alternate_email, Color(0xFF0EA5E9)),
+      'uid' => const _BrowserUserProfileDisplay(Icons.badge_outlined, Color(0xFF64748B)),
+      'passkey' => const _BrowserUserProfileDisplay(Icons.key_outlined, Color(0xFF64748B)),
+      'time_join' => const _BrowserUserProfileDisplay(Icons.event_available_outlined, Color(0xFF14B8A6)),
+      'latest_active' => const _BrowserUserProfileDisplay(Icons.schedule_outlined, Color(0xFF06B6D4)),
+      'level' => const _BrowserUserProfileDisplay(Icons.workspace_premium_outlined, Color(0xFFF59E0B)),
+      'uploaded' => const _BrowserUserProfileDisplay(Icons.cloud_upload_outlined, Color(0xFF10B981)),
+      'downloaded' => const _BrowserUserProfileDisplay(Icons.cloud_download_outlined, Color(0xFFEF4444)),
+      'ratio' => const _BrowserUserProfileDisplay(Icons.balance_outlined, Color(0xFF8B5CF6)),
+      'bonus' => const _BrowserUserProfileDisplay(Icons.diamond_outlined, Color(0xFFF59E0B)),
+      'bonus_hour' => const _BrowserUserProfileDisplay(Icons.bolt_outlined, Color(0xFFF97316)),
+      'score' => const _BrowserUserProfileDisplay(Icons.star_border_outlined, Color(0xFFEAB308)),
+      'invitation' => const _BrowserUserProfileDisplay(Icons.group_add_outlined, Color(0xFF8B5CF6)),
+      'hr' => const _BrowserUserProfileDisplay(Icons.warning_amber_outlined, Color(0xFFEF4444)),
+      'leech' => const _BrowserUserProfileDisplay(Icons.arrow_downward, Color(0xFFF97316)),
+      'publish' => const _BrowserUserProfileDisplay(Icons.rocket_launch_outlined, Color(0xFF6366F1)),
+      'seed' => const _BrowserUserProfileDisplay(Icons.grass_outlined, Color(0xFF10B981)),
+      'seed_volume' => const _BrowserUserProfileDisplay(Icons.storage_outlined, Color(0xFF0EA5E9)),
+      _ => const _BrowserUserProfileDisplay(Icons.info_outline, Color(0xFF64748B)),
+    };
+  }
+
   bool _matchesWebsitePage(String currentUrl, String pageRule) {
     final current = Uri.tryParse(currentUrl);
     if (current == null || !current.hasScheme) return false;
+
+    final rawRule = pageRule.trim();
+    if (rawRule.contains('{}')) {
+      const marker = '__HARVEST_PAGE_MARKER__';
+      final target = _resolveWebsitePageUri(current, rawRule.replaceAll('{}', marker));
+      if (target == null || !target.toString().contains(marker)) return false;
+
+      if (target.queryParameters.containsValue(marker)) {
+        if (current.scheme != target.scheme ||
+            current.host != target.host ||
+            current.port != target.port ||
+            _normalizePath(current.path) != _normalizePath(target.path)) {
+          return false;
+        }
+        for (final entry in target.queryParameters.entries) {
+          if (entry.value == marker) {
+            final value = current.queryParameters[entry.key]?.trim();
+            return value != null && value.isNotEmpty;
+          }
+        }
+      }
+
+      final escaped = RegExp.escape(target.toString()).replaceAll(
+        RegExp.escape(marker),
+        r'([^/?#&]+)',
+      );
+      return RegExp('^$escaped(?:[?#&].*)?\$').hasMatch(current.toString());
+    }
+
     final target = _resolveWebsitePageUri(current, pageRule);
     if (target == null) return false;
     final currentPath = _normalizePath(current.path);
@@ -846,7 +996,7 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   Uri? _resolveWebsitePageUri(Uri current, String pageRule) {
-    final value = pageRule.trim();
+    final value = pageRule.trim().replaceAll('{}', '');
     if (value.isEmpty) return null;
     final absolute = Uri.tryParse(value);
     if (absolute != null && absolute.hasScheme) return absolute;
@@ -857,6 +1007,12 @@ class _BrowserPageState extends State<BrowserPage> {
       path: '/',
     );
     return origin.resolve(value);
+  }
+
+  String? _uriHost(String value) {
+    final uri = Uri.tryParse(value.trim());
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) return null;
+    return uri.host.toLowerCase();
   }
 
   String _normalizePath(String path) {
@@ -915,6 +1071,687 @@ class _BrowserPageState extends State<BrowserPage> {
     } finally {
       if (mounted) setState(() => _extractingTorrentList = false);
     }
+  }
+
+  Future<void> _extractUserProfile(WebSite website) async {
+    final controller = _controller;
+    if (controller == null || _closing || !mounted) return;
+
+    setState(() => _extractingUserProfile = true);
+    try {
+      final raw = await controller.evaluateJavascript(
+        source: _buildUserProfileExtractScript(website),
+      );
+      if (!mounted || _closing) return;
+      final items = _parseExtractedUserProfile(raw);
+      if (items.isEmpty) {
+        Toast.warning('未提取到用户页信息');
+        return;
+      }
+      await _showUserProfileDialog(items, website);
+    } catch (e, st) {
+      AppLogger.error('提取用户页信息失败', e, st);
+      if (mounted) Toast.error('提取用户页信息失败');
+    } finally {
+      if (mounted) setState(() => _extractingUserProfile = false);
+    }
+  }
+
+  String _buildUserProfileExtractScript(WebSite website) {
+    final specs = _userProfileRuleSpecs(website)
+        .where((spec) => spec.rule.trim().isNotEmpty || (spec.key == 'uid' && website.pageUser.contains('{}')))
+        .map((spec) => {
+              'key': spec.key,
+              'label': spec.label,
+              'group': spec.group,
+              'rule': spec.rule,
+            })
+        .toList();
+    return '''
+(() => {
+  const specs = ${jsonEncode(specs)};
+  const pageUserRule = ${jsonEncode(website.pageUser)};
+
+  const ruleVariants = (rule) => {
+    const raw = (rule || '').trim();
+    if (!raw) return [];
+    const values = new Set();
+    const push = (value) => {
+      const text = (value || '').trim();
+      if (text) values.add(text);
+    };
+    const removeTbody = (value) => value.replace(/\\/tbody(?=\\/|\$)/gi, '');
+    const addTbody = (value) => value.replace(
+      /(\\/table(?:\\[[^\\]]+\\])?)(?=\\/tr(?:\\[[^\\]]+\\])?(?:\\/|\$))/gi,
+      '\$1/tbody',
+    );
+    push(raw);
+    push(removeTbody(raw));
+    push(addTbody(raw));
+    push(addTbody(removeTbody(raw)));
+    return Array.from(values);
+  };
+
+  const cleanText = (value) => (value || '')
+    .replace(/\\u00a0/g, ' ')
+    .replace(/\\s+/g, ' ')
+    .trim();
+
+  const escapeRegExp = (value) => {
+    let escaped = value;
+    for (const ch of ['\\\\', '^', '\$', '.', '|', '?', '*', '+', '(', ')', '[', ']', '{', '}']) {
+      escaped = escaped.split(ch).join('\\\\' + ch);
+    }
+    return escaped;
+  };
+
+  const toAbsoluteUrl = (value) => {
+    const text = cleanText(value);
+    if (!text) return '';
+    try {
+      return new URL(text, window.location.origin + '/').href;
+    } catch (_) {
+      return '';
+    }
+  };
+
+  const normalizePath = (value) => {
+    const path = value || '/';
+    return path.length > 1 && path.endsWith('/') ? path.slice(0, -1) : path;
+  };
+
+  const extractUserIdFromPageUser = (sourceValue) => {
+    const rule = cleanText(pageUserRule);
+    if (!rule.includes('{}')) return '';
+    const source = cleanText(sourceValue);
+    const candidates = [];
+    const pushCandidate = (value) => {
+      const text = cleanText(value);
+      if (text && !candidates.includes(text)) candidates.push(text);
+    };
+    pushCandidate(source);
+    pushCandidate(window.location.href);
+    for (const anchor of Array.from(document.querySelectorAll('a[href]'))) {
+      pushCandidate(anchor.getAttribute('href') || '');
+      pushCandidate(anchor.href || '');
+    }
+
+    const marker = '__HARVEST_USER_ID__';
+    const target = toAbsoluteUrl(rule.split('{}').join(marker));
+    if (!target || !target.includes(marker)) return '';
+
+    for (const candidate of candidates) {
+      if (/^\\d+\$/.test(candidate)) return candidate;
+      const current = toAbsoluteUrl(candidate);
+      if (!current) continue;
+
+      try {
+        const targetUrl = new URL(target);
+        const currentUrl = new URL(current);
+        for (const [key, value] of targetUrl.searchParams.entries()) {
+          if (value === marker) {
+            if (targetUrl.origin !== currentUrl.origin ||
+                normalizePath(targetUrl.pathname) !== normalizePath(currentUrl.pathname)) {
+              continue;
+            }
+            const uid = cleanText(currentUrl.searchParams.get(key) || '');
+            if (uid) return decodeURIComponent(uid);
+          }
+        }
+      } catch (_) {}
+
+      const pattern = new RegExp(
+        '^' + escapeRegExp(target).replace(escapeRegExp(marker), '([^/?#&]+)') + '(?:[?#&].*)?\$',
+      );
+      const match = current.match(pattern);
+      if (match && match[1]) return decodeURIComponent(match[1]);
+    }
+    return '';
+  };
+
+  const readNodeValue = (node, key) => {
+    if (!node) return '';
+    if (node.nodeType === Node.ATTRIBUTE_NODE || node.nodeType === Node.TEXT_NODE || node.nodeType === Node.CDATA_SECTION_NODE) {
+      return cleanText(node.nodeValue || '');
+    }
+    if (node instanceof HTMLAnchorElement) {
+      if (key === 'uid') {
+        return cleanText(node.getAttribute('href') || node.href || node.textContent || '');
+      }
+      return cleanText(node.textContent || node.getAttribute('href') || node.href || '');
+    }
+    if (node instanceof HTMLImageElement) {
+      return cleanText(node.getAttribute('alt') || node.getAttribute('title') || node.getAttribute('src') || node.src || '');
+    }
+    return cleanText(node.textContent || '');
+  };
+
+  const evaluateNodes = (contextNode, rule) => {
+    if (!rule) return [];
+    for (const candidate of ruleVariants(rule)) {
+      try {
+        const result = document.evaluate(candidate, contextNode, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        const nodes = [];
+        for (let i = 0; i < result.snapshotLength; i += 1) {
+          nodes.push(result.snapshotItem(i));
+        }
+        if (nodes.length) return nodes;
+      } catch (_) {}
+    }
+    return [];
+  };
+
+  const evaluateValue = (contextNode, rule, key) => {
+    if (!rule) return '';
+    for (const candidate of ruleVariants(rule)) {
+      try {
+        const result = document.evaluate(candidate, contextNode, null, XPathResult.ANY_TYPE, null);
+        switch (result.resultType) {
+          case XPathResult.STRING_TYPE: {
+            const value = cleanText(result.stringValue || '');
+            if (value) return value;
+            break;
+          }
+          case XPathResult.NUMBER_TYPE:
+            if (Number.isFinite(result.numberValue)) return String(result.numberValue);
+            break;
+          case XPathResult.BOOLEAN_TYPE:
+            if (result.booleanValue) return 'true';
+            break;
+          default: {
+            const node = result.singleNodeValue || result.iterateNext?.();
+            const value = readNodeValue(node, key);
+            if (value) return value;
+            break;
+          }
+        }
+      } catch (_) {}
+    }
+    const nodes = evaluateNodes(contextNode, rule);
+    if (!nodes.length) return '';
+    return nodes.map((node) => readNodeValue(node, key)).filter(Boolean).join(' ').replace(/\\s+/g, ' ').trim();
+  };
+
+  return specs
+    .map((spec) => {
+      const value = evaluateValue(document, spec.rule, spec.key);
+      return {
+        key: spec.key,
+        label: spec.label,
+        group: spec.group,
+        value: spec.key === 'uid' ? extractUserIdFromPageUser(value) : value,
+      };
+    });
+})()
+''';
+  }
+
+  List<_BrowserUserProfileMetric> _parseExtractedUserProfile(
+    dynamic raw,
+  ) {
+    dynamic data = raw;
+    if (raw is String) {
+      try {
+        data = jsonDecode(raw);
+      } catch (_) {
+        data = const [];
+      }
+    }
+    if (data is! List) return const [];
+    return data
+        .whereType<Object?>()
+        .map((item) {
+          if (item is! Map) return null;
+          final map = Map<String, dynamic>.from(item);
+          final key = map['key']?.toString() ?? '';
+          final extractedValue = map['value']?.toString().trim() ?? '';
+          return _BrowserUserProfileMetric(
+            key: key,
+            label: map['label']?.toString() ?? '',
+            group: map['group']?.toString() ?? '',
+            rawValue: extractedValue,
+            value: _formatUserProfileValue(key, extractedValue),
+          );
+        })
+        .whereType<_BrowserUserProfileMetric>()
+        .where((item) => item.value != '-')
+        .toList();
+  }
+
+  String _formatUserProfileValue(String key, String rawValue) {
+    final value = rawValue.replaceAll('\u00a0', ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (_isUserProfilePlaceholder(value)) return '-';
+    if (key == 'uid') return value.isEmpty ? '-' : value;
+    if (key == 'passkey') return maskKey(value);
+
+    if (key == 'time_join' || key == 'latest_active') {
+      return formatFlexibleLocalDateTimeString(value);
+    }
+    if (key == 'level') return _formatUserProfileLevel(value);
+    if (key == 'uploaded' || key == 'downloaded' || key == 'seed_volume') {
+      return _formatUserProfileBytes(value);
+    }
+    if (key == 'bonus' || key == 'bonus_hour' || key == 'score') {
+      return _formatUserProfileNumber(value);
+    }
+    if (key == 'publish') return _formatUserProfileInteger(value);
+    if (key == 'invitation') return _formatUserProfileInvitation(value);
+    return value;
+  }
+
+  bool _isUserProfilePlaceholder(String value) {
+    final text = value.trim().toLowerCase();
+    return text.isEmpty ||
+        text == '-' ||
+        text == '--' ||
+        text == '---' ||
+        text == '—' ||
+        text == 'n/a' ||
+        text == 'null' ||
+        text == 'none' ||
+        text == '暂无' ||
+        text == '无';
+  }
+
+  String _formatUserProfileLevel(String value) {
+    final text = value.trim();
+    if (text.isEmpty) return '-';
+    final level = text.replaceAll(RegExp(r'_Name\b'), '').trim();
+    return _isUserProfilePlaceholder(level) ? '-' : level;
+  }
+
+  String? _normalizedUserProfileDateTime(String? value) {
+    if (value == null || _isUserProfilePlaceholder(value)) return null;
+    final normalized = formatFlexibleLocalDateTimeString(value, empty: '');
+    return normalized.isEmpty ? null : normalized;
+  }
+
+  String _formatUserProfileBytes(String value) {
+    final match = RegExp(
+      r'(\d[\d,]*(?:\.\d+)?|\d+(?:[.,]\d+)?)\s*(B|KB|MB|GB|TB|PB)\b',
+      caseSensitive: false,
+    ).firstMatch(value);
+    if (match == null) return '-';
+    final number = _normalizeUserProfileNumberText(match.group(1)!);
+    final unit = match.group(2)!.toUpperCase();
+    final bytes = parseSize('$number$unit');
+    return fmtBytes(bytes);
+  }
+
+  String _formatUserProfileNumber(String value) {
+    final match = RegExp(r'-?\d[\d,]*(?:\.\d+)?|-?\d+(?:[.,]\d+)?').firstMatch(value);
+    if (match == null) return '-';
+    final number = double.tryParse(_normalizeUserProfileNumberText(match.group(0) ?? ''));
+    if (number == null || !number.isFinite) return '-';
+    return fmtCompact(number);
+  }
+
+  String _formatUserProfileInteger(String value) {
+    final match = RegExp(r'-?\d[\d,]*(?:\.\d+)?|-?\d+(?:[.,]\d+)?').firstMatch(value);
+    if (match == null) return '-';
+    final number = double.tryParse(_normalizeUserProfileNumberText(match.group(0) ?? ''));
+    if (number == null || !number.isFinite || number < 0) return '-';
+    final integer = number.roundToDouble();
+    if (number != integer) return '-';
+    return integer.toInt().toString();
+  }
+
+  String _normalizeUserProfileNumberText(String value) {
+    final text = value.trim();
+    if (text.contains(',') && text.contains('.')) return text.replaceAll(',', '');
+    if (RegExp(r'^-?\d{1,3}(,\d{3})+$').hasMatch(text)) return text.replaceAll(',', '');
+    return text.replaceAll(',', '.');
+  }
+
+  String _formatUserProfileInvitation(String value) {
+    final match = RegExp(r'(\d+)\s*(?:[/（(]\s*(\d+)\s*[）)]?)?').firstMatch(value);
+    if (match == null) return '-';
+    final invitation = int.tryParse(match.group(1) ?? '') ?? 0;
+    final temporary = int.tryParse(match.group(2) ?? '') ?? 0;
+    return '邀请 $invitation 个，临时邀请 $temporary 个';
+  }
+
+  Future<void> _showUserProfileDialog(List<_BrowserUserProfileMetric> items, WebSite website) async {
+    if (!mounted || items.isEmpty) return;
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final siteInfo = _currentSiteInfoForWebsite(website);
+    final hasUid = items.any(
+      (item) => item.key == 'uid' && !_isUserProfilePlaceholder(item.rawValue),
+    );
+    final grouped = <String, List<_BrowserUserProfileMetric>>{};
+    for (final item in items) {
+      grouped.putIfAbsent(item.group, () => []).add(item);
+    }
+
+    Widget metricTile(BuildContext context, _BrowserUserProfileMetric item) {
+      final display = _userProfileDisplay(item.key);
+      final color = display.color;
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.18)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(display.icon, size: 16, color: color),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: cs.foreground.withValues(alpha: 0.58),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    item.value,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: cs.foreground,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget section(String title, List<_BrowserUserProfileMetric> metrics) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: cs.foreground.withValues(alpha: 0.62),
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns = metrics.length > 1 && constraints.maxWidth >= 520 ? 2 : 1;
+              const spacing = 8.0;
+              final width = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+              return Wrap(
+                spacing: spacing,
+                runSpacing: spacing,
+                children: [
+                  for (var i = 0; i < metrics.length; i++)
+                    SizedBox(
+                      width: columns == 2 && i == metrics.length - 1 && metrics.length.isOdd
+                          ? constraints.maxWidth
+                          : width,
+                      child: metricTile(context, metrics[i]),
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
+      );
+    }
+
+    Widget content(BuildContext dialogContext) {
+      return ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: 680,
+          maxHeight: MediaQuery.of(dialogContext).size.height * 0.78,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!hasUid)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                decoration: BoxDecoration(
+                  color: cs.destructive.withValues(alpha: 0.10),
+                  border: Border(
+                    bottom: BorderSide(color: cs.destructive.withValues(alpha: 0.22)),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      shadcn.LucideIcons.triangleAlert,
+                      size: 16,
+                      color: cs.destructive,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '未抓取到 UID',
+                        style: TextStyle(
+                          color: cs.destructive,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: cs.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(shadcn.LucideIcons.userRound, size: 20, color: cs.primary),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '用户页信息',
+                          style: TextStyle(
+                            color: cs.foreground,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          '${items.length} 项 · ${_displayUrl(_currentUrl)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: cs.foreground.withValues(alpha: 0.52),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: cs.border),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.all(16),
+                children: [
+                  for (final entry in grouped.entries) ...[
+                    section(entry.key, entry.value),
+                    if (entry.key != grouped.keys.last) const SizedBox(height: 16),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    var saving = false;
+    await shadcn.showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          final saveButton = shadcn.Button.primary(
+            onPressed: saving || !hasUid
+                ? null
+                : () async {
+                    setDialogState(() => saving = true);
+                    final ok = await _saveUserProfileToSite(website, siteInfo, items);
+                    if (!dialogContext.mounted) return;
+                    setDialogState(() => saving = false);
+                    if (ok) Navigator.of(dialogContext).pop();
+                  },
+            child: Text(saving ? '保存中...' : (siteInfo == null ? '添加站点' : '更新站点')),
+          );
+          return shadcn.AlertDialog(
+            content: content(dialogContext),
+            actions: [
+              shadcn.Button.outline(
+                onPressed: saving ? null : () => Navigator.of(dialogContext).pop(),
+                child: const Text('关闭'),
+              ),
+              if (hasUid)
+                saveButton
+              else
+                shadcn.Tooltip(
+                  tooltip: (_) => const Text('未抓取到 UID'),
+                  child: saveButton,
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  SiteInfo? _currentSiteInfoForWebsite(WebSite website) {
+    final sites = ProviderScope.containerOf(context, listen: false)
+            .read(siteInfoListProvider)
+            .valueOrNull ??
+        const <SiteInfo>[];
+    final configName = website.name.trim().toLowerCase();
+    final siteId = widget.siteId?.trim().toLowerCase() ?? '';
+    final currentHost = _uriHost(_currentUrl);
+
+    for (final site in sites) {
+      final siteName = site.site.trim().toLowerCase();
+      if (siteName.isNotEmpty && (siteName == configName || siteName == siteId)) return site;
+    }
+    if (currentHost == null) return null;
+    for (final site in sites) {
+      if (_uriHost(site.mirror ?? '') == currentHost) return site;
+    }
+    return null;
+  }
+
+  Future<bool> _saveUserProfileToSite(
+    WebSite website,
+    SiteInfo? siteInfo,
+    List<_BrowserUserProfileMetric> items,
+  ) async {
+    String? raw(String key) {
+      for (final item in items) {
+        if (item.key == key) {
+          final value = item.rawValue.trim();
+          return _isUserProfilePlaceholder(value) ? null : value;
+        }
+      }
+      return null;
+    }
+
+    if (raw('uid') == null) {
+      Toast.warning('未抓取到 UID');
+      return false;
+    }
+
+    try {
+      final notifier = ProviderScope.containerOf(context, listen: false).read(siteInfoListProvider.notifier);
+      final next = (siteInfo ??
+              SiteInfo(
+                id: 0,
+                site: website.name.trim().isNotEmpty ? website.name.trim() : (widget.siteId?.trim() ?? ''),
+                nickname: website.nickname.trim(),
+                sortId: 1,
+                tags: website.tagList,
+                mirror: _currentOriginOrFirstWebsiteUrl(website),
+                cookie: await _cookieHeaderFor(_currentUrl),
+                available: true,
+                signIn: website.signIn,
+                getInfo: website.getInfo,
+                repeatTorrents: website.repeatTorrents,
+                brushFree: website.brushFree,
+                brushRss: website.brushRss,
+                hrDiscern: website.hrDiscern,
+                searchTorrents: website.searchTorrents,
+              ))
+          .copyWith(
+        userId: raw('uid') ?? siteInfo?.userId,
+        username: raw('username') ?? siteInfo?.username,
+        email: raw('email') ?? siteInfo?.email,
+        passkey: raw('passkey') ?? siteInfo?.passkey,
+        timeJoin: _normalizedUserProfileDateTime(raw('time_join')) ?? siteInfo?.timeJoin,
+        latestActive: _normalizedUserProfileDateTime(raw('latest_active')) ?? siteInfo?.latestActive,
+      );
+
+      if (siteInfo == null) {
+        await notifier.create(next);
+        Toast.success('站点已添加');
+      } else {
+        await notifier.updateSite(next);
+        Toast.success('站点已更新');
+      }
+      return true;
+    } catch (e, st) {
+      AppLogger.error(siteInfo == null ? '添加站点失败' : '更新站点失败', e, st);
+      Toast.error(siteInfo == null ? '添加站点失败' : '更新站点失败');
+      return false;
+    }
+  }
+
+  String? _currentOriginOrFirstWebsiteUrl(WebSite website) {
+    final current = Uri.tryParse(_currentUrl.trim());
+    if (current != null && current.hasScheme && current.host.isNotEmpty) {
+      return Uri(
+        scheme: current.scheme,
+        host: current.host,
+        port: current.hasPort ? current.port : null,
+        path: '/',
+      ).toString();
+    }
+    return website.url.isEmpty ? null : website.url.first;
   }
 
   String _buildTorrentExtractScript(WebSite website) {
@@ -2190,6 +3027,391 @@ class _BrowserPageState extends State<BrowserPage> {
       return url;
     }
   }
+
+  Future<void> _showSiteTimeline() async {
+    if (!mounted) return;
+    final container = ProviderScope.containerOf(context, listen: false);
+    final websites =
+        container.read(websiteListProvider).valueOrNull ?? const <WebSite>[];
+    final mySites =
+        container.read(siteInfoListProvider).valueOrNull ?? const <SiteInfo>[];
+    if (websites.isEmpty) {
+      Toast.warning('暂无站点配置');
+      return;
+    }
+
+    final byName = <String, SiteInfo>{};
+    for (final site in mySites) {
+      byName[site.site.trim().toLowerCase()] = site;
+    }
+
+    final entries = websites.map((website) {
+      final owned = byName[website.name.trim().toLowerCase()];
+      return _SiteTimelineEntry(website: website, mySite: owned);
+    }).toList();
+
+    var ownership = _TimelineOwnership.all;
+    var inviteFilter = _TimelineInviteFilter.all;
+    var ascending = true;
+    final visibleFields = <String, bool>{
+      'duration': true,
+      'uploaded': true,
+      'downloaded': true,
+      'invitation': true,
+      'username': true,
+      'email': true,
+      'uid': true,
+    };
+
+    await shadcn.showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setState) {
+          final cs = shadcn.Theme.of(dialogContext).colorScheme;
+          final ownedEntries = <_SiteTimelineEntry>[];
+          final unownedEntries = <_SiteTimelineEntry>[];
+          for (final entry in entries) {
+            if (entry.isOwned) {
+              ownedEntries.add(entry);
+            } else {
+              unownedEntries.add(entry);
+            }
+          }
+
+          bool matches(_SiteTimelineEntry entry) {
+            if (ownership == _TimelineOwnership.ownedOnly && !entry.isOwned) {
+              return false;
+            }
+            if (ownership == _TimelineOwnership.unownedOnly && entry.isOwned) {
+              return false;
+            }
+            final invites = entry.invitationCount;
+            if (inviteFilter == _TimelineInviteFilter.has && invites <= 0) {
+              return false;
+            }
+            if (inviteFilter == _TimelineInviteFilter.none && invites > 0) {
+              return false;
+            }
+            return true;
+          }
+
+          final filteredOwned = ownedEntries.where(matches).toList()
+            ..sort((a, b) {
+              final at = a.registeredAt;
+              final bt = b.registeredAt;
+              if (at == null && bt == null) return a.displayName.compareTo(b.displayName);
+              if (at == null) return 1;
+              if (bt == null) return -1;
+              final cmp = at.compareTo(bt);
+              return ascending ? cmp : -cmp;
+            });
+          final filteredUnowned = unownedEntries.where(matches).toList()
+            ..sort((a, b) => a.displayName.compareTo(b.displayName));
+          final displayList = <_SiteTimelineEntry>[
+            ...filteredOwned,
+            ...filteredUnowned,
+          ];
+
+          Widget fieldLine(String label, String value) {
+            return Row(
+              children: [
+                Text(label, style: TextStyle(fontSize: 11, color: cs.mutedForeground)),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    value,
+                    style: TextStyle(fontSize: 12, color: cs.foreground),
+                    textAlign: TextAlign.right,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            );
+          }
+
+          Widget openUnownedAction(_SiteTimelineEntry entry) {
+            return shadcn.Button.ghost(
+              onPressed: () async {
+                final urls = entry.website.url.where((e) => e.trim().isNotEmpty).toList();
+                if (urls.isEmpty) {
+                  Toast.warning('该站点未配置可用 URL');
+                  return;
+                }
+                if (urls.length == 1) {
+                  if (!dialogContext.mounted) return;
+                  Navigator.of(dialogContext).pop();
+                  BrowserPage.open(
+                    context,
+                    url: urls.first,
+                    title: entry.displayName,
+                    siteId: entry.website.name,
+                    website: entry.website,
+                  );
+                  return;
+                }
+                final selected = await shadcn.showDialog<String>(
+                  context: dialogContext,
+                  builder: (ctx) => shadcn.AlertDialog(
+                    title: const Text('选择站点地址'),
+                    content: SizedBox(
+                      width: 520,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (final url in urls)
+                              ListTile(
+                                title: Text(
+                                  url,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                onTap: () => Navigator.of(ctx).pop(url),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    actions: [
+                      shadcn.Button.outline(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: const Text('取消'),
+                      ),
+                    ],
+                  ),
+                );
+                if (selected == null || selected.isEmpty) return;
+                if (!dialogContext.mounted) return;
+                Navigator.of(dialogContext).pop();
+                BrowserPage.open(
+                  context,
+                  url: selected,
+                  title: entry.displayName,
+                  siteId: entry.website.name,
+                  website: entry.website,
+                );
+              },
+              child: const Text('打开'),
+            );
+          }
+
+          return shadcn.AlertDialog(
+            title: const Text('站点时间轴'),
+            content: SizedBox(
+              width: context.isMobile ? double.infinity : 860,
+              height: MediaQuery.of(dialogContext).size.height * 0.78,
+              child: Column(
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      shadcn.Button.secondary(
+                        onPressed: () => setState(() {
+                          ownership = switch (ownership) {
+                            _TimelineOwnership.all => _TimelineOwnership.ownedOnly,
+                            _TimelineOwnership.ownedOnly => _TimelineOwnership.unownedOnly,
+                            _TimelineOwnership.unownedOnly => _TimelineOwnership.all,
+                          };
+                        }),
+                        child: Text(switch (ownership) {
+                          _TimelineOwnership.all => '全部站点',
+                          _TimelineOwnership.ownedOnly => '仅拥有站点',
+                          _TimelineOwnership.unownedOnly => '未拥有站点',
+                        }),
+                      ),
+                      shadcn.Button.secondary(
+                        onPressed: () => setState(() {
+                          inviteFilter = switch (inviteFilter) {
+                            _TimelineInviteFilter.all => _TimelineInviteFilter.has,
+                            _TimelineInviteFilter.has => _TimelineInviteFilter.none,
+                            _TimelineInviteFilter.none => _TimelineInviteFilter.all,
+                          };
+                        }),
+                        child: Text(switch (inviteFilter) {
+                          _TimelineInviteFilter.all => '邀请：全部',
+                          _TimelineInviteFilter.has => '邀请：有邀请',
+                          _TimelineInviteFilter.none => '邀请：无邀请',
+                        }),
+                      ),
+                      shadcn.Button.secondary(
+                        onPressed: () => setState(() => ascending = !ascending),
+                        child: Text(ascending ? '注册时间正序' : '注册时间倒序'),
+                      ),
+                      shadcn.OverlayManagerLayer(
+                        popoverHandler: const shadcn.PopoverOverlayHandler(),
+                        tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+                        menuHandler: const shadcn.PopoverOverlayHandler(),
+                        child: Builder(
+                          builder: (menuContext) => shadcn.Button.ghost(
+                            onPressed: () => shadcn.showDropdown<void>(
+                              context: menuContext,
+                              alignment: Alignment.topCenter,
+                              offset: const Offset(0, 8),
+                              consumeOutsideTaps: false,
+                              builder: (_) => AppDropdownMenu(
+                                children: [
+                                  const shadcn.MenuLabel(child: Text('显示字段')),
+                                  const shadcn.MenuDivider(),
+                                  for (final item in const [
+                                    ('duration', '注册时长'),
+                                    ('uploaded', '上传量'),
+                                    ('downloaded', '下载量'),
+                                    ('invitation', '邀请数'),
+                                    ('username', '用户名'),
+                                    ('email', '邮箱'),
+                                    ('uid', 'UID'),
+                                  ])
+                                    shadcn.MenuButton(
+                                      onPressed: (_) => setState(() {
+                                        visibleFields[item.$1] = !(visibleFields[item.$1] ?? true);
+                                      }),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            (visibleFields[item.$1] ?? true)
+                                                ? shadcn.LucideIcons.check
+                                                : shadcn.LucideIcons.minus,
+                                            size: 14,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(item.$2),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            child: const Text('字段'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: displayList.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                      itemBuilder: (_, index) {
+                        final entry = displayList[index];
+                        return Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: cs.card,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: cs.border),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      entry.displayName,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: cs.foreground,
+                                      ),
+                                    ),
+                                  ),
+                                  if (!entry.isOwned)
+                                    shadcn.OutlineBadge(child: const Text('未添加')),
+                                  if (!entry.isOwned) ...[
+                                    const SizedBox(width: 8),
+                                    openUnownedAction(entry),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              if (visibleFields['duration'] == true)
+                                fieldLine('注册时长', entry.durationText),
+                              if (visibleFields['uploaded'] == true)
+                                fieldLine('上传量', entry.uploadedText),
+                              if (visibleFields['downloaded'] == true)
+                                fieldLine('下载量', entry.downloadedText),
+                              if (visibleFields['invitation'] == true)
+                                fieldLine('邀请数', '${entry.invitationCount}'),
+                              if (visibleFields['username'] == true)
+                                fieldLine('用户名', entry.usernameText),
+                              if (visibleFields['email'] == true)
+                                fieldLine('邮箱', entry.emailText),
+                              if (visibleFields['uid'] == true)
+                                fieldLine('UID', entry.uidText),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              shadcn.Button.outline(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('关闭'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+enum _TimelineOwnership { all, ownedOnly, unownedOnly }
+
+enum _TimelineInviteFilter { all, has, none }
+
+class _SiteTimelineEntry {
+  final WebSite website;
+  final SiteInfo? mySite;
+
+  const _SiteTimelineEntry({required this.website, required this.mySite});
+
+  bool get isOwned => mySite != null;
+
+  String get displayName {
+    final nick = mySite?.nickname.trim() ?? website.nickname.trim();
+    if (nick.isNotEmpty) return nick;
+    final site = mySite?.site.trim() ?? website.name.trim();
+    if (site.isNotEmpty) return site;
+    return '未命名站点';
+  }
+
+  DateTime? get registeredAt {
+    final raw = mySite?.timeJoin?.trim() ?? '';
+    if (raw.isEmpty) return null;
+    return parseFlexibleLocalDateTime(raw);
+  }
+
+  String get durationText => mySite?.durationText ?? '-';
+
+  int get uploadedBytes => mySite?.latestStatus?.uploaded ?? 0;
+
+  int get downloadedBytes => mySite?.latestStatus?.downloaded ?? 0;
+
+  int get invitationCount => mySite?.latestStatus?.invitation ?? 0;
+
+  String get uploadedText => uploadedBytes > 0 ? formatBytes(uploadedBytes) : '-';
+
+  String get downloadedText =>
+      downloadedBytes > 0 ? formatBytes(downloadedBytes) : '-';
+
+  String get usernameText => mySite?.username?.trim().isNotEmpty == true
+      ? mySite!.username!.trim()
+      : '-';
+
+  String get emailText => mySite?.email?.trim().isNotEmpty == true
+      ? mySite!.email!.trim()
+      : '-';
+
+  String get uidText => mySite?.userId?.trim().isNotEmpty == true
+      ? mySite!.userId!.trim()
+      : '-';
 }
 
 class _UserAgentPreset {
@@ -2204,6 +3426,38 @@ class _UserAgentPreset {
     required this.description,
     required this.userAgent,
   });
+}
+
+class _BrowserUserProfileRule {
+  final String key;
+  final String label;
+  final String group;
+  final String rule;
+
+  const _BrowserUserProfileRule(this.key, this.label, this.group, this.rule);
+}
+
+class _BrowserUserProfileMetric {
+  final String key;
+  final String label;
+  final String group;
+  final String rawValue;
+  final String value;
+
+  const _BrowserUserProfileMetric({
+    required this.key,
+    required this.label,
+    required this.group,
+    required this.rawValue,
+    required this.value,
+  });
+}
+
+class _BrowserUserProfileDisplay {
+  final IconData icon;
+  final Color color;
+
+  const _BrowserUserProfileDisplay(this.icon, this.color);
 }
 
 enum _BrowserTorrentSortKey { name, seeders, size }
