@@ -210,7 +210,11 @@ class _BrowserPageState extends State<BrowserPage> {
   Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final torrentWebsite = _currentTorrentWebsiteConfig();
-    final showTorrentFab = torrentWebsite != null && !_closing && !_isLoading;
+    final detailWebsite = _currentDetailWebsiteConfig();
+    final showTorrentFab =
+        (torrentWebsite != null || detailWebsite != null) &&
+        !_closing &&
+        !_isLoading;
 
     return PopScope(
       canPop: _closing,
@@ -259,7 +263,15 @@ class _BrowserPageState extends State<BrowserPage> {
                     heroTag: 'browser_torrent_list_fab',
                     onPressed: _extractingTorrentList
                         ? null
-                        : () => _extractTorrentList(torrentWebsite),
+                        : () async {
+                            if (detailWebsite != null) {
+                              await _extractSingleTorrentDetail(detailWebsite);
+                              return;
+                            }
+                            if (torrentWebsite != null) {
+                              await _extractTorrentList(torrentWebsite);
+                            }
+                          },
                     backgroundColor: cs.primary,
                     foregroundColor: cs.primaryForeground,
                     child: _extractingTorrentList
@@ -271,7 +283,12 @@ class _BrowserPageState extends State<BrowserPage> {
                               color: cs.primaryForeground,
                             ),
                           )
-                        : const Icon(shadcn.LucideIcons.listChecks, size: 18),
+                        : Icon(
+                            detailWebsite != null
+                                ? shadcn.LucideIcons.download
+                                : shadcn.LucideIcons.listChecks,
+                            size: 18,
+                          ),
                   ),
                 ),
             ],
@@ -787,20 +804,40 @@ class _BrowserPageState extends State<BrowserPage> {
       }
     }
     if (website == null) return null;
-    if (website.pageTorrents
-        .trim()
-        .isEmpty || website.torrentsRule
-        .trim()
-        .isEmpty) {
+    if (website.pageTorrents.trim().isEmpty || website.torrentsRule.trim().isEmpty) {
       return null;
     }
-    return _matchesTorrentPage(currentUrl, website) ? website : null;
+    return _matchesWebsitePage(currentUrl, website.pageTorrents) ? website : null;
   }
 
-  bool _matchesTorrentPage(String currentUrl, WebSite website) {
+  WebSite? _currentDetailWebsiteConfig() {
+    final siteId = widget.siteId?.trim();
+    final currentUrl = _currentUrl.trim();
+    if (siteId == null || siteId.isEmpty || currentUrl.isEmpty || !mounted) {
+      return null;
+    }
+    final container = ProviderScope.containerOf(context, listen: false);
+    final configs = container.read(websiteListProvider).valueOrNull ?? const <WebSite>[];
+    WebSite? website;
+    for (final config in configs) {
+      if (config.name == siteId) {
+        website = config;
+        break;
+      }
+    }
+    if (website == null) return null;
+    if (website.pageDetail.trim().isEmpty) return null;
+    if (website.detailDownloadUrlRule.trim().isEmpty &&
+        website.detailTitleRule.trim().isEmpty) {
+      return null;
+    }
+    return _matchesWebsitePage(currentUrl, website.pageDetail) ? website : null;
+  }
+
+  bool _matchesWebsitePage(String currentUrl, String pageRule) {
     final current = Uri.tryParse(currentUrl);
     if (current == null || !current.hasScheme) return false;
-    final target = _resolveWebsitePageUri(current, website.pageTorrents);
+    final target = _resolveWebsitePageUri(current, pageRule);
     if (target == null) return false;
     final currentPath = _normalizePath(current.path);
     final targetPath = _normalizePath(target.path);
@@ -851,6 +888,30 @@ class _BrowserPageState extends State<BrowserPage> {
     } catch (e, st) {
       AppLogger.error('提取种子列表失败', e, st);
       if (mounted) Toast.error('提取种子列表失败');
+    } finally {
+      if (mounted) setState(() => _extractingTorrentList = false);
+    }
+  }
+
+  Future<void> _extractSingleTorrentDetail(WebSite website) async {
+    final controller = _controller;
+    if (controller == null || _closing || !mounted) return;
+
+    setState(() => _extractingTorrentList = true);
+    try {
+      final raw = await controller.evaluateJavascript(
+        source: _buildTorrentDetailExtractScript(website),
+      );
+      if (!mounted || _closing) return;
+      final item = _parseExtractedTorrentDetail(raw);
+      if (item == null) {
+        Toast.warning('未提取到种子详情');
+        return;
+      }
+      await _showDownloaderSelectAndPush([item]);
+    } catch (e, st) {
+      AppLogger.error('提取种子详情失败', e, st);
+      if (mounted) Toast.error('提取种子详情失败');
     } finally {
       if (mounted) setState(() => _extractingTorrentList = false);
     }
@@ -993,6 +1054,113 @@ class _BrowserPageState extends State<BrowserPage> {
 ''';
   }
 
+  String _buildTorrentDetailExtractScript(WebSite website) {
+    String encode(String value) => jsonEncode(value);
+    return '''
+(() => {
+  const ruleVariants = (rule) => {
+    const raw = (rule || '').trim();
+    if (!raw) return [];
+    const values = new Set();
+    const push = (value) => {
+      const text = (value || '').trim();
+      if (text) values.add(text);
+    };
+    push(raw);
+    return Array.from(values);
+  };
+
+  const readNodeValue = (node) => {
+    if (!node) return '';
+    if (node.nodeType === Node.ATTRIBUTE_NODE || node.nodeType === Node.TEXT_NODE || node.nodeType === Node.CDATA_SECTION_NODE) {
+      return (node.nodeValue || '').trim();
+    }
+    if (node instanceof HTMLAnchorElement) {
+      return (node.getAttribute('href') || node.href || node.textContent || '').trim();
+    }
+    if (node instanceof HTMLImageElement) {
+      return (node.getAttribute('src') || node.src || '').trim();
+    }
+    return (node.textContent || '').trim();
+  };
+
+  const absoluteUrl = (value) => {
+    const text = (value || '').trim();
+    if (!text) return '';
+    try {
+      return new URL(text, window.location.href).toString();
+    } catch (_) {
+      return text;
+    }
+  };
+
+  const evaluateNodes = (contextNode, rule) => {
+    if (!rule) return [];
+    for (const candidate of ruleVariants(rule)) {
+      try {
+        const result = document.evaluate(candidate, contextNode, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+        const nodes = [];
+        for (let i = 0; i < result.snapshotLength; i += 1) {
+          nodes.push(result.snapshotItem(i));
+        }
+        if (nodes.length) return nodes;
+      } catch (_) {}
+    }
+    return [];
+  };
+
+  const evaluateValue = (contextNode, rule) => {
+    if (!rule) return '';
+    for (const candidate of ruleVariants(rule)) {
+      try {
+        const result = document.evaluate(candidate, contextNode, null, XPathResult.ANY_TYPE, null);
+        switch (result.resultType) {
+          case XPathResult.STRING_TYPE: {
+            const value = (result.stringValue || '').trim();
+            if (value) return value;
+            break;
+          }
+          case XPathResult.NUMBER_TYPE:
+            if (Number.isFinite(result.numberValue)) return String(result.numberValue);
+            break;
+          case XPathResult.BOOLEAN_TYPE:
+            if (result.booleanValue) return 'true';
+            break;
+          default: {
+            const node = result.singleNodeValue || result.iterateNext?.();
+            const value = readNodeValue(node);
+            if (value) return value;
+            break;
+          }
+        }
+      } catch (_) {}
+    }
+    const nodes = evaluateNodes(contextNode, rule);
+    return nodes.length ? readNodeValue(nodes[0]) : '';
+  };
+
+  return {
+    title: evaluateValue(document, ${encode(website.detailTitleRule)}),
+    subtitle: evaluateValue(document, ${encode(website.detailSubtitleRule)}),
+    detailUrl: window.location.href,
+    magnetUrl: absoluteUrl(evaluateValue(document, ${encode(website.detailDownloadUrlRule)})),
+    category: evaluateValue(document, ${encode(website.detailCategoryRule)}),
+    poster: absoluteUrl(evaluateValue(document, ${encode(website.detailPosterRule)})),
+    size: evaluateValue(document, ${encode(website.detailSizeRule)}),
+    progress: '',
+    hr: evaluateValue(document, ${encode(website.detailHrRule)}),
+    sale: evaluateValue(document, ${encode(website.detailFreeRule)}),
+    saleExpire: evaluateValue(document, ${encode(website.detailFreeExpireRule)}),
+    release: '',
+    seeders: '',
+    leechers: '',
+    completers: '',
+    tags: evaluateNodes(document, ${encode(website.detailTagsRule)}).map((node) => readNodeValue(node)).filter(Boolean),
+  };
+})()
+''';
+  }
+
   List<_BrowserExtractedTorrent> _parseExtractedTorrents(dynamic raw) {
     dynamic data = raw;
     if (raw is String) {
@@ -1016,6 +1184,25 @@ class _BrowserPageState extends State<BrowserPage> {
         .whereType<_BrowserExtractedTorrent>()
         .where((item) => item.title.isNotEmpty || item.detailUrl.isNotEmpty || item.magnetUrl.isNotEmpty)
         .toList();
+  }
+
+  _BrowserExtractedTorrent? _parseExtractedTorrentDetail(dynamic raw) {
+    dynamic data = raw;
+    if (raw is String) {
+      try {
+        data = jsonDecode(raw);
+      } catch (_) {
+        data = null;
+      }
+    }
+    if (data is! Map) return null;
+    final item = _BrowserExtractedTorrent.fromMap(
+      Map<String, dynamic>.from(data),
+    );
+    if (item.title.isEmpty && item.detailUrl.isEmpty && item.magnetUrl.isEmpty) {
+      return null;
+    }
+    return item;
   }
 
   Future<void> _showExtractedTorrentDialog(List<_BrowserExtractedTorrent> items) async {
@@ -1072,6 +1259,40 @@ class _BrowserPageState extends State<BrowserPage> {
 
       final allVisibleSelected = visibleEntries.isNotEmpty &&
           visibleEntries.every((entry) => selected.contains(entry.key));
+      final allKeys = List<int>.generate(items.length, (i) => i);
+      final visibleKeys = visibleEntries.map((entry) => entry.key).toList();
+
+      void selectAll() {
+        selected
+          ..clear()
+          ..addAll(allKeys);
+      }
+
+      void invertVisible() {
+        for (final key in visibleKeys) {
+          if (selected.contains(key)) {
+            selected.remove(key);
+          } else {
+            selected.add(key);
+          }
+        }
+      }
+
+      void selectVisible() {
+        selected.addAll(visibleKeys);
+      }
+
+      void selectOnlyVisible() {
+        selected
+          ..clear()
+          ..addAll(visibleKeys);
+      }
+
+      void unselectVisible() {
+        for (final key in visibleKeys) {
+          selected.remove(key);
+        }
+      }
 
       Widget filterChip({
         required String label,
@@ -1207,14 +1428,7 @@ class _BrowserPageState extends State<BrowserPage> {
                                           shadcn.MenuButton(
                                             onPressed: (_) {
                                               setDialogState(() {
-                                                selected
-                                                  ..clear()
-                                                  ..addAll(
-                                                    List<int>.generate(
-                                                      items.length,
-                                                      (i) => i,
-                                                    ),
-                                                  );
+                                                selectAll();
                                               });
                                             },
                                             child: const Text('全选'),
@@ -1223,18 +1437,7 @@ class _BrowserPageState extends State<BrowserPage> {
                                             enabled: visibleEntries.isNotEmpty,
                                             onPressed: (_) {
                                               setDialogState(() {
-                                                for (final entry
-                                                    in visibleEntries) {
-                                                  if (selected.contains(
-                                                    entry.key,
-                                                  )) {
-                                                    selected.remove(
-                                                      entry.key,
-                                                    );
-                                                  } else {
-                                                    selected.add(entry.key);
-                                                  }
-                                                }
+                                                invertVisible();
                                               });
                                             },
                                             child: const Text('反选'),
@@ -1243,10 +1446,7 @@ class _BrowserPageState extends State<BrowserPage> {
                                             enabled: visibleEntries.isNotEmpty,
                                             onPressed: (_) {
                                               setDialogState(() {
-                                                for (final entry
-                                                    in visibleEntries) {
-                                                  selected.add(entry.key);
-                                                }
+                                                selectVisible();
                                               });
                                             },
                                             child: const Text('选择本页'),
@@ -1255,13 +1455,7 @@ class _BrowserPageState extends State<BrowserPage> {
                                             enabled: visibleEntries.isNotEmpty,
                                             onPressed: (_) {
                                               setDialogState(() {
-                                                selected
-                                                  ..clear()
-                                                  ..addAll(
-                                                    visibleEntries.map(
-                                                      (entry) => entry.key,
-                                                    ),
-                                                  );
+                                                selectOnlyVisible();
                                               });
                                             },
                                             child: const Text('仅选择本页'),
@@ -1271,10 +1465,7 @@ class _BrowserPageState extends State<BrowserPage> {
                                                 allVisibleSelected,
                                             onPressed: (_) {
                                               setDialogState(() {
-                                                for (final entry
-                                                    in visibleEntries) {
-                                                  selected.remove(entry.key);
-                                                }
+                                                unselectVisible();
                                               });
                                             },
                                             child: const Text('取消本页'),
