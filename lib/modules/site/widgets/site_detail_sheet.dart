@@ -161,7 +161,7 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     final status = site.latestStatus;
     final statusPoints = _buildStatusPoints(site);
     final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
-    final config = configs.firstWhereOrNull((c) => c.name == site.site);
+    final config = findSiteWebsiteConfig(site, configs);
     final spFull = _numVal(config?.spFull);
     final cs = shadcn.Theme.of(context).colorScheme;
     final refreshing = _refreshingDetail || ref.watch(siteRefreshingIdsProvider).contains(widget.site.id);
@@ -1763,7 +1763,7 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   PreferredSizeWidget _buildHeader(BuildContext context, shadcn.ColorScheme cs) {
     final configs = ref.read(websiteListProvider).valueOrNull ?? [];
-    final website = configs.firstWhereOrNull((item) => item.name == site.site);
+    final website = findSiteWebsiteConfig(site, configs);
     final browseTargets = buildSiteBrowseTargets(site, website);
 
     return PreferredSize(

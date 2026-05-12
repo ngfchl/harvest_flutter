@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,7 +65,7 @@ class _SiteCardLoadingOverlay extends StatelessWidget {
 List<shadcn.MenuItem> _buildActionItems(BuildContext context, WidgetRef ref, SiteInfo site) {
   final cs = shadcn.Theme.of(context).colorScheme;
   final configs = ref.watch(websiteListProvider).valueOrNull ?? const [];
-  final website = configs.firstWhereOrNull((item) => item.name == site.site);
+  final website = findSiteWebsiteConfig(site, configs);
   final disabled = !site.available;
   final alreadySigned = site.signInText == '已签到';
   final hasMirror = site.mirror != null && site.mirror!.isNotEmpty;
@@ -178,38 +177,63 @@ Future<void> showSiteActionMenu({
 List<shadcn.MenuItem> _buildBrowseItems(BuildContext context, SiteInfo site, WebSite? website) {
   final targets = buildSiteBrowseTargets(site, website);
   if (targets.isEmpty) return const [];
+  final searchTargets = targets.where((target) => target.label.startsWith('搜索页')).toList();
+  final otherTargets = targets.where((target) => !target.label.startsWith('搜索页')).toList();
   return [
-    for (final target in targets)
+    for (final target in otherTargets) _browseTargetMenu(context, site, target),
+    if (searchTargets.isNotEmpty)
       shadcn.MenuButton(
-        leading: Icon(target.icon),
-        child: Text(target.label),
-        onPressed: kIsWeb
-            ? (_) => openSiteExternalBrowser(site, url: target.url)
+        leading: const Icon(shadcn.LucideIcons.search),
+        onPressed: searchTargets.length == 1 && kIsWeb
+            ? (_) => openSiteExternalBrowser(site, url: searchTargets.first.url)
             : null,
-        subMenu: kIsWeb
-            ? null
+        subMenu: searchTargets.length == 1 && !kIsWeb
+            ? _browseTargetActions(context, site, searchTargets.first)
             : [
-                _menuItem(
-                  icon: shadcn.LucideIcons.monitorSmartphone,
-                  label: '内置浏览器',
-                  onPressed: () {
-                    if (!context.mounted) return;
-                    openSiteInternalBrowser(
-                      context,
-                      site,
-                      url: target.url,
-                      title:
-                          '${site.nickname.isNotEmpty ? site.nickname : site.site} · ${target.label}',
-                    );
-                  },
-                ),
-                _menuItem(
-                  icon: shadcn.LucideIcons.externalLink,
-                  label: '外部浏览器',
-                  onPressed: () => openSiteExternalBrowser(site, url: target.url),
-                ),
+                for (var i = 0; i < searchTargets.length; i++)
+                  shadcn.MenuButton(
+                    leading: const Icon(shadcn.LucideIcons.search),
+                    onPressed: kIsWeb
+                        ? (_) => openSiteExternalBrowser(site, url: searchTargets[i].url)
+                        : null,
+                    subMenu: kIsWeb ? null : _browseTargetActions(context, site, searchTargets[i]),
+                    child: Text('搜索页 ${i + 1}'),
+                  ),
               ],
+        child: const Text('搜索页'),
       ),
+  ];
+}
+
+shadcn.MenuButton _browseTargetMenu(BuildContext context, SiteInfo site, SiteBrowseTarget target) {
+  return shadcn.MenuButton(
+    leading: Icon(target.icon),
+    onPressed: kIsWeb ? (_) => openSiteExternalBrowser(site, url: target.url) : null,
+    subMenu: kIsWeb ? null : _browseTargetActions(context, site, target),
+    child: Text(target.label),
+  );
+}
+
+List<shadcn.MenuItem> _browseTargetActions(BuildContext context, SiteInfo site, SiteBrowseTarget target) {
+  return [
+    _menuItem(
+      icon: shadcn.LucideIcons.monitorSmartphone,
+      label: '内置浏览器',
+      onPressed: () {
+        if (!context.mounted) return;
+        openSiteInternalBrowser(
+          context,
+          site,
+          url: target.url,
+          title: '${site.nickname.isNotEmpty ? site.nickname : site.site} · ${target.label}',
+        );
+      },
+    ),
+    _menuItem(
+      icon: shadcn.LucideIcons.externalLink,
+      label: '外部浏览器',
+      onPressed: () => openSiteExternalBrowser(site, url: target.url),
+    ),
   ];
 }
 

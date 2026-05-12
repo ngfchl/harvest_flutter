@@ -39,6 +39,21 @@ List<SiteBrowseTarget> buildSiteBrowseTargets(SiteInfo site, WebSite? website) {
     _createBrowseTarget(
       site: site,
       baseUrl: baseUrl,
+      label: '种子页',
+      icon: shadcn.LucideIcons.listFilter,
+      rawPath: website?.pageTorrents ?? '',
+    ),
+    ..._createBrowseTargets(
+      site: site,
+      baseUrl: baseUrl,
+      label: '搜索页',
+      icon: shadcn.LucideIcons.search,
+      rawPaths: website?.pageSearch ?? const [],
+      replacePlaceholderWithEmpty: true,
+    ),
+    _createBrowseTarget(
+      site: site,
+      baseUrl: baseUrl,
       label: '个人中心',
       icon: shadcn.LucideIcons.userRound,
       rawPath: website?.pageUser ?? '',
@@ -68,6 +83,34 @@ List<SiteBrowseTarget> buildSiteBrowseTargets(SiteInfo site, WebSite? website) {
     if (used.add(key)) targets.add(target);
   }
   return targets;
+}
+
+WebSite? findSiteWebsiteConfig(SiteInfo site, List<WebSite> configs) {
+  final siteName = site.site.trim().toLowerCase();
+  final siteNickname = site.nickname.trim().toLowerCase();
+  final mirrorHost = _hostOf(site.mirror);
+
+  bool sameText(String value, String target) {
+    final normalized = value.trim().toLowerCase();
+    return normalized.isNotEmpty && target.isNotEmpty && normalized == target;
+  }
+
+  for (final config in configs) {
+    if (sameText(config.name, siteName) ||
+        sameText(config.name, siteNickname) ||
+        sameText(config.nickname, siteName) ||
+        sameText(config.nickname, siteNickname)) {
+      return config;
+    }
+  }
+
+  if (mirrorHost == null) return null;
+  for (final config in configs) {
+    for (final url in config.url) {
+      if (_hostOf(url) == mirrorHost) return config;
+    }
+  }
+  return null;
 }
 
 Future<void> openSiteBrowser(BuildContext context, SiteInfo site) async {
@@ -130,6 +173,31 @@ SiteBrowseTarget? _createBrowseTarget({
   return SiteBrowseTarget(label: label, url: url, icon: icon);
 }
 
+List<SiteBrowseTarget> _createBrowseTargets({
+  required SiteInfo site,
+  required String baseUrl,
+  required String label,
+  required IconData icon,
+  required List<String> rawPaths,
+  bool replacePlaceholderWithEmpty = false,
+}) {
+  final targets = <SiteBrowseTarget>[];
+  for (var i = 0; i < rawPaths.length; i++) {
+    final rawPath = replacePlaceholderWithEmpty
+        ? rawPaths[i].replaceAll('{}', '')
+        : rawPaths[i];
+    final target = _createBrowseTarget(
+      site: site,
+      baseUrl: baseUrl,
+      label: i == 0 ? label : '$label ${i + 1}',
+      icon: icon,
+      rawPath: rawPath,
+    );
+    if (target != null) targets.add(target);
+  }
+  return targets;
+}
+
 String? _resolveBrowseUrl({
   required String baseUrl,
   required String rawPath,
@@ -152,6 +220,14 @@ String? _resolveBrowseUrl({
   final base = Uri.tryParse(baseUrl);
   if (base == null || !base.hasScheme) return null;
   return base.resolve(value).toString();
+}
+
+String? _hostOf(String? value) {
+  final text = value?.trim();
+  if (text == null || text.isEmpty) return null;
+  final uri = Uri.tryParse(text);
+  if (uri == null || !uri.hasScheme || uri.host.isEmpty) return null;
+  return uri.host.toLowerCase();
 }
 
 bool _isKiswebSite(SiteInfo site) {
