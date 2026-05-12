@@ -118,6 +118,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     controller: _passwordController,
                     placeholder: const Text('密码'),
                     obscureText: true,
+                    maxLines: 1,
                     features: const [shadcn.InputFeature.passwordToggle()],
                     onSubmitted: (_) => FocusScope.of(context).unfocus(),
                   ),

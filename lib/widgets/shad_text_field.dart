@@ -53,7 +53,7 @@ class ShadTextField extends StatelessWidget {
       obscureText: obscureText,
       autofocus: autofocus,
       maxLines: maxLines,
-      minLines: minLines,
+      minLines: minLines ?? 1,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       style: style,
