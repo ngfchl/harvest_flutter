@@ -7,6 +7,7 @@ import 'package:harvest/modules/search/widgets/downloader_select_sheet.dart';
 import 'package:harvest/modules/site/model/site_config.dart';
 import 'package:harvest/modules/site/model/site_info.dart';
 import 'package:harvest/modules/site/provider/site_provider.dart';
+import 'package:harvest/modules/site/widgets/site_browser.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
@@ -92,6 +93,7 @@ class _BrowserPageState extends State<BrowserPage> {
   bool _canGoForward = false;
   bool _isLoading = true;
   bool _cookiesReady = false;
+  bool _hasReadableCookie = false;
   bool _closing = false;
   bool _torrentSheetOpen = false;
   String? _activeTorrentUrl;
@@ -104,6 +106,7 @@ class _BrowserPageState extends State<BrowserPage> {
     super.initState();
     _currentUrl = widget.url;
     _currentTitle = widget.title ?? '';
+    _hasReadableCookie = widget.cookie?.trim().isNotEmpty == true;
     _prepareCookies();
     _loadDefaultUserAgent();
   }
@@ -194,6 +197,34 @@ class _BrowserPageState extends State<BrowserPage> {
     }
 
     if (mounted && !_closing) setState(() => _cookiesReady = true);
+  }
+
+  Future<void> _refreshReadableCookieState([String? url]) async {
+    if (_closing || !mounted) return;
+    final configuredCookie = widget.cookie?.trim();
+    if (configuredCookie != null && configuredCookie.isNotEmpty) {
+      if (!_hasReadableCookie) setState(() => _hasReadableCookie = true);
+      return;
+    }
+
+    final targetUrl = (url ?? _currentUrl).trim();
+    final uri = Uri.tryParse(targetUrl);
+    if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) {
+      if (_hasReadableCookie && mounted && !_closing) {
+        setState(() => _hasReadableCookie = false);
+      }
+      return;
+    }
+
+    try {
+      final cookies = await CookieManager.instance().getCookies(url: WebUri(targetUrl));
+      final hasCookie = cookies.any((cookie) => cookie.name.isNotEmpty);
+      if (mounted && !_closing && _hasReadableCookie != hasCookie) {
+        setState(() => _hasReadableCookie = hasCookie);
+      }
+    } catch (e, st) {
+      AppLogger.warn('检查内置浏览器 Cookie 失败: $e\n$st');
+    }
   }
 
   // ────────────────── 导航状态 ──────────────────
@@ -400,36 +431,8 @@ class _BrowserPageState extends State<BrowserPage> {
             ),
           ),
           // Cookie 指示
-          if (widget.cookie != null && widget.cookie!.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 5,
-                    height: 5,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF10B981),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'Cookie',
-                    style: TextStyle(
-                      color: Color(0xFF10B981),
-                      fontSize: 9,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          if (_shouldShowCookieQuickMenu())
+            _buildCookieQuickMenu(cs),
           // 加载状态
           if (_isLoading) ...[
             const SizedBox(width: 8),
@@ -453,6 +456,162 @@ class _BrowserPageState extends State<BrowserPage> {
         ],
       ),
     );
+  }
+
+  Widget _buildCookieQuickMenu(shadcn.ColorScheme cs) {
+    final targets = _siteQuickBrowseTargets();
+    final badge = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 5,
+            height: 5,
+            decoration: const BoxDecoration(
+              color: Color(0xFF10B981),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 4),
+          const Text(
+            'Cookie',
+            style: TextStyle(
+              color: Color(0xFF10B981),
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (targets.isNotEmpty) ...[
+            const SizedBox(width: 3),
+            const Icon(
+              shadcn.LucideIcons.chevronDown,
+              size: 10,
+              color: Color(0xFF10B981),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    if (targets.isEmpty) return badge;
+
+    return shadcn.OverlayManagerLayer(
+      popoverHandler: const shadcn.PopoverOverlayHandler(),
+      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+      menuHandler: const shadcn.PopoverOverlayHandler(),
+      child: Builder(
+        builder: (menuContext) => GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => shadcn.showDropdown<void>(
+            context: menuContext,
+            alignment: Alignment.topCenter,
+            offset: const Offset(0, 8),
+            widthConstraint: shadcn.PopoverConstraint.intrinsic,
+            heightConstraint: shadcn.PopoverConstraint.intrinsic,
+            consumeOutsideTaps: false,
+            builder: (_) => AppDropdownMenu(
+              children: [
+                const shadcn.MenuLabel(child: Text('快速跳转')),
+                const shadcn.MenuDivider(),
+                for (final target in targets)
+                  shadcn.MenuButton(
+                    leading: Icon(target.icon),
+                    onPressed: (itemContext) {
+                      shadcn.closeOverlay(itemContext);
+                      _openQuickBrowseTarget(target);
+                    },
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 240),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            target.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _displayUrl(target.url),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: cs.foreground.withValues(alpha: 0.48),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          child: badge,
+        ),
+      ),
+    );
+  }
+
+  bool _shouldShowCookieQuickMenu() {
+    final website = _websiteConfigForCurrentSite();
+    return _currentSiteInfoForQuickLinks(website) != null || _hasReadableCookie;
+  }
+
+  List<SiteBrowseTarget> _siteQuickBrowseTargets() {
+    final website = _websiteConfigForCurrentSite();
+    final site = _currentSiteInfoForQuickLinks(website);
+    if (site == null) return const [];
+    return buildSiteBrowseTargets(site, website);
+  }
+
+  SiteInfo? _currentSiteInfoForQuickLinks(WebSite? website) {
+    final sites = ProviderScope.containerOf(context, listen: false)
+            .read(siteInfoListProvider)
+            .valueOrNull ??
+        const <SiteInfo>[];
+    if (sites.isEmpty) return null;
+
+    final siteId = widget.siteId?.trim().toLowerCase() ?? '';
+    final currentHost = _uriHost(_currentUrl);
+    final websiteName = website?.name.trim().toLowerCase() ?? '';
+    final websiteNickname = website?.nickname.trim().toLowerCase() ?? '';
+
+    for (final site in sites) {
+      final siteName = site.site.trim().toLowerCase();
+      final nickname = site.nickname.trim().toLowerCase();
+      if (siteId.isNotEmpty && (siteName == siteId || nickname == siteId)) return site;
+      if (websiteName.isNotEmpty && (siteName == websiteName || nickname == websiteName)) {
+        return site;
+      }
+      if (websiteNickname.isNotEmpty &&
+          (siteName == websiteNickname || nickname == websiteNickname)) {
+        return site;
+      }
+    }
+
+    if (currentHost == null) return null;
+    for (final site in sites) {
+      if (_uriHost(site.mirror ?? '') == currentHost) return site;
+    }
+    return null;
+  }
+
+  Future<void> _openQuickBrowseTarget(SiteBrowseTarget target) async {
+    final controller = _controller;
+    if (controller == null || _closing) return;
+    try {
+      await controller.loadUrl(urlRequest: URLRequest(url: WebUri(target.url)));
+    } catch (e, st) {
+      AppLogger.error('内置浏览器快速跳转失败', e, st);
+      if (mounted) Toast.error('快速跳转失败');
+    }
   }
 
   // ── 底部工具栏 ──
@@ -575,6 +734,7 @@ class _BrowserPageState extends State<BrowserPage> {
           return;
         }
         _controller = controller;
+        unawaited(_refreshReadableCookieState(widget.url));
       },
       onLoadStart: (controller, url) {
         if (!mounted || _closing) return;
@@ -596,6 +756,7 @@ class _BrowserPageState extends State<BrowserPage> {
           _currentUrl = url?.toString() ?? '';
           _isLoading = false;
         });
+        unawaited(_refreshReadableCookieState(url?.toString()));
         _updateNavState();
         final title = await controller.getTitle();
         if (title != null && title.isNotEmpty && mounted && !_closing) {
