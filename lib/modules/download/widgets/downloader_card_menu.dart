@@ -84,6 +84,9 @@ class DownloaderCardMenu {
             context: hostContext,
             isScrollControlled: true,
             backgroundColor: cs.background,
+            constraints: const BoxConstraints(
+              maxWidth: PushTorrentSheet.desktopWidth,
+            ),
             builder: (_) => PushTorrentSheet(downloader: d),
           );
         },

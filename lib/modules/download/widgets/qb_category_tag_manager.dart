@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/downloader.dart';
@@ -398,10 +399,19 @@ class _InputDialog extends StatelessWidget {
               style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 14),
-            shadcn.TextField(controller: primaryController, enabled: primaryEnabled, hintText: ""),
+            ShadTextField(
+              controller: primaryController,
+              enabled: primaryEnabled,
+              hintText: "",
+              onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+            ),
             if (secondaryController != null && secondaryLabel != null) ...[
               const SizedBox(height: 12),
-              shadcn.TextField(controller: secondaryController!, hintText: ""),
+              ShadTextField(
+                controller: secondaryController!,
+                hintText: "",
+                onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+              ),
             ],
             const SizedBox(height: 18),
             Row(

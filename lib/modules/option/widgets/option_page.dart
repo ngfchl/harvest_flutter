@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:harvest/widgets/shad_text_field.dart';
 
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -397,7 +399,7 @@ class OptionPage extends ConsumerWidget {
                         padding: const EdgeInsets.only(top: 8, bottom: 100),
                         children: [
                           _buildVersionCard(context),
-                          _buildAppUpgradeCard(context),
+                          if (!kIsWeb) _buildAppUpgradeCard(context),
                           _buildUpdateCard(context),
                           const _CookieBackupImportCard(),
                           const _BulkUpgradeCard(),
@@ -501,7 +503,11 @@ class OptionPage extends ConsumerWidget {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            shadcn.TextField(controller: urlCtrl, hintText: 'WebHook地址 (https://...)'),
+            ShadTextField(
+              controller: urlCtrl,
+              hintText: 'WebHook地址 (https://...)',
+              onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+            ),
             const SizedBox(height: 6),
             Text(
               '请仅输入域名部分，端口必须是【80、443、8080、8443】之一',
@@ -913,13 +919,14 @@ class _BulkUpgradeCardState extends ConsumerState<_BulkUpgradeCard> {
             ),
           ),
           const SizedBox(height: 10),
-          shadcn.TextField(
+          ShadTextField(
             controller: _valueCtrl,
             enabled: !_submitting,
             hintText: _selectedKey == 'user_agent'
                 ? 'Mozilla/5.0 ...'
                 : 'http://127.0.0.1:7890 或 {"http":"..."}',
             maxLines: _selectedKey == 'user_agent' ? 3 : 2,
+            onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           ),
           const SizedBox(height: 10),
           SizedBox(
@@ -1075,9 +1082,18 @@ class _TestNoticeFormState extends State<_TestNoticeForm> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        shadcn.TextField(controller: widget.titleCtrl, hintText: '消息标题'),
+        ShadTextField(
+          controller: widget.titleCtrl,
+          hintText: '消息标题',
+          onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        ),
         const SizedBox(height: 10),
-        shadcn.TextField(controller: widget.msgCtrl, hintText: '消息内容', maxLines: 5),
+        ShadTextField(
+          controller: widget.msgCtrl,
+          hintText: '消息内容',
+          maxLines: 5,
+          onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        ),
         const SizedBox(height: 10),
         SizedBox(
           width: double.infinity,

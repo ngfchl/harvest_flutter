@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/utils/ui/ui.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/downloader.dart';
@@ -107,6 +108,7 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final pathsAsync = ref.watch(downloaderPathsProvider);
+    final isMobile = context.isMobile;
 
     return shadcn.OverlayManagerLayer(
       popoverHandler: const shadcn.PopoverOverlayHandler(),
@@ -116,25 +118,32 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
         behavior: HitTestBehavior.translucent,
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: isMobile ? 8 : 16,
+            vertical: isMobile ? 6 : 24,
+          ),
           child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8, maxWidth: 420),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * (isMobile ? 0.92 : 0.8),
+            maxWidth: isMobile ? double.infinity : 420,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 8, 0),
+              padding: EdgeInsets.fromLTRB(10, isMobile ? 8 : 12, 10, 0),
               child: Row(
                 children: [
+                  shadcn.IconButton.ghost(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 16),
+                  ),
+                  const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       _isEdit ? '编辑下载器' : '添加下载器',
                       style: theme.typography.large.copyWith(fontWeight: FontWeight.w700),
                     ),
-                  ),
-                  shadcn.IconButton.ghost(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(shadcn.LucideIcons.x, size: 16),
                   ),
                 ],
               ),

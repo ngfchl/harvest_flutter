@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide Switch, Theme;
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 
 import '../model/option_model.dart';
 
@@ -251,10 +252,11 @@ class _OptionFormCardState extends State<OptionFormCard> {
                       ),
                     ),
                   ),
-                  shadcn.TextField(
+                  ShadTextField(
                     controller: _ctrls[f.key],
                     hintText: f.label,
                     maxLines: f.maxLines,
+                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   ),
                   if (f.helperText != null)
                     Padding(

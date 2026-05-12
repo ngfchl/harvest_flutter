@@ -11,6 +11,7 @@ import 'package:harvest/modules/site/model/site_info.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/browser_page.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../widgets/cache_status_banner.dart';
@@ -202,9 +203,11 @@ class _SitePageState extends ConsumerState<SitePage> {
     final cs = shadcn.Theme.of(context).colorScheme;
     return SizedBox(
       height: height,
-      child: shadcn.TextField(
+      child: ShadTextField(
         controller: _searchCtrl,
         hintText: '搜索站点...',
+        maxLines: 1,
+        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         features: [
           shadcn.InputFeature.clear(
             visibility: shadcn.InputFeatureVisibility.textNotEmpty,
@@ -1413,10 +1416,12 @@ class _MobileFilterSheet extends ConsumerWidget {
                   Expanded(
                     child: SizedBox(
                       height: 38,
-                      child: shadcn.TextField(
+                      child: ShadTextField(
                         controller: searchCtrl,
                         // 共用
                         hintText: '搜索站点...',
+                        maxLines: 1,
+                        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                         features: [
                           shadcn.InputFeature.clear(
                             visibility: shadcn.InputFeatureVisibility.textNotEmpty,

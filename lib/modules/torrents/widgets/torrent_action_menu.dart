@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../download/model/downloader.dart';
@@ -690,7 +691,11 @@ class _MenuBody extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                shadcn.TextField(controller: ctrl, hintText: '下载限制 (KiB/s)，0 为不限制'),
+                ShadTextField(
+                  controller: ctrl,
+                  hintText: '下载限制 (KiB/s)，0 为不限制',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -745,7 +750,11 @@ class _MenuBody extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                shadcn.TextField(controller: ctrl, hintText: '上传限制 (KiB/s)，0 为不限制'),
+                ShadTextField(
+                  controller: ctrl,
+                  hintText: '上传限制 (KiB/s)，0 为不限制',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -813,9 +822,17 @@ class _MenuBody extends StatelessWidget {
                     }),
                     if (ratioMode == 0) ...[
                       const SizedBox(height: 12),
-                      shadcn.TextField(controller: ratioCtrl, hintText: '分享率 (如 2.0)'),
+                      ShadTextField(
+                        controller: ratioCtrl,
+                        hintText: '分享率 (如 2.0)',
+                        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                      ),
                       const SizedBox(height: 8),
-                      shadcn.TextField(controller: timeCtrl, hintText: '做种时间限制 (小时)'),
+                      ShadTextField(
+                        controller: timeCtrl,
+                        hintText: '做种时间限制 (小时)',
+                        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                      ),
                     ],
                     const SizedBox(height: 20),
                     Row(
@@ -901,7 +918,12 @@ class _MenuBody extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                shadcn.TextField(controller: ctrl, maxLines: 6, hintText: ""),
+                ShadTextField(
+                  controller: ctrl,
+                  maxLines: 6,
+                  hintText: "",
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,

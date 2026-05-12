@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_sheet.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/site_config.dart';
@@ -20,7 +21,7 @@ void showAddSiteSheet(BuildContext context) {
     showAppSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: siteTransparent(context),
+      backgroundColor: shadcn.Theme.of(context).colorScheme.background,
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
         final maxHeight = (media.size.height - media.padding.top - media.viewInsets.bottom) * 0.66;
@@ -106,7 +107,7 @@ void showSiteForm(
     showAppSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: siteTransparent(context),
+      backgroundColor: shadcn.Theme.of(context).colorScheme.background,
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.85,
         maxChildSize: 0.95,
@@ -181,11 +182,25 @@ class AddSiteSheet extends ConsumerWidget {
           );
         }
         return Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text('选择站点 (${names.length})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  shadcn.IconButton.ghost(
+                    onPressed: () => closeAppSheet(context),
+                    icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 16),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      '选择站点 (${names.length})',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 8),
             Flexible(
@@ -222,6 +237,7 @@ class AddSiteSheet extends ConsumerWidget {
             ? BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft)
             : siteRadius(context, size: "xl"),
       ),
+      clipBehavior: Clip.antiAlias,
       child: content,
     );
 
@@ -607,7 +623,12 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
       children: [
         Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
-        shadcn.TextField(controller: controller, hintText: hint, maxLines: maxLines),
+        ShadTextField(
+          controller: controller,
+          hintText: hint,
+          maxLines: maxLines,
+          onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        ),
       ],
     );
   }
@@ -642,7 +663,11 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
         Row(
           children: [
             Expanded(
-              child: shadcn.TextField(controller: _tagInputCtrl, hintText: '自定义标签'),
+              child: ShadTextField(
+                controller: _tagInputCtrl,
+                hintText: '自定义标签',
+                onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+              ),
             ),
             const SizedBox(width: 8),
             shadcn.Button.outline(onPressed: _addCustomTag, child: const Text('添加')),
@@ -770,7 +795,11 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
           ],
           const SizedBox(height: 8),
         ],
-        shadcn.TextField(controller: _mirrorCtrl, hintText: 'https://mirror.example.com'),
+        ShadTextField(
+          controller: _mirrorCtrl,
+          hintText: 'https://mirror.example.com',
+          onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        ),
       ],
     );
   }

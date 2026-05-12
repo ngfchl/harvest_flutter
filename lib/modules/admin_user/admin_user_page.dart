@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import 'model/admin_user_model.dart';
@@ -82,6 +83,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
 
   final _searchCtrl = TextEditingController();
   String _keyword = '';
+  bool _chartsExpanded = true;
 
   @override
   void dispose() {
@@ -149,7 +151,11 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _AdminUserAnalytics(users: users),
+        _AdminUserAnalytics(
+          users: users,
+          chartsExpanded: _chartsExpanded,
+          onToggleCharts: () => setState(() => _chartsExpanded = !_chartsExpanded),
+        ),
         const SizedBox(height: 12),
         _AdminUserToolbar(
           controller: _searchCtrl,
@@ -194,7 +200,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  shadcn.TextField(
+                  ShadTextField(
                     controller: emailCtrl,
                     autofocus: true,
                     hintText: '邮箱',
@@ -276,7 +282,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                   children: [
                     _ReadOnlyField(label: '邮箱', value: user.email),
                     const SizedBox(height: 10),
-                    shadcn.TextField(
+                    ShadTextField(
                       controller: payCtrl,
                       hintText: '支付金额',
                       onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
@@ -300,7 +306,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                           .toList(),
                     ),
                     const SizedBox(height: 10),
-                    shadcn.TextField(
+                    ShadTextField(
                       controller: expireCtrl,
                       hintText: '过期时间',
                       onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
@@ -348,7 +354,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  shadcn.TextField(
+                  ShadTextField(
                     controller: countCtrl,
                     autofocus: true,
                     hintText: '邀请数量',
@@ -423,7 +429,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                   children: [
                     _ReadOnlyField(label: '邮箱', value: user.email),
                     const SizedBox(height: 10),
-                    shadcn.TextField(
+                    ShadTextField(
                       controller: countCtrl,
                       autofocus: true,
                       hintText: '邀请数量',
@@ -564,8 +570,14 @@ class _Header extends StatelessWidget {
 
 class _AdminUserAnalytics extends StatelessWidget {
   final List<AdminUser> users;
+  final bool chartsExpanded;
+  final VoidCallback onToggleCharts;
 
-  const _AdminUserAnalytics({required this.users});
+  const _AdminUserAnalytics({
+    required this.users,
+    required this.chartsExpanded,
+    required this.onToggleCharts,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -576,6 +588,62 @@ class _AdminUserAnalytics extends StatelessWidget {
         .where((user) => DateTime.now().difference(parseDateTimeOrEpoch(user.updatedAt)).inDays <= 7)
         .length;
     final isMobile = context.isMobile;
+    final chartHeader = _AnalyticsChartHeader(
+      expanded: chartsExpanded,
+      onToggle: onToggleCharts,
+    );
+    final charts = isMobile
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _DonutChartBlock(
+                title: '授权状态',
+                items: [
+                  _ChartItem('有效', active, _adminSuccess(context)),
+                  _ChartItem('过期', expired, _adminDanger(context)),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _DonutChartBlock(
+                title: '更新活跃',
+                items: [
+                  _ChartItem('7日内', recent, _adminInfo(context)),
+                  _ChartItem(
+                    '更早',
+                    users.length - recent,
+                    _adminColors(context).mutedForeground.withValues(alpha: 0.72),
+                  ),
+                ],
+              ),
+            ],
+          )
+        : Row(
+            children: [
+              Expanded(
+                child: _DonutChartBlock(
+                  title: '授权状态',
+                  items: [
+                    _ChartItem('有效', active, _adminSuccess(context)),
+                    _ChartItem('过期', expired, _adminDanger(context)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _DonutChartBlock(
+                  title: '更新活跃',
+                  items: [
+                    _ChartItem('7日内', recent, _adminInfo(context)),
+                    _ChartItem(
+                      '更早',
+                      users.length - recent,
+                      _adminColors(context).mutedForeground.withValues(alpha: 0.72),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -617,61 +685,71 @@ class _AdminUserAnalytics extends StatelessWidget {
             );
           },
         ),
-        const SizedBox(height: 10),
-        if (isMobile)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        const SizedBox(height: 8),
+        chartHeader,
+        AnimatedCrossFade(
+          firstChild: const SizedBox.shrink(),
+          secondChild: Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: charts,
+          ),
+          crossFadeState: chartsExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 180),
+          sizeCurve: Curves.easeOutCubic,
+        ),
+      ],
+    );
+  }
+}
+
+class _AnalyticsChartHeader extends StatelessWidget {
+  final bool expanded;
+  final VoidCallback onToggle;
+
+  const _AnalyticsChartHeader({
+    required this.expanded,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = _adminColors(context);
+    final typo = shadcn.Theme.of(context).typography;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: _adminRadius(context),
+        onTap: onToggle,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(color: cs.border.withValues(alpha: 0.65)),
+            borderRadius: _adminRadius(context),
+          ),
+          child: Row(
             children: [
-              _DonutChartBlock(
-                title: '授权状态',
-                items: [
-                  _ChartItem('有效', active, _adminSuccess(context)),
-                  _ChartItem('过期', expired, _adminDanger(context)),
-                ],
-              ),
-              const SizedBox(height: 8),
-              _DonutChartBlock(
-                title: '更新活跃',
-                items: [
-                  _ChartItem('7日内', recent, _adminInfo(context)),
-                  _ChartItem(
-                    '更早',
-                    users.length - recent,
-                    _adminColors(context).mutedForeground.withValues(alpha: 0.72),
-                  ),
-                ],
-              ),
-            ],
-          )
-        else
-          Row(
-            children: [
-              Expanded(
-                child: _DonutChartBlock(
-                  title: '授权状态',
-                  items: [
-                    _ChartItem('有效', active, _adminSuccess(context)),
-                    _ChartItem('过期', expired, _adminDanger(context)),
-                  ],
-                ),
-              ),
+              Icon(shadcn.LucideIcons.chartPie, size: 16, color: cs.mutedForeground),
               const SizedBox(width: 8),
               Expanded(
-                child: _DonutChartBlock(
-                  title: '更新活跃',
-                  items: [
-                    _ChartItem('7日内', recent, _adminInfo(context)),
-                    _ChartItem(
-                      '更早',
-                      users.length - recent,
-                      _adminColors(context).mutedForeground.withValues(alpha: 0.72),
-                    ),
-                  ],
+                child: Text(
+                  '图表分析',
+                  style: typo.small.copyWith(fontWeight: FontWeight.w600, color: cs.foreground),
                 ),
+              ),
+              Text(
+                expanded ? '收起' : '展开',
+                style: typo.xSmall.copyWith(color: cs.mutedForeground),
+              ),
+              const SizedBox(width: 6),
+              AnimatedRotation(
+                turns: expanded ? 0.5 : 0,
+                duration: const Duration(milliseconds: 180),
+                child: Icon(shadcn.LucideIcons.chevronDown, size: 16, color: cs.mutedForeground),
               ),
             ],
           ),
-      ],
+        ),
+      ),
     );
   }
 }
@@ -706,7 +784,12 @@ class _AdminUserToolbar extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: shadcn.TextField(controller: controller, onChanged: onSearch, hintText: '搜索邮箱、用户名或授权状态'),
+              child: ShadTextField(
+                controller: controller,
+                onChanged: onSearch,
+                hintText: '搜索邮箱、用户名或授权状态',
+                onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+              ),
             ),
             if (controller.text.isNotEmpty) ...[
               const SizedBox(width: 6),

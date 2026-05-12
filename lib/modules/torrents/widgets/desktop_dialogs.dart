@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 void showDesktopConfirmDialog(
@@ -114,16 +115,18 @@ class DesktopInputDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-              shadcn.TextField(
+              ShadTextField(
                 controller: primaryController,
                 enabled: primaryEnabled,
                 hintText: "",
+                onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
               ),
               if (secondaryController != null && secondaryLabel != null) ...[
                 const SizedBox(height: 12),
-                shadcn.TextField(
+                ShadTextField(
                   controller: secondaryController!,
                   hintText: "",
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                 ),
               ],
               const SizedBox(height: 18),

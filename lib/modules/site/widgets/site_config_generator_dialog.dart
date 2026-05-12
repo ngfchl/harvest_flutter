@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:harvest/widgets/shad_text_field.dart';
 
 import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
@@ -340,10 +341,11 @@ class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorD
             children: [
               Expanded(
                 flex: 5,
-                child: shadcn.TextField(
+                child: ShadTextField(
                   controller: _configNameController,
                   placeholder: const Text('配置名称'),
                   hintText: '保存和下载时使用该名称作为文件名',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                 ),
               ),
               const SizedBox(width: 10),
@@ -660,7 +662,11 @@ class _TomlSelectField extends StatelessWidget {
         if (option != current) option,
     ];
     if (values.isEmpty) {
-      return shadcn.TextField(controller: field.controller, hintText: '${field.hint} · ${field.key}');
+      return ShadTextField(
+        controller: field.controller,
+        hintText: '${field.hint} · ${field.key}',
+        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+      );
     }
     return shadcn.Select<String>(
       key: ValueKey('${field.key}-$current-${values.join('|')}'),
@@ -891,10 +897,11 @@ class _TomlFieldTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return _FieldPanel(
       title: _FieldTitle(field: field),
-      child: shadcn.TextField(
+      child: ShadTextField(
         controller: field.controller,
         hintText: '${field.hint} · ${field.key}',
         maxLines: field.kind == _TomlValueKind.list ? 2 : 1,
+        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       ),
     );
   }
@@ -1031,10 +1038,11 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
             child: ListView(
               controller: _scrollController,
               children: [
-                shadcn.TextField(
+                ShadTextField(
                   controller: widget.level.sectionController,
                   placeholder: const Text('配置节点名称'),
                   hintText: '例如 User，对应 [level.User]',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                 ),
                 const SizedBox(height: 10),
                 ...widget.level.orderedFields.map((field) {
@@ -1046,11 +1054,12 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
                   }
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: shadcn.TextField(
+                    child: ShadTextField(
                       controller: field.controller,
                       placeholder: Text(_tomlFieldLabel(field.key)),
                       hintText: '${field.hint} · ${field.key}',
                       maxLines: field.key == 'rights' ? 3 : 1,
+                      onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                   );
                 }),

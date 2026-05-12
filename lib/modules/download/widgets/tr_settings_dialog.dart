@@ -1075,6 +1075,10 @@ class _DialogTextField extends StatelessWidget {
       controller: controller,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
+      textInputAction: TextInputAction.done,
+      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+      onFieldSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+      onEditingComplete: () => FocusManager.instance.primaryFocus?.unfocus(),
       decoration: InputDecoration(
         label: label,
         hintText: hint,

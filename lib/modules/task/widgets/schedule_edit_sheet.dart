@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_sheet.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/crontab.dart';
@@ -408,7 +409,11 @@ class _SheetTextField extends StatelessWidget {
           Text(helperText!, style: TextStyle(fontSize: 12, color: cs.mutedForeground)),
         ],
         const SizedBox(height: 8),
-        shadcn.TextField(controller: controller, hintText: hintText),
+        ShadTextField(
+          controller: controller,
+          hintText: hintText,
+          onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        ),
       ],
     );
   }

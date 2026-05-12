@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../download/model/downloader.dart';
@@ -671,7 +672,11 @@ class _MenuBody extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                shadcn.TextField(controller: ctrl, hintText: ''),
+                ShadTextField(
+                  controller: ctrl,
+                  hintText: '',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -727,7 +732,11 @@ class _MenuBody extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                shadcn.TextField(controller: ctrl, hintText: "0 为不限制"),
+                ShadTextField(
+                  controller: ctrl,
+                  hintText: "0 为不限制",
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -795,9 +804,17 @@ class _MenuBody extends StatelessWidget {
                     }),
                     if (ratioMode == 0) ...[
                       const SizedBox(height: 12),
-                      shadcn.TextField(controller: ratioCtrl, hintText: ''),
+                      ShadTextField(
+                        controller: ratioCtrl,
+                        hintText: '',
+                        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                      ),
                       const SizedBox(height: 8),
-                      shadcn.TextField(controller: timeCtrl, hintText: ''),
+                      ShadTextField(
+                        controller: timeCtrl,
+                        hintText: '',
+                        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                      ),
                     ],
                     const SizedBox(height: 20),
                     Row(
@@ -883,7 +900,12 @@ class _MenuBody extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                shadcn.TextField(controller: ctrl, hintText: "", maxLines: 6),
+                ShadTextField(
+                  controller: ctrl,
+                  hintText: "",
+                  maxLines: 6,
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,

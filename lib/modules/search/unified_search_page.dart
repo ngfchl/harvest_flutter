@@ -1814,6 +1814,9 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       context: context, // 直接用页面 context，不要用 navigatorKey
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      constraints: const BoxConstraints(
+        maxWidth: DownloaderSelectSheet.desktopWidth,
+      ),
       builder: (ctx) => DownloaderSelectSheet(
         onSelected: (downloader) {
           closeAppSheet(ctx);
@@ -1823,6 +1826,9 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               context: context, // 这里也一样
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
+              constraints: const BoxConstraints(
+                maxWidth: PushTorrentSheet.desktopWidth,
+              ),
               builder: (_) => PushTorrentSheet(torrent: item, downloader: downloader),
             );
           });

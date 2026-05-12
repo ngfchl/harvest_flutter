@@ -2,6 +2,7 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../widgets/cache_status_banner.dart';
@@ -336,18 +337,27 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
   }
 
   void _showEditor({Downloader? downloader}) {
+    final editor = DownloaderEditorDialog(
+      downloader: downloader,
+      onSaved: (d) {
+        if (downloader == null) {
+          ref.read(downloaderListProvider.notifier).add(d);
+        } else {
+          ref.read(downloaderListProvider.notifier).edit(d);
+        }
+      },
+    );
+    if (context.isMobile) {
+      showAppSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (_) => editor,
+      );
+      return;
+    }
     shadcn.showDialog(
       context: context,
-      builder: (_) => DownloaderEditorDialog(
-        downloader: downloader,
-        onSaved: (d) {
-          if (downloader == null) {
-            ref.read(downloaderListProvider.notifier).add(d);
-          } else {
-            ref.read(downloaderListProvider.notifier).edit(d);
-          }
-        },
-      ),
+      builder: (_) => editor,
     );
   }
 

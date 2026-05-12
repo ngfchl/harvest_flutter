@@ -8,6 +8,7 @@ import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/shell/widgets/log_floating_overlay.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../login/login_history_provider.dart';
@@ -100,20 +101,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
                   tokens.vGap(20),
-                  shadcn.TextField(
+                  ShadTextField(
                     controller: _serverController,
                     placeholder: const Text('服务器地址'),
                     enabled: !kIsWeb,
                     onSubmitted: (_) => FocusScope.of(context).unfocus(),
                   ),
                   tokens.fieldGap,
-                  shadcn.TextField(
+                  ShadTextField(
                     controller: _usernameController,
                     placeholder: const Text('账号'),
                     onSubmitted: (_) => FocusScope.of(context).unfocus(),
                   ),
                   tokens.fieldGap,
-                  shadcn.TextField(
+                  ShadTextField(
                     controller: _passwordController,
                     placeholder: const Text('密码'),
                     obscureText: true,

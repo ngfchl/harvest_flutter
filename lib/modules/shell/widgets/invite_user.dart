@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 Widget inviteUserTile(BuildContext context) {
@@ -46,7 +47,7 @@ void _showInviteDialog(BuildContext context) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                shadcn.TextField(
+                ShadTextField(
                   controller: emailCtrl,
                   autofocus: true,
                   keyboardType: TextInputType.emailAddress,

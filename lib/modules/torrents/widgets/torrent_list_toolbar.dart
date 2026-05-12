@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../download/model/downloader.dart';
@@ -66,10 +67,12 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
   Widget _buildSearchField(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: shadcn.TextField(
+      child: ShadTextField(
         controller: _searchCtrl,
         hintText: "",
+        maxLines: 1,
         onChanged: (v) => ref.read(torrentSearchProvider.notifier).state = v,
+        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       ),
     );
   }

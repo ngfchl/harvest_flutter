@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:harvest/widgets/shad_text_field.dart';
 
 import 'package:flutter/material.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
@@ -844,7 +845,11 @@ void _showBatchLocationDialog(BuildContext context, DownloaderType type, List<St
                 const SizedBox(height: 4),
                 Text('将应用到选中的 ${ids.length} 个种子', style: TextStyle(color: cs.mutedForeground, fontSize: 12)),
                 const SizedBox(height: 14),
-                shadcn.TextField(controller: ctrl, hintText: '保存路径'),
+                ShadTextField(
+                  controller: ctrl,
+                  hintText: '保存路径',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -906,7 +911,11 @@ void _showBatchUploadLimitDialog(BuildContext context, List<String> hashes, OnTo
                   style: TextStyle(color: cs.mutedForeground, fontSize: 12),
                 ),
                 const SizedBox(height: 14),
-                shadcn.TextField(controller: ctrl, hintText: 'KB/s'),
+                ShadTextField(
+                  controller: ctrl,
+                  hintText: 'KB/s',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -962,9 +971,17 @@ void _showBatchShareLimitDialog(BuildContext context, List<String> hashes, OnTor
                 const SizedBox(height: 4),
                 Text('留空或 0 为不限；将应用到 ${hashes.length} 个种子', style: TextStyle(color: cs.mutedForeground, fontSize: 12)),
                 const SizedBox(height: 14),
-                shadcn.TextField(controller: ratioCtrl, hintText: '分享率 (如 2.0)'),
+                ShadTextField(
+                  controller: ratioCtrl,
+                  hintText: '分享率 (如 2.0)',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 8),
-                shadcn.TextField(controller: timeCtrl, hintText: '做种时间限制 (小时，可选)'),
+                ShadTextField(
+                  controller: timeCtrl,
+                  hintText: '做种时间限制 (小时，可选)',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -1092,7 +1109,11 @@ void _showLocationDialog(
                   style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 14),
-                shadcn.TextField(controller: ctrl, hintText: '保存路径'),
+                ShadTextField(
+                  controller: ctrl,
+                  hintText: '保存路径',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -1158,7 +1179,11 @@ void _showUploadLimitDialog(
                 const SizedBox(height: 4),
                 Text('单位 KB/s，留空或 0 为不限', style: TextStyle(color: cs.mutedForeground, fontSize: 12)),
                 const SizedBox(height: 14),
-                shadcn.TextField(controller: ctrl, hintText: 'KB/s'),
+                ShadTextField(
+                  controller: ctrl,
+                  hintText: 'KB/s',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -1217,7 +1242,11 @@ void _showShareLimitDialog(
                 const SizedBox(height: 4),
                 Text('留空或 0 为不限', style: TextStyle(color: cs.mutedForeground, fontSize: 12)),
                 const SizedBox(height: 14),
-                shadcn.TextField(controller: ctrl, hintText: '分享率'),
+                ShadTextField(
+                  controller: ctrl,
+                  hintText: '分享率',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -1276,7 +1305,11 @@ void _showTrackerDialog(
                   style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 14),
-                shadcn.TextField(controller: ctrl, hintText: 'Tracker URL'),
+                ShadTextField(
+                  controller: ctrl,
+                  hintText: 'Tracker URL',
+                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,

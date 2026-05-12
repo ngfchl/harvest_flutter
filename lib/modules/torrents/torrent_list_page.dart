@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:harvest/widgets/shad_text_field.dart';
 
 import 'package:flutter/material.dart';
 import 'package:harvest/widgets/app_sheet.dart';
@@ -245,14 +246,22 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage> with TorrentL
                     style: TextStyle(color: cs.mutedForeground, fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 6),
-                  shadcn.TextField(controller: oldCtrl, hintText: '要替换的 Tracker URL'),
+                  ShadTextField(
+                    controller: oldCtrl,
+                    hintText: '要替换的 Tracker URL',
+                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                  ),
                   const SizedBox(height: 14),
                   Text(
                     '新 Tracker',
                     style: TextStyle(color: cs.mutedForeground, fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 6),
-                  shadcn.TextField(controller: newCtrl, hintText: '替换后的 Tracker URL'),
+                  ShadTextField(
+                    controller: newCtrl,
+                    hintText: '替换后的 Tracker URL',
+                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                  ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,

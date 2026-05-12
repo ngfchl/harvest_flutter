@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:harvest/widgets/shad_text_field.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -103,9 +104,10 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
             // 搜索输入框
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: shadcn.TextField(
+              child: ShadTextField(
                 controller: _ctrl,
                 hintText: '搜索电影、剧集...',
+                maxLines: 1,
                 onChanged: _onChanged,
                 onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                 autofocus: true,

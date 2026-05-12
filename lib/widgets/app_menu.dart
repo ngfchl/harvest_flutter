@@ -58,12 +58,8 @@ class _AppPopoverMenuLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return shadcn.OverlayManagerLayer(
-      popoverHandler: const shadcn.PopoverOverlayHandler(),
-      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-      menuHandler: const shadcn.PopoverOverlayHandler(),
-      child: child,
-    );
+    // 交给 shadcn 默认 overlay 行为处理（移动端可自适应为 sheet）
+    return child;
   }
 }
 
@@ -152,7 +148,6 @@ Future<void> appShowContextMenu({
         follow: false,
         consumeOutsideTaps: false,
         dismissBackdropFocus: false,
-        handler: const shadcn.PopoverOverlayHandler(),
         overlayBarrier: shadcn.OverlayBarrier(
           borderRadius: BorderRadius.circular(theme.radiusMd),
           barrierColor: const Color(0xB2000000),

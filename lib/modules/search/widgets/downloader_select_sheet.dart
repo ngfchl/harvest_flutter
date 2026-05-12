@@ -6,6 +6,8 @@ import 'package:harvest/modules/download/provider/downloader_provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class DownloaderSelectSheet extends ConsumerWidget {
+  static const double desktopWidth = 560;
+
   final ValueChanged<Downloader> onSelected;
 
   const DownloaderSelectSheet({super.key, required this.onSelected});
@@ -23,7 +25,7 @@ class DownloaderSelectSheet extends ConsumerWidget {
       alignment: Alignment.bottomCenter,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: isMobile ? double.infinity : 560,
+          maxWidth: isMobile ? double.infinity : desktopWidth,
         ),
         child: Container(
           decoration: BoxDecoration(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:harvest/widgets/shad_text_field.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +19,10 @@ import '../service/downloader_service.dart';
 // ═══════════════════════════════════════════════════════════════
 
 class PushTorrentSheet extends ConsumerStatefulWidget {
+  static const double desktopWidth = 580;
+  static const double desktopHeight = 590;
+  static const double desktopTagHeight = 360;
+
   final SearchTorrentInfo? torrent;
   final Downloader downloader;
   final String? initialUrl;
@@ -191,53 +196,64 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
   Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final bottom = MediaQuery.of(context).viewInsets.bottom;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final sheetHeight = context.isMobile
+        ? screenHeight * 0.68
+        : (screenHeight - 48).clamp(420.0, PushTorrentSheet.desktopHeight);
+    final sheetWidth = context.isMobile ? double.infinity : PushTorrentSheet.desktopWidth;
 
-    return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.68),
-      decoration: BoxDecoration(
-        color: cs.background,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      padding: EdgeInsets.only(bottom: 12),
-      child: _loadingData
-          ? Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2))
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, bottom),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ── 链接 ──
-                        _buildLinkSection(),
-                        const SizedBox(height: 20),
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: SizedBox(
+        width: sheetWidth,
+        height: sheetHeight,
+        child: Container(
+          decoration: BoxDecoration(
+            color: cs.background,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          padding: const EdgeInsets.only(bottom: 8),
+          child: _loadingData
+              ? Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2))
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildHeader(),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.fromLTRB(14, 0, 14, bottom),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ── 链接 ──
+                            _buildLinkSection(),
+                            const SizedBox(height: 14),
 
-                        // ── 路径（分类选择 + 输入框）──
-                        _buildPathSection(),
-                        const SizedBox(height: 20),
+                            // ── 路径（分类选择 + 输入框）──
+                            _buildPathSection(),
+                            const SizedBox(height: 14),
 
-                        // ── 标签 ──
-                        _buildTagsSection(),
-                        const SizedBox(height: 20),
+                            // ── 标签 ──
+                            _buildTagsSection(),
+                            const SizedBox(height: 14),
 
-                        // ── 暂停下载 ──
-                        _buildPauseToggle(),
-                        const SizedBox(height: 16),
+                            // ── 暂停下载 ──
+                            _buildPauseToggle(),
+                            const SizedBox(height: 10),
 
-                        // ── 高级选项 ──
-                        _buildAdvancedOptions(),
-                        const SizedBox(height: 24),
-                      ],
+                            // ── 高级选项 ──
+                            _buildAdvancedOptions(),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                    // ── 按钮 ──
+                    _buildButtons(),
+                  ],
                 ),
-                // ── 按钮 ──
-                _buildButtons(),
-              ],
-            ),
+        ),
+      ),
     );
   }
 
@@ -250,7 +266,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
     final typo = shadcn.Theme.of(context).typography;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 2),
       child: Column(
         children: [
           Row(
@@ -274,7 +290,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Divider(height: 0.5, color: cs.border.withValues(alpha: 0.3)),
         ],
       ),
@@ -293,12 +309,12 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('链接', style: typo.small.copyWith(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         if (_hasTorrent) ...[
           // 种子信息预览
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: cs.mutedForeground.withValues(alpha: 0.04),
               borderRadius: BorderRadius.circular(8),
@@ -330,12 +346,13 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
             ),
           ),
         ] else ...[
-          shadcn.TextField(
+          ShadTextField(
             controller: _manualUrlCtrl,
             hintText: '输入 magnet 或种子链接（支持多条，换行/空格/逗号分隔）',
             maxLines: 4,
+            onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Row(
             children: [
               Expanded(
@@ -357,7 +374,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
             ],
           ),
           if (_genTorrentUrl) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             _buildInlineField('站点', _siteIdCtrl, hint: '站点标识'),
           ],
         ],
@@ -377,7 +394,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('路径', style: typo.small.copyWith(fontWeight: FontWeight.w600)),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
 
         // 分类列表
         if (_categories.isNotEmpty) ...[
@@ -400,7 +417,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+                  padding: const EdgeInsets.fromLTRB(10, 6, 10, 5),
                   decoration: BoxDecoration(
                     color: selected ? cs.primary : cs.mutedForeground.withValues(alpha: 0.06),
                     borderRadius: BorderRadius.circular(6),
@@ -417,11 +434,15 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
               );
             }).toList(),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
         ],
 
         // 保存路径
-        shadcn.TextField(controller: _savePathCtrl, hintText: _defaultSavePath),
+        ShadTextField(
+          controller: _savePathCtrl,
+          hintText: _defaultSavePath,
+          onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        ),
       ],
     );
   }
@@ -461,7 +482,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         if (_selectedTags.isNotEmpty)
           Wrap(
             spacing: 6,
@@ -470,7 +491,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
               return GestureDetector(
                 onTap: () => setState(() => _selectedTags.remove(tag)),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
                     color: cs.primary.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(5),
@@ -514,113 +535,121 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
             final cs = shadcn.Theme.of(ctx).colorScheme;
             final typo = shadcn.Theme.of(ctx).typography;
 
-            return Container(
-              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.55),
-              decoration: BoxDecoration(
-                color: cs.background,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(color: cs.border, borderRadius: BorderRadius.circular(2)),
-                    ),
+            return Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                width: ctx.isMobile ? double.infinity : PushTorrentSheet.desktopWidth,
+                height: ctx.isMobile
+                    ? MediaQuery.of(ctx).size.height * 0.55
+                    : PushTorrentSheet.desktopTagHeight,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: cs.background,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   ),
-                  const SizedBox(height: 14),
-                  Row(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('选择标签', style: typo.normal.copyWith(fontWeight: FontWeight.w600)),
-                      const Spacer(),
-                      Text('${tempSelected.length} 项', style: typo.xSmall.copyWith(color: cs.mutedForeground)),
-                      const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: () {
-                          setState(
-                            () => _selectedTags
-                              ..clear()
-                              ..addAll(tempSelected),
-                          );
-                          closeAppSheet(ctx);
-                        },
-                        child: Text(
-                          '确定',
-                          style: typo.small.copyWith(color: cs.primary, fontWeight: FontWeight.w600),
+                      Center(
+                        child: Container(
+                          width: 36,
+                          height: 4,
+                          decoration: BoxDecoration(color: cs.border, borderRadius: BorderRadius.circular(2)),
                         ),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Text('选择标签', style: typo.normal.copyWith(fontWeight: FontWeight.w600)),
+                          const Spacer(),
+                          Text('${tempSelected.length} 项', style: typo.xSmall.copyWith(color: cs.mutedForeground)),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () {
+                              setState(
+                                () => _selectedTags
+                                  ..clear()
+                                  ..addAll(tempSelected),
+                              );
+                              closeAppSheet(ctx);
+                            },
+                            child: Text(
+                              '确定',
+                              style: typo.small.copyWith(color: cs.primary, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      ShadTextField(
+                        controller: customCtrl,
+                        hintText: '自定义标签，多个用逗号分隔',
+                        onSubmitted: (v) {
+                          final tags = v.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty);
+                          if (tags.isNotEmpty) {
+                            setSheet(() {
+                              for (final t in tags) {
+                                if (!allTags.contains(t)) allTags.add(t);
+                                tempSelected.add(t);
+                              }
+                            });
+                            customCtrl.clear();
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      Flexible(
+                        child: allTags.isEmpty
+                            ? Center(
+                                child: Text('暂无标签', style: typo.small.copyWith(color: cs.mutedForeground)),
+                              )
+                            : Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: allTags.map((tag) {
+                                  final sel = tempSelected.contains(tag);
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setSheet(() {
+                                        sel ? tempSelected.remove(tag) : tempSelected.add(tag);
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: sel
+                                            ? cs.primary.withValues(alpha: 0.1)
+                                            : cs.mutedForeground.withValues(alpha: 0.04),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: sel ? cs.primary.withValues(alpha: 0.3) : cs.border.withValues(alpha: 0.4),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            tag,
+                                            style: typo.xSmall.copyWith(
+                                              color: sel ? cs.primary : cs.foreground,
+                                              fontWeight: sel ? FontWeight.w600 : FontWeight.normal,
+                                            ),
+                                          ),
+                                          if (sel) ...[
+                                            const SizedBox(width: 4),
+                                            Icon(shadcn.LucideIcons.check, size: 12, color: cs.primary),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  shadcn.TextField(
-                    controller: customCtrl,
-                    hintText: '自定义标签，多个用逗号分隔',
-                    onSubmitted: (v) {
-                      final tags = v.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty);
-                      if (tags.isNotEmpty) {
-                        setSheet(() {
-                          for (final t in tags) {
-                            if (!allTags.contains(t)) allTags.add(t);
-                            tempSelected.add(t);
-                          }
-                        });
-                        customCtrl.clear();
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                  Flexible(
-                    child: allTags.isEmpty
-                        ? Center(
-                            child: Text('暂无标签', style: typo.small.copyWith(color: cs.mutedForeground)),
-                          )
-                        : Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: allTags.map((tag) {
-                              final sel = tempSelected.contains(tag);
-                              return GestureDetector(
-                                onTap: () {
-                                  setSheet(() {
-                                    sel ? tempSelected.remove(tag) : tempSelected.add(tag);
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: sel
-                                        ? cs.primary.withValues(alpha: 0.1)
-                                        : cs.mutedForeground.withValues(alpha: 0.04),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: sel ? cs.primary.withValues(alpha: 0.3) : cs.border.withValues(alpha: 0.4),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        tag,
-                                        style: typo.xSmall.copyWith(
-                                          color: sel ? cs.primary : cs.foreground,
-                                          fontWeight: sel ? FontWeight.w600 : FontWeight.normal,
-                                        ),
-                                      ),
-                                      if (sel) ...[
-                                        const SizedBox(width: 4),
-                                        Icon(shadcn.LucideIcons.check, size: 12, color: cs.primary),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                  ),
-                ],
+                ),
               ),
             );
           },
@@ -804,7 +833,11 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
           Text(label, style: typo.xSmall.copyWith(color: cs.mutedForeground)),
           const SizedBox(width: 8),
           Expanded(
-            child: shadcn.TextField(controller: ctrl, hintText: hint ?? ''),
+            child: ShadTextField(
+              controller: ctrl,
+              hintText: hint ?? '',
+              onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+            ),
           ),
         ],
       ),
@@ -948,7 +981,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
 
   Widget _buildButtons() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 14),
       child: Row(
         spacing: 12,
         children: [
@@ -1181,7 +1214,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
           }
         }
         final cookie = _cookieCtrl.text.trim();
-        if (cookie != null && cookie.isNotEmpty) {
+        if (cookie.isNotEmpty) {
           params['cookie'] = cookie;
         }
       } else {

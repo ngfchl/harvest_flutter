@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class UnifiedSearchBar extends StatefulWidget {
@@ -62,11 +63,15 @@ class _UnifiedSearchBarState extends State<UnifiedSearchBar> {
       child: Row(
         children: [
           Expanded(
-            child: shadcn.TextField(
+            child: ShadTextField(
               controller: widget.controller,
               focusNode: widget.focusNode,
+              maxLines: 1,
               onChanged: widget.onChanged,
-              onSubmitted: widget.onSubmit,
+              onSubmitted: (value) {
+                widget.onSubmit(value);
+                FocusManager.instance.primaryFocus?.unfocus();
+              },
               placeholder: Text(widget.hint),
               style: theme.typography.small,
               features: [

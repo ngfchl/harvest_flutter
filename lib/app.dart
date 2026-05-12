@@ -47,7 +47,9 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       debugShowCheckedModeBanner: false,
 
       routerConfig: ref.watch(routerProvider),
-      builder: (context, child) => shadcn.DrawerOverlay(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => _GlobalKeyboardDismiss(
+        child: shadcn.DrawerOverlay(child: child ?? const SizedBox.shrink()),
+      ),
       locale: const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
       supportedLocales: const [
         Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
@@ -75,6 +77,38 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
         shadcn.ThemeMode.light => shadcn.ThemeMode.light,
         shadcn.ThemeMode.system => shadcn.ThemeMode.system,
       },
+    );
+  }
+}
+
+class _GlobalKeyboardDismiss extends StatelessWidget {
+  final Widget child;
+
+  const _GlobalKeyboardDismiss({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: (event) {
+        final focus = FocusManager.instance.primaryFocus;
+        if (focus == null) return;
+        final focusedContext = focus.context;
+        if (focusedContext == null) {
+          focus.unfocus();
+          return;
+        }
+        final render = focusedContext.findRenderObject();
+        if (render is! RenderBox) {
+          focus.unfocus();
+          return;
+        }
+        final local = render.globalToLocal(event.position);
+        if (!render.size.contains(local)) {
+          focus.unfocus();
+        }
+      },
+      child: child,
     );
   }
 }

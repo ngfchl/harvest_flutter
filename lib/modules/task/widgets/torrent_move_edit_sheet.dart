@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:harvest/widgets/shad_text_field.dart';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -459,7 +460,12 @@ class _TaskFormField extends StatelessWidget {
           Text(helperText!, style: TextStyle(fontSize: 12, color: cs.mutedForeground)),
         ],
         const SizedBox(height: 8),
-        shadcn.TextField(controller: controller, hintText: hintText, maxLines: maxLines),
+        ShadTextField(
+          controller: controller,
+          hintText: hintText,
+          maxLines: maxLines,
+          onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        ),
       ],
     );
   }

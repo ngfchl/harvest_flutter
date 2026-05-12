@@ -5,6 +5,7 @@ import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/auth/user_model.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import 'model/user_management_model.dart';
@@ -147,7 +148,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    shadcn.TextField(
+                    ShadTextField(
                       controller: usernameCtrl,
                       enabled: !resetPassword,
                       autofocus: !isEdit,
@@ -156,7 +157,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                           FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                     tokens.vGap(12),
-                    shadcn.TextField(
+                    ShadTextField(
                       controller: passwordCtrl,
                       obscureText: true,
                       autofocus: resetPassword,
@@ -165,7 +166,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                           FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                     tokens.vGap(12),
-                    shadcn.TextField(
+                    ShadTextField(
                       controller: confirmCtrl,
                       obscureText: true,
                       placeholder: const Text('确认密码'),
@@ -301,9 +302,10 @@ class _UserToolbar extends StatelessWidget {
     final tokens = _UserManagementThemeTokens.of(context);
     return Row(
       children: [
-        Expanded(child: shadcn.TextField(
+        Expanded(child: ShadTextField(
           controller: controller,
           onChanged: onSearch,
+          onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           placeholder: const Text('搜索用户名、邮箱或 ID'),
           features: [
             shadcn.InputFeature.leading(Icon(shadcn.LucideIcons.search, size: tokens.iconSm, color: cs.mutedForeground)),
