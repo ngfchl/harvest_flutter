@@ -22,6 +22,9 @@ class StorageKeys {
   static const String siteFilterSortField = 'site_filter_sort_field';
   static const String siteFilterSortAscending = 'site_filter_sort_ascending';
   static const String siteCardStyle = 'site_card_style';
+  static const String siteTimelineVisibleFields = 'site_timeline_visible_fields';
+  static const String siteTimelineTitleShowDuration =
+      'site_timeline_title_show_duration';
 
   // ── 搜索设置 ──
   static const String searchSettings = 'search_settings';

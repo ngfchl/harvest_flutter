@@ -126,7 +126,7 @@ Future<void> openSiteBrowser(BuildContext context, SiteInfo site) async {
 }
 
 Future<void> openSiteInternalBrowser(BuildContext context, SiteInfo site, {String? url, String? title}) async {
-  final targetUrl = (url ?? site.mirror)?.trim() ?? '';
+  final targetUrl = _normalizeBrowseUrl((url ?? site.mirror)?.trim() ?? '');
   if (targetUrl.isEmpty) return;
 
   BrowserPage.open(
@@ -140,7 +140,7 @@ Future<void> openSiteInternalBrowser(BuildContext context, SiteInfo site, {Strin
 }
 
 Future<void> openSiteExternalBrowser(SiteInfo site, {String? url}) async {
-  final targetUrl = (url ?? site.mirror)?.trim() ?? '';
+  final targetUrl = _normalizeBrowseUrl((url ?? site.mirror)?.trim() ?? '');
   if (targetUrl.isEmpty) return;
 
   final uri = Uri.tryParse(targetUrl);
@@ -206,20 +206,32 @@ String? _resolveBrowseUrl({
   bool hideApi = false,
 }) {
   var value = rawPath.trim();
-  if (value.isEmpty) return fallbackToBase ? baseUrl : null;
+  if (value.isEmpty) return fallbackToBase ? _normalizeBrowseUrl(baseUrl) : null;
   if (hideApi && value.toLowerCase().contains('api/')) return null;
   if (value.contains('{}')) {
     final id = userId?.trim() ?? '';
     if (id.isEmpty) return null;
     value = value.replaceAll('{}', id);
   }
+  if (value.startsWith('//')) {
+    value = value.replaceFirst(RegExp(r'^/+'), '/');
+  }
 
   final absolute = Uri.tryParse(value);
-  if (absolute != null && absolute.hasScheme) return absolute.toString();
+  if (absolute != null && absolute.hasScheme) return _normalizeBrowseUrl(absolute.toString());
 
-  final base = Uri.tryParse(baseUrl);
+  final base = Uri.tryParse(_normalizeBrowseUrl(baseUrl));
   if (base == null || !base.hasScheme) return null;
-  return base.resolve(value).toString();
+  return _normalizeBrowseUrl(base.resolve(value).toString());
+}
+
+String _normalizeBrowseUrl(String value) {
+  final text = value.trim();
+  if (text.isEmpty) return '';
+  final uri = Uri.tryParse(text);
+  if (uri == null || !uri.hasScheme || uri.host.isEmpty) return text;
+  final normalizedPath = uri.path.replaceAll(RegExp(r'/+'), '/');
+  return uri.replace(path: normalizedPath.isEmpty ? null : normalizedPath).toString();
 }
 
 String? _hostOf(String? value) {

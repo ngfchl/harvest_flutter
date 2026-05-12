@@ -3,9 +3,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/storage/hive_manager.dart';
+import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/modules/site/model/site_config.dart';
+import 'package:harvest/modules/site/model/site_info.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
+import 'package:harvest/widgets/browser_page.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../widgets/cache_status_banner.dart';
@@ -543,6 +548,14 @@ class _SitePageState extends ConsumerState<SitePage> {
                     showSiteConfigGenerator(anchorContext);
                   },
                 ),
+                _menuAction(
+                  icon: shadcn.LucideIcons.gitBranchPlus,
+                  label: '站点时间轴',
+                  onPressed: () {
+                    if (!anchorContext.mounted) return;
+                    _showSiteTimeline(anchorContext);
+                  },
+                ),
               ],
             ),
           ),
@@ -574,6 +587,482 @@ class _SitePageState extends ConsumerState<SitePage> {
 
   void _openAdd(BuildContext context) {
     showAddSiteSheet(context);
+  }
+
+  Future<void> _showSiteTimeline(BuildContext context) async {
+    final websites = ref.read(websiteListProvider).valueOrNull ?? const <WebSite>[];
+    final mySites = ref.read(siteInfoListProvider).valueOrNull ?? const <SiteInfo>[];
+    if (websites.isEmpty) {
+      Toast.warning('暂无站点配置');
+      return;
+    }
+
+    final byName = <String, SiteInfo>{};
+    for (final site in mySites) {
+      byName[site.site.trim().toLowerCase()] = site;
+    }
+
+    final entries = websites.map((website) {
+      final owned = byName[website.name.trim().toLowerCase()];
+      return _SiteTimelineEntry(website: website, mySite: owned);
+    }).toList();
+
+    var ownership = _TimelineOwnership.all;
+    var inviteFilter = _TimelineInviteFilter.all;
+    var ascending = true;
+    final savedShowDurationOnTitle = HiveManager.get<bool>(
+      StorageKeys.siteTimelineTitleShowDuration,
+    );
+    var showDurationOnTitle = savedShowDurationOnTitle ?? false;
+    final savedVisibleFields = HiveManager.get<Map>(StorageKeys.siteTimelineVisibleFields);
+    final visibleFields = <String, bool>{
+      'duration': false,
+      'uploaded': true,
+      'downloaded': true,
+      'invitation': true,
+      'username': false,
+      'email': false,
+      'uid': false,
+    };
+    if (savedVisibleFields != null) {
+      for (final entry in savedVisibleFields.entries) {
+        final key = entry.key.toString();
+        if (visibleFields.containsKey(key)) {
+          visibleFields[key] = entry.value == true;
+        }
+      }
+    }
+
+    await shadcn.showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setState) {
+          final cs = shadcn.Theme.of(dialogContext).colorScheme;
+          final enabledOwnedEntries = <_SiteTimelineEntry>[];
+          final disabledOwnedEntries = <_SiteTimelineEntry>[];
+          final unownedEntries = <_SiteTimelineEntry>[];
+          for (final entry in entries) {
+            if (!entry.isOwned) {
+              unownedEntries.add(entry);
+            } else if (entry.isDisabled) {
+              disabledOwnedEntries.add(entry);
+            } else {
+              enabledOwnedEntries.add(entry);
+            }
+          }
+
+          bool matches(_SiteTimelineEntry entry) {
+            if (ownership == _TimelineOwnership.ownedOnly && !entry.isOwned) return false;
+            if (ownership == _TimelineOwnership.unownedOnly && entry.isOwned) return false;
+            final invites = entry.invitationCount;
+            if (inviteFilter == _TimelineInviteFilter.has && invites <= 0) return false;
+            if (inviteFilter == _TimelineInviteFilter.none && invites > 0) return false;
+            return true;
+          }
+
+          int sortByTime(_SiteTimelineEntry a, _SiteTimelineEntry b) {
+            final at = a.registeredAt;
+            final bt = b.registeredAt;
+            if (at == null && bt == null) return a.displayName.compareTo(b.displayName);
+            if (at == null) return 1;
+            if (bt == null) return -1;
+            final cmp = at.compareTo(bt);
+            return ascending ? cmp : -cmp;
+          }
+
+          final filteredEnabledOwned = enabledOwnedEntries.where(matches).toList()
+            ..sort(sortByTime);
+          final filteredDisabledOwned = disabledOwnedEntries.where(matches).toList()
+            ..sort(sortByTime);
+          final filteredUnowned = unownedEntries.where(matches).toList()
+            ..sort((a, b) => a.displayName.compareTo(b.displayName));
+          final displayList = <_SiteTimelineEntry>[
+            ...filteredEnabledOwned,
+            ...filteredDisabledOwned,
+            ...filteredUnowned,
+          ];
+
+          Widget openUnownedAction(_SiteTimelineEntry entry) {
+            return shadcn.Button.ghost(
+              onPressed: () async {
+                final urls = entry.website.url.where((e) => e.trim().isNotEmpty).toList();
+                if (urls.isEmpty) {
+                  Toast.warning('该站点未配置可用 URL');
+                  return;
+                }
+                if (urls.length == 1) {
+                  if (!dialogContext.mounted) return;
+                  Navigator.of(dialogContext).pop();
+                  BrowserPage.open(
+                    context,
+                    url: urls.first,
+                    title: entry.displayName,
+                    siteId: entry.website.name,
+                    website: entry.website,
+                  );
+                  return;
+                }
+                final selected = await shadcn.showDialog<String>(
+                  context: dialogContext,
+                  builder: (ctx) {
+                    final cs = shadcn.Theme.of(ctx).colorScheme;
+                    final typo = shadcn.Theme.of(ctx).typography;
+                    return shadcn.AlertDialog(
+                      title: const Text('选择站点地址'),
+                      content: SizedBox(
+                        width: 560,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 360),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                for (var i = 0; i < urls.length; i++) ...[
+                                  GestureDetector(
+                                    onTap: () => Navigator.of(ctx).pop(urls[i]),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+                                      decoration: BoxDecoration(
+                                        color: cs.muted.withValues(alpha: 0.16),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(shadcn.LucideIcons.globe, size: 15, color: cs.mutedForeground),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  _timelineUrlHost(urls[i]),
+                                                  style: typo.small.copyWith(
+                                                    color: cs.foreground,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  urls[i],
+                                                  style: typo.xSmall.copyWith(color: cs.mutedForeground),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Icon(shadcn.LucideIcons.chevronRight, size: 15, color: cs.mutedForeground),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  if (i != urls.length - 1) const SizedBox(height: 6),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      actions: [
+                        shadcn.Button.outline(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: const Text('取消'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+                if (selected == null || selected.isEmpty) return;
+                if (!dialogContext.mounted) return;
+                Navigator.of(dialogContext).pop();
+                BrowserPage.open(
+                  context,
+                  url: selected,
+                  title: entry.displayName,
+                  siteId: entry.website.name,
+                  website: entry.website,
+                );
+              },
+              child: const Text('打开'),
+            );
+          }
+
+          Widget plainOpenAction(_SiteTimelineEntry entry) {
+            return GestureDetector(
+              onTap: () async {
+                final urls = entry.website.url.where((e) => e.trim().isNotEmpty).toList();
+                if (urls.isEmpty) {
+                  Toast.warning('该站点未配置可用 URL');
+                  return;
+                }
+                if (urls.length == 1) {
+                  if (!dialogContext.mounted) return;
+                  Navigator.of(dialogContext).pop();
+                  BrowserPage.open(
+                    context,
+                    url: urls.first,
+                    title: entry.displayName,
+                    siteId: entry.website.name,
+                    website: entry.website,
+                  );
+                  return;
+                }
+                final selected = await shadcn.showDialog<String>(
+                  context: dialogContext,
+                  builder: (ctx) {
+                    final cs = shadcn.Theme.of(ctx).colorScheme;
+                    final typo = shadcn.Theme.of(ctx).typography;
+                    return shadcn.AlertDialog(
+                      title: const Text('选择站点地址'),
+                      content: SizedBox(
+                        width: 560,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 360),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                for (var i = 0; i < urls.length; i++) ...[
+                                  GestureDetector(
+                                    onTap: () => Navigator.of(ctx).pop(urls[i]),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+                                      decoration: BoxDecoration(
+                                        color: cs.muted.withValues(alpha: 0.16),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(shadcn.LucideIcons.globe, size: 15, color: cs.mutedForeground),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  _timelineUrlHost(urls[i]),
+                                                  style: typo.small.copyWith(
+                                                    color: cs.foreground,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  urls[i],
+                                                  style: typo.xSmall.copyWith(color: cs.mutedForeground),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Icon(shadcn.LucideIcons.chevronRight, size: 15, color: cs.mutedForeground),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  if (i != urls.length - 1) const SizedBox(height: 6),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      actions: [
+                        shadcn.Button.outline(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: const Text('取消'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+                if (selected == null || selected.isEmpty) return;
+                if (!dialogContext.mounted) return;
+                Navigator.of(dialogContext).pop();
+                BrowserPage.open(
+                  context,
+                  url: selected,
+                  title: entry.displayName,
+                  siteId: entry.website.name,
+                  website: entry.website,
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: cs.muted.withValues(alpha: 0.24),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '打开',
+                  style: shadcn.Theme.of(dialogContext).typography.xSmall.copyWith(
+                    color: cs.foreground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            );
+          }
+
+          final timelineData = <shadcn.TimelineData>[
+            for (final entry in displayList)
+              shadcn.TimelineData(
+                color: entry.isOwned
+                    ? (entry.isDisabled ? cs.mutedForeground.withValues(alpha: 0.72) : cs.primary)
+                    : cs.mutedForeground.withValues(alpha: 0.42),
+                time: const SizedBox.shrink(),
+                title: const SizedBox.shrink(),
+                content: _siteTimelineRow(
+                  context: dialogContext,
+                  entry: entry,
+                  showDurationOnTitle: showDurationOnTitle,
+                  visibleFields: visibleFields,
+                  openUnownedAction: plainOpenAction,
+                ),
+              ),
+          ];
+
+          return shadcn.AlertDialog(
+            title: const Text('站点时间轴'),
+            content: SizedBox(
+              width: context.isMobile ? double.infinity : 860,
+              height: MediaQuery.of(dialogContext).size.height * 0.78,
+              child: Column(
+                children: [
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      shadcn.Button.secondary(
+                        onPressed: () => setState(() {
+                          ownership = switch (ownership) {
+                            _TimelineOwnership.all => _TimelineOwnership.ownedOnly,
+                            _TimelineOwnership.ownedOnly => _TimelineOwnership.unownedOnly,
+                            _TimelineOwnership.unownedOnly => _TimelineOwnership.all,
+                          };
+                        }),
+                        child: Text(switch (ownership) {
+                          _TimelineOwnership.all => '全部站点',
+                          _TimelineOwnership.ownedOnly => '仅拥有站点',
+                          _TimelineOwnership.unownedOnly => '未拥有站点',
+                        }).xSmall,
+                      ),
+                      shadcn.Button.secondary(
+                        onPressed: () => setState(() {
+                          inviteFilter = switch (inviteFilter) {
+                            _TimelineInviteFilter.all => _TimelineInviteFilter.has,
+                            _TimelineInviteFilter.has => _TimelineInviteFilter.none,
+                            _TimelineInviteFilter.none => _TimelineInviteFilter.all,
+                          };
+                        }),
+                        child: Text(
+                          switch (inviteFilter) {
+                            _TimelineInviteFilter.all => '邀请：全部',
+                            _TimelineInviteFilter.has => '邀请：有邀请',
+                            _TimelineInviteFilter.none => '邀请：无邀请',
+                          },
+                        ).xSmall,
+                      ),
+                      shadcn.Button.secondary(
+                        onPressed: () => setState(() => ascending = !ascending),
+                        child: Text(ascending ? '注册时间正序' : '注册时间倒序').xSmall,
+                      ),
+                      shadcn.Button.secondary(
+                        onPressed: () => setState(() {
+                          showDurationOnTitle = !showDurationOnTitle;
+                          HiveManager.set(
+                            StorageKeys.siteTimelineTitleShowDuration,
+                            showDurationOnTitle,
+                          );
+                        }),
+                        child: Text(showDurationOnTitle ? '标题显示：注册时长' : '标题显示：注册日期').xSmall,
+                      ),
+                      shadcn.OverlayManagerLayer(
+                        popoverHandler: const shadcn.PopoverOverlayHandler(),
+                        tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+                        menuHandler: const shadcn.PopoverOverlayHandler(),
+                        child: Builder(
+                          builder: (menuContext) => shadcn.Button.ghost(
+                            onPressed: () => shadcn.showDropdown<void>(
+                              context: menuContext,
+                              alignment: Alignment.topCenter,
+                              offset: const Offset(0, 8),
+                              consumeOutsideTaps: false,
+                              builder: (_) => AppDropdownMenu(
+                                children: [
+                                  const shadcn.MenuLabel(child: Text('显示字段')),
+                                  const shadcn.MenuDivider(),
+                                  for (final item in const [
+                                    ('duration', '注册时长'),
+                                    ('uploaded', '上传量'),
+                                    ('downloaded', '下载量'),
+                                    ('invitation', '邀请数'),
+                                    ('username', '用户名'),
+                                    ('email', '邮箱'),
+                                    ('uid', 'UID'),
+                                  ])
+                                    shadcn.MenuButton(
+                                      onPressed: (_) => setState(() {
+                                        visibleFields[item.$1] = !(visibleFields[item.$1] ?? true);
+                                        HiveManager.set(StorageKeys.siteTimelineVisibleFields, visibleFields);
+                                      }),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            (visibleFields[item.$1] ?? true)
+                                                ? shadcn.LucideIcons.check
+                                                : shadcn.LucideIcons.minus,
+                                            size: 14,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(item.$2),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            child: const Text('字段').xSmall,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: shadcn.ComponentTheme(
+                      data: shadcn.TimelineTheme(
+                        dotSize: 10,
+                        spacing: 12,
+                        rowGap: 10,
+                        connectorThickness: 1.2,
+                        color: cs.border.withValues(alpha: 0.65),
+                        timeConstraints: const BoxConstraints.tightFor(width: 0),
+                      ),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: shadcn.Timeline(data: timelineData),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              shadcn.Button.outline(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('关闭'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   void _openImportTomlDialog(BuildContext context) {
@@ -954,4 +1443,264 @@ class _MobileFilterSheet extends ConsumerWidget {
       ),
     );
   }
+}
+
+Widget _siteTimelineRow({
+  required BuildContext context,
+  required _SiteTimelineEntry entry,
+  required bool showDurationOnTitle,
+  required Map<String, bool> visibleFields,
+  required Widget Function(_SiteTimelineEntry entry) openUnownedAction,
+}) {
+  final theme = shadcn.Theme.of(context);
+  final cs = theme.colorScheme;
+  final items = <MapEntry<String, String>>[
+    if (visibleFields['uploaded'] == true) MapEntry('上传量', entry.uploadedText),
+    if (visibleFields['downloaded'] == true) MapEntry('下载量', entry.downloadedText),
+    if (visibleFields['invitation'] == true) MapEntry('邀请数', '${entry.invitationCount}'),
+    if (visibleFields['username'] == true) MapEntry('用户名', entry.usernameText),
+    if (visibleFields['email'] == true) MapEntry('邮箱', entry.emailText),
+    if (visibleFields['uid'] == true) MapEntry('UID', entry.uidText),
+  ];
+
+  return Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: cs.card,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: cs.border.withValues(alpha: 0.82)),
+      boxShadow: [
+        BoxShadow(
+          color: cs.foreground.withValues(alpha: 0.04),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                entry.displayName,
+                style: theme.typography.small.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: cs.foreground,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              showDurationOnTitle ? entry.durationText : entry.registeredAtText,
+              style: theme.typography.xSmall.copyWith(
+                color: cs.mutedForeground,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            if (entry.isDisabled) ...[
+              _timelineStateTag(context, '已禁用'),
+              const SizedBox(width: 6),
+            ],
+            if (!entry.isOwned) ...[
+              _timelineStateTag(context, '未添加'),
+              const SizedBox(width: 8),
+              openUnownedAction(entry),
+            ],
+          ],
+        ),
+        Container(
+          margin: const EdgeInsets.only(top: 8, bottom: 8),
+          height: 1,
+          color: cs.border.withValues(alpha: 0.35),
+        ),
+        for (var i = 0; i < items.length; i += 3) ...[
+          Row(
+            children: [
+              Expanded(
+                child: _timelineMetricTile(context, items[i].key, items[i].value),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: i + 1 < items.length
+                    ? _timelineMetricTile(context, items[i + 1].key, items[i + 1].value)
+                    : const SizedBox.shrink(),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: i + 2 < items.length
+                    ? _timelineMetricTile(context, items[i + 2].key, items[i + 2].value)
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+          if (i + 3 < items.length) const SizedBox(height: 6),
+        ],
+      ],
+    ),
+  );
+}
+
+Widget _timelineMetricChip(BuildContext context, String label, String value) {
+  final theme = shadcn.Theme.of(context);
+  final cs = theme.colorScheme;
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+    decoration: BoxDecoration(
+      color: cs.muted.withValues(alpha: 0.42),
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(color: cs.border.withValues(alpha: 0.8)),
+    ),
+    child: RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: '$label ',
+            style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+          ),
+          TextSpan(
+            text: value,
+            style: theme.typography.xSmall.copyWith(
+              color: cs.foreground,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    ),
+  );
+}
+
+Widget _timelineStateTag(BuildContext context, String text) {
+  final theme = shadcn.Theme.of(context);
+  final cs = theme.colorScheme;
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+    decoration: BoxDecoration(
+      color: cs.muted.withValues(alpha: 0.24),
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(color: cs.border.withValues(alpha: 0.7)),
+    ),
+    child: Text(
+      text,
+      style: theme.typography.xSmall.copyWith(
+        color: cs.mutedForeground,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  );
+}
+
+Widget _timelineMetricTile(BuildContext context, String label, String value) {
+  final theme = shadcn.Theme.of(context);
+  final cs = theme.colorScheme;
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+    decoration: BoxDecoration(
+      color: cs.muted.withValues(alpha: 0.16),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: theme.typography.xSmall.copyWith(
+              color: cs.mutedForeground,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            value,
+            style: theme.typography.xSmall.copyWith(
+              color: cs.foreground,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.right,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+String _timelineUrlHost(String url) {
+  final uri = Uri.tryParse(url.trim());
+  if (uri == null) return url;
+  return uri.host.isEmpty ? url : uri.host;
+}
+
+enum _TimelineOwnership { all, ownedOnly, unownedOnly }
+
+enum _TimelineInviteFilter { all, has, none }
+
+class _SiteTimelineEntry {
+  final WebSite website;
+  final SiteInfo? mySite;
+
+  const _SiteTimelineEntry({required this.website, required this.mySite});
+
+  bool get isOwned => mySite != null;
+  bool get isDisabled => mySite?.available == false;
+
+  String get displayName {
+    final nick = mySite?.nickname.trim() ?? website.nickname.trim();
+    if (nick.isNotEmpty) return nick;
+    final site = mySite?.site.trim() ?? website.name.trim();
+    if (site.isNotEmpty) return site;
+    return '未命名站点';
+  }
+
+  DateTime? get registeredAt {
+    final raw = mySite?.timeJoin?.trim() ?? '';
+    if (raw.isEmpty) return null;
+    return DateTime.tryParse(raw);
+  }
+
+  String get registeredAtText {
+    final dt = registeredAt;
+    if (dt == null) return '未登记';
+    final local = dt.toLocal();
+    final y = local.year.toString().padLeft(4, '0');
+    final m = local.month.toString().padLeft(2, '0');
+    final d = local.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
+  }
+
+  String get durationText => mySite?.durationText ?? '-';
+
+  int get uploadedBytes => mySite?.latestStatus?.uploaded ?? 0;
+
+  int get downloadedBytes => mySite?.latestStatus?.downloaded ?? 0;
+
+  int get invitationCount => mySite?.latestStatus?.invitation ?? 0;
+
+  String get uploadedText => uploadedBytes > 0 ? formatBytes(uploadedBytes) : '-';
+
+  String get downloadedText => downloadedBytes > 0 ? formatBytes(downloadedBytes) : '-';
+
+  String get usernameText => mySite?.username?.trim().isNotEmpty == true ? mySite!.username!.trim() : '-';
+
+  String get emailText => mySite?.email?.trim().isNotEmpty == true ? mySite!.email!.trim() : '-';
+
+  String get uidText => mySite?.userId?.trim().isNotEmpty == true ? mySite!.userId!.trim() : '-';
 }
