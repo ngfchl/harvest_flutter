@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest/router/router_refresh.dart';
@@ -6,6 +7,7 @@ import 'package:harvest/core/utils/utils.dart';
 import '../modules/auth/auth_provider.dart';
 import '../modules/auth/login_page.dart';
 import '../modules/login/account_switcher.dart';
+import '../modules/option/widgets/app_upgrade_page.dart';
 import '../modules/shell/shell_page.dart';
 
 final routerRefreshProvider = Provider((ref) {
@@ -48,6 +50,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login-history',
         builder: (_, __) => const AccountSwitcher(),
+      ),
+      GoRoute(
+        path: '/app-upgrade',
+        redirect: (_, __) => kIsWeb ? '/dashboard' : null,
+        builder: (_, __) => const AppUpgradePage(),
       ),
       GoRoute(path: '/:tab', builder: (context, state) => const ShellPage()),
 

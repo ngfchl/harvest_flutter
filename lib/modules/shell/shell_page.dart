@@ -239,6 +239,14 @@ class _ShellPageState extends ConsumerState<ShellPage> {
     _onTap(index);
   }
 
+  void _openAppUpgradeFromHeader() {
+    if (context.isMobile) {
+      context.push('/app-upgrade');
+      return;
+    }
+    unawaited(_appUpgradeController.openDialog());
+  }
+
   // ── Build ──
 
   @override
@@ -248,8 +256,8 @@ class _ShellPageState extends ConsumerState<ShellPage> {
     final authInfo = ref.watch(authInfoProvider).valueOrNull;
     final showAdminUser = _authInfoEmail(authInfo) == 'ngfchl@126.com';
     final updateState = ref.watch(updateProvider);
-    final appUpgradeStatus = ref.watch(appUpgradeStatusProvider);
-    final hasAppUpgrade = appUpgradeStatus.valueOrNull?.hasNewVersion == true;
+    final appUpgradeStatus = kIsWeb ? null : ref.watch(appUpgradeStatusProvider);
+    final hasAppUpgrade = appUpgradeStatus?.valueOrNull?.hasNewVersion == true;
     final notices = ref.watch(noticeHistoryProvider).valueOrNull ?? const <NoticeHistory>[];
     final unread = [
       for (final n in notices)
@@ -276,7 +284,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                     Navigator.push(context, PageRouteBuilder(pageBuilder: (_, __, ___) => const NoticeHistoryPage())),
                 onOpenDrawer: _openDrawer,
                 hasAppUpgrade: hasAppUpgrade,
-                onAppUpgrade: _appUpgradeController.openDialog,
+                onAppUpgrade: _openAppUpgradeFromHeader,
                 updateState: updateState,
                 avatar: _AccountMenuButton(
                   user: user,
@@ -299,12 +307,13 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                       children: _pages,
                     ),
                   ),
-                  IgnorePointer(
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: AppUpgradePage(controller: _appUpgradeController, child: const SizedBox.shrink()),
+                  if (!kIsWeb)
+                    IgnorePointer(
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: AppUpgradePage(controller: _appUpgradeController, child: const SizedBox.shrink()),
+                      ),
                     ),
-                  ),
                   if (_capturing)
                     Positioned.fill(
                       child: ColoredBox(
@@ -368,6 +377,10 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                     _openDrawerPage(const AdminUserPage());
                   },
                   onUpdate: () => _openDrawerPage(const UpdatePage()),
+                  onAppUpgrade: () {
+                    _closeDrawer();
+                    context.push('/app-upgrade');
+                  },
                   onLogs: () {
                     _closeDrawer();
                     LogOverlayManager.toggle(context);
@@ -385,6 +398,9 @@ class _ShellPageState extends ConsumerState<ShellPage> {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  顶栏 Header
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const double _headerActionBoxSize = 28;
+const double _headerActionIconSize = 18;
 
 class _ShellHeader extends StatelessWidget {
   final String title;
@@ -425,7 +441,16 @@ class _ShellHeader extends StatelessWidget {
             duration: Duration(milliseconds: 100),
             child: shadcn.AppBar(
               leading: [
-                shadcn.IconButton.ghost(onPressed: onOpenDrawer, icon: Icon(shadcn.LucideIcons.panelLeft, size: 18)),
+                shadcn.IconButton.ghost(
+                  size: shadcn.ButtonSize.small,
+                  density: shadcn.ButtonDensity.iconDense,
+                  onPressed: onOpenDrawer,
+                  icon: const SizedBox(
+                    width: _headerActionBoxSize,
+                    height: _headerActionBoxSize,
+                    child: Icon(shadcn.LucideIcons.panelLeft, size: _headerActionIconSize),
+                  ),
+                ),
               ],
               title: hasUnread
                   ? _NoticeTicker(notices: unreadNotices, onTap: onOpenNotices)
@@ -663,15 +688,17 @@ class _HeaderNoticeButton extends StatelessWidget {
     return shadcn.Tooltip(
       tooltip: (_) => Text(hasUnread ? '$display 条未读通知' : '通知列表'),
       child: shadcn.IconButton.ghost(
+        size: shadcn.ButtonSize.small,
+        density: shadcn.ButtonDensity.iconDense,
         onPressed: onTap,
         icon: SizedBox(
-          width: 28,
-          height: 28,
+          width: _headerActionBoxSize,
+          height: _headerActionBoxSize,
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
-              Icon(shadcn.LucideIcons.bell, size: 18, color: cs.foreground),
+              Icon(shadcn.LucideIcons.bell, size: _headerActionIconSize, color: cs.foreground),
               if (hasUnread)
                 Positioned(
                   top: -2,
@@ -725,15 +752,17 @@ class _HeaderBadgeButton extends StatelessWidget {
     return shadcn.Tooltip(
       tooltip: (_) => Text(tooltip),
       child: shadcn.IconButton.ghost(
+        size: shadcn.ButtonSize.small,
+        density: shadcn.ButtonDensity.iconDense,
         onPressed: onTap,
         icon: SizedBox(
-          width: 28,
-          height: 28,
+          width: _headerActionBoxSize,
+          height: _headerActionBoxSize,
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
-              Icon(icon, size: 18, color: cs.foreground),
+              Icon(icon, size: _headerActionIconSize, color: cs.foreground),
               Positioned(
                 top: -2,
                 right: -10,
@@ -776,15 +805,17 @@ class _HeaderDotButton extends StatelessWidget {
     return shadcn.Tooltip(
       tooltip: (_) => Text(tooltip),
       child: shadcn.IconButton.ghost(
+        size: shadcn.ButtonSize.small,
+        density: shadcn.ButtonDensity.iconDense,
         onPressed: onTap,
         icon: SizedBox(
-          width: 28,
-          height: 28,
+          width: _headerActionBoxSize,
+          height: _headerActionBoxSize,
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
-              Icon(icon, size: 19, color: color ?? cs.foreground),
+              Icon(icon, size: _headerActionIconSize, color: color ?? cs.foreground),
               Positioned(
                 top: -2,
                 right: -6,
@@ -910,13 +941,14 @@ class _AccountMenuButton extends ConsumerWidget {
                 trailing: updateState.hasAnyUpdate ? _UpdateBadge(count: updateState.updateCount) : null,
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpdatePage())),
               ),
-              _item(
-                context,
-                icon: shadcn.LucideIcons.circleArrowUp,
-                title: 'APP升级',
-                highlighted: hasAppUpgrade,
-                onTap: appUpgradeController.openDialog,
-              ),
+              if (!kIsWeb)
+                _item(
+                  context,
+                  icon: shadcn.LucideIcons.circleArrowUp,
+                  title: 'APP升级',
+                  highlighted: hasAppUpgrade,
+                  onTap: () => context.push('/app-upgrade'),
+                ),
               _item(
                 context,
                 icon: shadcn.LucideIcons.settings,
@@ -1001,7 +1033,7 @@ class _ShellDrawerPanel extends StatelessWidget {
   final bool showAdminUser;
   final VoidCallback onClose;
   final VoidCallback onDashboard, onNews, onSites, onDownloads, onTasks;
-  final VoidCallback onOptions, onUsers, onAdminUsers, onUpdate, onLogs;
+  final VoidCallback onOptions, onUsers, onAdminUsers, onUpdate, onAppUpgrade, onLogs;
 
   const _ShellDrawerPanel({
     required this.currentIndex,
@@ -1016,13 +1048,15 @@ class _ShellDrawerPanel extends StatelessWidget {
     required this.onUsers,
     required this.onAdminUsers,
     required this.onUpdate,
+    required this.onAppUpgrade,
     required this.onLogs,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
-    final cs = theme.colorScheme;
+    final tokens = _ShellDrawerTokens.of(context);
+    final theme = tokens.theme;
+    final cs = tokens.cs;
     final typo = theme.typography;
 
     return Material(
@@ -1030,7 +1064,7 @@ class _ShellDrawerPanel extends StatelessWidget {
       child: SafeArea(
         right: false,
         child: Container(
-          margin: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+          margin: tokens.edgeOnly(top: 6, right: 6, bottom: 6),
           decoration: BoxDecoration(
             color: cs.background,
             border: Border.all(color: cs.border.withValues(alpha: 0.7), width: 0.8),
@@ -1043,7 +1077,7 @@ class _ShellDrawerPanel extends StatelessWidget {
             children: [
               // 标题栏
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 10, 10),
+                padding: tokens.edgeOnly(left: 14, top: 10, right: 8, bottom: 8),
                 child: Row(
                   children: [
                     Expanded(
@@ -1052,21 +1086,33 @@ class _ShellDrawerPanel extends StatelessWidget {
                         children: [
                           Text(
                             '导航菜单',
-                            style: typo.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w800),
+                            style: typo.base.copyWith(color: cs.foreground, fontWeight: FontWeight.w800),
                           ),
-                          const SizedBox(height: 2),
-                          Text('左侧快速访问应用页面与工具', style: typo.small.copyWith(color: cs.mutedForeground)),
+                          SizedBox(height: tokens.size(1)),
+                          Text('左侧快速访问应用页面与工具', style: typo.xSmall.copyWith(color: cs.mutedForeground)),
                         ],
                       ),
                     ),
-                    shadcn.IconButton.ghost(onPressed: onClose, icon: const Icon(shadcn.LucideIcons.x, size: 18)),
+                    shadcn.IconButton.ghost(
+                      size: shadcn.ButtonSize.small,
+                      density: shadcn.ButtonDensity.iconDense,
+                      onPressed: onClose,
+                      icon: const SizedBox(
+                        width: _headerActionBoxSize,
+                        height: _headerActionBoxSize,
+                        child: Icon(shadcn.LucideIcons.x, size: _headerActionIconSize),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const Divider(height: 1),
+              ColoredBox(
+                color: cs.border.withValues(alpha: 0.72),
+                child: const SizedBox(height: 1),
+              ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(10, 12, 10, 18),
+                  padding: tokens.edgeOnly(left: 8, top: 8, right: 8, bottom: 12),
                   children: [
                     _DrawerGroup(
                       title: '主要页面',
@@ -1103,7 +1149,7 @@ class _ShellDrawerPanel extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
+                    SizedBox(height: tokens.size(8)),
                     _DrawerGroup(
                       title: '管理与工具',
                       children: [
@@ -1116,6 +1162,12 @@ class _ShellDrawerPanel extends StatelessWidget {
                           onTap: onAdminUsers,
                         ),
                         _DrawerTile(label: '程序更新', icon: shadcn.LucideIcons.arrowUpFromLine, onTap: onUpdate),
+                        if (!kIsWeb)
+                          _DrawerTile(
+                            label: 'APP升级',
+                            icon: shadcn.LucideIcons.circleArrowUp,
+                            onTap: onAppUpgrade,
+                          ),
                         _DrawerTile(label: '日志中心', icon: shadcn.LucideIcons.terminal, onTap: onLogs),
                       ],
                     ),
@@ -1130,6 +1182,52 @@ class _ShellDrawerPanel extends StatelessWidget {
   }
 }
 
+class _ShellDrawerTokens {
+  final shadcn.ThemeData theme;
+  final shadcn.ColorScheme cs;
+  final double densityScale;
+  final double textScale;
+
+  const _ShellDrawerTokens._({
+    required this.theme,
+    required this.cs,
+    required this.densityScale,
+    required this.textScale,
+  });
+
+  factory _ShellDrawerTokens.of(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.58, 1.18);
+    final textScale = theme.scaling.clamp(0.86, 1.22);
+    return _ShellDrawerTokens._(
+      theme: theme,
+      cs: theme.colorScheme,
+      densityScale: densityScale.toDouble(),
+      textScale: textScale.toDouble(),
+    );
+  }
+
+  double size(num value) => value * densityScale;
+
+  double font(num value) => value * textScale;
+
+  EdgeInsets edgeOnly({
+    num left = 0,
+    num top = 0,
+    num right = 0,
+    num bottom = 0,
+  }) =>
+      EdgeInsets.only(
+        left: size(left),
+        top: size(top),
+        right: size(right),
+        bottom: size(bottom),
+      );
+
+  EdgeInsets symmetric({num horizontal = 0, num vertical = 0}) =>
+      EdgeInsets.symmetric(horizontal: size(horizontal), vertical: size(vertical));
+}
+
 class _DrawerGroup extends StatelessWidget {
   final String title;
   final List<Widget> children;
@@ -1138,15 +1236,16 @@ class _DrawerGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final tokens = _ShellDrawerTokens.of(context);
+    final theme = tokens.theme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
+          padding: tokens.edgeOnly(left: 6, right: 6, bottom: 5),
           child: Text(
             title,
-            style: theme.typography.small.copyWith(
+            style: theme.typography.xSmall.copyWith(
               color: theme.colorScheme.mutedForeground,
               fontWeight: FontWeight.w700,
             ),
@@ -1175,8 +1274,9 @@ class _DrawerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
-    final cs = theme.colorScheme;
+    final tokens = _ShellDrawerTokens.of(context);
+    final theme = tokens.theme;
+    final cs = tokens.cs;
     final fg = !enabled
         ? cs.mutedForeground
         : selected
@@ -1184,23 +1284,26 @@ class _DrawerTile extends StatelessWidget {
         : cs.foreground;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: tokens.edgeOnly(bottom: 3),
       child: Opacity(
         opacity: enabled ? 1 : 0.55,
         child: shadcn.Button.ghost(
           onPressed: enabled ? onTap : null,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            padding: tokens.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
-              color: selected ? cs.primary.withValues(alpha: 0.1) : Colors.transparent,
+              color: selected ? cs.primary.withValues(alpha: 0.1) : cs.background.withValues(alpha: 0),
               borderRadius: BorderRadius.circular(theme.radiusMd),
-              border: Border.all(color: selected ? cs.primary.withValues(alpha: 0.26) : Colors.transparent, width: 0.8),
+              border: Border.all(
+                color: selected ? cs.primary.withValues(alpha: 0.26) : cs.background.withValues(alpha: 0),
+                width: 0.8,
+              ),
             ),
             child: Row(
               children: [
-                Icon(icon, size: 17, color: fg),
-                const SizedBox(width: 10),
+                Icon(icon, size: tokens.font(15), color: fg),
+                SizedBox(width: tokens.size(8)),
                 Expanded(
                   child: Text(
                     label,
@@ -1210,7 +1313,7 @@ class _DrawerTile extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (selected) Icon(shadcn.LucideIcons.chevronRight, size: 15, color: cs.primary),
+                if (selected) Icon(shadcn.LucideIcons.chevronRight, size: tokens.font(14), color: cs.primary),
               ],
             ),
           ),

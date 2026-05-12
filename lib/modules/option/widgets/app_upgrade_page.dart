@@ -12,6 +12,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/browser_page.dart';
+import 'package:harvest/widgets/debug_theme_button.dart';
+import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:install_plugin_v3/install_plugin_v3.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
@@ -31,12 +33,21 @@ const _appUpgradeDownloadPageUrl = 'https://repeat.ptools.fun';
 const _appUpgradeTestFlightUrl = 'https://testflight.apple.com/join/kwLil5xf';
 const _appUpgradeIgnoreVersionKey = 'app_upgrade_ignore_version';
 const _appUpgradeUseGithubProxyKey = 'app_upgrade_use_github_proxy';
+const _appUpgradeGithubProxyKey = 'app_upgrade_github_proxy';
 
 final appUpgradeStatusProvider = FutureProvider<AppUpgradeStatus>((ref) async {
   final packageInfo = await PackageInfo.fromPlatform();
+  final currentVersion = _formatAppVersion(packageInfo);
+  if (kIsWeb) {
+    return AppUpgradeStatus(
+      currentVersion: currentVersion,
+      latest: const AppUpdateInfo(version: '', changelog: '', downloadLinks: {}),
+      hasNewVersion: false,
+      ignored: false,
+    );
+  }
   final response = await Dio().get<Map<String, dynamic>>(_appUpgradeLatestUrl);
   final latest = AppUpdateInfo.fromApiResponse(response.data);
-  final currentVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
   final ignored = isAppUpgradeVersionIgnored(latest.version);
   final hasNewVersion =
       latest.version.trim().isNotEmpty &&
@@ -76,11 +87,15 @@ class AppUpgradeSummaryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (kIsWeb) return const SizedBox.shrink();
+
     final status = ref.watch(appUpgradeStatusProvider);
     final data = status.valueOrNull;
     final hasUpdate = data?.shouldPrompt == true;
     final summary = status.isLoading
         ? '正在检查 APP 版本'
+        : kIsWeb
+        ? 'Web 端不支持 APP 更新检测'
         : hasUpdate
         ? '发现 APP 新版本 v${data!.latest.version}'
         : data?.hasNewVersion == true && data?.ignored == true
@@ -162,12 +177,13 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
   int _dialogTabIndex = 0;
   double _progress = 0;
   String? _error;
+  String? _activeDownloadPath;
   ResponseInfo? _githubProxy;
 
   String get _currentVersion {
     final info = _packageInfo;
     if (info == null) return '-';
-    return '${info.version}+${info.buildNumber}';
+    return _formatAppVersion(info);
   }
 
   Future<void> _handleOpenUpgradeDialog() async {
@@ -224,8 +240,16 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
       _packageInfo = await PackageInfo.fromPlatform();
       _useGithubProxy =
           HiveManager.get<bool>(_appUpgradeUseGithubProxyKey) ?? false;
+      _githubProxy = _savedGithubProxy();
+      if (kIsWeb) {
+        _error = 'Web 端不支持 APP 更新检测';
+        return;
+      }
       if (widget.autoCheck || widget.embedded) {
         await _checkLatest(silent: true);
+        if (widget.autoCheck && !widget.embedded && widget.child == null) {
+          unawaited(_loadVersions());
+        }
         if (widget.autoCheck && mounted && _hasNewVersion && !_ignoredLatest) {
           unawaited(_openUpgradeDialog(autoPrompt: true));
         }
@@ -243,6 +267,12 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
   }
 
   Future<void> _checkLatest({bool silent = false}) async {
+    if (kIsWeb) {
+      _error = 'Web 端不支持 APP 更新检测';
+      if (!silent) Toast.info(_error!);
+      _refreshUi();
+      return;
+    }
     _loadingLatest = true;
     _error = null;
     _refreshUi();
@@ -268,6 +298,12 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
   }
 
   Future<void> _loadVersions() async {
+    if (kIsWeb) {
+      _versions = const [];
+      _error = 'Web 端不支持 APP 更新检测';
+      _refreshUi();
+      return;
+    }
     _loadingVersions = true;
     _error = null;
     _refreshUi();
@@ -291,8 +327,8 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
   }
 
   Future<void> _openUpgradeDialog({bool autoPrompt = false}) async {
-    if (_latest == null) await _checkLatest(silent: true);
-    if (_versions.isEmpty) unawaited(_loadVersions());
+    if (!kIsWeb && _latest == null) await _checkLatest(silent: true);
+    if (!kIsWeb && _versions.isEmpty) unawaited(_loadVersions());
     if (!mounted) return;
 
     _dialogTabIndex = 0;
@@ -370,8 +406,10 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
                         loadingLatest: _loadingLatest,
                         downloading: _downloading,
                         hasNewVersion: _hasNewVersion,
-                        onCheck: _loadingLatest ? null : () => _checkLatest(),
-                        onDownload: _downloading
+                        onCheck: kIsWeb || _loadingLatest ? null : () => _checkLatest(),
+                        onDownload: kIsWeb
+                            ? null
+                            : _downloading
                             ? _cancelDownload
                             : () => _downloadPreferred(_latest),
                         onTestFlight: kIsWeb || !Platform.isIOS
@@ -562,6 +600,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     _cancelToken = CancelToken();
     _downloading = true;
     _progress = 0;
+    _activeDownloadPath = null;
     _refreshUi();
 
     final url = await _resolveEffectiveDownloadUrl(info, entry);
@@ -588,6 +627,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
             '[AppUpgrade] desktop installer download: asset=${entry.key}, '
             'platform=${_platformDebugName()}, savePath=$savePath',
           );
+          _activeDownloadPath = savePath;
           await _downloadToPath(url, savePath, _cancelToken!);
           Toast.success('安装包已下载，正在启动安装器');
           await _tryOpenInstaller(savePath);
@@ -600,12 +640,14 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
           type: FileType.any,
         );
         if (savePath == null) return;
+        _activeDownloadPath = savePath;
         await _downloadToPath(url, savePath, _cancelToken!);
         Toast.success('安装包已保存');
         await _tryOpenInstaller(savePath);
       } else {
         final dir = await getTemporaryDirectory();
         final savePath = p.join(dir.path, fileName);
+        _activeDownloadPath = savePath;
         await _downloadToPath(url, savePath, _cancelToken!);
         if (Platform.isAndroid) {
           Toast.success('安装包已下载，正在打开安装器');
@@ -620,6 +662,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
       }
     } on DioException catch (e, st) {
       if (CancelToken.isCancel(e)) {
+        await _deleteActiveDownloadFile();
         Toast.info('已取消下载');
       } else {
         AppLogger.error('下载安装包失败', e, st);
@@ -632,7 +675,20 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
       _downloading = false;
       _progress = 0;
       _cancelToken = null;
+      _activeDownloadPath = null;
       _refreshUi();
+    }
+  }
+
+  Future<void> _deleteActiveDownloadFile() async {
+    final path = _activeDownloadPath;
+    if (path == null || path.trim().isEmpty) return;
+    try {
+      final file = File(path);
+      if (await file.exists()) await file.delete();
+      AppLogger.debug('[AppUpgrade] cancelled download file removed: $path');
+    } catch (e, st) {
+      AppLogger.warn('清理已下载安装包失败: $e\n$st');
     }
   }
 
@@ -867,8 +923,11 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
   Future<void> _setUseGithubProxy(bool value) async {
     _useGithubProxy = value;
     await HiveManager.set(_appUpgradeUseGithubProxyKey, value);
+    if (value) _githubProxy ??= _savedGithubProxy();
     _refreshUi();
-    if (value) unawaited(_resolveGithubProxy(force: true));
+    if (value && _githubProxy == null) {
+      unawaited(_resolveGithubProxy(force: true));
+    }
   }
 
   Future<void> _setIgnoredLatest(bool value) async {
@@ -885,6 +944,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
 
   Future<ResponseInfo?> _resolveGithubProxy({bool force = false}) async {
     if (!_useGithubProxy) return null;
+    _githubProxy ??= _savedGithubProxy();
     if (_githubProxy != null && !force) {
       AppLogger.debug(
         '[AppUpgrade] reuse github proxy: proxy=${_githubProxy!.url}, time=${_githubProxy!.time}',
@@ -903,6 +963,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
       final result = await fetchFasterGithubProxy();
       if (result.success && result.data != null) {
         _githubProxy = result.data;
+        await HiveManager.set(_appUpgradeGithubProxyKey, _githubProxy!.toJson());
         AppLogger.debug(
           '[AppUpgrade] github proxy selected: proxy=${_githubProxy!.url}, '
           'time=${_githubProxy!.time}, status=${_githubProxy!.status}',
@@ -924,6 +985,13 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
       _testingGithubProxy = false;
       _refreshUi();
     }
+  }
+
+  ResponseInfo? _savedGithubProxy() {
+    final raw = HiveManager.get(_appUpgradeGithubProxyKey);
+    if (raw is! Map) return null;
+    final proxy = ResponseInfo.fromJson(Map<String, dynamic>.from(raw));
+    return proxy.url.trim().isEmpty ? null : proxy;
   }
 
   String _resolveInstallerFileName(
@@ -983,27 +1051,123 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
       );
     }
 
-    final icon = _loadingLatest
-        ? const SizedBox(
-            width: 18,
-            height: 18,
-            child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-          )
-        : Icon(
-            _hasNewVersion
-                ? shadcn.LucideIcons.circleArrowUp
-                : shadcn.LucideIcons.refreshCw,
-            size: 20,
-          );
-    return _hasNewVersion
-        ? shadcn.IconButton.destructive(
-            onPressed: _handleOpenUpgradeDialog,
-            icon: icon,
-          )
-        : shadcn.IconButton.ghost(
-            onPressed: _handleOpenUpgradeDialog,
-            icon: icon,
-          );
+    return _buildFullPage(context);
+  }
+
+  Widget _buildFullPage(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final cs = shadcn.Theme.of(context).colorScheme;
+    return EscapeBackScope(
+      onBack: () => Navigator.of(context).maybePop(),
+      child: shadcn.Scaffold(
+        backgroundColor: cs.background,
+        headers: [
+          shadcn.AppBar(
+            backgroundColor: cs.background,
+            title: Text(
+              'APP 升级',
+              style: theme.typography.large.copyWith(
+                color: cs.foreground,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            leading: [
+              shadcn.IconButton.ghost(
+                icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 18),
+                onPressed: () => Navigator.of(context).maybePop(),
+              ),
+            ],
+            trailing: [
+              shadcn.IconButton.ghost(
+                onPressed: kIsWeb || _loadingLatest ? null : () => _checkLatest(),
+                icon: _loadingLatest
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(shadcn.LucideIcons.refreshCw, size: 18),
+              ),
+              const DebugThemeButton.shadcn(),
+            ],
+          ),
+        ],
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            12,
+            16,
+            MediaQuery.of(context).padding.bottom + 24,
+          ),
+          children: [
+            _buildLatestContent(context, compact: true),
+            const SizedBox(height: 8),
+            _UpgradeOptionRow(
+              ignored: _ignoredLatest,
+              ignoreEnabled: _latest != null,
+              onIgnoreChanged: _latest == null ? null : _setIgnoredLatest,
+              proxyEnabled: _useGithubProxy,
+              proxyTesting: _testingGithubProxy,
+              proxy: _githubProxy,
+              onProxyChanged: _setUseGithubProxy,
+              onProxyTest: _useGithubProxy && !_testingGithubProxy
+                  ? () => _resolveGithubProxy(force: true)
+                  : null,
+            ),
+            const SizedBox(height: 8),
+            _DialogActionBar(
+              loadingLatest: _loadingLatest,
+              downloading: _downloading,
+              hasNewVersion: _hasNewVersion,
+              onCheck: kIsWeb || _loadingLatest ? null : () => _checkLatest(),
+              onDownload: kIsWeb
+                  ? null
+                  : _downloading
+                  ? _cancelDownload
+                  : () => _downloadPreferred(_latest),
+              onTestFlight: kIsWeb || !Platform.isIOS
+                  ? null
+                  : () => _openIosTestFlight(),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(child: _SectionTitle('历史版本')),
+                shadcn.Button.outline(
+                  onPressed: kIsWeb || _loadingVersions ? null : _loadVersions,
+                  child: _loadingVersions
+                      ? const _SmallProgress(label: '加载中')
+                      : const Text('刷新'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (kIsWeb)
+              const _MessageBox(message: 'Web 端不支持 APP 更新检测')
+            else if (_loadingVersions && _versions.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            else if (_versions.isEmpty)
+              const _MessageBox(message: '暂无版本记录')
+            else
+              for (final info in _versions)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _VersionCard(
+                    info: info,
+                    currentVersion: _currentVersion,
+                    onDownload: _downloadEntry,
+                    onCopy: _copyDownloadUrl,
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildEmbeddedPanel(BuildContext context) {
@@ -1030,8 +1194,10 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
           loadingLatest: _loadingLatest,
           downloading: _downloading,
           hasNewVersion: _hasNewVersion,
-          onCheck: _loadingLatest ? null : () => _checkLatest(),
-          onDownload: _downloading
+          onCheck: kIsWeb || _loadingLatest ? null : () => _checkLatest(),
+          onDownload: kIsWeb
+              ? null
+              : _downloading
               ? _cancelDownload
               : () => _downloadPreferred(_latest),
           onTestFlight: kIsWeb || !Platform.isIOS
@@ -1142,7 +1308,7 @@ class _DialogScroll extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(2, 14, 8, 6),
+      padding: const EdgeInsets.fromLTRB(2, 8, 8, 4),
       child: child,
     );
   }
@@ -1166,7 +1332,7 @@ class _VersionHeader extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: shadcn.Card(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(10),
         filled: true,
         fillColor: accent.withValues(alpha: 0.08),
         borderColor: accent.withValues(alpha: hasNewVersion ? 0.24 : 0.22),
@@ -1177,17 +1343,18 @@ class _VersionHeader extends StatelessWidget {
                   ? shadcn.LucideIcons.circleArrowUp
                   : shadcn.LucideIcons.badgeCheck,
               color: accent,
-            ).iconMedium(),
-            const SizedBox(width: 12),
+              size: 18,
+            ),
+            const SizedBox(width: 8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(hasNewVersion ? '发现可用新版本' : '已是最新版本').base.bold,
-                  const SizedBox(height: 8),
+                  Text(hasNewVersion ? '发现可用新版本' : '已是最新版本').small.bold,
+                  const SizedBox(height: 5),
                   _InfoLine(label: '当前', value: 'v$currentVersion'),
                   if (hasNewVersion) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     _InfoLine(
                       label: '最新',
                       value: latestVersion?.isNotEmpty == true
@@ -1195,7 +1362,7 @@ class _VersionHeader extends StatelessWidget {
                           : '-',
                     ),
                   ] else ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     const _InfoLine(label: '状态', value: '无需更新'),
                   ],
                 ],
@@ -1217,7 +1384,7 @@ class _PanelCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: shadcn.Card(padding: const EdgeInsets.all(12), child: child),
+      child: shadcn.Card(padding: const EdgeInsets.all(10), child: child),
     );
   }
 }
@@ -1423,7 +1590,7 @@ class _VersionCard extends StatelessWidget {
     final cs = shadcn.Theme.of(context).colorScheme;
     final current = _compareVersions(info.version, currentVersion) == 0;
     return shadcn.Card(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       borderColor: current ? cs.primary.withValues(alpha: 0.5) : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1432,8 +1599,8 @@ class _VersionCard extends StatelessWidget {
             children: [
               Expanded(
                 child: current
-                    ? Text('v${info.version}').base.bold(color: cs.primary)
-                    : Text('v${info.version}').base.bold,
+                    ? Text('v${info.version}').small.bold(color: cs.primary)
+                    : Text('v${info.version}').small.bold,
               ),
               if (current) shadcn.PrimaryBadge(child: const Text('当前版本')),
             ],
@@ -1798,8 +1965,8 @@ class _InfoLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox(width: 72, child: Text(label).small.muted),
-        Expanded(child: Text(value).small.bold),
+        SizedBox(width: 38, child: Text(label).xSmall.muted),
+        Expanded(child: Text(value).xSmall.bold),
       ],
     );
   }
@@ -1860,7 +2027,7 @@ class _DialogActionBar extends StatelessWidget {
   final bool downloading;
   final bool hasNewVersion;
   final VoidCallback? onCheck;
-  final VoidCallback onDownload;
+  final VoidCallback? onDownload;
   final VoidCallback? onTestFlight;
 
   const _DialogActionBar({
@@ -1946,6 +2113,13 @@ class _MiniActionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatAppVersion(PackageInfo info) {
+  final version = info.version.trim().split('+').first.trim();
+  final build = info.buildNumber.trim();
+  if (build.isEmpty) return version.isEmpty ? '-' : version;
+  return '${version.isEmpty ? '-' : version}+$build';
 }
 
 int _compareVersions(String a, String b) {
