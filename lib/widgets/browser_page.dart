@@ -2,7 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
+import 'package:harvest/modules/search/model/search_torrent_info.dart';
 import 'package:harvest/modules/search/widgets/downloader_select_sheet.dart';
 import 'package:harvest/modules/site/model/site_config.dart';
 import 'package:harvest/modules/site/model/site_info.dart';
@@ -10,10 +15,6 @@ import 'package:harvest/modules/site/provider/site_provider.dart';
 import 'package:harvest/modules/site/widgets/site_browser.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:harvest/core/utils/utils.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:share_plus/share_plus.dart';
 
@@ -84,6 +85,7 @@ String _normalizeInitialBrowserUrl(String value) {
 class _BrowserPageState extends State<BrowserPage> {
   InAppWebViewController? _controller;
   String _currentUrl = '';
+  String _lastLoadedPageUrl = '';
   String _currentTitle = '';
   String? _activeUserAgent = _safariIphoneUserAgent;
   String _activeUserAgentId = 'safari_iphone';
@@ -105,6 +107,7 @@ class _BrowserPageState extends State<BrowserPage> {
   void initState() {
     super.initState();
     _currentUrl = widget.url;
+    _lastLoadedPageUrl = widget.url;
     _currentTitle = widget.title ?? '';
     _hasReadableCookie = widget.cookie?.trim().isNotEmpty == true;
     _prepareCookies();
@@ -722,6 +725,7 @@ class _BrowserPageState extends State<BrowserPage> {
         mediaPlaybackRequiresUserGesture: false,
         useHybridComposition: true,
         allowsInlineMediaPlayback: true,
+        supportMultipleWindows: true,
         supportZoom: true,
         builtInZoomControls: true,
         displayZoomControls: false,
@@ -741,7 +745,7 @@ class _BrowserPageState extends State<BrowserPage> {
         final urlText = url?.toString() ?? '';
         if (_isTorrentUrl(urlText)) {
           unawaited(controller.stopLoading());
-          _showTorrentDownloadFlow(urlText);
+          _showTorrentDownloadFlow(urlText, restoreUrl: _lastLoadedPageUrl);
           return;
         }
         setState(() {
@@ -752,8 +756,12 @@ class _BrowserPageState extends State<BrowserPage> {
       },
       onLoadStop: (controller, url) async {
         if (!mounted || _closing) return;
+        final urlText = url?.toString() ?? '';
         setState(() {
-          _currentUrl = url?.toString() ?? '';
+          _currentUrl = urlText;
+          if (_isLoadedPageUrl(urlText)) {
+            _lastLoadedPageUrl = urlText;
+          }
           _isLoading = false;
         });
         unawaited(_refreshReadableCookieState(url?.toString()));
@@ -784,20 +792,34 @@ class _BrowserPageState extends State<BrowserPage> {
           suggestedFilename: request.suggestedFilename,
         )) {
           await controller.stopLoading();
-          _showTorrentDownloadFlow(url);
+          _showTorrentDownloadFlow(url, restoreUrl: _lastLoadedPageUrl);
         }
       },
       shouldOverrideUrlLoading: (controller, action) async {
         if (_closing) return NavigationActionPolicy.CANCEL;
         final url = action.request.url?.toString() ?? '';
         if (_isTorrentUrl(url)) {
-          _showTorrentDownloadFlow(url);
+          _showTorrentDownloadFlow(url, restoreUrl: _lastLoadedPageUrl);
           return NavigationActionPolicy.CANCEL;
         }
         if (url.startsWith('http://') || url.startsWith('https://')) {
           return NavigationActionPolicy.ALLOW;
         }
         return NavigationActionPolicy.CANCEL;
+      },
+      onCreateWindow: (controller, action) async {
+        if (_closing) return false;
+        final url = action.request.url?.toString() ?? '';
+        if (url.isEmpty) return false;
+        if (_isTorrentUrl(url)) {
+          _showTorrentDownloadFlow(url, restoreUrl: _lastLoadedPageUrl);
+          return true;
+        }
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          await controller.loadUrl(urlRequest: URLRequest(url: WebUri(url)));
+          return true;
+        }
+        return false;
       },
     );
   }
@@ -1202,6 +1224,7 @@ class _BrowserPageState extends State<BrowserPage> {
         return;
       }
       await _showExtractedTorrentDialog(items);
+      await _restoreBrowserAfterTorrentExtraction();
     } catch (e, st) {
       AppLogger.error('提取种子列表失败', e, st);
       if (mounted) Toast.error('提取种子列表失败');
@@ -1226,11 +1249,24 @@ class _BrowserPageState extends State<BrowserPage> {
         return;
       }
       await _showDownloaderSelectAndPush([item]);
+      await _restoreBrowserAfterTorrentExtraction();
     } catch (e, st) {
       AppLogger.error('提取种子详情失败', e, st);
       if (mounted) Toast.error('提取种子详情失败');
     } finally {
       if (mounted) setState(() => _extractingTorrentList = false);
+    }
+  }
+
+  Future<void> _restoreBrowserAfterTorrentExtraction() async {
+    final controller = _controller;
+    if (controller == null || _closing || !mounted) return;
+    try {
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+      if (_closing || !mounted) return;
+      await controller.reload();
+    } catch (e, st) {
+      AppLogger.warn('恢复内置浏览器页面交互失败: $e\n$st');
     }
   }
 
@@ -2205,7 +2241,10 @@ class _BrowserPageState extends State<BrowserPage> {
 
   Future<void> _showExtractedTorrentDialog(List<_BrowserExtractedTorrent> items) async {
     final cs = shadcn.Theme.of(context).colorScheme;
-    final selected = <int>{for (var i = 0; i < items.length; i += 1) i};
+    final selected = <int>{
+      for (var i = 0; i < items.length; i += 1)
+        if (items[i].hasPushableUrl) i,
+    };
     String saleFilter = '';
     String categoryFilter = '';
     String tagFilter = '';
@@ -2234,13 +2273,25 @@ class _BrowserPageState extends State<BrowserPage> {
       ..sort();
 
     Widget content(BuildContext dialogContext, StateSetter setDialogState) {
-      final visibleEntries = items.asMap().entries.where((entry) {
-        final item = entry.value;
+      bool matchesCurrentFilters(_BrowserExtractedTorrent item) {
         final saleOk = saleFilter.isEmpty || item.sale.trim() == saleFilter;
         final categoryOk = categoryFilter.isEmpty || item.category.trim() == categoryFilter;
         final tagOk = tagFilter.isEmpty || item.tags.any((tag) => tag.trim() == tagFilter);
         return saleOk && categoryOk && tagOk;
-      }).toList()
+      }
+
+      Iterable<MapEntry<int, _BrowserExtractedTorrent>> matchingEntries() {
+        return items.asMap().entries.where((entry) => matchesCurrentFilters(entry.value));
+      }
+
+      List<int> matchingPushableKeys() {
+        return matchingEntries()
+            .where((entry) => entry.value.hasPushableUrl)
+            .map((entry) => entry.key)
+            .toList();
+      }
+
+      final visibleEntries = matchingEntries().toList()
         ..sort((a, b) {
           final left = a.value;
           final right = b.value;
@@ -2255,10 +2306,22 @@ class _BrowserPageState extends State<BrowserPage> {
           return sortAscending ? result : -result;
         });
 
-      final allVisibleSelected = visibleEntries.isNotEmpty &&
-          visibleEntries.every((entry) => selected.contains(entry.key));
-      final allKeys = List<int>.generate(items.length, (i) => i);
-      final visibleKeys = visibleEntries.map((entry) => entry.key).toList();
+      final allKeys = [
+        for (var i = 0; i < items.length; i += 1)
+          if (items[i].hasPushableUrl) i,
+      ];
+      final visibleKeys = matchingPushableKeys();
+      final allVisibleSelected = visibleKeys.isNotEmpty &&
+          visibleKeys.every((key) => selected.contains(key));
+      final hasActiveFilter =
+          saleFilter.isNotEmpty || categoryFilter.isNotEmpty || tagFilter.isNotEmpty;
+      selected.removeWhere((index) => !allKeys.contains(index));
+
+      void syncSelectionToCurrentFilter() {
+        selected
+          ..clear()
+          ..addAll(matchingPushableKeys());
+      }
 
       void selectAll() {
         selected
@@ -2290,6 +2353,20 @@ class _BrowserPageState extends State<BrowserPage> {
         for (final key in visibleKeys) {
           selected.remove(key);
         }
+      }
+
+      void clearFilters() {
+        saleFilter = '';
+        categoryFilter = '';
+        tagFilter = '';
+        selected
+          ..clear()
+          ..addAll(allKeys);
+      }
+
+      void updateFilters(VoidCallback update) {
+        update();
+        syncSelectionToCurrentFilter();
       }
 
       Widget filterChip({
@@ -2369,13 +2446,124 @@ class _BrowserPageState extends State<BrowserPage> {
         if (tagFilter.isNotEmpty) '标签: $tagFilter',
       ].join('  ·  ');
 
-      return ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: 720,
-          maxHeight: MediaQuery.of(dialogContext).size.height * 0.82,
-        ),
+      Future<void> pushPicked(List<_BrowserExtractedTorrent> picked) async {
+        final pushable = picked.where((item) => item.hasPushableUrl).toList();
+        if (pushable.isEmpty) {
+          Toast.warning('所选种子缺少可用链接');
+          return;
+        }
+        if (dialogContext.isMobile) {
+          closeAppSheet(dialogContext);
+        } else {
+          Navigator.of(dialogContext).pop();
+        }
+        await _showDownloaderSelectAndPush(pushable);
+      }
+
+      Widget selectionActionButton() {
+        return shadcn.OverlayManagerLayer(
+          popoverHandler: const shadcn.PopoverOverlayHandler(),
+          tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+          menuHandler: const shadcn.PopoverOverlayHandler(),
+          child: Builder(
+            builder: (menuContext) => shadcn.Button.ghost(
+              onPressed: items.isEmpty
+                  ? null
+                  : () => shadcn.showDropdown<void>(
+                        context: menuContext,
+                        alignment: Alignment.topCenter,
+                        offset: const Offset(0, 8),
+                        widthConstraint: shadcn.PopoverConstraint.intrinsic,
+                        heightConstraint: shadcn.PopoverConstraint.intrinsic,
+                        consumeOutsideTaps: false,
+                        builder: (_) => AppDropdownMenu(
+                          children: [
+                            const shadcn.MenuLabel(child: Text('批量选择')),
+                            const shadcn.MenuDivider(),
+                            shadcn.MenuButton(
+                              enabled: allKeys.isNotEmpty,
+                              onPressed: (_) {
+                                setDialogState(() {
+                                  selectAll();
+                                });
+                              },
+                              child: const Text('全选所有'),
+                            ),
+                            shadcn.MenuButton(
+                              enabled: visibleKeys.isNotEmpty,
+                              onPressed: (_) {
+                                setDialogState(() {
+                                  invertVisible();
+                                });
+                              },
+                              child: const Text('反选当前'),
+                            ),
+                            shadcn.MenuButton(
+                              enabled: visibleKeys.isNotEmpty,
+                              onPressed: (_) {
+                                setDialogState(() {
+                                  selectVisible();
+                                });
+                              },
+                              child: const Text('选择当前'),
+                            ),
+                            shadcn.MenuButton(
+                              enabled: visibleKeys.isNotEmpty,
+                              onPressed: (_) {
+                                setDialogState(() {
+                                  selectOnlyVisible();
+                                });
+                              },
+                              child: const Text('仅选当前'),
+                            ),
+                            shadcn.MenuButton(
+                              enabled: visibleKeys.isNotEmpty && allVisibleSelected,
+                              onPressed: (_) {
+                                setDialogState(() {
+                                  unselectVisible();
+                                });
+                              },
+                              child: const Text('取消当前'),
+                            ),
+                            shadcn.MenuButton(
+                              enabled: selected.isNotEmpty,
+                              onPressed: (_) {
+                                setDialogState(() {
+                                  selected.clear();
+                                });
+                              },
+                              child: const Text('清空选择'),
+                            ),
+                          ],
+                        ),
+                      ),
+              child: const Text('选择操作'),
+            ),
+          ),
+        );
+      }
+
+      Widget pushSelectedButton() {
+        return shadcn.Button.outline(
+          onPressed: selected.isEmpty
+              ? null
+              : () async {
+                  final picked = selected
+                      .where((index) => index >= 0 && index < items.length)
+                      .map((index) => items[index])
+                      .toList();
+                  await pushPicked(picked);
+                },
+          child: Text('推送已选(${selected.length})'),
+        );
+      }
+
+      final dialogHeight = MediaQuery.of(dialogContext).size.height *
+          (dialogContext.isMobile ? 0.86 : 0.78);
+      return SizedBox(
+        width: dialogContext.isMobile ? double.infinity : 720,
+        height: dialogHeight,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
@@ -2391,7 +2579,7 @@ class _BrowserPageState extends State<BrowserPage> {
                             const Text('种子列表'),
                             const SizedBox(height: 4),
                             Text(
-                              '共 ${items.length} 条，当前 ${visibleEntries.length} 条，可多选（已选 ${selected.length} 条）',
+                              '共 ${items.length} 条，当前 ${visibleEntries.length} 条，可推送 ${visibleKeys.length} 条，已选 ${selected.length} 条',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: cs.foreground.withValues(alpha: 0.56),
@@ -2400,112 +2588,13 @@ class _BrowserPageState extends State<BrowserPage> {
                           ],
                         ),
                       ),
-                      shadcn.OverlayManagerLayer(
-                        popoverHandler: const shadcn.PopoverOverlayHandler(),
-                        tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-                        menuHandler: const shadcn.PopoverOverlayHandler(),
-                        child: Builder(
-                          builder: (menuContext) => shadcn.Button.ghost(
-                            onPressed: items.isEmpty
-                                ? null
-                                : () => shadcn.showDropdown<void>(
-                                      context: menuContext,
-                                      alignment: Alignment.topCenter,
-                                      offset: const Offset(0, 8),
-                                      widthConstraint:
-                                          shadcn.PopoverConstraint.intrinsic,
-                                      heightConstraint:
-                                          shadcn.PopoverConstraint.intrinsic,
-                                      consumeOutsideTaps: false,
-                                      builder: (_) => AppDropdownMenu(
-                                        children: [
-                                          const shadcn.MenuLabel(
-                                            child: Text('批量选择'),
-                                          ),
-                                          const shadcn.MenuDivider(),
-                                          shadcn.MenuButton(
-                                            onPressed: (_) {
-                                              setDialogState(() {
-                                                selectAll();
-                                              });
-                                            },
-                                            child: const Text('全选'),
-                                          ),
-                                          shadcn.MenuButton(
-                                            enabled: visibleEntries.isNotEmpty,
-                                            onPressed: (_) {
-                                              setDialogState(() {
-                                                invertVisible();
-                                              });
-                                            },
-                                            child: const Text('反选'),
-                                          ),
-                                          shadcn.MenuButton(
-                                            enabled: visibleEntries.isNotEmpty,
-                                            onPressed: (_) {
-                                              setDialogState(() {
-                                                selectVisible();
-                                              });
-                                            },
-                                            child: const Text('选择本页'),
-                                          ),
-                                          shadcn.MenuButton(
-                                            enabled: visibleEntries.isNotEmpty,
-                                            onPressed: (_) {
-                                              setDialogState(() {
-                                                selectOnlyVisible();
-                                              });
-                                            },
-                                            child: const Text('仅选择本页'),
-                                          ),
-                                          shadcn.MenuButton(
-                                            enabled: visibleEntries.isNotEmpty &&
-                                                allVisibleSelected,
-                                            onPressed: (_) {
-                                              setDialogState(() {
-                                                unselectVisible();
-                                              });
-                                            },
-                                            child: const Text('取消本页'),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                            child: const Text('选择操作'),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      shadcn.Button.primary(
-                        onPressed: selected.isEmpty
-                            ? null
-                            : () async {
-                                final picked = selected
-                                    .where(
-                                      (index) => index >= 0 && index < items.length,
-                                    )
-                                    .map((index) => items[index])
-                                    .toList();
-                                if (picked.isEmpty) {
-                                  Toast.warning('请先选择要推送的种子');
-                                  return;
-                                }
-                                if (context.isMobile) {
-                                  closeAppSheet(dialogContext);
-                                } else {
-                                  Navigator.of(dialogContext).pop();
-                                }
-                                await _showDownloaderSelectAndPush(picked);
-                              },
-                        child: Text('推送已选 (${selected.length})'),
-                      ),
                     ],
                   ),
                 ],
               ),
             ),
             Divider(height: 1, color: cs.border),
-            Flexible(
+            Expanded(
               child: visibleEntries.isEmpty
                   ? Center(
                       child: Text(
@@ -2517,7 +2606,6 @@ class _BrowserPageState extends State<BrowserPage> {
                       ),
                     )
                   : ListView.separated(
-                shrinkWrap: true,
                 itemCount: visibleEntries.length,
                 separatorBuilder: (_, _) => Divider(height: 1, color: cs.border),
                 itemBuilder: (itemContext, index) {
@@ -2641,7 +2729,7 @@ class _BrowserPageState extends State<BrowserPage> {
                       color: Colors.transparent,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(14),
-                        onTap: () {
+                        onTap: item.hasPushableUrl ? () {
                           setDialogState(() {
                             if (isSelected) {
                               selected.remove(itemIndex);
@@ -2649,7 +2737,7 @@ class _BrowserPageState extends State<BrowserPage> {
                               selected.add(itemIndex);
                             }
                           });
-                        },
+                        } : null,
                         child: Padding(
                           padding: EdgeInsets.fromLTRB(
                             compact ? 8 : 10,
@@ -2660,38 +2748,6 @@ class _BrowserPageState extends State<BrowserPage> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2, right: 8),
-                                child: Transform.scale(
-                                  scale: compact ? 0.82 : 0.88,
-                                  child: Checkbox(
-                                    value: isSelected,
-                                    onChanged: (value) {
-                                      setDialogState(() {
-                                        if (value ?? false) {
-                                          selected.add(itemIndex);
-                                        } else {
-                                          selected.remove(itemIndex);
-                                        }
-                                      });
-                                    },
-                                    visualDensity: const VisualDensity(
-                                      horizontal: -4,
-                                      vertical: -4,
-                                    ),
-                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    side: BorderSide(
-                                      color: isSelected
-                                          ? cs.primary
-                                          : cs.border.withValues(alpha: 0.9),
-                                    ),
-                                    activeColor: cs.primary,
-                                  ),
-                                ),
-                              ),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2758,6 +2814,24 @@ class _BrowserPageState extends State<BrowserPage> {
                                   ],
                                 ),
                               ),
+                              const SizedBox(width: 8),
+                              shadcn.IconButton.ghost(
+                                onPressed: item.hasPushableUrl
+                                    ? () => unawaited(pushPicked([item]))
+                                    : null,
+                                icon: shadcn.Tooltip(
+                                  tooltip: (_) => Text(
+                                    item.hasPushableUrl ? '推送此种子' : '缺少可用链接',
+                                  ),
+                                  child: Icon(
+                                    shadcn.LucideIcons.send,
+                                    size: compact ? 16 : 17,
+                                    color: item.hasPushableUrl
+                                        ? cs.primary
+                                        : cs.foreground.withValues(alpha: 0.32),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -2777,12 +2851,12 @@ class _BrowserPageState extends State<BrowserPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  GestureDetector(
-                    onTap: () => setDialogState(() => panelExpanded = !panelExpanded),
-                    behavior: HitTestBehavior.opaque,
-                    child: Row(
-                      children: [
-                        Expanded(
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setDialogState(() => panelExpanded = !panelExpanded),
+                          behavior: HitTestBehavior.opaque,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -2810,156 +2884,189 @@ class _BrowserPageState extends State<BrowserPage> {
                             ],
                           ),
                         ),
-                        Icon(
-                          panelExpanded
-                              ? shadcn.LucideIcons.chevronDown
-                              : shadcn.LucideIcons.chevronUp,
+                      ),
+                      const SizedBox(width: 8),
+                      selectionActionButton(),
+                      const SizedBox(width: 8),
+                      pushSelectedButton(),
+                      if (hasActiveFilter) ...[
+                        const SizedBox(width: 8),
+                        shadcn.Button.ghost(
+                          onPressed: () => setDialogState(clearFilters),
+                          child: const Text('重置'),
+                        ),
+                      ],
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () => setDialogState(() => panelExpanded = !panelExpanded),
+                        behavior: HitTestBehavior.opaque,
+                        child: Icon(
+                          panelExpanded ? shadcn.LucideIcons.chevronDown : shadcn.LucideIcons.chevronUp,
                           size: 16,
                           color: cs.foreground.withValues(alpha: 0.72),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  if (panelExpanded) ...[
-                    const SizedBox(height: 12),
-                    sectionTitle('排序'),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              filterChip(
-                                label: '名称',
-                                selectedValue: sortKey == _BrowserTorrentSortKey.name,
-                                onTap: () => setDialogState(() {
-                                  sortKey = _BrowserTorrentSortKey.name;
-                                  sortAscending = true;
-                                }),
-                              ),
-                              filterChip(
-                                label: '做种人数',
-                                selectedValue: sortKey == _BrowserTorrentSortKey.seeders,
-                                onTap: () => setDialogState(() {
-                                  sortKey = _BrowserTorrentSortKey.seeders;
-                                  sortAscending = false;
-                                }),
-                              ),
-                              filterChip(
-                                label: '大小',
-                                selectedValue: sortKey == _BrowserTorrentSortKey.size,
-                                onTap: () => setDialogState(() {
-                                  sortKey = _BrowserTorrentSortKey.size;
-                                  sortAscending = false;
-                                }),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () => setDialogState(() => sortAscending = !sortAscending),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: cs.background,
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(color: cs.border.withValues(alpha: 0.7)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                  if (panelExpanded)
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: dialogHeight * (dialogContext.isMobile ? 0.46 : 0.42),
+                      ),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            sectionTitle('排序'),
+                            Row(
                               children: [
-                                Icon(
-                                  sortAscending
-                                      ? shadcn.LucideIcons.arrowUpNarrowWide
-                                      : shadcn.LucideIcons.arrowDownWideNarrow,
-                                  size: 12,
-                                  color: cs.foreground.withValues(alpha: 0.72),
+                                Expanded(
+                                  child: Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      filterChip(
+                                        label: '名称',
+                                        selectedValue: sortKey == _BrowserTorrentSortKey.name,
+                                        onTap: () => setDialogState(() {
+                                          sortKey = _BrowserTorrentSortKey.name;
+                                          sortAscending = true;
+                                        }),
+                                      ),
+                                      filterChip(
+                                        label: '做种人数',
+                                        selectedValue: sortKey == _BrowserTorrentSortKey.seeders,
+                                        onTap: () => setDialogState(() {
+                                          sortKey = _BrowserTorrentSortKey.seeders;
+                                          sortAscending = false;
+                                        }),
+                                      ),
+                                      filterChip(
+                                        label: '大小',
+                                        selectedValue: sortKey == _BrowserTorrentSortKey.size,
+                                        onTap: () => setDialogState(() {
+                                          sortKey = _BrowserTorrentSortKey.size;
+                                          sortAscending = false;
+                                        }),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  sortAscending ? '升序' : '降序',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: cs.foreground.withValues(alpha: 0.72),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () => setDialogState(() => sortAscending = !sortAscending),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: cs.background,
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(color: cs.border.withValues(alpha: 0.7)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          sortAscending
+                                              ? shadcn.LucideIcons.arrowUpNarrowWide
+                                              : shadcn.LucideIcons.arrowDownWideNarrow,
+                                          size: 12,
+                                          color: cs.foreground.withValues(alpha: 0.72),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          sortAscending ? '升序' : '降序',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: cs.foreground.withValues(alpha: 0.72),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    sectionTitle('优惠'),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        filterChip(
-                          label: '全部',
-                          selectedValue: saleFilter.isEmpty,
-                          onTap: () => setDialogState(() => saleFilter = ''),
-                        ),
-                        for (final sale in saleOptions)
-                          filterChip(
-                            label: sale,
-                            selectedValue: saleFilter == sale,
-                            onTap: () => setDialogState(() => saleFilter = saleFilter == sale ? '' : sale),
-                            accent: saleColor(sale),
-                          ),
-                      ],
-                    ),
-                    if (categoryOptions.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      sectionTitle('分类'),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          filterChip(
-                            label: '全部',
-                            selectedValue: categoryFilter.isEmpty,
-                            onTap: () => setDialogState(() => categoryFilter = ''),
-                          ),
-                          for (final category in categoryOptions)
-                            filterChip(
-                              label: category,
-                              selectedValue: categoryFilter == category,
-                              onTap: () => setDialogState(
-                                () => categoryFilter = categoryFilter == category ? '' : category,
-                              ),
+                            const SizedBox(height: 12),
+                            sectionTitle('优惠'),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                filterChip(
+                                  label: '全部',
+                                  selectedValue: saleFilter.isEmpty,
+                                  onTap: () => setDialogState(() => updateFilters(() => saleFilter = '')),
+                                ),
+                                for (final sale in saleOptions)
+                                  filterChip(
+                                    label: sale,
+                                    selectedValue: saleFilter == sale,
+                                    onTap: () => setDialogState(
+                                      () => updateFilters(
+                                        () => saleFilter = saleFilter == sale ? '' : sale,
+                                      ),
+                                    ),
+                                    accent: saleColor(sale),
+                                  ),
+                              ],
                             ),
-                        ],
-                      ),
-                    ],
-                    if (tagOptions.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      sectionTitle('标签'),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          filterChip(
-                            label: '全部',
-                            selectedValue: tagFilter.isEmpty,
-                            onTap: () => setDialogState(() => tagFilter = ''),
-                          ),
-                          for (final tag in tagOptions)
-                            filterChip(
-                              label: tag,
-                              selectedValue: tagFilter == tag,
-                              onTap: () => setDialogState(
-                                () => tagFilter = tagFilter == tag ? '' : tag,
+                            if (categoryOptions.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              sectionTitle('分类'),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  filterChip(
+                                    label: '全部',
+                                    selectedValue: categoryFilter.isEmpty,
+                                    onTap: () => setDialogState(() => updateFilters(() => categoryFilter = '')),
+                                  ),
+                                  for (final category in categoryOptions)
+                                    filterChip(
+                                      label: category,
+                                      selectedValue: categoryFilter == category,
+                                      onTap: () => setDialogState(
+                                        () => updateFilters(
+                                          () => categoryFilter = categoryFilter == category ? '' : category,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
-                              accent: const Color(0xFF8B5CF6),
-                            ),
-                        ],
+                            ],
+                            if (tagOptions.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              sectionTitle('标签'),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  filterChip(
+                                    label: '全部',
+                                    selectedValue: tagFilter.isEmpty,
+                                    onTap: () => setDialogState(() => updateFilters(() => tagFilter = '')),
+                                  ),
+                                  for (final tag in tagOptions)
+                                    filterChip(
+                                      label: tag,
+                                      selectedValue: tagFilter == tag,
+                                      onTap: () => setDialogState(
+                                        () => updateFilters(
+                                          () => tagFilter = tagFilter == tag ? '' : tag,
+                                        ),
+                                      ),
+                                      accent: const Color(0xFF8B5CF6),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
-                    ],
-                  ],
+                    ),
                 ],
               ),
             ),
@@ -3002,63 +3109,130 @@ class _BrowserPageState extends State<BrowserPage> {
     if (!mounted || _closing || torrents.isEmpty) return;
     await showAppSheet<void>(
       context: context,
+      title: '选择下载器',
+      showDefaultHeader: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      constraints: const BoxConstraints(
+        maxWidth: DownloaderSelectSheet.desktopWidth,
+      ),
       builder: (sheetContext) => DownloaderSelectSheet(
-        onSelected: (downloader) {
-          closeAppSheet(sheetContext);
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            if (!mounted || _closing) return;
-            final urls = torrents
-                .map((item) {
-                  final primary = item.primaryUrl.trim();
-                  if (primary.isNotEmpty) return primary;
-                  return item.detailUrl.trim();
-                })
-                .where((url) => url.isNotEmpty)
-                .toSet()
-                .toList();
-            if (urls.isEmpty) {
-              Toast.warning('所选种子缺少可用链接');
-              return;
-            }
-            final cookie = await _cookieHeaderFor(
-              urls.first,
+        useDefaultHeader: true,
+        onSelected: (downloader) async {
+          await closeAppSheet(sheetContext);
+          await Future<void>.delayed(const Duration(milliseconds: 80));
+          if (!mounted || _closing) return;
+          final urls = torrents
+              .map((item) {
+                final primary = item.primaryUrl.trim();
+                if (primary.isNotEmpty) return primary;
+                return item.detailUrl.trim();
+              })
+              .where((url) => url.isNotEmpty)
+              .toSet()
+              .toList();
+          if (urls.isEmpty) {
+            Toast.warning('所选种子缺少可用链接');
+            return;
+          }
+          final cookie = await _cookieHeaderFor(
+            urls.first,
+          );
+          if (!mounted || _closing) return;
+          final singleTorrent = torrents.length == 1 ? _toSearchTorrentInfo(torrents.first, cookie: cookie) : null;
+          if (context.isMobile) {
+            await showAppSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              constraints: const BoxConstraints(
+                maxWidth: PushTorrentSheet.desktopWidth,
+              ),
+              builder: (_) => PushTorrentSheet(
+                downloader: downloader,
+                torrent: singleTorrent,
+                initialUrl: urls.join('\n'),
+                initialCookie: cookie,
+                initialSiteId: widget.siteId,
+              ),
             );
-            if (!mounted || _closing) return;
-            if (context.isMobile) {
-              showAppSheet<void>(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (_) => PushTorrentSheet(
-                  downloader: downloader,
-                  initialUrl: urls.join('\n'),
-                  initialCookie: cookie,
-                  initialSiteId: widget.siteId,
-                ),
-              );
-            } else {
-              await shadcn.showDialog<void>(
-                context: context,
-                builder: (dialogContext) => shadcn.AlertDialog(
-                  content: SizedBox(
-                    width: 760,
-                    height: MediaQuery.of(dialogContext).size.height * 0.78,
-                    child: PushTorrentSheet(
-                      downloader: downloader,
-                      initialUrl: urls.join('\n'),
-                      initialCookie: cookie,
-                      initialSiteId: widget.siteId,
-                    ),
+          } else {
+            await shadcn.showDialog<void>(
+              context: context,
+              builder: (dialogContext) => shadcn.AlertDialog(
+                content: SizedBox(
+                  width: PushTorrentSheet.desktopWidth,
+                  height: PushTorrentSheet.desktopHeight,
+                  child: PushTorrentSheet(
+                    downloader: downloader,
+                    torrent: singleTorrent,
+                    initialUrl: urls.join('\n'),
+                    initialCookie: cookie,
+                    initialSiteId: widget.siteId,
                   ),
                 ),
-              );
-            }
-          });
+              ),
+            );
+          }
         },
       ),
     );
+  }
+
+  SearchTorrentInfo _toSearchTorrentInfo(
+    _BrowserExtractedTorrent item, {
+    String? cookie,
+  }) {
+    final primaryUrl = item.primaryUrl.trim();
+    final detailUrl = item.detailUrl.trim();
+    final siteId = widget.siteId?.trim() ?? '';
+    return SearchTorrentInfo(
+      siteId: siteId,
+      tid: _extractTorrentIdFromBrowserUrl(primaryUrl.isNotEmpty ? primaryUrl : detailUrl),
+      poster: item.poster,
+      category: item.formattedCategory.isNotEmpty ? item.formattedCategory : item.category,
+      magnetUrl: primaryUrl,
+      detailUrl: detailUrl,
+      title: item.title.isNotEmpty ? item.title : primaryUrl,
+      subtitle: item.subtitle,
+      cookie: cookie?.trim().isNotEmpty == true ? cookie!.trim() : widget.cookie,
+      saleStatus: item.sale.isNotEmpty ? item.sale : '无优惠',
+      saleExpire: item.saleExpire.isEmpty ? null : item.saleExpire,
+      tags: item.tags,
+      hr: item.hr.trim().isNotEmpty,
+      published: item.release,
+      size: item.sizeBytes,
+      seeders: item.seedersValue,
+      leechers: _BrowserExtractedTorrent._parseCompactInt(item.leechers),
+      completers: _BrowserExtractedTorrent._parseCompactInt(item.completers),
+    );
+  }
+
+  String _extractTorrentIdFromBrowserUrl(String value) {
+    final raw = value.trim();
+    if (raw.isEmpty) return '';
+    if (RegExp(r'^\d+$').hasMatch(raw)) return raw;
+
+    final uri = Uri.tryParse(raw);
+    if (uri != null) {
+      const queryKeys = <String>['tid', 'id', 'torrentid', 'topicid'];
+      for (final key in queryKeys) {
+        final v = uri.queryParameters[key]?.trim() ?? '';
+        if (v.isNotEmpty) return v;
+      }
+      for (final segment in uri.pathSegments.reversed) {
+        final text = segment.trim();
+        if (text.isNotEmpty && RegExp(r'^\d+$').hasMatch(text)) {
+          return text;
+        }
+      }
+    }
+
+    final match = RegExp(
+      r'([?&](?:tid|id|torrentid|topicid)=)([^&#]+)',
+      caseSensitive: false,
+    ).firstMatch(raw);
+    return match?.group(2)?.trim() ?? '';
   }
 
   bool _isTorrentUrl(String url) {
@@ -3071,6 +3245,13 @@ class _BrowserPageState extends State<BrowserPage> {
     final uri = Uri.tryParse(trimmed);
     final path = uri?.path.toLowerCase() ?? lower;
     return path.endsWith('.torrent') || lower.contains('.torrent?');
+  }
+
+  bool _isLoadedPageUrl(String url) {
+    final uri = Uri.tryParse(url.trim());
+    return uri != null &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        !_isTorrentUrl(url);
   }
 
   bool _isTorrentDownloadRequest({
@@ -3093,7 +3274,7 @@ class _BrowserPageState extends State<BrowserPage> {
     return disposition.contains('.torrent');
   }
 
-  void _showTorrentDownloadFlow(String url) {
+  void _showTorrentDownloadFlow(String url, {String? restoreUrl}) {
     final torrentUrl = url.trim();
     if (torrentUrl.isEmpty || !mounted || _closing) return;
     if (_torrentSheetOpen && _activeTorrentUrl == torrentUrl) return;
@@ -3101,8 +3282,13 @@ class _BrowserPageState extends State<BrowserPage> {
     _torrentSheetOpen = true;
     _activeTorrentUrl = torrentUrl;
     if (mounted) {
+      final restoredUrl = (restoreUrl?.trim().isNotEmpty ?? false)
+          ? restoreUrl!.trim()
+          : _lastLoadedPageUrl.trim();
       setState(() {
-        _currentUrl = torrentUrl;
+        if (restoredUrl.isNotEmpty) {
+          _currentUrl = restoredUrl;
+        }
         _isLoading = false;
         _progress = 0;
       });
@@ -3111,33 +3297,41 @@ class _BrowserPageState extends State<BrowserPage> {
     var selectedDownloader = false;
     showAppSheet<void>(
       context: context,
+      title: '选择下载器',
+      showDefaultHeader: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      constraints: const BoxConstraints(
+        maxWidth: DownloaderSelectSheet.desktopWidth,
+      ),
       builder: (sheetContext) =>
           DownloaderSelectSheet(
-            onSelected: (downloader) {
+            useDefaultHeader: true,
+            onSelected: (downloader) async {
               selectedDownloader = true;
-              closeAppSheet(sheetContext);
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                if (!mounted || _closing) return;
-                final cookie = await _cookieHeaderFor(torrentUrl);
-                if (!mounted || _closing) return;
+              await closeAppSheet(sheetContext);
+              await Future<void>.delayed(const Duration(milliseconds: 80));
+              if (!mounted || _closing) return;
+              final cookie = await _cookieHeaderFor(torrentUrl);
+              if (!mounted || _closing) return;
 
-                showAppSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (_) =>
-                      PushTorrentSheet(
-                        downloader: downloader,
-                        initialUrl: torrentUrl,
-                        initialCookie: cookie,
-                        initialSiteId: widget.siteId,
-                      ),
-                ).whenComplete(() {
-                  _torrentSheetOpen = false;
-                  _activeTorrentUrl = null;
-                });
+              await showAppSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                constraints: const BoxConstraints(
+                  maxWidth: PushTorrentSheet.desktopWidth,
+                ),
+                builder: (_) =>
+                    PushTorrentSheet(
+                      downloader: downloader,
+                      initialUrl: torrentUrl,
+                      initialCookie: cookie,
+                      initialSiteId: widget.siteId,
+                    ),
+              ).whenComplete(() {
+                _torrentSheetOpen = false;
+                _activeTorrentUrl = null;
               });
             },
           ),
@@ -3661,6 +3855,7 @@ class _BrowserExtractedTorrent {
   });
 
   String get primaryUrl => magnetUrl.isNotEmpty ? magnetUrl : detailUrl;
+  bool get hasPushableUrl => primaryUrl.trim().isNotEmpty || detailUrl.trim().isNotEmpty;
   String get titleSortValue => (title.isNotEmpty ? title : primaryUrl).toLowerCase();
   int get seedersValue => _parseCompactInt(seeders);
   int get sizeBytes => _parseSizeToBytes(size);
