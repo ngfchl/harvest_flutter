@@ -98,6 +98,7 @@ class API {
 
   // 推送种子到下载器
   static const String PUSH_TORRENT_URL = "/api/option/push_torrent/";
+  static const String PUSH_TORRENT_MONKEY_URL = "/api/option/push_monkey/";
 
   // 下载器种子文件夹列表
 

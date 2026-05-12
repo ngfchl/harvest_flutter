@@ -6,6 +6,7 @@ import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
 import 'package:harvest/modules/search/widgets/downloader_select_sheet.dart';
 import 'package:harvest/modules/site/model/site_config.dart';
 import 'package:harvest/modules/site/provider/site_provider.dart';
+import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -1025,7 +1026,7 @@ class _BrowserPageState extends State<BrowserPage> {
     String tagFilter = '';
     _BrowserTorrentSortKey sortKey = _BrowserTorrentSortKey.seeders;
     bool sortAscending = false;
-    bool panelExpanded = false;
+    bool panelExpanded = !context.isMobile;
 
     final saleOptions = items
         .map((item) => item.sale.trim())
@@ -1180,23 +1181,134 @@ class _BrowserPageState extends State<BrowserPage> {
                           ],
                         ),
                       ),
-                      TextButton(
-                        onPressed: visibleEntries.isEmpty
+                      shadcn.OverlayManagerLayer(
+                        popoverHandler: const shadcn.PopoverOverlayHandler(),
+                        tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+                        menuHandler: const shadcn.PopoverOverlayHandler(),
+                        child: Builder(
+                          builder: (menuContext) => shadcn.Button.ghost(
+                            onPressed: items.isEmpty
+                                ? null
+                                : () => shadcn.showDropdown<void>(
+                                      context: menuContext,
+                                      alignment: Alignment.topCenter,
+                                      offset: const Offset(0, 8),
+                                      widthConstraint:
+                                          shadcn.PopoverConstraint.intrinsic,
+                                      heightConstraint:
+                                          shadcn.PopoverConstraint.intrinsic,
+                                      consumeOutsideTaps: false,
+                                      builder: (_) => AppDropdownMenu(
+                                        children: [
+                                          const shadcn.MenuLabel(
+                                            child: Text('批量选择'),
+                                          ),
+                                          const shadcn.MenuDivider(),
+                                          shadcn.MenuButton(
+                                            onPressed: (_) {
+                                              setDialogState(() {
+                                                selected
+                                                  ..clear()
+                                                  ..addAll(
+                                                    List<int>.generate(
+                                                      items.length,
+                                                      (i) => i,
+                                                    ),
+                                                  );
+                                              });
+                                            },
+                                            child: const Text('全选'),
+                                          ),
+                                          shadcn.MenuButton(
+                                            enabled: visibleEntries.isNotEmpty,
+                                            onPressed: (_) {
+                                              setDialogState(() {
+                                                for (final entry
+                                                    in visibleEntries) {
+                                                  if (selected.contains(
+                                                    entry.key,
+                                                  )) {
+                                                    selected.remove(
+                                                      entry.key,
+                                                    );
+                                                  } else {
+                                                    selected.add(entry.key);
+                                                  }
+                                                }
+                                              });
+                                            },
+                                            child: const Text('反选'),
+                                          ),
+                                          shadcn.MenuButton(
+                                            enabled: visibleEntries.isNotEmpty,
+                                            onPressed: (_) {
+                                              setDialogState(() {
+                                                for (final entry
+                                                    in visibleEntries) {
+                                                  selected.add(entry.key);
+                                                }
+                                              });
+                                            },
+                                            child: const Text('选择本页'),
+                                          ),
+                                          shadcn.MenuButton(
+                                            enabled: visibleEntries.isNotEmpty,
+                                            onPressed: (_) {
+                                              setDialogState(() {
+                                                selected
+                                                  ..clear()
+                                                  ..addAll(
+                                                    visibleEntries.map(
+                                                      (entry) => entry.key,
+                                                    ),
+                                                  );
+                                              });
+                                            },
+                                            child: const Text('仅选择本页'),
+                                          ),
+                                          shadcn.MenuButton(
+                                            enabled: visibleEntries.isNotEmpty &&
+                                                allVisibleSelected,
+                                            onPressed: (_) {
+                                              setDialogState(() {
+                                                for (final entry
+                                                    in visibleEntries) {
+                                                  selected.remove(entry.key);
+                                                }
+                                              });
+                                            },
+                                            child: const Text('取消本页'),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                            child: const Text('选择操作'),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      shadcn.Button.primary(
+                        onPressed: selected.isEmpty
                             ? null
-                            : () {
-                                setDialogState(() {
-                                  if (allVisibleSelected) {
-                                    for (final entry in visibleEntries) {
-                                      selected.remove(entry.key);
-                                    }
-                                  } else {
-                                    for (final entry in visibleEntries) {
-                                      selected.add(entry.key);
-                                    }
-                                  }
-                                });
+                            : () async {
+                                final picked = selected
+                                    .where(
+                                      (index) => index >= 0 && index < items.length,
+                                    )
+                                    .map((index) => items[index])
+                                    .toList();
+                                if (picked.isEmpty) {
+                                  Toast.warning('请先选择要推送的种子');
+                                  return;
+                                }
+                                if (context.isMobile) {
+                                  closeAppSheet(dialogContext);
+                                } else {
+                                  Navigator.of(dialogContext).pop();
+                                }
+                                await _showDownloaderSelectAndPush(picked);
                               },
-                        child: Text(allVisibleSelected ? '取消本页' : '全选本页'),
+                        child: Text('推送已选 (${selected.length})'),
                       ),
                     ],
                   ),
@@ -1692,6 +1804,71 @@ class _BrowserPageState extends State<BrowserPage> {
                   content: content(dialogContext, setDialogState),
                 ),
           ),
+    );
+  }
+
+  Future<void> _showDownloaderSelectAndPush(
+    List<_BrowserExtractedTorrent> torrents,
+  ) async {
+    if (!mounted || _closing || torrents.isEmpty) return;
+    await showAppSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => DownloaderSelectSheet(
+        onSelected: (downloader) {
+          closeAppSheet(sheetContext);
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            if (!mounted || _closing) return;
+            final urls = torrents
+                .map((item) {
+                  final primary = item.primaryUrl.trim();
+                  if (primary.isNotEmpty) return primary;
+                  return item.detailUrl.trim();
+                })
+                .where((url) => url.isNotEmpty)
+                .toSet()
+                .toList();
+            if (urls.isEmpty) {
+              Toast.warning('所选种子缺少可用链接');
+              return;
+            }
+            final cookie = await _cookieHeaderFor(
+              urls.first,
+            );
+            if (!mounted || _closing) return;
+            if (context.isMobile) {
+              showAppSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (_) => PushTorrentSheet(
+                  downloader: downloader,
+                  initialUrl: urls.join('\n'),
+                  initialCookie: cookie,
+                  initialSiteId: widget.siteId,
+                ),
+              );
+            } else {
+              await shadcn.showDialog<void>(
+                context: context,
+                builder: (dialogContext) => shadcn.AlertDialog(
+                  content: SizedBox(
+                    width: 760,
+                    height: MediaQuery.of(dialogContext).size.height * 0.78,
+                    child: PushTorrentSheet(
+                      downloader: downloader,
+                      initialUrl: urls.join('\n'),
+                      initialCookie: cookie,
+                      initialSiteId: widget.siteId,
+                    ),
+                  ),
+                ),
+              );
+            }
+          });
+        },
+      ),
     );
   }
 
