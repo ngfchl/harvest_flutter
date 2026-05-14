@@ -142,11 +142,25 @@ void showSiteForm(
 //  添加站点选择列表
 // ═══════════════════════════════════════════════════
 
-class AddSiteSheet extends ConsumerWidget {
+class AddSiteSheet extends ConsumerStatefulWidget {
   const AddSiteSheet({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AddSiteSheet> createState() => _AddSiteSheetState();
+}
+
+class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
+  final _searchCtrl = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final unaddedAsync = ref.watch(unaddedSitesProvider);
     final mobile = context.isMobile;
     final theme = shadcn.Theme.of(context);
@@ -181,9 +195,15 @@ class AddSiteSheet extends ConsumerWidget {
             ),
           );
         }
+
+        final filtered = _query.isEmpty
+            ? names
+            : names.where((n) => n.toLowerCase().contains(_query.toLowerCase())).toList();
+
         return Column(
           mainAxisSize: MainAxisSize.max,
           children: [
+            // ── 顶栏 ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
@@ -202,28 +222,78 @@ class AddSiteSheet extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
-                itemCount: names.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 8),
-                itemBuilder: (_, i) => DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: cs.muted.withValues(alpha: 0.28),
-                    borderRadius: siteRadius(context, size: "md"),
-                    border: Border.all(color: cs.border.withValues(alpha: 0.45), width: 0.5),
-                  ),
-                  child: ListTile(
-                    dense: true,
-                    title: Text(names[i]),
-                    trailing: Icon(shadcn.LucideIcons.chevronRight, size: 16, color: cs.mutedForeground),
-                    onTap: () => _openAddForm(context, ref, names[i]),
-                  ),
+
+            // ── 搜索框 ──
+            // ── 搜索框 ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: cs.muted.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: cs.border.withValues(alpha: 0.6), width: 0.6),
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 12),
+                    Icon(shadcn.LucideIcons.search, size: 15, color: cs.mutedForeground),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ShadTextField(
+                        controller: _searchCtrl,
+                        style: TextStyle(fontSize: 13.5, color: cs.foreground),
+                        hintText: '搜索站点…',
+                        onChanged: (v) => setState(() => _query = v.trim()),
+                      ),
+                    ),
+                    if (_query.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          _searchCtrl.clear();
+                          setState(() => _query = '');
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 4, right: 10),
+                          child: Icon(shadcn.LucideIcons.x, size: 14, color: cs.mutedForeground),
+                        ),
+                      )
+                    else
+                      const SizedBox(width: 12),
+                  ],
                 ),
               ),
             ),
+
+            const SizedBox(height: 6),
+
+            // ── 列表 ──
+            if (filtered.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text('没有匹配的站点', style: TextStyle(color: cs.mutedForeground, fontSize: 13)),
+              )
+            else
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+                  itemCount: filtered.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 8),
+                  itemBuilder: (_, i) => DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: cs.muted.withValues(alpha: 0.28),
+                      borderRadius: siteRadius(context, size: "md"),
+                      border: Border.all(color: cs.border.withValues(alpha: 0.45), width: 0.5),
+                    ),
+                    child: ListTile(
+                      dense: true,
+                      title: Text(filtered[i]),
+                      trailing: Icon(shadcn.LucideIcons.chevronRight, size: 16, color: cs.mutedForeground),
+                      onTap: () => _openAddForm(context, ref, filtered[i]),
+                    ),
+                  ),
+                ),
+              ),
           ],
         );
       },
