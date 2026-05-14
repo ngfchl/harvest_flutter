@@ -160,21 +160,27 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                     shrinkWrap: true,
                     padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
                     children: [
-                      for (final option in options)
-                        _SheetTile(
-                          title: Text(labelBuilder(option)),
-                          onTap: () {
-                            onSelected(option);
-                            Navigator.of(dialogContext).pop();
+                      for (final option in options) ...[
+                        Builder(
+                          builder: (context) {
+                            final selectedOption = option == selected;
+                            return _SheetTile(
+                              title: _selectedOptionTitle(dialogContext, labelBuilder(option), selectedOption),
+                              onTap: () {
+                                onSelected(option);
+                                Navigator.of(dialogContext).pop();
+                              },
+                              trailing: selectedOption
+                                  ? Icon(
+                                      shadcn.LucideIcons.check,
+                                      size: 18,
+                                      color: shadcn.Theme.of(dialogContext).colorScheme.primary,
+                                    )
+                                  : null,
+                            );
                           },
-                          trailing: option == selected
-                              ? Icon(
-                                  shadcn.LucideIcons.check,
-                                  size: 18,
-                                  color: shadcn.Theme.of(dialogContext).colorScheme.primary,
-                                )
-                              : null,
                         ),
+                      ],
                     ],
                   ),
                 ),
@@ -201,24 +207,23 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
             Flexible(
               child: SingleChildScrollView(
                 child: Column(
-                  children: options
-                      .map(
-                        (t) => _SheetTile(
-                          title: Text(labelBuilder(t)),
-                          onTap: () {
-                            onSelected(t);
-                            closeAppSheet(ctx);
-                          },
-                          trailing: t == selected
-                              ? Icon(
-                                  shadcn.LucideIcons.check,
-                                  size: 18,
-                                  color: shadcn.Theme.of(context).colorScheme.primary,
-                                )
-                              : null,
-                        ),
-                      )
-                      .toList(),
+                  children: options.map((t) {
+                    final selectedOption = t == selected;
+                    return _SheetTile(
+                      title: _selectedOptionTitle(context, labelBuilder(t), selectedOption),
+                      onTap: () {
+                        onSelected(t);
+                        closeAppSheet(ctx);
+                      },
+                      trailing: selectedOption
+                          ? Icon(
+                              shadcn.LucideIcons.check,
+                              size: 18,
+                              color: shadcn.Theme.of(context).colorScheme.primary,
+                            )
+                          : null,
+                    );
+                  }).toList(),
                 ),
               ),
             ),
@@ -226,6 +231,14 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _selectedOptionTitle(BuildContext context, String label, bool selected) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    return Text(
+      label,
+      style: TextStyle(color: selected ? cs.primary : null, fontWeight: selected ? FontWeight.w700 : FontWeight.w400),
     );
   }
 
@@ -290,8 +303,11 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                 children: [
                   _SheetTile(
                     title: const Text('选择任务'),
-                    subtitle: Text(_selectedTaskType ?? '请选择'),
-                    helper: const Text('选择要执行的后台任务类型'),
+                    subtitle: Text(
+                      _selectedTaskType ?? '请选择',
+                      style: shadcn.TextStyle(fontWeight: shadcn.FontWeight.bold, color: Colors.black, fontSize: 14),
+                    ),
+                    helper: _selectedTaskType != null ? null : const Text('选择要执行的后台任务类型'),
                     trailing: const Icon(shadcn.LucideIcons.chevronRight, size: 18),
                     onTap: () => _showSelectSheet<String>(
                       title: '选择任务',

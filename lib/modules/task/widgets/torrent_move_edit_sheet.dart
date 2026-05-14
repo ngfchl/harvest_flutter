@@ -20,7 +20,8 @@ class TorrentMoveEditSheet extends ConsumerStatefulWidget {
   const TorrentMoveEditSheet({super.key, this.task});
 
   @override
-  ConsumerState<TorrentMoveEditSheet> createState() => _TorrentMoveEditSheetState();
+  ConsumerState<TorrentMoveEditSheet> createState() =>
+      _TorrentMoveEditSheetState();
 }
 
 class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
@@ -47,7 +48,9 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
 
   /// 兼容不同下载器类型获取保存路径
   String _getSavePath(Downloader d) {
-    return d.isQb ? (d.qbPrefs?.savePath ?? '') : (d.trPrefs?.downloadDir ?? '');
+    return d.isQb
+        ? (d.qbPrefs?.savePath ?? '')
+        : (d.trPrefs?.downloadDir ?? '');
   }
 
   @override
@@ -58,9 +61,15 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
     _nameCtrl = TextEditingController(text: task?.name ?? '');
     _minuteCtrl = TextEditingController(text: task?.crontab?.minute ?? '1');
     _hourCtrl = TextEditingController(text: task?.crontab?.hour ?? '*');
-    _dayOfWeekCtrl = TextEditingController(text: task?.crontab?.dayOfWeek ?? '*');
-    _dayOfMonthCtrl = TextEditingController(text: task?.crontab?.dayOfMonth ?? '*');
-    _monthOfYearCtrl = TextEditingController(text: task?.crontab?.monthOfYear ?? '*');
+    _dayOfWeekCtrl = TextEditingController(
+      text: task?.crontab?.dayOfWeek ?? '*',
+    );
+    _dayOfMonthCtrl = TextEditingController(
+      text: task?.crontab?.dayOfMonth ?? '*',
+    );
+    _monthOfYearCtrl = TextEditingController(
+      text: task?.crontab?.monthOfYear ?? '*',
+    );
     _enabled = task?.enabled ?? true;
 
     try {
@@ -71,7 +80,9 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
 
     _skipChecking = _kwargs['skip_checking'] as bool? ?? false;
     _removeSourceTorrents = _kwargs['remove_source_torrents'] as bool? ?? false;
-    _folderMapCtrl = TextEditingController(text: (List<String>.from(_kwargs['folder_map'] ?? [])).join('\n'));
+    _folderMapCtrl = TextEditingController(
+      text: (List<String>.from(_kwargs['folder_map'] ?? [])).join('\n'),
+    );
   }
 
   @override
@@ -89,15 +100,21 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
   void _initDownloaders(List<Downloader> downloaders) {
     if (_downloadersInited) return;
     _downloadersInited = true;
-    _sourceDownloader = downloaders.firstWhereOrNull((d) => d.id == _kwargs['source_downloader_id']);
-    _distDownloader = downloaders.firstWhereOrNull((d) => d.id == _kwargs['dist_downloader_id']);
+    _sourceDownloader = downloaders.firstWhereOrNull(
+      (d) => d.id == _kwargs['source_downloader_id'],
+    );
+    _distDownloader = downloaders.firstWhereOrNull(
+      (d) => d.id == _kwargs['dist_downloader_id'],
+    );
   }
 
   void _onSourceChanged(List<Downloader> all, Downloader? item) {
     setState(() {
       _sourceDownloader = item;
       if (_distDownloader == null || _distDownloader?.host != item?.host) {
-        _distDownloader = all.firstWhereOrNull((d) => d.id != item?.id && d.host == item?.host);
+        _distDownloader = all.firstWhereOrNull(
+          (d) => d.id != item?.id && d.host == item?.host,
+        );
       }
       final savePath = item != null ? _getSavePath(item) : '';
       if (_folderMapCtrl.text.isEmpty) {
@@ -146,7 +163,10 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
       _kwargs
         ..['source_downloader_id'] = _sourceDownloader?.id
         ..['dist_downloader_id'] = _distDownloader?.id
-        ..['folder_map'] = _folderMapCtrl.text.split('\n').where((s) => s.trim().isNotEmpty).toList()
+        ..['folder_map'] = _folderMapCtrl.text
+            .split('\n')
+            .where((s) => s.trim().isNotEmpty)
+            .toList()
         ..['remove_source_torrents'] = _removeSourceTorrents
         ..['skip_checking'] = _skipChecking;
 
@@ -187,7 +207,9 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
   }) {
     showAppSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (ctx) => SafeArea(
         top: false,
         child: Column(
@@ -195,36 +217,62 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Column(
-                  children: options
-                      .map(
-                        (t) => _SheetTile(
-                          title: Text(labelBuilder(t)),
-                          onTap: () {
-                            onSelected(t);
-                            closeAppSheet(ctx);
-                          },
-                          trailing: t == selected
-                              ? Icon(
-                                  shadcn.LucideIcons.check,
-                                  size: 18,
-                                  color: shadcn.Theme.of(context).colorScheme.primary,
-                                )
-                              : null,
-                        ),
-                      )
-                      .toList(),
+                  children: options.map((t) {
+                    final selectedOption = t == selected;
+                    return _SheetTile(
+                      title: _selectedOptionTitle(
+                        context,
+                        labelBuilder(t),
+                        selectedOption,
+                      ),
+                      onTap: () {
+                        onSelected(t);
+                        closeAppSheet(ctx);
+                      },
+                      trailing: selectedOption
+                          ? Icon(
+                              shadcn.LucideIcons.check,
+                              size: 18,
+                              color: shadcn.Theme.of(
+                                context,
+                              ).colorScheme.primary,
+                            )
+                          : null,
+                    );
+                  }).toList(),
                 ),
               ),
             ),
             const SizedBox(height: 8),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _selectedOptionTitle(
+    BuildContext context,
+    String label,
+    bool selected,
+  ) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    return Text(
+      label,
+      style: TextStyle(
+        color: selected ? cs.primary : null,
+        fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
       ),
     );
   }
@@ -263,12 +311,18 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(_isEdit ? '编辑任务' : '添加任务', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          Text(
+            _isEdit ? '编辑任务' : '添加任务',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
           Row(
             children: [
               const Text('高级', style: TextStyle(fontSize: 13)),
               const SizedBox(width: 4),
-              Switch(value: _advance, onChanged: (v) => setState(() => _advance = v)),
+              Switch(
+                value: _advance,
+                onChanged: (v) => setState(() => _advance = v),
+              ),
             ],
           ),
         ],
@@ -284,7 +338,13 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
         _initDownloaders(downloaders);
 
         final distOptions = _sourceDownloader != null
-            ? downloaders.where((d) => d.id != _sourceDownloader?.id && d.host == _sourceDownloader?.host).toList()
+            ? downloaders
+                  .where(
+                    (d) =>
+                        d.id != _sourceDownloader?.id &&
+                        d.host == _sourceDownloader?.host,
+                  )
+                  .toList()
             : <Downloader>[];
 
         return SingleChildScrollView(
@@ -305,7 +365,10 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
                     title: const Text('选择源下载器'),
                     subtitle: Text(_sourceDownloader?.name ?? '请选择'),
                     helper: const Text('迁移任务从这个下载器读取种子与保存路径'),
-                    trailing: const Icon(shadcn.LucideIcons.chevronRight, size: 18),
+                    trailing: const Icon(
+                      shadcn.LucideIcons.chevronRight,
+                      size: 18,
+                    ),
                     onTap: () => _showSelectSheet<Downloader>(
                       title: '选择源下载器',
                       options: downloaders,
@@ -318,7 +381,10 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
                     title: const Text('选择目标下载器'),
                     subtitle: Text(_distDownloader?.name ?? '请选择'),
                     helper: const Text('迁移后的种子会推送到这个下载器'),
-                    trailing: const Icon(shadcn.LucideIcons.chevronRight, size: 18),
+                    trailing: const Icon(
+                      shadcn.LucideIcons.chevronRight,
+                      size: 18,
+                    ),
                     onTap: () => _showSelectSheet<Downloader>(
                       title: '选择目标下载器',
                       options: distOptions,
@@ -345,19 +411,26 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
                   _SheetTile(
                     title: const Text('开启任务'),
                     helper: const Text('关闭后任务不会被调度执行'),
-                    trailing: Switch(value: _enabled, onChanged: (v) => setState(() => _enabled = v)),
+                    trailing: Switch(
+                      value: _enabled,
+                      onChanged: (v) => setState(() => _enabled = v),
+                    ),
                   ),
                   _SheetTile(
                     title: const Text('跳过校验'),
                     subtitle: const Text('仅目标为qBittorrent下载器时生效'),
-                    trailing: Switch(value: _skipChecking, onChanged: (v) => setState(() => _skipChecking = v)),
+                    trailing: Switch(
+                      value: _skipChecking,
+                      onChanged: (v) => setState(() => _skipChecking = v),
+                    ),
                   ),
                   _SheetTile(
                     title: const Text('删除源种子'),
                     subtitle: const Text('种子迁移任务完成是否删除源种子'),
                     trailing: Switch(
                       value: _removeSourceTorrents,
-                      onChanged: (v) => setState(() => _removeSourceTorrents = v),
+                      onChanged: (v) =>
+                          setState(() => _removeSourceTorrents = v),
                     ),
                   ),
                 ],
@@ -371,7 +444,12 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
                 helperText: 'Cron 分钟位，支持 *、*/5、1,15,30 这类写法',
               ),
               const SizedBox(height: 12),
-              _TaskFormField(controller: _hourCtrl, label: '小时', hintText: '* 或 0-23', helperText: 'Cron 小时位，* 表示每小时'),
+              _TaskFormField(
+                controller: _hourCtrl,
+                label: '小时',
+                hintText: '* 或 0-23',
+                helperText: 'Cron 小时位，* 表示每小时',
+              ),
 
               if (_advance) ...[
                 const SizedBox(height: 12),
@@ -422,7 +500,9 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
                   ? const SizedBox(
                       width: 16,
                       height: 16,
-                      child: shadcn.Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
+                      child: shadcn.Center(
+                        child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+                      ),
                     )
                   : Center(child: const Text('保存')),
             ),
@@ -454,10 +534,16 @@ class _TaskFormField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
         if (helperText != null) ...[
           const SizedBox(height: 4),
-          Text(helperText!, style: TextStyle(fontSize: 12, color: cs.mutedForeground)),
+          Text(
+            helperText!,
+            style: TextStyle(fontSize: 12, color: cs.mutedForeground),
+          ),
         ],
         const SizedBox(height: 8),
         ShadTextField(
@@ -478,7 +564,13 @@ class _SheetTile extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
 
-  const _SheetTile({required this.title, this.subtitle, this.helper, this.trailing, this.onTap});
+  const _SheetTile({
+    required this.title,
+    this.subtitle,
+    this.helper,
+    this.trailing,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -493,7 +585,10 @@ class _SheetTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  DefaultTextStyle.merge(style: const TextStyle(fontSize: 14), child: title),
+                  DefaultTextStyle.merge(
+                    style: const TextStyle(fontSize: 14),
+                    child: title,
+                  ),
                   if (helper != null) ...[
                     const SizedBox(height: 2),
                     DefaultTextStyle.merge(
