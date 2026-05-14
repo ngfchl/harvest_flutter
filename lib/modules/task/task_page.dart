@@ -2,6 +2,7 @@
 // pages/task/task_page.dart
 // ========================
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
@@ -403,6 +404,8 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
 
     return AppContextMenu(
       items: _taskMenuItems(context, task),
+      openOnTap: isMobile,
+      openOnLongPress: !isMobile,
       child: shadcn.Card(
         filled: true,
         fillColor: cs.card,
@@ -479,6 +482,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
   }
 
   List<shadcn.MenuItem> _taskMenuItems(BuildContext context, Schedule task) {
+    final pageContext = this.context;
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
 
@@ -491,6 +495,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
       final color = destructive ? cs.destructive : cs.foreground;
       return shadcn.MenuButton(
         leading: Icon(icon, size: theme.scaling * 15, color: color),
+        autoClose: false,
         onPressed: onPressed,
         child: SizedBox(
           width: 140,
@@ -507,7 +512,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
         icon: shadcn.LucideIcons.play,
         title: '立即执行',
         onPressed: (ctx) async {
-          await shadcn.closeOverlay(ctx);
+          unawaited(shadcn.closeOverlay(ctx));
           await ref.read(scheduleProvider.notifier).runOnce(task.id);
         },
       ),
@@ -515,9 +520,10 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
         icon: shadcn.LucideIcons.pencil,
         title: '编辑',
         onPressed: (ctx) async {
-          await shadcn.closeOverlay(ctx);
-          if (!context.mounted) return;
-          _openEdit(context, ref, task);
+          unawaited(shadcn.closeOverlay(ctx));
+          await Future<void>.delayed(const Duration(milliseconds: 240));
+          if (!mounted || !pageContext.mounted) return;
+          _openEdit(pageContext, ref, task);
         },
       ),
       const shadcn.MenuDivider(),
@@ -526,9 +532,10 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
         title: '删除',
         destructive: true,
         onPressed: (ctx) async {
-          await shadcn.closeOverlay(ctx);
-          if (!context.mounted) return;
-          _DeleteConfirmDialog.show(context, ref, task);
+          unawaited(shadcn.closeOverlay(ctx));
+          await Future<void>.delayed(const Duration(milliseconds: 240));
+          if (!mounted || !pageContext.mounted) return;
+          _DeleteConfirmDialog.show(pageContext, ref, task);
         },
       ),
     ];
