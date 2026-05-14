@@ -373,48 +373,47 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     final cs = shadcn.Theme.of(context).colorScheme;
     final showBack = widget.showBackToList && !_isEdit;
 
-    return Row(
-      children: [
-        if (showBack)
-          shadcn.IconButton.ghost(onPressed: _backToAddList, icon: const Icon(shadcn.LucideIcons.chevronLeft, size: 18))
-        else
-          Container(
-            width: 32,
-            height: 2,
-            decoration: BoxDecoration(
-              color: cs.primary.withValues(alpha: 0.1),
-              borderRadius: siteRadius(context, size: "md"),
+    return SizedBox(
+      height: 44,
+      child: Row(
+        children: [
+          shadcn.IconButton.ghost(
+            onPressed: showBack ? _backToAddList : () => closeAppSheet(context),
+            icon: Icon(
+              showBack ? shadcn.LucideIcons.chevronLeft : shadcn.LucideIcons.arrowLeft,
+              size: 18,
+              color: cs.foreground.withValues(alpha: 0.7),
             ),
-            child: Icon(shadcn.LucideIcons.globe, size: 18, color: cs.primary),
           ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            _isEdit ? '编辑站点' : '添加站点',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-        ),
-        const SizedBox(width: 10),
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: context.isMobile ? 150 : 220),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: cs.primary.withValues(alpha: 0.08),
-              borderRadius: siteRadius(context, size: "md"),
-              border: Border.all(color: cs.primary.withValues(alpha: 0.2), width: 0.5),
-            ),
+          const SizedBox(width: 6),
+          Expanded(
             child: Text(
-              _siteName,
+              _isEdit ? '编辑站点' : '添加站点',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.primary),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 10),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: context.isMobile ? 150 : 220),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: cs.primary.withValues(alpha: 0.08),
+                borderRadius: siteRadius(context, size: "md"),
+                border: Border.all(color: cs.primary.withValues(alpha: 0.2), width: 0.5),
+              ),
+              child: Text(
+                _siteName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.primary),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
