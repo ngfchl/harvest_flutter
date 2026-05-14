@@ -10,6 +10,7 @@ class ShellBottomNavigation extends StatefulWidget {
   final int index;
   final ValueChanged<int> onChange;
   final bool dashboardChrome;
+  final bool showNews;
   final bool useShaderLiquidGlass;
 
   static const _barHeight = 58.0;
@@ -23,11 +24,15 @@ class ShellBottomNavigation extends StatefulWidget {
     required this.index,
     required this.onChange,
     this.dashboardChrome = false,
+    this.showNews = true,
     this.useShaderLiquidGlass = false,
   });
 
   static double reservedHeight(BuildContext context) {
-    return _topGap + _barHeight + _bottomGap + MediaQuery.viewPaddingOf(context).bottom;
+    return _topGap +
+        _barHeight +
+        _bottomGap +
+        MediaQuery.viewPaddingOf(context).bottom;
   }
 
   @override
@@ -39,6 +44,7 @@ class ShellBottomControls extends StatelessWidget {
   final ValueChanged<int> onChange;
   final VoidCallback onSearchPress;
   final bool dashboardChrome;
+  final bool showNews;
   final bool useShaderLiquidGlass;
 
   static const _maxWidth = 720.0;
@@ -49,6 +55,7 @@ class ShellBottomControls extends StatelessWidget {
     required this.onChange,
     required this.onSearchPress,
     this.dashboardChrome = false,
+    this.showNews = true,
     this.useShaderLiquidGlass = false,
   });
 
@@ -66,6 +73,7 @@ class ShellBottomControls extends StatelessWidget {
                 index: index,
                 onChange: onChange,
                 dashboardChrome: dashboardChrome,
+                showNews: showNews,
                 useShaderLiquidGlass: useShaderLiquidGlass,
               ),
             ),
@@ -81,13 +89,22 @@ class ShellBottomControls extends StatelessWidget {
   }
 }
 
-class _ShellBottomNavigationState extends State<ShellBottomNavigation> with SingleTickerProviderStateMixin {
-  static const _items = [
-    _ShellNavItem(label: '资讯', icon: shadcn.LucideIcons.newspaper),
-    _ShellNavItem(label: '站点', icon: shadcn.LucideIcons.globe),
-    _ShellNavItem(label: '仪表', icon: shadcn.LucideIcons.layoutDashboard),
-    _ShellNavItem(label: '下载', icon: shadcn.LucideIcons.download),
-    _ShellNavItem(label: '任务', icon: shadcn.LucideIcons.listTodo),
+class _ShellBottomNavigationState extends State<ShellBottomNavigation>
+    with SingleTickerProviderStateMixin {
+  static const _allItems = [
+    _ShellNavItem(
+      label: '资讯',
+      icon: shadcn.LucideIcons.newspaper,
+      pageIndex: 0,
+    ),
+    _ShellNavItem(label: '站点', icon: shadcn.LucideIcons.globe, pageIndex: 1),
+    _ShellNavItem(
+      label: '仪表',
+      icon: shadcn.LucideIcons.layoutDashboard,
+      pageIndex: 2,
+    ),
+    _ShellNavItem(label: '下载', icon: shadcn.LucideIcons.download, pageIndex: 3),
+    _ShellNavItem(label: '任务', icon: shadcn.LucideIcons.listTodo, pageIndex: 4),
   ];
   static const _dragDwellDuration = Duration(milliseconds: 420);
   static const _dashboardPanel = Color(0xFF0D1B2E);
@@ -102,13 +119,23 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation> with Sing
   int? _dragTargetIndex;
   Timer? _dragDwellTimer;
 
-  int get _widgetIndex => widget.index.clamp(0, _items.length - 1).toInt();
+  List<_ShellNavItem> get _items =>
+      widget.showNews ? _allItems : _allItems.skip(1).toList(growable: false);
+
+  int get _widgetIndex {
+    final index = _items.indexWhere((item) => item.pageIndex == widget.index);
+    return index >= 0 ? index : 0;
+  }
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = _widgetIndex;
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 360), value: 1);
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 360),
+      value: 1,
+    );
     _position = AlwaysStoppedAnimation(_selectedIndex.toDouble());
   }
 
@@ -156,27 +183,37 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation> with Sing
             final selectionOpacity = _selectionOpacity(_controller.value);
             final dragging = _dragVisualPosition != null;
             final showGlass = dragging || _controller.value < 1;
-            final animationEffect = 1 - Curves.easeInOutCubic.transform(_controller.value);
+            final animationEffect =
+                1 - Curves.easeInOutCubic.transform(_controller.value);
             final switchEffect = dragging ? 0.62 : animationEffect;
             final viewportHeight =
-                ShellBottomNavigation._barHeight + ShellBottomNavigation._switchOverflow * switchEffect;
+                ShellBottomNavigation._barHeight +
+                ShellBottomNavigation._switchOverflow * switchEffect;
             final barScale = 1 + 0.014 * switchEffect;
 
             return LayoutBuilder(
               builder: (context, constraints) {
                 final width = constraints.maxWidth;
                 final itemWidth = width / _items.length;
-                final lensWidth = math.min(math.max(itemWidth + 2, 58), 84) + 4 * switchEffect;
-                final lensHeight = 48.0 + ((ShellBottomNavigation._barHeight + 4) - 48) * switchEffect;
+                final lensWidth =
+                    math.min(math.max(itemWidth + 2, 58), 84) +
+                    4 * switchEffect;
+                final lensHeight =
+                    48.0 +
+                    ((ShellBottomNavigation._barHeight + 4) - 48) *
+                        switchEffect;
                 final visualPosition = _dragVisualPosition ?? _position.value;
-                final lensLeft = (visualPosition * itemWidth) + (itemWidth - lensWidth) / 2;
+                final lensLeft =
+                    (visualPosition * itemWidth) + (itemWidth - lensWidth) / 2;
                 final maxLensLeft = math.max(0.0, width - lensWidth);
 
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTapUp: (details) {
                     _clearDragVisual();
-                    _handleChange(_indexAt(details.localPosition.dx, itemWidth));
+                    _handleChange(
+                      _indexAt(details.localPosition.dx, itemWidth),
+                    );
                   },
                   onPanStart: (details) {
                     _handleDragMove(details.localPosition.dx, itemWidth);
@@ -252,7 +289,11 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation> with Sing
                 top: (viewportHeight - lensHeight) / 2,
                 width: lensWidth,
                 height: lensHeight,
-                child: IgnorePointer(child: _CompositedLiquidLens(dashboardChrome: widget.dashboardChrome)),
+                child: IgnorePointer(
+                  child: _CompositedLiquidLens(
+                    dashboardChrome: widget.dashboardChrome,
+                  ),
+                ),
               ),
               Center(
                 child: SizedBox(
@@ -311,7 +352,10 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation> with Sing
                 width: lensWidth,
                 height: lensHeight,
                 visibility: showGlass,
-                position: LiquidGlassOffsetPosition(left: lensLeft, top: (viewportHeight - lensHeight) / 2),
+                position: LiquidGlassOffsetPosition(
+                  left: lensLeft,
+                  top: (viewportHeight - lensHeight) / 2,
+                ),
                 magnification: 1.04,
                 distortion: 0.18,
                 distortionWidth: 42,
@@ -319,7 +363,9 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation> with Sing
                 saturation: 1.08,
                 color: widget.dashboardChrome
                     ? _dashboardPanelSoft.withValues(alpha: 0.28)
-                    : shadcn.Theme.of(context).colorScheme.background.withValues(alpha: 0.1),
+                    : shadcn.Theme.of(
+                        context,
+                      ).colorScheme.background.withValues(alpha: 0.1),
                 blur: const LiquidGlassBlur(sigmaX: 0.65, sigmaY: 0.65),
                 shape: const RoundedRectangleShape(
                   cornerRadius: 24,
@@ -352,13 +398,15 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation> with Sing
     final next = index.clamp(0, _items.length - 1).toInt();
     if (next == _selectedIndex) return;
     _animateTo(next, from: animationFrom);
-    widget.onChange(next);
+    widget.onChange(_items[next].pageIndex);
   }
 
   void _handleDragMove(double dx, double itemWidth) {
     if (itemWidth <= 0) return;
 
-    final visualPosition = (dx / itemWidth).clamp(0.0, (_items.length - 1).toDouble()).toDouble();
+    final visualPosition = (dx / itemWidth)
+        .clamp(0.0, (_items.length - 1).toDouble())
+        .toDouble();
 
     setState(() => _dragVisualPosition = visualPosition);
     _trackDragTarget(_indexAt(dx, itemWidth));
@@ -376,7 +424,9 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation> with Sing
     }
 
     _dragDwellTimer = Timer(_dragDwellDuration, () {
-      if (!mounted || _dragVisualPosition == null || _dragTargetIndex != targetIndex) {
+      if (!mounted ||
+          _dragVisualPosition == null ||
+          _dragTargetIndex != targetIndex) {
         return;
       }
 
@@ -446,7 +496,9 @@ class _NavigationChrome extends StatelessWidget {
     final shadows = dashboardChrome
         ? [
             BoxShadow(
-              color: _ShellBottomNavigationState._dashboardCyan.withValues(alpha: 0.14),
+              color: _ShellBottomNavigationState._dashboardCyan.withValues(
+                alpha: 0.14,
+              ),
               blurRadius: 26,
               offset: const Offset(0, 10),
             ),
@@ -457,8 +509,16 @@ class _NavigationChrome extends StatelessWidget {
             ),
           ]
         : const [
-            BoxShadow(color: Color(0x26000000), blurRadius: 24, offset: Offset(0, 10)),
-            BoxShadow(color: Color(0x12000000), blurRadius: 6, offset: Offset(0, 2)),
+            BoxShadow(
+              color: Color(0x26000000),
+              blurRadius: 24,
+              offset: Offset(0, 10),
+            ),
+            BoxShadow(
+              color: Color(0x12000000),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
           ];
 
     final chrome = DecoratedBox(
@@ -485,7 +545,10 @@ class _NavigationChrome extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: radius,
-      child: BackdropFilter(filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10), child: chrome),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: chrome,
+      ),
     );
   }
 }
@@ -529,8 +592,12 @@ class _CompositedLiquidLens extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = shadcn.Theme.of(context).colorScheme;
-    final tint = dashboardChrome ? _ShellBottomNavigationState._dashboardPanelSoft : colors.background;
-    final highlight = dashboardChrome ? _ShellBottomNavigationState._dashboardCyan : colors.primary;
+    final tint = dashboardChrome
+        ? _ShellBottomNavigationState._dashboardPanelSoft
+        : colors.background;
+    final highlight = dashboardChrome
+        ? _ShellBottomNavigationState._dashboardCyan
+        : colors.primary;
     final border = dashboardChrome
         ? _ShellBottomNavigationState._dashboardCyan.withValues(alpha: 0.36)
         : colors.foreground.withValues(alpha: 0.18);
@@ -557,7 +624,11 @@ class _CompositedLiquidLens extends StatelessWidget {
             blurRadius: 8,
             offset: const Offset(-2, -2),
           ),
-          BoxShadow(color: const Color(0xFF000000).withValues(alpha: 0.14), blurRadius: 12, offset: const Offset(0, 6)),
+          BoxShadow(
+            color: const Color(0xFF000000).withValues(alpha: 0.14),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: Stack(
@@ -580,7 +651,10 @@ class _CompositedLiquidLens extends StatelessWidget {
             width: 7,
             height: 7,
             child: DecoratedBox(
-              decoration: BoxDecoration(color: const Color(0xFFFFFFFF).withValues(alpha: 0.38), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFFFF).withValues(alpha: 0.38),
+                shape: BoxShape.circle,
+              ),
             ),
           ),
         ],
@@ -605,7 +679,9 @@ class _NavigationItemButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = shadcn.Theme.of(context).colorScheme;
-    final activeColor = dashboardChrome ? _ShellBottomNavigationState._dashboardCyan : colors.primary;
+    final activeColor = dashboardChrome
+        ? _ShellBottomNavigationState._dashboardCyan
+        : colors.primary;
     final inactiveColor = dashboardChrome
         ? _ShellBottomNavigationState._dashboardMuted.withValues(alpha: 0.82)
         : colors.foreground.withValues(alpha: 0.58);
@@ -613,12 +689,26 @@ class _NavigationItemButton extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final maxBackgroundWidth = constraints.maxWidth.isFinite ? constraints.maxWidth - 8 : 70.0;
-        final maxBackgroundHeight = constraints.maxHeight.isFinite ? constraints.maxHeight - 6 : 46.0;
-        final backgroundWidth = math.min(76.0, math.max(44.0, maxBackgroundWidth));
-        final backgroundHeight = math.min(46.0, math.max(38.0, maxBackgroundHeight));
-        final highlightOpacity = selected ? math.max(selectedBackgroundOpacity, 0.24) : 0.0;
-        final indicatorOpacity = selected ? math.max(selectedBackgroundOpacity, 0.62) : 0.0;
+        final maxBackgroundWidth = constraints.maxWidth.isFinite
+            ? constraints.maxWidth - 8
+            : 70.0;
+        final maxBackgroundHeight = constraints.maxHeight.isFinite
+            ? constraints.maxHeight - 6
+            : 46.0;
+        final backgroundWidth = math.min(
+          76.0,
+          math.max(44.0, maxBackgroundWidth),
+        );
+        final backgroundHeight = math.min(
+          46.0,
+          math.max(38.0, maxBackgroundHeight),
+        );
+        final highlightOpacity = selected
+            ? math.max(selectedBackgroundOpacity, 0.24)
+            : 0.0;
+        final indicatorOpacity = selected
+            ? math.max(selectedBackgroundOpacity, 0.62)
+            : 0.0;
 
         return Stack(
           clipBehavior: Clip.hardEdge,
@@ -642,7 +732,10 @@ class _NavigationItemButton extends StatelessWidget {
                           activeColor.withValues(alpha: 0.16),
                         ],
                       ),
-                      border: Border.all(color: activeColor.withValues(alpha: 0.24), width: 0.7),
+                      border: Border.all(
+                        color: activeColor.withValues(alpha: 0.24),
+                        width: 0.7,
+                      ),
                       borderRadius: BorderRadius.circular(18),
                     ),
                   ),
@@ -660,7 +753,12 @@ class _NavigationItemButton extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: activeColor,
                       borderRadius: BorderRadius.circular(999),
-                      boxShadow: [BoxShadow(color: activeColor.withValues(alpha: 0.34), blurRadius: 8)],
+                      boxShadow: [
+                        BoxShadow(
+                          color: activeColor.withValues(alpha: 0.34),
+                          blurRadius: 8,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -717,7 +815,8 @@ class ShellSearchButton extends StatefulWidget {
   State<ShellSearchButton> createState() => _ShellSearchButtonState();
 }
 
-class _ShellSearchButtonState extends State<ShellSearchButton> with SingleTickerProviderStateMixin {
+class _ShellSearchButtonState extends State<ShellSearchButton>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _pressController;
   bool _opening = false;
 
@@ -760,11 +859,15 @@ class _ShellSearchButtonState extends State<ShellSearchButton> with SingleTicker
   @override
   Widget build(BuildContext context) {
     final colors = shadcn.Theme.of(context).colorScheme;
-    final background = widget.dashboardChrome ? _ShellBottomNavigationState._dashboardPanel : colors.background;
+    final background = widget.dashboardChrome
+        ? _ShellBottomNavigationState._dashboardPanel
+        : colors.background;
     final border = widget.dashboardChrome
         ? _ShellBottomNavigationState._dashboardCyan.withValues(alpha: 0.26)
         : colors.border;
-    final primary = widget.dashboardChrome ? _ShellBottomNavigationState._dashboardCyan : colors.primary;
+    final primary = widget.dashboardChrome
+        ? _ShellBottomNavigationState._dashboardCyan
+        : colors.primary;
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Padding(
@@ -788,7 +891,9 @@ class _ShellSearchButtonState extends State<ShellSearchButton> with SingleTicker
             child: AnimatedBuilder(
               animation: _pressController,
               builder: (context, _) {
-                final effect = Curves.easeOutCubic.transform(_pressController.value);
+                final effect = Curves.easeOutCubic.transform(
+                  _pressController.value,
+                );
                 final buttonScale = 1 + 0.008 * effect;
 
                 if (widget.useShaderLiquidGlass) {
@@ -867,7 +972,9 @@ class _ShellSearchButtonState extends State<ShellSearchButton> with SingleTicker
                 distortionWidth: 42,
                 chromaticAberration: 0.002,
                 saturation: 1.08,
-                color: background.withValues(alpha: widget.dashboardChrome ? 0.26 : 0.10),
+                color: background.withValues(
+                  alpha: widget.dashboardChrome ? 0.26 : 0.10,
+                ),
                 blur: const LiquidGlassBlur(sigmaX: 0.65, sigmaY: 0.65),
                 shape: const RoundedRectangleShape(
                   cornerRadius: 24,
@@ -907,12 +1014,16 @@ class _SearchButtonChrome extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: background.withValues(alpha: 0.78),
-        border: Border.all(color: border.withValues(alpha: dashboardChrome ? 1 : 0.42)),
+        border: Border.all(
+          color: border.withValues(alpha: dashboardChrome ? 1 : 0.42),
+        ),
         borderRadius: BorderRadius.circular(22),
         boxShadow: dashboardChrome
             ? [
                 BoxShadow(
-                  color: _ShellBottomNavigationState._dashboardCyan.withValues(alpha: 0.14),
+                  color: _ShellBottomNavigationState._dashboardCyan.withValues(
+                    alpha: 0.14,
+                  ),
                   blurRadius: 24,
                   offset: const Offset(0, 10),
                 ),
@@ -923,12 +1034,22 @@ class _SearchButtonChrome extends StatelessWidget {
                 ),
               ]
             : const [
-                BoxShadow(color: Color(0x26000000), blurRadius: 24, offset: Offset(0, 10)),
-                BoxShadow(color: Color(0x12000000), blurRadius: 6, offset: Offset(0, 2)),
+                BoxShadow(
+                  color: Color(0x26000000),
+                  blurRadius: 24,
+                  offset: Offset(0, 10),
+                ),
+                BoxShadow(
+                  color: Color(0x12000000),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
               ],
       ),
       child: showIcon
-          ? Center(child: Icon(shadcn.LucideIcons.search, size: 22, color: primary))
+          ? Center(
+              child: Icon(shadcn.LucideIcons.search, size: 22, color: primary),
+            )
           : const SizedBox.expand(),
     );
   }
@@ -982,7 +1103,9 @@ class _CompositedLiquidSearchButton extends StatelessWidget {
                             colors: [
                               const Color(0xFFFFFFFF).withValues(alpha: 0.34),
                               background.withValues(alpha: 0.04),
-                              primary.withValues(alpha: dashboardChrome ? 0.18 : 0.12),
+                              primary.withValues(
+                                alpha: dashboardChrome ? 0.18 : 0.12,
+                              ),
                             ],
                           ),
                         ),
@@ -1034,7 +1157,9 @@ class _CompositedLiquidSearchButton extends StatelessWidget {
               ),
             ),
           ),
-        Center(child: Icon(shadcn.LucideIcons.search, size: 22, color: primary)),
+        Center(
+          child: Icon(shadcn.LucideIcons.search, size: 22, color: primary),
+        ),
       ],
     );
   }
@@ -1045,7 +1170,11 @@ class _SearchPressLiquidLayer extends StatelessWidget {
   final Color background;
   final bool dashboardChrome;
 
-  const _SearchPressLiquidLayer({required this.primary, required this.background, required this.dashboardChrome});
+  const _SearchPressLiquidLayer({
+    required this.primary,
+    required this.background,
+    required this.dashboardChrome,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1058,7 +1187,10 @@ class _SearchPressLiquidLayer extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: radius,
-            border: Border.all(color: primary.withValues(alpha: dashboardChrome ? 0.34 : 0.24), width: 0.8),
+            border: Border.all(
+              color: primary.withValues(alpha: dashboardChrome ? 0.34 : 0.24),
+              width: 0.8,
+            ),
             gradient: RadialGradient(
               center: const Alignment(-0.35, -0.45),
               radius: 1.05,
@@ -1069,7 +1201,12 @@ class _SearchPressLiquidLayer extends StatelessWidget {
               ],
               stops: const [0.0, 0.48, 1.0],
             ),
-            boxShadow: [BoxShadow(color: primary.withValues(alpha: dashboardChrome ? 0.24 : 0.16), blurRadius: 18)],
+            boxShadow: [
+              BoxShadow(
+                color: primary.withValues(alpha: dashboardChrome ? 0.24 : 0.16),
+                blurRadius: 18,
+              ),
+            ],
           ),
           child: Stack(
             children: [
@@ -1108,6 +1245,11 @@ class _SearchPressLiquidLayer extends StatelessWidget {
 class _ShellNavItem {
   final String label;
   final IconData icon;
+  final int pageIndex;
 
-  const _ShellNavItem({required this.label, required this.icon});
+  const _ShellNavItem({
+    required this.label,
+    required this.icon,
+    required this.pageIndex,
+  });
 }

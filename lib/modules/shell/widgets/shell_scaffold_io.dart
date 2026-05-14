@@ -13,6 +13,7 @@ class ShellScaffold extends StatelessWidget {
   final ValueChanged<int> onChange;
   final Object? scaffoldStyle;
   final bool dashboardChrome;
+  final bool showNews;
 
   const ShellScaffold({
     super.key,
@@ -22,6 +23,7 @@ class ShellScaffold extends StatelessWidget {
     required this.onChange,
     this.scaffoldStyle,
     this.dashboardChrome = false,
+    this.showNews = true,
   });
 
   static const _routeItemCount = 5;
@@ -33,6 +35,7 @@ class ShellScaffold extends StatelessWidget {
       selectedSfSymbol: 'newspaper.fill',
       cupertinoIcon: CupertinoIcons.news,
       selectedCupertinoIcon: CupertinoIcons.news_solid,
+      pageIndex: 0,
     ),
     _AdaptiveShellNavItem(
       label: '站点',
@@ -40,6 +43,7 @@ class ShellScaffold extends StatelessWidget {
       selectedSfSymbol: 'globe',
       cupertinoIcon: CupertinoIcons.globe,
       selectedCupertinoIcon: CupertinoIcons.globe,
+      pageIndex: 1,
     ),
     _AdaptiveShellNavItem(
       label: '仪表',
@@ -47,6 +51,7 @@ class ShellScaffold extends StatelessWidget {
       selectedSfSymbol: 'square.grid.2x2.fill',
       cupertinoIcon: CupertinoIcons.square_grid_2x2,
       selectedCupertinoIcon: CupertinoIcons.square_grid_2x2_fill,
+      pageIndex: 2,
     ),
     _AdaptiveShellNavItem(
       label: '下载',
@@ -54,6 +59,7 @@ class ShellScaffold extends StatelessWidget {
       selectedSfSymbol: 'arrow.down.circle.fill',
       cupertinoIcon: CupertinoIcons.arrow_down_circle,
       selectedCupertinoIcon: CupertinoIcons.arrow_down_circle_fill,
+      pageIndex: 3,
     ),
     _AdaptiveShellNavItem(
       label: '任务',
@@ -61,6 +67,7 @@ class ShellScaffold extends StatelessWidget {
       selectedSfSymbol: 'checkmark.square.fill',
       cupertinoIcon: CupertinoIcons.checkmark_square,
       selectedCupertinoIcon: CupertinoIcons.checkmark_square_fill,
+      pageIndex: 4,
     ),
     _AdaptiveShellNavItem(
       label: '搜索',
@@ -68,13 +75,25 @@ class ShellScaffold extends StatelessWidget {
       selectedSfSymbol: 'magnifyingglass',
       cupertinoIcon: CupertinoIcons.search,
       selectedCupertinoIcon: CupertinoIcons.search,
+      pageIndex: -1,
       isSearch: true,
     ),
   ];
 
-  int get _selectedIndex => index.clamp(0, _routeItemCount - 1).toInt();
+  List<_AdaptiveShellNavItem> get _visibleItems => showNews
+      ? _items
+      : _items.where((item) => item.pageIndex != 0).toList(growable: false);
 
-  int get _searchIndex => _items.length - 1;
+  int get _selectedPageIndex => index.clamp(0, _routeItemCount - 1).toInt();
+
+  int get _selectedIndex {
+    final visualIndex = _visibleItems.indexWhere(
+      (item) => item.pageIndex == _selectedPageIndex,
+    );
+    return visualIndex >= 0 ? visualIndex : 0;
+  }
+
+  int get _searchIndex => _visibleItems.length - 1;
 
   void _openSearchPage(BuildContext context) {
     Navigator.of(
@@ -88,7 +107,8 @@ class ShellScaffold extends StatelessWidget {
       return;
     }
 
-    onChange(tappedIndex.clamp(0, _routeItemCount - 1).toInt());
+    final target = _visibleItems[tappedIndex].pageIndex;
+    if (target >= 0) onChange(target);
   }
 
   @override
@@ -110,7 +130,7 @@ class ShellScaffold extends StatelessWidget {
           selectedItemColor: colors.primary,
           unselectedItemColor: colors.foreground.withValues(alpha: 0.58),
           items: [
-            for (final item in _items)
+            for (final item in _visibleItems)
               AdaptiveNavigationDestination(
                 icon: item.icon,
                 selectedIcon: item.selectedIcon,
@@ -134,10 +154,11 @@ class ShellScaffold extends StatelessWidget {
 
     return _CustomShellScaffoldBody(
       header: header,
-      selectedIndex: _selectedIndex,
+      selectedIndex: _selectedPageIndex,
       onChange: onChange,
       onSearchPress: () => _openSearchPage(context),
       dashboardChrome: effectiveDashboardChrome,
+      showNews: showNews,
       useShaderLiquidGlass: false,
       child: child,
     );
@@ -151,6 +172,7 @@ class _CustomShellScaffoldBody extends StatelessWidget {
   final ValueChanged<int> onChange;
   final VoidCallback onSearchPress;
   final bool dashboardChrome;
+  final bool showNews;
   final bool useShaderLiquidGlass;
 
   const _CustomShellScaffoldBody({
@@ -160,6 +182,7 @@ class _CustomShellScaffoldBody extends StatelessWidget {
     required this.onChange,
     required this.onSearchPress,
     required this.dashboardChrome,
+    required this.showNews,
     required this.useShaderLiquidGlass,
   });
 
@@ -188,6 +211,7 @@ class _CustomShellScaffoldBody extends StatelessWidget {
             onChange: onChange,
             onSearchPress: onSearchPress,
             dashboardChrome: dashboardChrome,
+            showNews: showNews,
             useShaderLiquidGlass: useShaderLiquidGlass,
           ),
         ),
@@ -202,6 +226,7 @@ class _AdaptiveShellNavItem {
   final String selectedSfSymbol;
   final IconData cupertinoIcon;
   final IconData selectedCupertinoIcon;
+  final int pageIndex;
   final bool isSearch;
 
   const _AdaptiveShellNavItem({
@@ -210,6 +235,7 @@ class _AdaptiveShellNavItem {
     required this.selectedSfSymbol,
     required this.cupertinoIcon,
     required this.selectedCupertinoIcon,
+    required this.pageIndex,
     this.isSearch = false,
   });
 

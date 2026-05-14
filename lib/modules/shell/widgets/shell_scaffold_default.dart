@@ -11,6 +11,7 @@ class ShellScaffold extends StatelessWidget {
   final ValueChanged<int> onChange;
   final Object? scaffoldStyle;
   final bool dashboardChrome;
+  final bool showNews;
 
   const ShellScaffold({
     super.key,
@@ -20,6 +21,7 @@ class ShellScaffold extends StatelessWidget {
     required this.onChange,
     this.scaffoldStyle,
     this.dashboardChrome = false,
+    this.showNews = true,
   });
 
   void _openSearchPage(BuildContext context) {
@@ -53,6 +55,7 @@ class ShellScaffold extends StatelessWidget {
             onChange: onChange,
             onSearchPress: () => _openSearchPage(context),
             dashboardChrome: dashboardChrome,
+            showNews: showNews,
           ),
         ),
       ],

@@ -8,6 +8,7 @@ import '../shell/provider/screenshot_provider.dart';
 import '../../widgets/cache_status_banner.dart';
 import 'douban/douban_page.dart';
 import 'douban/provider/douban_provider.dart';
+import 'provider/media_info_settings_provider.dart';
 import 'tmdb/tmdb_page.dart';
 import 'tmdb/provider/tmdb_provider.dart';
 
@@ -21,12 +22,16 @@ class NewsPage extends ConsumerStatefulWidget {
 class _NewsToolbar extends StatelessWidget {
   final bool mobile;
   final int tabIndex;
+  final bool tmdbEnabled;
+  final bool doubanEnabled;
   final DataCacheInfo cacheInfo;
   final ValueChanged<int> onTabChanged;
 
   const _NewsToolbar({
     required this.mobile,
     required this.tabIndex,
+    required this.tmdbEnabled,
+    required this.doubanEnabled,
     required this.cacheInfo,
     required this.onTabChanged,
   });
@@ -40,15 +45,17 @@ class _NewsToolbar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          shadcn.Tabs(
-            index: tabIndex,
-            onChanged: onTabChanged,
-            children: const [
-              shadcn.TabItem(child: Text('TMDB')),
-              shadcn.TabItem(child: Text('豆瓣')),
-            ],
-          ),
-          const SizedBox(height: 6),
+          if (tmdbEnabled && doubanEnabled) ...[
+            shadcn.Tabs(
+              index: tabIndex,
+              onChanged: onTabChanged,
+              children: const [
+                shadcn.TabItem(child: Text('TMDB')),
+                shadcn.TabItem(child: Text('豆瓣')),
+              ],
+            ),
+            const SizedBox(height: 6),
+          ],
           CacheStatusBanner(info: cacheInfo, margin: EdgeInsets.zero),
         ],
       ),
@@ -81,7 +88,12 @@ class _NewsPageState extends ConsumerState<NewsPage> {
   @override
   Widget build(BuildContext context) {
     final mobile = context.isMobile;
-    final cacheInfo = _tabIndex == 0
+    final settings = ref.watch(mediaInfoSettingsProvider);
+    final effectiveTabIndex = settings.tmdbEnabled ? 0 : 1;
+    final currentTabIndex = settings.tmdbEnabled && settings.doubanEnabled
+        ? _tabIndex
+        : effectiveTabIndex;
+    final cacheInfo = currentTabIndex == 0
         ? _combinedCacheInfo(ref.watch(tmdbCacheInfoProvider), const {
             tmdbPlayingMoviesCacheKey,
             tmdbPopularMoviesCacheKey,
@@ -108,17 +120,21 @@ class _NewsPageState extends ConsumerState<NewsPage> {
       headers: [
         _NewsToolbar(
           mobile: mobile,
-          tabIndex: _tabIndex,
+          tabIndex: currentTabIndex,
+          tmdbEnabled: settings.tmdbEnabled,
+          doubanEnabled: settings.doubanEnabled,
           cacheInfo: cacheInfo,
           onTabChanged: (index) => setState(() => _tabIndex = index),
         ),
       ],
       child: IndexedStack(
-        index: _tabIndex,
+        index: currentTabIndex,
         children: [
-          TmdbPage(scrollController: _tabIndex == 0 ? _scrollController : null),
+          TmdbPage(
+            scrollController: currentTabIndex == 0 ? _scrollController : null,
+          ),
           DoubanPage(
-            scrollController: _tabIndex == 1 ? _scrollController : null,
+            scrollController: currentTabIndex == 1 ? _scrollController : null,
           ),
         ],
       ),
