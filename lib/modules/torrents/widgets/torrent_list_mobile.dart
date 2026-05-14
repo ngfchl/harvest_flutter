@@ -1,18 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/modules/shell/widgets/shell_scaffold.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
 
 import '../../download/model/downloader.dart';
-import '../model/torrent_action_menu.dart';
 import '../model/torrent_model.dart';
 import '../model/torrent_site_matcher.dart';
 import '../provider/downloader_provider.dart';
 import '../provider/torrent_control_provider.dart';
+import 'torrent_action_menu.dart';
 import 'torrent_context_menu.dart';
 import 'torrent_detail_sheet.dart';
 import 'torrent_list_status.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -73,7 +73,6 @@ class _MenuBody extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _dragHandle(cs),
                 if (type == DownloaderType.qbittorrent) ..._buildQBMenu(context) else ..._buildTRMenu(context),
               ],
             ),
@@ -82,13 +81,6 @@ class _MenuBody extends StatelessWidget {
       ),
     );
   }
-
-  Widget _dragHandle(shadcn.ColorScheme cs) => Container(
-    width: 36,
-    height: 4,
-    margin: const EdgeInsets.only(bottom: 12),
-    decoration: BoxDecoration(color: cs.foreground.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(2)),
-  );
 
   // ────────────────── QB 菜单 ──────────────────
 
@@ -691,11 +683,7 @@ class _MenuBody extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                ShadTextField(
-                  controller: ctrl,
-                  hintText: '下载限制 (KiB/s)，0 为不限制',
-                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-                ),
+                ShadTextField(controller: ctrl, onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus()),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,

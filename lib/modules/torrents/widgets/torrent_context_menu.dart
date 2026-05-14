@@ -1,24 +1,24 @@
 import 'dart:async';
-import 'package:harvest/widgets/shad_text_field.dart';
 
 import 'package:flutter/material.dart';
-import 'package:harvest/core/storage/hive_manager.dart';
-import 'package:harvest/core/storage/storage_keys.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/storage/hive_manager.dart';
+import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/feedback/toast.dart';
 import 'package:harvest/widgets/app_menu.dart';
+import 'package:harvest/widgets/app_sheet.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
 
 import '../../download/model/downloader.dart';
-import '../model/torrent_action_menu.dart';
 import '../model/torrent_model.dart';
 import '../model/torrent_site_matcher.dart';
 import '../provider/downloader_provider.dart';
-import 'torrent_detail_sheet.dart';
+import 'torrent_action_menu.dart';
 import 'torrent_delete_helper.dart';
+import 'torrent_detail_sheet.dart';
 
 // ══════════════════════════════════════════════════════════
 //  菜单项模型
@@ -66,19 +66,11 @@ const torrentTagSubmenuAction = '__tag_submenu__';
 const torrentCopySubmenuAction = '__copy_submenu__';
 
 bool _loadDeleteFilesWhenUnpreservedPref() {
-  return HiveManager.get<bool>(
-        StorageKeys.torrentDeleteFilesWhenUnpreserved,
-      ) ??
-      true;
+  return HiveManager.get<bool>(StorageKeys.torrentDeleteFilesWhenUnpreserved) ?? true;
 }
 
 void _saveDeleteFilesWhenUnpreservedPref(bool value) {
-  unawaited(
-    HiveManager.set(
-      StorageKeys.torrentDeleteFilesWhenUnpreserved,
-      value,
-    ),
-  );
+  unawaited(HiveManager.set(StorageKeys.torrentDeleteFilesWhenUnpreserved, value));
 }
 
 // ══════════════════════════════════════════════════════════
@@ -431,7 +423,10 @@ class _MobileContextMenuState extends State<_MobileContextMenu> {
     return ListTile(
       dense: true,
       leading: Icon(shadcn.LucideIcons.chevronLeft, size: 20, color: cs.foreground),
-      title: Text('返回', style: TextStyle(fontSize: 14, color: cs.foreground, fontWeight: FontWeight.w600)),
+      title: Text(
+        '返回',
+        style: TextStyle(fontSize: 14, color: cs.foreground, fontWeight: FontWeight.w600),
+      ),
       onTap: () => setState(() => _stack.removeLast()),
     );
   }

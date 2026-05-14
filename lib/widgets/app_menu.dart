@@ -70,6 +70,7 @@ class AppContextMenu extends StatelessWidget {
   final Axis direction;
   final bool enabled;
   final bool openOnTap;
+  final bool? openOnLongPress;
 
   const AppContextMenu({
     super.key,
@@ -79,14 +80,18 @@ class AppContextMenu extends StatelessWidget {
     this.direction = Axis.vertical,
     this.enabled = true,
     this.openOnTap = false,
+    this.openOnLongPress,
   });
 
   @override
   Widget build(BuildContext context) {
     final platform = Theme.of(context).platform;
-    final enableLongPress = platform == TargetPlatform.iOS ||
+    final defaultOpenOnLongPress =
+        platform == TargetPlatform.iOS ||
         platform == TargetPlatform.android ||
         platform == TargetPlatform.fuchsia;
+    final enableLongPress =
+        enabled && (openOnLongPress ?? defaultOpenOnLongPress);
     Offset? tapPosition;
 
     return GestureDetector(
@@ -114,7 +119,7 @@ class AppContextMenu extends StatelessWidget {
                 direction: direction,
               );
             },
-      onLongPressStart: enableLongPress && enabled
+      onLongPressStart: enableLongPress
           ? (details) {
               appShowContextMenu(
                 context: context,
@@ -153,9 +158,9 @@ Future<void> appShowContextMenu({
           barrierColor: const Color(0xB2000000),
         ),
         builder: (_) => AppDropdownMenu(
-          children: items,
           direction: direction,
           regionGroupId: key,
+          children: items,
         ),
       )
       .future;
@@ -185,7 +190,7 @@ class AppContextMenuPopup extends StatelessWidget {
       anchorSize: anchorSize,
       alignment: Alignment.topLeft,
       follow: false,
-      builder: (_) => AppDropdownMenu(children: children, direction: direction),
+      builder: (_) => AppDropdownMenu(direction: direction, children: children),
       animation: const AlwaysStoppedAnimation<double>(1),
       anchorAlignment: Alignment.topRight,
     );

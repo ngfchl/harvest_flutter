@@ -1,6 +1,6 @@
 import '../../download/model/downloader.dart';
-import '../model/torrent_action_menu.dart';
 import '../model/torrent_model.dart';
+import 'torrent_action_menu.dart';
 
 class TorrentDeleteSummary {
   final int metadataOnlyCount;

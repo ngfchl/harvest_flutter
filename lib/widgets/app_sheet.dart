@@ -16,7 +16,9 @@ Future<T?> showAppSheet<T>({
 }) {
   final media = MediaQuery.maybeOf(context);
   final cs = shadcn.Theme.of(context).colorScheme;
-  final effectiveSheetColor = (backgroundColor == null || backgroundColor.alpha == 0)
+  final effectiveShowDragHandle = showDragHandle ?? true;
+  final effectiveSheetColor =
+      (backgroundColor == null || (backgroundColor.a * 255.0).round() == 0)
       ? cs.background
       : backgroundColor;
   final maxHeight = media == null
@@ -31,10 +33,12 @@ Future<T?> showAppSheet<T>({
     isDismissible: isDismissible,
     enableDrag: enableDrag,
     barrierColor: Colors.black.withValues(alpha: 0.26),
-    showDragHandle: showDragHandle ?? true,
+    showDragHandle: false,
     backgroundColor: Colors.transparent,
     shape: shape,
-    constraints: constraints ?? (maxHeight == null ? null : BoxConstraints(maxHeight: maxHeight)),
+    constraints:
+        constraints ??
+        (maxHeight == null ? null : BoxConstraints(maxHeight: maxHeight)),
     builder: (sheetContext) {
       final sheetMedia = MediaQuery.of(sheetContext);
       final child = builder(sheetContext);
@@ -53,9 +57,14 @@ Future<T?> showAppSheet<T>({
                 child: Container(
                   decoration: BoxDecoration(
                     color: effectiveSheetColor,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
                     border: Border(
-                      top: BorderSide(color: cs.border.withValues(alpha: 0.78), width: 0.8),
+                      top: BorderSide(
+                        color: cs.border.withValues(alpha: 0.78),
+                        width: 0.8,
+                      ),
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -68,6 +77,7 @@ Future<T?> showAppSheet<T>({
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      if (effectiveShowDragHandle) _AppSheetDragHandle(cs: cs),
                       if (showDefaultHeader)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(8, 4, 8, 2),
@@ -75,7 +85,10 @@ Future<T?> showAppSheet<T>({
                             children: [
                               shadcn.IconButton.ghost(
                                 onPressed: () => closeAppSheet(sheetContext),
-                                icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 16),
+                                icon: const Icon(
+                                  shadcn.LucideIcons.arrowLeft,
+                                  size: 16,
+                                ),
                               ),
                               const SizedBox(width: 6),
                               Expanded(
@@ -83,16 +96,16 @@ Future<T?> showAppSheet<T>({
                                   title ?? '',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: shadcn.Theme.of(sheetContext).typography.large.copyWith(fontWeight: FontWeight.w700),
+                                  style: shadcn.Theme.of(sheetContext)
+                                      .typography
+                                      .large
+                                      .copyWith(fontWeight: FontWeight.w700),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      Flexible(
-                        fit: FlexFit.loose,
-                        child: child,
-                      ),
+                      Flexible(fit: FlexFit.loose, child: child),
                     ],
                   ),
                 ),
@@ -105,8 +118,33 @@ Future<T?> showAppSheet<T>({
   );
 }
 
+class _AppSheetDragHandle extends StatelessWidget {
+  final shadcn.ColorScheme cs;
+
+  const _AppSheetDragHandle({required this.cs});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 6),
+      child: Center(
+        child: Container(
+          width: 36,
+          height: 4,
+          decoration: BoxDecoration(
+            color: cs.foreground.withValues(alpha: 0.22),
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 Future<void> closeAppSheet<T>(BuildContext context, [T? result]) {
-  final overlay = shadcn.Data.maybeFind<shadcn.OverlayHandlerStateMixin>(context);
+  final overlay = shadcn.Data.maybeFind<shadcn.OverlayHandlerStateMixin>(
+    context,
+  );
   if (overlay != null) {
     return overlay.closeWithResult<T>(result);
   }

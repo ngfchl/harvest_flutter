@@ -57,7 +57,7 @@ class AppTextField extends StatelessWidget {
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       style: style,
-      features: features,
+      features: features ?? [],
       onChanged: onChanged,
       onSubmitted: (value) {
         onSubmitted?.call(value);
@@ -68,4 +68,3 @@ class AppTextField extends StatelessWidget {
     );
   }
 }
-
