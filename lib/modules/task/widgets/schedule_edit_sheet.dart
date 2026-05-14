@@ -294,6 +294,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
       loading: () => const Center(child: shadcn.CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('加载失败: $e')),
       data: (types) {
+        final cs = shadcn.Theme.of(context).colorScheme;
         final filtered = types.where((t) => !t.contains('种子迁移')).toList();
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -305,7 +306,11 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                     title: const Text('选择任务'),
                     subtitle: Text(
                       _selectedTaskType ?? '请选择',
-                      style: shadcn.TextStyle(fontWeight: shadcn.FontWeight.bold, color: Colors.black, fontSize: 14),
+                      style: TextStyle(
+                        color: _selectedTaskType == null ? cs.mutedForeground : cs.foreground,
+                        fontSize: _selectedTaskType == null ? 12 : 18,
+                        fontWeight: _selectedTaskType == null ? FontWeight.w400 : FontWeight.w900,
+                      ),
                     ),
                     helper: _selectedTaskType != null ? null : const Text('选择要执行的后台任务类型'),
                     trailing: const Icon(shadcn.LucideIcons.chevronRight, size: 18),
