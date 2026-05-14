@@ -36,20 +36,32 @@ class OptionNotifier extends StateNotifier<OptionState> {
   }
 
   Future<void> fetchOptions() async {
+    if (!mounted) return;
+
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final options = await ref.read(optionServiceProvider).fetchOptions();
+      final service = ref.read(optionServiceProvider);
+      final options = await service.fetchOptions();
+      if (!mounted) return;
+
       state = state.copyWith(options: options, isLoading: false);
     } catch (e) {
+      if (!mounted) return;
+
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   Future<bool> saveOption(Option option) async {
     try {
-      await ref.read(optionServiceProvider).saveOption(option);
+      final service = ref.read(optionServiceProvider);
+      await service.saveOption(option);
+      if (!mounted) return false;
+
       // 沉默刷新，不触发 loading
-      final options = await ref.read(optionServiceProvider).fetchOptions();
+      final options = await service.fetchOptions();
+      if (!mounted) return false;
+
       state = state.copyWith(options: options);
       return true;
     } catch (e) {
