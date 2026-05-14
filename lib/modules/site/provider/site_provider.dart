@@ -14,13 +14,9 @@ part 'site_provider.g.dart';
 
 const _siteInfoCacheKey = 'site.info.list';
 
-final siteInfoCacheInfoProvider = StateProvider<DataCacheInfo>(
-  (_) => const DataCacheInfo.none(),
-);
+final siteInfoCacheInfoProvider = StateProvider<DataCacheInfo>((_) => const DataCacheInfo.none());
 
-final siteRefreshingIdsProvider = StateProvider<Set<int>>(
-  (_) => const <int>{},
-);
+final siteRefreshingIdsProvider = StateProvider<Set<int>>((_) => const <int>{});
 
 @riverpod
 class WebsiteList extends _$WebsiteList {
@@ -39,16 +35,11 @@ class SiteInfoList extends _$SiteInfoList {
 
     final cached = SessionCache.read<List<SiteInfo>>(
       _siteInfoCacheKey,
-      (data) => (data as List)
-          .map(
-            (item) => SiteInfo.fromJson(Map<String, dynamic>.from(item as Map)),
-          )
-          .toList(),
+      (data) => (data as List).map((item) => SiteInfo.fromJson(Map<String, dynamic>.from(item as Map))).toList(),
     );
     if (cached != null) {
       Future<void>.delayed(Duration.zero, () {
-        ref.read(siteInfoCacheInfoProvider.notifier).state =
-            DataCacheInfo.cached(cached.cachedAt);
+        ref.read(siteInfoCacheInfoProvider.notifier).state = DataCacheInfo.cached(cached.cachedAt);
         if (HiveManager.hasAccessToken) refresh();
       });
       return cached.data;
@@ -57,28 +48,24 @@ class SiteInfoList extends _$SiteInfoList {
     return _fetchAndCache(updateCacheInfo: false);
   }
 
-  Future<void> refresh() async {
+  // ── 3. refresh 加 cached 参数 ──
+  Future<void> refresh({bool cached = true}) async {
     if (!HiveManager.hasAccessToken) {
       state = AsyncValue.data(state.valueOrNull ?? const <SiteInfo>[]);
       return;
     }
 
-    // state = const AsyncValue.loading();
     final previous = state.valueOrNull;
-    final next = await AsyncValue.guard(_fetchAndCache);
-    state = next.hasError && previous != null
-        ? AsyncValue.data(previous)
-        : next;
+    final next = await AsyncValue.guard(() => _fetchAndCache(cached: cached));
+    state = next.hasError && previous != null ? AsyncValue.data(previous) : next;
   }
 
-  Future<List<SiteInfo>> _fetchAndCache({bool updateCacheInfo = true}) async {
+  // ── 2. _fetchAndCache 加 cached 参数 ──
+  Future<List<SiteInfo>> _fetchAndCache({bool updateCacheInfo = true, bool cached = true}) async {
     if (!HiveManager.hasAccessToken) return const <SiteInfo>[];
 
-    final list = await SiteService.fetchMySiteList();
-    final info = await SessionCache.write(
-      _siteInfoCacheKey,
-      list.map((e) => e.toJson()).toList(),
-    );
+    final list = await SiteService.fetchMySiteList(cached: cached);
+    final info = await SessionCache.write(_siteInfoCacheKey, list.map((e) => e.toJson()).toList());
     if (updateCacheInfo) {
       ref.read(siteInfoCacheInfoProvider.notifier).state = info;
     }
@@ -87,13 +74,10 @@ class SiteInfoList extends _$SiteInfoList {
 
   Future<void> create(SiteInfo site) async {
     await SiteService.createSite(site);
-    await refresh();
+    await refresh(cached: false);
   }
 
-  Future<void> importCustomSiteToml(
-    List<PlatformFile> files, {
-    bool overwrite = false,
-  }) async {
+  Future<void> importCustomSiteToml(List<PlatformFile> files, {bool overwrite = false}) async {
     await SiteService.importCustomSiteToml(files, overwrite: overwrite);
     try {
       await refresh();
@@ -103,14 +87,16 @@ class SiteInfoList extends _$SiteInfoList {
     }
   }
 
+  // ── 4. 增删改走 cached: false ──
+
   Future<void> updateSite(SiteInfo site) async {
     await SiteService.updateSite(site);
-    await refresh();
+    await refresh(cached: false);
   }
 
   Future<void> delete(int id) async {
     await SiteService.deleteSite(id);
-    await refresh();
+    await refresh(cached: false);
   }
 
   /// 刷新单个站点状态

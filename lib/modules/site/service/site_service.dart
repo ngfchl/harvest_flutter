@@ -2,8 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/dio_client.dart';
-import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/http/hooks.dart';
+import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/http/interceptors/response_interceptor.dart';
 import 'package:harvest/core/utils/utils.dart';
 
@@ -27,9 +27,7 @@ class SiteService {
   }
 
   static Future<Map<String, dynamic>> fetchWebsiteConfig(String site) async {
-    final data = await Http.get<dynamic>(
-      '$_websiteList/${Uri.encodeComponent(site)}',
-    );
+    final data = await Http.get<dynamic>('$_websiteList/${Uri.encodeComponent(site)}');
     if (data is Map) return Map<String, dynamic>.from(data);
     if (data is String) return {'content': data};
     return const <String, dynamic>{};
@@ -39,21 +37,17 @@ class SiteService {
     return List<String>.from(await fetchBasicList(_websiteToAdd));
   }
 
-  static Future<List<SiteInfo>> fetchMySiteList() {
-    return fetchModelList(_mysiteList, SiteInfo.fromJson);
+  // 唯一改动：加 cached 参数，拼到 URL 上
+  static Future<List<SiteInfo>> fetchMySiteList({bool cached = true}) {
+    return fetchModelList('$_mysiteList?cached=$cached', SiteInfo.fromJson);
   }
 
   static Future<void> createSite(SiteInfo site) {
     return addData(_mysiteList, site.toJson());
   }
 
-  static Future<void> importCustomSiteToml(
-    List<PlatformFile> files, {
-    bool overwrite = false,
-  }) async {
-    AppLogger.info(
-      '开始上传自定义站点配置: files=${files.map((file) => file.name).join(', ')}, overwrite=$overwrite',
-    );
+  static Future<void> importCustomSiteToml(List<PlatformFile> files, {bool overwrite = false}) async {
+    AppLogger.info('开始上传自定义站点配置: files=${files.map((file) => file.name).join(', ')}, overwrite=$overwrite');
     final formData = FormData();
     formData.fields.add(MapEntry('overwrite', overwrite.toString()));
 
@@ -104,15 +98,11 @@ class SiteService {
     return fetchBasic(_clearCache);
   }
 
-  static Future<String> _operateSite(
-    String apiEndpoint, {
-    required String fallback,
-  }) async {
+  static Future<String> _operateSite(String apiEndpoint, {required String fallback}) async {
     final response = await DioClient.dio.get<dynamic>(apiEndpoint);
     final message =
         response.extra[ResponseInterceptor.responseMessageKey]?.toString() ??
-        response.requestOptions.extra[ResponseInterceptor.responseMessageKey]
-            ?.toString() ??
+        response.requestOptions.extra[ResponseInterceptor.responseMessageKey]?.toString() ??
         fallback;
     return message.trim().isEmpty ? fallback : message.trim();
   }
