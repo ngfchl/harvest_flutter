@@ -1,7 +1,6 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show MaterialPageRoute;
-import 'package:flutter/widgets.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../search/unified_search_page.dart';
@@ -94,9 +93,11 @@ class ShellScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveDashboardChrome = dashboardChrome && !PlatformInfo.isIOS;
+    final useNativeIOSBottomBar =
+        PlatformInfo.isIOS && PlatformInfo.isIOS26OrHigher();
+    final effectiveDashboardChrome = dashboardChrome && !useNativeIOSBottomBar;
 
-    if (PlatformInfo.isIOS) {
+    if (useNativeIOSBottomBar) {
       final colors = shadcn.Theme.of(context).colorScheme;
 
       return AdaptiveScaffold(
@@ -131,6 +132,39 @@ class ShellScaffold extends StatelessWidget {
       );
     }
 
+    return _CustomShellScaffoldBody(
+      header: header,
+      selectedIndex: _selectedIndex,
+      onChange: onChange,
+      onSearchPress: () => _openSearchPage(context),
+      dashboardChrome: effectiveDashboardChrome,
+      useShaderLiquidGlass: false,
+      child: child,
+    );
+  }
+}
+
+class _CustomShellScaffoldBody extends StatelessWidget {
+  final Widget header;
+  final Widget child;
+  final int selectedIndex;
+  final ValueChanged<int> onChange;
+  final VoidCallback onSearchPress;
+  final bool dashboardChrome;
+  final bool useShaderLiquidGlass;
+
+  const _CustomShellScaffoldBody({
+    required this.header,
+    required this.child,
+    required this.selectedIndex,
+    required this.onChange,
+    required this.onSearchPress,
+    required this.dashboardChrome,
+    required this.useShaderLiquidGlass,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Stack(
       children: [
         Positioned.fill(
@@ -150,10 +184,11 @@ class ShellScaffold extends StatelessWidget {
           right: 0,
           bottom: 0,
           child: ShellBottomControls(
-            index: _selectedIndex,
+            index: selectedIndex,
             onChange: onChange,
-            onSearchPress: () => _openSearchPage(context),
-            dashboardChrome: effectiveDashboardChrome,
+            onSearchPress: onSearchPress,
+            dashboardChrome: dashboardChrome,
+            useShaderLiquidGlass: useShaderLiquidGlass,
           ),
         ),
       ],
@@ -193,7 +228,7 @@ class ShellBottomSpacing {
   const ShellBottomSpacing._();
 
   static double value(BuildContext context) {
-    if (PlatformInfo.isIOS) return 0;
+    if (PlatformInfo.isIOS && PlatformInfo.isIOS26OrHigher()) return 0;
     return ShellBottomNavigation.reservedHeight(context);
   }
 }
