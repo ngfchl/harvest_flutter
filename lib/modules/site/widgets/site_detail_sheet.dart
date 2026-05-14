@@ -29,7 +29,8 @@ void openDetail(BuildContext context, SiteInfo site) {
         maxChildSize: 0.95,
         minChildSize: 0.45,
         expand: false,
-        builder: (ctx, scrollCtrl) => SiteDetailSheet(site: site, scrollController: scrollCtrl),
+        builder: (ctx, scrollCtrl) =>
+            SiteDetailSheet(site: site, scrollController: scrollCtrl),
       ),
     );
   } else {
@@ -97,7 +98,9 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
       _detailError = null;
     });
     try {
-      final data = await Http.get<Map<String, dynamic>>('/api/mysite/mysite/${widget.site.id}');
+      final data = await Http.get<Map<String, dynamic>>(
+        '/api/mysite/mysite/${widget.site.id}',
+      );
       final detail = SiteInfo.fromJson(Map<String, dynamic>.from(data));
       if (mounted) {
         setState(() => _fetchedSite = detail);
@@ -156,15 +159,20 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
   @override
   Widget build(BuildContext context) {
     final sites = ref.watch(siteInfoListProvider).valueOrNull;
-    final providerSite = sites?.firstWhereOrNull((item) => item.id == widget.site.id);
+    final providerSite = sites?.firstWhereOrNull(
+      (item) => item.id == widget.site.id,
+    );
     _activeSite = _fetchedSite ?? providerSite ?? widget.site;
     final status = site.latestStatus;
     final statusPoints = _buildStatusPoints(site);
     final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
     final config = findSiteWebsiteConfig(site, configs);
     final spFull = _numVal(config?.spFull);
+    final limitSpeed = config?.limitSpeed ?? 0;
     final cs = shadcn.Theme.of(context).colorScheme;
-    final refreshing = _refreshingDetail || ref.watch(siteRefreshingIdsProvider).contains(widget.site.id);
+    final refreshing =
+        _refreshingDetail ||
+        ref.watch(siteRefreshingIdsProvider).contains(widget.site.id);
     final tabLabels = ['基础信息', '状态图表', if (site.signIn) '签到信息'];
     final activeTab = _tabIndex.clamp(0, tabLabels.length - 1).toInt();
 
@@ -173,12 +181,14 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
       child: Material(
         color: cs.background,
         borderRadius: context.isMobile
-            ? BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft)
+            ? BorderRadius.vertical(
+                top: siteRadius(context, size: "xl").topLeft,
+              )
             : siteRadius(context, size: "xl"),
         clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
-            _buildHeader(context, cs),
+            _buildHeader(context, cs, limitSpeed),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: SingleChildScrollView(
@@ -186,14 +196,24 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                 child: shadcn.Tabs(
                   index: activeTab,
                   onChanged: (index) => setState(() => _tabIndex = index),
-                  children: [for (final label in tabLabels) shadcn.TabItem(child: Text(label))],
+                  children: [
+                    for (final label in tabLabels)
+                      shadcn.TabItem(child: Text(label)),
+                  ],
                 ),
               ),
             ),
             Expanded(
               child: [
                 _buildBasicTab(context, cs, spFull),
-                _buildStatusTab(context, cs, statusPoints, refreshing, status, spFull),
+                _buildStatusTab(
+                  context,
+                  cs,
+                  statusPoints,
+                  refreshing,
+                  status,
+                  spFull,
+                ),
                 if (site.signIn) _buildSignInTab(context, cs),
               ][activeTab],
             ),
@@ -206,23 +226,35 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
   Widget _buildTabList(BuildContext context, List<Widget> children) {
     return ListView(
       controller: widget.scrollController,
-      padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 24),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        16,
+        16,
+        MediaQuery.of(context).padding.bottom + 24,
+      ),
       children: children,
     );
   }
 
-  Widget _buildBasicTab(BuildContext context, shadcn.ColorScheme cs, double spFull) {
+  Widget _buildBasicTab(
+    BuildContext context,
+    shadcn.ColorScheme cs,
+    double spFull,
+  ) {
     return _buildTabList(context, [
       _buildUserCard(context, cs, spFull),
       const SizedBox(height: 12),
-      _section(context, '功能开关', shadcn.LucideIcons.settings, [_buildFlagsGrid(context, cs)]),
+      _section(context, '功能开关', shadcn.LucideIcons.settings, [
+        _buildFlagsGrid(context, cs),
+      ]),
       const SizedBox(height: 12),
       _section(context, '基本信息', shadcn.LucideIcons.info, [
         _row(context, '站点名称', site.site),
         _row(context, '昵称', site.nickname.isEmpty ? '-' : site.nickname),
         _row(context, '排序 ID', '${site.sortId}'),
         _row(context, '标签', site.tags.isEmpty ? '-' : site.tags.join(', ')),
-        if (site.durationText.isNotEmpty) _row(context, '注册时长', site.durationText),
+        if (site.durationText.isNotEmpty)
+          _row(context, '注册时长', site.durationText),
       ]),
       const SizedBox(height: 12),
       _section(context, '账号信息', shadcn.LucideIcons.user, [
@@ -237,7 +269,11 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
         _row(context, '代理', site.proxy ?? '-'),
         _row(context, '镜像', site.mirror ?? '-'),
         _row(context, 'RSS', site.rss?.isEmpty ?? true ? '-' : site.rss!),
-        _row(context, '种子地址', site.torrents?.isEmpty ?? true ? '-' : site.torrents!),
+        _row(
+          context,
+          '种子地址',
+          site.torrents?.isEmpty ?? true ? '-' : site.torrents!,
+        ),
         _row(context, 'Cookie', _truncate(site.cookie, 40)),
         _row(context, 'User-Agent', _truncate(site.userAgent, 50)),
       ]),
@@ -253,7 +289,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     double spFull,
   ) {
     return _buildTabList(context, [
-      if (status != null) ...[_buildDetailStats(context, cs, status, spFull), const SizedBox(height: 12)],
+      if (status != null) ...[
+        _buildDetailStats(context, cs, status, spFull),
+        const SizedBox(height: 12),
+      ],
       _buildStatusTrendSection(context, cs, statusPoints, refreshing),
     ]);
   }
@@ -285,8 +324,12 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           downloaded: current.downloaded.toDouble(),
           bonus: current.myBonus,
           score: current.myScore,
-          uploadDelta: previous == null ? 0 : (current.uploaded - previous.uploaded).toDouble(),
-          downloadDelta: previous == null ? 0 : (current.downloaded - previous.downloaded).toDouble(),
+          uploadDelta: previous == null
+              ? 0
+              : (current.uploaded - previous.uploaded).toDouble(),
+          downloadDelta: previous == null
+              ? 0
+              : (current.downloaded - previous.downloaded).toDouble(),
           bonusDelta: previous == null ? 0 : current.myBonus - previous.myBonus,
           scoreDelta: previous == null ? 0 : current.myScore - previous.myScore,
           seed: current.seed.toDouble(),
@@ -297,8 +340,12 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           seedVolume: current.seedVolume.toDouble(),
           seedDays: current.seedDays.toDouble(),
           bonusHour: current.bonusHour,
-          seedVolumeDelta: previous == null ? 0 : (current.seedVolume - previous.seedVolume).toDouble(),
-          seedDaysDelta: previous == null ? 0 : (current.seedDays - previous.seedDays).toDouble(),
+          seedVolumeDelta: previous == null
+              ? 0
+              : (current.seedVolume - previous.seedVolume).toDouble(),
+          seedDaysDelta: previous == null
+              ? 0
+              : (current.seedDays - previous.seedDays).toDouble(),
         ),
       );
       previous = current;
@@ -325,17 +372,35 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
       children: [
         Row(
           children: [
-            Icon(shadcn.LucideIcons.chartNoAxesCombined, size: 14, color: cs.foreground.withValues(alpha: 0.4)),
+            Icon(
+              shadcn.LucideIcons.chartNoAxesCombined,
+              size: 14,
+              color: cs.foreground.withValues(alpha: 0.4),
+            ),
             const SizedBox(width: 6),
             Text(
               '状态趋势',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: cs.foreground.withValues(alpha: 0.6)),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: cs.foreground.withValues(alpha: 0.6),
+              ),
             ),
             const Spacer(),
             if (refreshing)
-              SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 1.6, color: cs.primary))
+              SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.6,
+                  color: cs.primary,
+                ),
+              )
             else if (_detailError != null)
-              Text('刷新失败', style: TextStyle(fontSize: 10, color: siteDanger(context))),
+              Text(
+                '刷新失败',
+                style: TextStyle(fontSize: 10, color: siteDanger(context)),
+              ),
           ],
         ),
         const SizedBox(height: 8),
@@ -348,7 +413,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                 child: Center(
                   child: Text(
                     refreshing ? '正在获取状态数据...' : '暂无状态历史',
-                    style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.45)),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: cs.foreground.withValues(alpha: 0.45),
+                    ),
                   ),
                 ),
               ),
@@ -361,7 +429,12 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
               title: '月度数据',
               subtitle: '按月汇总状态变化',
               children: [
-                _buildMonthsControl(context, totalMonths, visibleMonths, visibleMonthPoints),
+                _buildMonthsControl(
+                  context,
+                  totalMonths,
+                  visibleMonths,
+                  visibleMonthPoints,
+                ),
                 const SizedBox(height: 14),
                 _buildChartLegendBar(context, monthly: true),
                 const SizedBox(height: 14),
@@ -411,7 +484,12 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     );
   }
 
-  Widget _chartCard(BuildContext context, {String? title, String? subtitle, required List<Widget> children}) {
+  Widget _chartCard(
+    BuildContext context, {
+    String? title,
+    String? subtitle,
+    required List<Widget> children,
+  }) {
     final cs = shadcn.Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
@@ -429,7 +507,11 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
               children: [
                 Text(
                   title,
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: cs.foreground),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: cs.foreground,
+                  ),
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(width: 8),
@@ -438,7 +520,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                       subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 10, color: cs.foreground.withValues(alpha: 0.42)),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: cs.foreground.withValues(alpha: 0.42),
+                      ),
                     ),
                   ),
                 ],
@@ -458,7 +543,11 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
       children: [
         Text(
           title,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: cs.foreground),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: cs.foreground,
+          ),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -466,7 +555,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
             subtitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 10, color: cs.foreground.withValues(alpha: 0.42)),
+            style: TextStyle(
+              fontSize: 10,
+              color: cs.foreground.withValues(alpha: 0.42),
+            ),
           ),
         ),
       ],
@@ -476,34 +568,122 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
   Widget _buildChartLegendBar(BuildContext context, {required bool monthly}) {
     final items = monthly
         ? const [
-            _ChartLegendItem('delta', '增量', shadcn.LucideIcons.plus, Color(0xFF64748B)),
-            _ChartLegendItem('upload', '上传', shadcn.LucideIcons.arrowUp, Color(0xFF22C55E)),
-            _ChartLegendItem('download', '下载', shadcn.LucideIcons.arrowDown, Color(0xFF38BDF8)),
-            _ChartLegendItem('bonus', '魔力', shadcn.LucideIcons.diamond, Color(0xFFF59E0B)),
-            _ChartLegendItem('score', '积分', shadcn.LucideIcons.star, Color(0xFFEF4444)),
+            _ChartLegendItem(
+              'delta',
+              '增量',
+              shadcn.LucideIcons.plus,
+              Color(0xFF64748B),
+            ),
+            _ChartLegendItem(
+              'upload',
+              '上传',
+              shadcn.LucideIcons.arrowUp,
+              Color(0xFF22C55E),
+            ),
+            _ChartLegendItem(
+              'download',
+              '下载',
+              shadcn.LucideIcons.arrowDown,
+              Color(0xFF38BDF8),
+            ),
+            _ChartLegendItem(
+              'bonus',
+              '魔力',
+              shadcn.LucideIcons.diamond,
+              Color(0xFFF59E0B),
+            ),
+            _ChartLegendItem(
+              'score',
+              '积分',
+              shadcn.LucideIcons.star,
+              Color(0xFFEF4444),
+            ),
           ]
         : const [
-            _ChartLegendItem('delta', '增量', shadcn.LucideIcons.plus, Color(0xFF64748B)),
-            _ChartLegendItem('upload', '上传', shadcn.LucideIcons.arrowUp, Color(0xFF22C55E)),
-            _ChartLegendItem('download', '下载', shadcn.LucideIcons.arrowDown, Color(0xFF38BDF8)),
-            _ChartLegendItem('bonus', '魔力', shadcn.LucideIcons.diamond, Color(0xFFF59E0B)),
-            _ChartLegendItem('score', '积分', shadcn.LucideIcons.star, Color(0xFFEF4444)),
-            _ChartLegendItem('seed', '做种', shadcn.LucideIcons.leaf, Color(0xFF16A34A)),
-            _ChartLegendItem('leech', '下载数', shadcn.LucideIcons.arrowDownToLine, Color(0xFFDC2626)),
-            _ChartLegendItem('publish', '发布', shadcn.LucideIcons.fileText, Color(0xFF0EA5E9)),
-            _ChartLegendItem('invitation', '邀请', shadcn.LucideIcons.userPlus, Color(0xFF8B5CF6)),
-            _ChartLegendItem('ratio', '分享率', shadcn.LucideIcons.scale, Color(0xFF06B6D4)),
-            _ChartLegendItem('seedVolume', '做种量', shadcn.LucideIcons.hardDrive, Color(0xFF22C55E)),
-            _ChartLegendItem('seedDays', '做种天数', shadcn.LucideIcons.calendar, Color(0xFFEF4444)),
-            _ChartLegendItem('bonusHour', '时魔', shadcn.LucideIcons.zap, Color(0xFFF59E0B)),
+            _ChartLegendItem(
+              'delta',
+              '增量',
+              shadcn.LucideIcons.plus,
+              Color(0xFF64748B),
+            ),
+            _ChartLegendItem(
+              'upload',
+              '上传',
+              shadcn.LucideIcons.arrowUp,
+              Color(0xFF22C55E),
+            ),
+            _ChartLegendItem(
+              'download',
+              '下载',
+              shadcn.LucideIcons.arrowDown,
+              Color(0xFF38BDF8),
+            ),
+            _ChartLegendItem(
+              'bonus',
+              '魔力',
+              shadcn.LucideIcons.diamond,
+              Color(0xFFF59E0B),
+            ),
+            _ChartLegendItem(
+              'score',
+              '积分',
+              shadcn.LucideIcons.star,
+              Color(0xFFEF4444),
+            ),
+            _ChartLegendItem(
+              'seed',
+              '做种',
+              shadcn.LucideIcons.leaf,
+              Color(0xFF16A34A),
+            ),
+            _ChartLegendItem(
+              'leech',
+              '下载数',
+              shadcn.LucideIcons.arrowDownToLine,
+              Color(0xFFDC2626),
+            ),
+            _ChartLegendItem(
+              'publish',
+              '发布',
+              shadcn.LucideIcons.fileText,
+              Color(0xFF0EA5E9),
+            ),
+            _ChartLegendItem(
+              'invitation',
+              '邀请',
+              shadcn.LucideIcons.userPlus,
+              Color(0xFF8B5CF6),
+            ),
+            _ChartLegendItem(
+              'ratio',
+              '分享率',
+              shadcn.LucideIcons.scale,
+              Color(0xFF06B6D4),
+            ),
+            _ChartLegendItem(
+              'seedVolume',
+              '做种量',
+              shadcn.LucideIcons.hardDrive,
+              Color(0xFF22C55E),
+            ),
+            _ChartLegendItem(
+              'seedDays',
+              '做种天数',
+              shadcn.LucideIcons.calendar,
+              Color(0xFFEF4444),
+            ),
+            _ChartLegendItem(
+              'bonusHour',
+              '时魔',
+              shadcn.LucideIcons.zap,
+              Color(0xFFF59E0B),
+            ),
           ];
 
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: [
-        for (final item in items) _chartLegendChip(context, item),
-      ],
+      children: [for (final item in items) _chartLegendChip(context, item)],
     );
   }
 
@@ -523,21 +703,34 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
         duration: const Duration(milliseconds: 140),
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
         decoration: BoxDecoration(
-          color: hidden ? cs.foreground.withValues(alpha: 0.025) : item.color.withValues(alpha: 0.1),
+          color: hidden
+              ? cs.foreground.withValues(alpha: 0.025)
+              : item.color.withValues(alpha: 0.1),
           borderRadius: siteRadius(context, size: "sm"),
-          border: Border.all(color: hidden ? cs.border : item.color.withValues(alpha: 0.28), width: 0.6),
+          border: Border.all(
+            color: hidden ? cs.border : item.color.withValues(alpha: 0.28),
+            width: 0.6,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(item.icon, size: 12, color: hidden ? cs.foreground.withValues(alpha: 0.28) : item.color),
+            Icon(
+              item.icon,
+              size: 12,
+              color: hidden
+                  ? cs.foreground.withValues(alpha: 0.28)
+                  : item.color,
+            ),
             const SizedBox(width: 5),
             Text(
               item.label,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: hidden ? FontWeight.w500 : FontWeight.w700,
-                color: hidden ? cs.foreground.withValues(alpha: 0.42) : cs.foreground.withValues(alpha: 0.72),
+                color: hidden
+                    ? cs.foreground.withValues(alpha: 0.42)
+                    : cs.foreground.withValues(alpha: 0.72),
               ),
             ),
           ],
@@ -563,50 +756,61 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           tooltipBehavior: _tooltipBehavior(),
           series: <CartesianSeries<_SiteStatusPoint, String>>[
             if (_chartVisible('upload'))
-            ColumnSeries<_SiteStatusPoint, String>(
-              name: '上传',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.uploadDelta,
-              color: siteSuccess(context).withValues(alpha: 0.78),
-              borderRadius: BorderRadius.vertical(top: siteRadius(context, size: "xs").topLeft),
-            ),
+              ColumnSeries<_SiteStatusPoint, String>(
+                name: '上传',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.uploadDelta,
+                color: siteSuccess(context).withValues(alpha: 0.78),
+                borderRadius: BorderRadius.vertical(
+                  top: siteRadius(context, size: "xs").topLeft,
+                ),
+              ),
             if (_chartVisible('download'))
-            ColumnSeries<_SiteStatusPoint, String>(
-              name: '下载',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.downloadDelta,
-              color: siteInfo(context).withValues(alpha: 0.74),
-              borderRadius: BorderRadius.vertical(top: siteRadius(context, size: "xs").topLeft),
-            ),
+              ColumnSeries<_SiteStatusPoint, String>(
+                name: '下载',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.downloadDelta,
+                color: siteInfo(context).withValues(alpha: 0.74),
+                borderRadius: BorderRadius.vertical(
+                  top: siteRadius(context, size: "xs").topLeft,
+                ),
+              ),
             if (_chartVisible('bonus'))
-            ColumnSeries<_SiteStatusPoint, String>(
-              name: '魔力',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.bonusDelta,
-              yAxisName: 'pointAxis',
-              color: siteWarning(context).withValues(alpha: 0.72),
-              borderRadius: BorderRadius.vertical(top: siteRadius(context, size: "xs").topLeft),
-            ),
+              ColumnSeries<_SiteStatusPoint, String>(
+                name: '魔力',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.bonusDelta,
+                yAxisName: 'pointAxis',
+                color: siteWarning(context).withValues(alpha: 0.72),
+                borderRadius: BorderRadius.vertical(
+                  top: siteRadius(context, size: "xs").topLeft,
+                ),
+              ),
             if (_chartVisible('score'))
-            ColumnSeries<_SiteStatusPoint, String>(
-              name: '积分',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.scoreDelta,
-              yAxisName: 'pointAxis',
-              color: siteAccent(context, 3).withValues(alpha: 0.72),
-              borderRadius: BorderRadius.vertical(top: siteRadius(context, size: "xs").topLeft),
-            ),
+              ColumnSeries<_SiteStatusPoint, String>(
+                name: '积分',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.scoreDelta,
+                yAxisName: 'pointAxis',
+                color: siteAccent(context, 3).withValues(alpha: 0.72),
+                borderRadius: BorderRadius.vertical(
+                  top: siteRadius(context, size: "xs").topLeft,
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMonthlyChart(BuildContext context, List<_SiteMonthPoint> points) {
+  Widget _buildMonthlyChart(
+    BuildContext context,
+    List<_SiteMonthPoint> points,
+  ) {
     return Listener(
       onPointerDown: _rememberTooltipPosition,
       child: SizedBox(
@@ -621,50 +825,61 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           tooltipBehavior: _tooltipBehavior(),
           series: <CartesianSeries<_SiteMonthPoint, String>>[
             if (_chartVisible('upload'))
-            ColumnSeries<_SiteMonthPoint, String>(
-              name: '上传',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.uploadDelta,
-              color: siteSuccess(context).withValues(alpha: 0.78),
-              borderRadius: BorderRadius.vertical(top: siteRadius(context, size: "xs").topLeft),
-            ),
+              ColumnSeries<_SiteMonthPoint, String>(
+                name: '上传',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.uploadDelta,
+                color: siteSuccess(context).withValues(alpha: 0.78),
+                borderRadius: BorderRadius.vertical(
+                  top: siteRadius(context, size: "xs").topLeft,
+                ),
+              ),
             if (_chartVisible('download'))
-            ColumnSeries<_SiteMonthPoint, String>(
-              name: '下载',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.downloadDelta,
-              color: siteInfo(context).withValues(alpha: 0.74),
-              borderRadius: BorderRadius.vertical(top: siteRadius(context, size: "xs").topLeft),
-            ),
+              ColumnSeries<_SiteMonthPoint, String>(
+                name: '下载',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.downloadDelta,
+                color: siteInfo(context).withValues(alpha: 0.74),
+                borderRadius: BorderRadius.vertical(
+                  top: siteRadius(context, size: "xs").topLeft,
+                ),
+              ),
             if (_chartVisible('bonus'))
-            ColumnSeries<_SiteMonthPoint, String>(
-              name: '魔力',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.bonusDelta,
-              yAxisName: 'pointAxis',
-              color: siteWarning(context).withValues(alpha: 0.72),
-              borderRadius: BorderRadius.vertical(top: siteRadius(context, size: "xs").topLeft),
-            ),
+              ColumnSeries<_SiteMonthPoint, String>(
+                name: '魔力',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.bonusDelta,
+                yAxisName: 'pointAxis',
+                color: siteWarning(context).withValues(alpha: 0.72),
+                borderRadius: BorderRadius.vertical(
+                  top: siteRadius(context, size: "xs").topLeft,
+                ),
+              ),
             if (_chartVisible('score'))
-            ColumnSeries<_SiteMonthPoint, String>(
-              name: '积分',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.scoreDelta,
-              yAxisName: 'pointAxis',
-              color: siteAccent(context, 3).withValues(alpha: 0.72),
-              borderRadius: BorderRadius.vertical(top: siteRadius(context, size: "xs").topLeft),
-            ),
+              ColumnSeries<_SiteMonthPoint, String>(
+                name: '积分',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.scoreDelta,
+                yAxisName: 'pointAxis',
+                color: siteAccent(context, 3).withValues(alpha: 0.72),
+                borderRadius: BorderRadius.vertical(
+                  top: siteRadius(context, size: "xs").topLeft,
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMonthlyTrendChart(BuildContext context, List<_SiteMonthPoint> points) {
+  Widget _buildMonthlyTrendChart(
+    BuildContext context,
+    List<_SiteMonthPoint> points,
+  ) {
     return Listener(
       onPointerDown: _rememberTooltipPosition,
       child: SizedBox(
@@ -679,47 +894,63 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           tooltipBehavior: _tooltipBehavior(),
           series: <CartesianSeries<_SiteMonthPoint, String>>[
             if (_chartVisible('upload'))
-            LineSeries<_SiteMonthPoint, String>(
-              name: '上传',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.uploaded,
-              color: siteSuccess(context),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteMonthPoint, String>(
+                name: '上传',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.uploaded,
+                color: siteSuccess(context),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
             if (_chartVisible('download'))
-            LineSeries<_SiteMonthPoint, String>(
-              name: '下载',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.downloaded,
-              color: siteInfo(context),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteMonthPoint, String>(
+                name: '下载',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.downloaded,
+                color: siteInfo(context),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
             if (_chartVisible('bonus'))
-            LineSeries<_SiteMonthPoint, String>(
-              name: '魔力',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.bonus,
-              yAxisName: 'pointAxis',
-              color: siteWarning(context),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteMonthPoint, String>(
+                name: '魔力',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.bonus,
+                yAxisName: 'pointAxis',
+                color: siteWarning(context),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
             if (_chartVisible('score'))
-            LineSeries<_SiteMonthPoint, String>(
-              name: '积分',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.score,
-              yAxisName: 'pointAxis',
-              color: siteAccent(context, 3),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteMonthPoint, String>(
+                name: '积分',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.score,
+                yAxisName: 'pointAxis',
+                color: siteAccent(context, 3),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
           ],
         ),
       ),
@@ -741,54 +972,73 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           tooltipBehavior: _tooltipBehavior(),
           series: <CartesianSeries<_SiteStatusPoint, String>>[
             if (_chartVisible('upload'))
-            LineSeries<_SiteStatusPoint, String>(
-              name: '上传',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.uploaded,
-              color: siteSuccess(context),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteStatusPoint, String>(
+                name: '上传',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.uploaded,
+                color: siteSuccess(context),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
             if (_chartVisible('download'))
-            LineSeries<_SiteStatusPoint, String>(
-              name: '下载',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.downloaded,
-              color: siteInfo(context),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteStatusPoint, String>(
+                name: '下载',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.downloaded,
+                color: siteInfo(context),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
             if (_chartVisible('bonus'))
-            LineSeries<_SiteStatusPoint, String>(
-              name: '魔力',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.bonus,
-              yAxisName: 'pointAxis',
-              color: siteWarning(context),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteStatusPoint, String>(
+                name: '魔力',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.bonus,
+                yAxisName: 'pointAxis',
+                color: siteWarning(context),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
             if (_chartVisible('score'))
-            LineSeries<_SiteStatusPoint, String>(
-              name: '积分',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.score,
-              yAxisName: 'pointAxis',
-              color: siteAccent(context, 3),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteStatusPoint, String>(
+                name: '积分',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.score,
+                yAxisName: 'pointAxis',
+                color: siteAccent(context, 3),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActivityChart(BuildContext context, List<_SiteStatusPoint> points) {
+  Widget _buildActivityChart(
+    BuildContext context,
+    List<_SiteStatusPoint> points,
+  ) {
     return Listener(
       onPointerDown: _rememberTooltipPosition,
       child: SizedBox(
@@ -802,50 +1052,65 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           tooltipBehavior: _tooltipBehavior(),
           series: <CartesianSeries<_SiteStatusPoint, String>>[
             if (_chartVisible('seed'))
-            LineSeries<_SiteStatusPoint, String>(
-              name: '做种',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.seed,
-              color: siteSuccess(context),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteStatusPoint, String>(
+                name: '做种',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.seed,
+                color: siteSuccess(context),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
             if (_chartVisible('leech'))
-            LineSeries<_SiteStatusPoint, String>(
-              name: '下载',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.leech,
-              color: siteDanger(context),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteStatusPoint, String>(
+                name: '下载',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.leech,
+                color: siteDanger(context),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
             if (_chartVisible('publish'))
-            ColumnSeries<_SiteStatusPoint, String>(
-              name: '发布',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.publish,
-              color: siteInfo(context).withValues(alpha: 0.58),
-              borderRadius: BorderRadius.vertical(top: siteRadius(context, size: "xs").topLeft),
-            ),
+              ColumnSeries<_SiteStatusPoint, String>(
+                name: '发布',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.publish,
+                color: siteInfo(context).withValues(alpha: 0.58),
+                borderRadius: BorderRadius.vertical(
+                  top: siteRadius(context, size: "xs").topLeft,
+                ),
+              ),
             if (_chartVisible('invitation'))
-            ColumnSeries<_SiteStatusPoint, String>(
-              name: '邀请',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.invitation,
-              color: siteAccent(context, 4).withValues(alpha: 0.58),
-              borderRadius: BorderRadius.vertical(top: siteRadius(context, size: "xs").topLeft),
-            ),
+              ColumnSeries<_SiteStatusPoint, String>(
+                name: '邀请',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.invitation,
+                color: siteAccent(context, 4).withValues(alpha: 0.58),
+                borderRadius: BorderRadius.vertical(
+                  top: siteRadius(context, size: "xs").topLeft,
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEfficiencyChart(BuildContext context, List<_SiteStatusPoint> points) {
+  Widget _buildEfficiencyChart(
+    BuildContext context,
+    List<_SiteStatusPoint> points,
+  ) {
     return Listener(
       onPointerDown: _rememberTooltipPosition,
       child: SizedBox(
@@ -860,63 +1125,94 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           tooltipBehavior: _tooltipBehavior(),
           series: <CartesianSeries<_SiteStatusPoint, String>>[
             if (_chartVisible('ratio'))
-            LineSeries<_SiteStatusPoint, String>(
-              name: '分享率',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.ratio,
-              color: siteInfo(context),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteStatusPoint, String>(
+                name: '分享率',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.ratio,
+                color: siteInfo(context),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
             if (_chartVisible('bonusHour'))
-            LineSeries<_SiteStatusPoint, String>(
-              name: '时魔',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.bonusHour,
-              color: siteWarning(context),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteStatusPoint, String>(
+                name: '时魔',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.bonusHour,
+                color: siteWarning(context),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
             if (_chartVisible('seedDays'))
-            LineSeries<_SiteStatusPoint, String>(
-              name: '做种天数',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.seedDays,
-              color: siteAccent(context, 3),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteStatusPoint, String>(
+                name: '做种天数',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.seedDays,
+                color: siteAccent(context, 3),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
             if (_chartVisible('seedVolume'))
-            LineSeries<_SiteStatusPoint, String>(
-              name: '做种量',
-              dataSource: points,
-              xValueMapper: (point, _) => point.label,
-              yValueMapper: (point, _) => point.seedVolume,
-              yAxisName: 'bytesAxis',
-              color: siteSuccess(context),
-              width: 2,
-              markerSettings: const MarkerSettings(isVisible: true, height: 4, width: 4),
-            ),
+              LineSeries<_SiteStatusPoint, String>(
+                name: '做种量',
+                dataSource: points,
+                xValueMapper: (point, _) => point.label,
+                yValueMapper: (point, _) => point.seedVolume,
+                yAxisName: 'bytesAxis',
+                color: siteSuccess(context),
+                width: 2,
+                markerSettings: const MarkerSettings(
+                  isVisible: true,
+                  height: 4,
+                  width: 4,
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDaysControl(BuildContext context, int totalDays, int visibleDays, List<_SiteStatusPoint> visiblePoints) {
+  Widget _buildDaysControl(
+    BuildContext context,
+    int totalDays,
+    int visibleDays,
+    List<_SiteStatusPoint> visiblePoints,
+  ) {
     final cs = shadcn.Theme.of(context).colorScheme;
     if (totalDays <= 2) {
       return Text(
         '状态历史 $totalDays 天',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.45)),
+        style: TextStyle(
+          fontSize: 12,
+          color: cs.foreground.withValues(alpha: 0.45),
+        ),
       );
     }
 
-    final quickDays = const [7, 15, 30, 60, 90, 180].where((day) => day <= totalDays).toList();
+    final quickDays = const [
+      7,
+      15,
+      30,
+      60,
+      90,
+      180,
+    ].where((day) => day <= totalDays).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -925,7 +1221,11 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           children: [
             Text(
               '显示最近 $visibleDays 天',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: cs.foreground.withValues(alpha: 0.72)),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: cs.foreground.withValues(alpha: 0.72),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -934,7 +1234,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.right,
-                style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.46)),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: cs.foreground.withValues(alpha: 0.46),
+                ),
               ),
             ),
           ],
@@ -980,7 +1283,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
       return Text(
         '月度历史 $totalMonths 个月',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.45)),
+        style: TextStyle(
+          fontSize: 12,
+          color: cs.foreground.withValues(alpha: 0.45),
+        ),
       );
     }
 
@@ -998,7 +1304,11 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           children: [
             Text(
               '显示最近 $visibleMonths 个月',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: cs.foreground.withValues(alpha: 0.72)),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: cs.foreground.withValues(alpha: 0.72),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1007,7 +1317,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.right,
-                style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.46)),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: cs.foreground.withValues(alpha: 0.46),
+                ),
               ),
             ),
           ],
@@ -1019,7 +1332,8 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
             max: totalMonths.toDouble(),
             divisions: totalMonths - 1,
             value: visibleMonths.toDouble(),
-            onChanged: (value) => setState(() => _selectedMonths = value.round()),
+            onChanged: (value) =>
+                setState(() => _selectedMonths = value.round()),
           ),
         ),
         Wrap(
@@ -1058,16 +1372,23 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? cs.primary.withValues(alpha: 0.12) : cs.foreground.withValues(alpha: 0.03),
+          color: selected
+              ? cs.primary.withValues(alpha: 0.12)
+              : cs.foreground.withValues(alpha: 0.03),
           borderRadius: siteRadius(context, size: "sm"),
-          border: Border.all(color: selected ? cs.primary.withValues(alpha: 0.28) : cs.border, width: 0.6),
+          border: Border.all(
+            color: selected ? cs.primary.withValues(alpha: 0.28) : cs.border,
+            width: 0.6,
+          ),
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 12,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected ? cs.primary : cs.foreground.withValues(alpha: 0.55),
+            color: selected
+                ? cs.primary
+                : cs.foreground.withValues(alpha: 0.55),
           ),
         ),
       ),
@@ -1079,7 +1400,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     return Legend(
       isVisible: false,
       position: LegendPosition.bottom,
-      textStyle: TextStyle(fontSize: 10, color: cs.foreground.withValues(alpha: 0.55)),
+      textStyle: TextStyle(
+        fontSize: 10,
+        color: cs.foreground.withValues(alpha: 0.55),
+      ),
       iconHeight: 8,
       iconWidth: 8,
     );
@@ -1090,7 +1414,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     return CategoryAxis(
       majorGridLines: const MajorGridLines(width: 0),
       axisLine: AxisLine(width: 0.5, color: cs.border),
-      labelStyle: TextStyle(fontSize: 10, color: cs.foreground.withValues(alpha: 0.42)),
+      labelStyle: TextStyle(
+        fontSize: 10,
+        color: cs.foreground.withValues(alpha: 0.42),
+      ),
       labelRotation: context.isMobile ? -35 : 0,
     );
   }
@@ -1100,10 +1427,17 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     return NumericAxis(
       name: name,
       opposedPosition: name != null && name.isNotEmpty,
-      majorGridLines: MajorGridLines(width: 0.6, color: cs.border.withValues(alpha: 0.55)),
+      majorGridLines: MajorGridLines(
+        width: 0.6,
+        color: cs.border.withValues(alpha: 0.55),
+      ),
       axisLine: const AxisLine(width: 0),
-      labelStyle: TextStyle(fontSize: 10, color: cs.foreground.withValues(alpha: 0.42)),
-      axisLabelFormatter: (details) => ChartAxisLabel(_fmtBytesValue(details.value), details.textStyle),
+      labelStyle: TextStyle(
+        fontSize: 10,
+        color: cs.foreground.withValues(alpha: 0.42),
+      ),
+      axisLabelFormatter: (details) =>
+          ChartAxisLabel(_fmtBytesValue(details.value), details.textStyle),
     );
   }
 
@@ -1114,8 +1448,12 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
       opposedPosition: name != null && name.isNotEmpty,
       majorGridLines: const MajorGridLines(width: 0),
       axisLine: const AxisLine(width: 0),
-      labelStyle: TextStyle(fontSize: 10, color: cs.foreground.withValues(alpha: 0.42)),
-      axisLabelFormatter: (details) => ChartAxisLabel(_fmtCompactValue(details.value), details.textStyle),
+      labelStyle: TextStyle(
+        fontSize: 10,
+        color: cs.foreground.withValues(alpha: 0.42),
+      ),
+      axisLabelFormatter: (details) =>
+          ChartAxisLabel(_fmtCompactValue(details.value), details.textStyle),
     );
   }
 
@@ -1125,14 +1463,21 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
       activationMode: ActivationMode.singleTap,
       header: '',
       canShowMarker: false,
-      builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
-        if (data is _SiteStatusPoint) {
-          _scheduleTooltip(_statusTooltipText(data));
-        } else if (data is _SiteMonthPoint) {
-          _scheduleTooltip(_monthTooltipText(data));
-        }
-        return const SizedBox.shrink();
-      },
+      builder:
+          (
+            dynamic data,
+            dynamic point,
+            dynamic series,
+            int pointIndex,
+            int seriesIndex,
+          ) {
+            if (data is _SiteStatusPoint) {
+              _scheduleTooltip(_statusTooltipText(data));
+            } else if (data is _SiteMonthPoint) {
+              _scheduleTooltip(_monthTooltipText(data));
+            }
+            return const SizedBox.shrink();
+          },
     );
   }
 
@@ -1315,21 +1660,33 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     final size = MediaQuery.sizeOf(context);
     final padding = MediaQuery.viewPaddingOf(context);
     const margin = 12.0;
-    final availableWidth = (size.width - margin * 2).clamp(160.0, size.width).toDouble();
-    final availableHeight = (size.height - padding.top - padding.bottom - margin * 2)
-        .clamp(160.0, size.height)
+    final availableWidth = (size.width - margin * 2)
+        .clamp(160.0, size.width)
         .toDouble();
+    final availableHeight =
+        (size.height - padding.top - padding.bottom - margin * 2)
+            .clamp(160.0, size.height)
+            .toDouble();
     final tooltipWidth = availableWidth.clamp(160.0, 430.0).toDouble();
     final tooltipHeight = _tooltipPreferredHeight(text, availableHeight);
-    final position = _tooltipPosition ?? Offset(size.width / 2, size.height / 2);
+    final position =
+        _tooltipPosition ?? Offset(size.width / 2, size.height / 2);
     final minTop = padding.top + margin;
-    final maxTop = (size.height - padding.bottom - tooltipHeight - margin).clamp(minTop, size.height).toDouble();
+    final maxTop = (size.height - padding.bottom - tooltipHeight - margin)
+        .clamp(minTop, size.height)
+        .toDouble();
     final aboveTop = position.dy - tooltipHeight - 14;
     final belowTop = position.dy + 14;
-    final top = (aboveTop >= minTop ? aboveTop : belowTop).clamp(minTop, maxTop).toDouble();
+    final top = (aboveTop >= minTop ? aboveTop : belowTop)
+        .clamp(minTop, maxTop)
+        .toDouble();
     final minLeft = margin;
-    final maxLeft = (size.width - tooltipWidth - margin).clamp(minLeft, size.width).toDouble();
-    final left = (position.dx - tooltipWidth / 2).clamp(minLeft, maxLeft).toDouble();
+    final maxLeft = (size.width - tooltipWidth - margin)
+        .clamp(minLeft, size.width)
+        .toDouble();
+    final left = (position.dx - tooltipWidth / 2)
+        .clamp(minLeft, maxLeft)
+        .toDouble();
 
     _hideTooltip();
     _tooltipEntry = OverlayEntry(
@@ -1367,14 +1724,26 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   double _tooltipPreferredHeight(String text, double availableHeight) {
     final lines = text.split('\n');
-    final bodyLines = lines.skip(1).where((line) => line.trim().isNotEmpty).toList();
+    final bodyLines = lines
+        .skip(1)
+        .where((line) => line.trim().isNotEmpty)
+        .toList();
     final summaryCount = bodyLines.where(_isSiteTooltipSummaryLine).length;
-    final detailCount = bodyLines.where((line) => !_isSiteTooltipSummaryLine(line)).length;
-    final visibleDetails = detailCount.clamp(1, _SitePagedTooltipState.linesPerPage).toInt();
+    final detailCount = bodyLines
+        .where((line) => !_isSiteTooltipSummaryLine(line))
+        .length;
+    final visibleDetails = detailCount
+        .clamp(1, _SitePagedTooltipState.linesPerPage)
+        .toInt();
     final summaryHeight = summaryCount > 0 ? 34.0 : 0.0;
-    final pagerHeight = detailCount > _SitePagedTooltipState.linesPerPage ? 36.0 : 0.0;
-    final preferred = 58.0 + summaryHeight + visibleDetails * 22.0 + pagerHeight;
-    return preferred.clamp(132.0, availableHeight.clamp(132.0, 620.0)).toDouble();
+    final pagerHeight = detailCount > _SitePagedTooltipState.linesPerPage
+        ? 36.0
+        : 0.0;
+    final preferred =
+        58.0 + summaryHeight + visibleDetails * 22.0 + pagerHeight;
+    return preferred
+        .clamp(132.0, availableHeight.clamp(132.0, 620.0))
+        .toDouble();
   }
 
   void _hideTooltip() {
@@ -1386,24 +1755,40 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   // ── 详细数据 ──
 
-  Widget _buildDetailStats(BuildContext context, shadcn.ColorScheme cs, SiteDailyStatus status, double spFull) {
+  Widget _buildDetailStats(
+    BuildContext context,
+    shadcn.ColorScheme cs,
+    SiteDailyStatus status,
+    double spFull,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 标题
         Row(
           children: [
-            Icon(shadcn.LucideIcons.activity, size: 14, color: cs.foreground.withValues(alpha: 0.4)),
+            Icon(
+              shadcn.LucideIcons.activity,
+              size: 14,
+              color: cs.foreground.withValues(alpha: 0.4),
+            ),
             const SizedBox(width: 6),
             Text(
               '详细数据',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: cs.foreground.withValues(alpha: 0.6)),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: cs.foreground.withValues(alpha: 0.6),
+              ),
             ),
             const Spacer(),
             if (status.updated_at.isNotEmpty)
               Text(
                 formatTime(status.updated_at),
-                style: TextStyle(fontSize: 10, color: cs.foreground.withValues(alpha: 0.3)),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: cs.foreground.withValues(alpha: 0.3),
+                ),
               ),
           ],
         ),
@@ -1421,9 +1806,21 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
               levelColor(status.myLevel),
             ),
             const SizedBox(width: 6),
-            _statCard(context, '发布', '${status.publish}', shadcn.LucideIcons.fileText, siteAccent(context, 2)),
+            _statCard(
+              context,
+              '发布',
+              '${status.publish}',
+              shadcn.LucideIcons.fileText,
+              siteAccent(context, 2),
+            ),
             const SizedBox(width: 6),
-            _statCard(context, '邀请', '${status.invitation}', shadcn.LucideIcons.userPlus, siteAccent(context, 3)),
+            _statCard(
+              context,
+              '邀请',
+              '${status.invitation}',
+              shadcn.LucideIcons.userPlus,
+              siteAccent(context, 3),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -1433,9 +1830,21 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
         const SizedBox(height: 4),
         Row(
           children: [
-            _statCard(context, '上传量', fmtBytes(status.uploaded), shadcn.LucideIcons.arrowUp, siteSuccess(context)),
+            _statCard(
+              context,
+              '上传量',
+              fmtBytes(status.uploaded),
+              shadcn.LucideIcons.arrowUp,
+              siteSuccess(context),
+            ),
             const SizedBox(width: 6),
-            _statCard(context, '下载量', fmtBytes(status.downloaded), shadcn.LucideIcons.arrowDown, siteInfo(context)),
+            _statCard(
+              context,
+              '下载量',
+              fmtBytes(status.downloaded),
+              shadcn.LucideIcons.arrowDown,
+              siteInfo(context),
+            ),
             const SizedBox(width: 6),
             _statCard(
               context,
@@ -1453,9 +1862,21 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
         const SizedBox(height: 4),
         Row(
           children: [
-            _statCard(context, '做种数', '${status.seed}', shadcn.LucideIcons.leaf, siteSuccess(context)),
+            _statCard(
+              context,
+              '做种数',
+              '${status.seed}',
+              shadcn.LucideIcons.leaf,
+              siteSuccess(context),
+            ),
             const SizedBox(width: 6),
-            _statCard(context, '下载数', '${status.leech}', shadcn.LucideIcons.arrowDown, siteDanger(context)),
+            _statCard(
+              context,
+              '下载数',
+              '${status.leech}',
+              shadcn.LucideIcons.arrowDown,
+              siteDanger(context),
+            ),
             const SizedBox(width: 6),
             _statCard(
               context,
@@ -1473,9 +1894,21 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
         const SizedBox(height: 4),
         Row(
           children: [
-            _statCard(context, '魔力值', fmtCompact(status.myBonus), shadcn.LucideIcons.diamond, siteWarning(context)),
+            _statCard(
+              context,
+              '魔力值',
+              fmtCompact(status.myBonus),
+              shadcn.LucideIcons.diamond,
+              siteWarning(context),
+            ),
             const SizedBox(width: 6),
-            _statCard(context, '做种积分', fmtCompact(status.myScore), shadcn.LucideIcons.star, siteWarning(context)),
+            _statCard(
+              context,
+              '做种积分',
+              fmtCompact(status.myScore),
+              shadcn.LucideIcons.star,
+              siteWarning(context),
+            ),
             const SizedBox(width: 6),
             _statCard(
               context,
@@ -1496,12 +1929,20 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
       style: TextStyle(
         fontSize: 10,
         fontWeight: FontWeight.w500,
-        color: shadcn.Theme.of(context).colorScheme.foreground.withValues(alpha: 0.35),
+        color: shadcn.Theme.of(
+          context,
+        ).colorScheme.foreground.withValues(alpha: 0.35),
       ),
     );
   }
 
-  Widget _statCard(BuildContext context, String label, String value, IconData icon, Color color) {
+  Widget _statCard(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     final cs = shadcn.Theme.of(context).colorScheme;
     return Expanded(
       child: Container(
@@ -1518,13 +1959,23 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
               children: [
                 Icon(icon, size: 10, color: color.withValues(alpha: 0.7)),
                 const SizedBox(width: 3),
-                Text(label, style: TextStyle(fontSize: 9, color: cs.foreground.withValues(alpha: 0.4))),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: cs.foreground.withValues(alpha: 0.4),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
               value,
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cs.foreground),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: cs.foreground,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -1536,22 +1987,34 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   Widget _buildSignInSection(BuildContext context, shadcn.ColorScheme cs) {
     final today = DateTime.now();
-    final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final todayKey =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(shadcn.LucideIcons.calendarCheck, size: 14, color: cs.foreground.withValues(alpha: 0.4)),
+            Icon(
+              shadcn.LucideIcons.calendarCheck,
+              size: 14,
+              color: cs.foreground.withValues(alpha: 0.4),
+            ),
             const SizedBox(width: 6),
             Text(
               '签到信息',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: cs.foreground.withValues(alpha: 0.6)),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: cs.foreground.withValues(alpha: 0.6),
+              ),
             ),
             const Spacer(),
             Text(
               '共 ${site.signInfo?.length ?? 0} 条',
-              style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.38)),
+              style: TextStyle(
+                fontSize: 11,
+                color: cs.foreground.withValues(alpha: 0.38),
+              ),
             ),
           ],
         ),
@@ -1561,7 +2024,11 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     );
   }
 
-  Widget _buildSignInTimeline(BuildContext context, shadcn.ColorScheme cs, String todayKey) {
+  Widget _buildSignInTimeline(
+    BuildContext context,
+    shadcn.ColorScheme cs,
+    String todayKey,
+  ) {
     final entries = _signEntries();
     if (entries.isEmpty) {
       return _chartCard(
@@ -1571,7 +2038,13 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 18),
             child: Center(
-              child: Text('暂无签到记录', style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.45))),
+              child: Text(
+                '暂无签到记录',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: cs.foreground.withValues(alpha: 0.45),
+                ),
+              ),
             ),
           ),
         ],
@@ -1579,7 +2052,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     }
 
     final pageSize = _signPageSize(context);
-    final pageCount = (entries.length / pageSize).ceil().clamp(1, entries.length).toInt();
+    final pageCount = (entries.length / pageSize)
+        .ceil()
+        .clamp(1, entries.length)
+        .toInt();
     final pageIndex = _signPageIndex.clamp(0, pageCount - 1).toInt();
     if (pageIndex != _signPageIndex) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1607,17 +2083,26 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
               rowGap: 10,
             ),
             child: SingleChildScrollView(
-              child: shadcn.Timeline(data: [for (final entry in visible) _signTimelineData(context, entry, todayKey)]),
+              child: shadcn.Timeline(
+                data: [
+                  for (final entry in visible)
+                    _signTimelineData(context, entry, todayKey),
+                ],
+              ),
             ),
           ),
         ),
         if (pageCount > 1) ...[
-          SizedBox(height: _signPagerTopGap(context, visible.length, pageCount > 1)),
+          SizedBox(
+            height: _signPagerTopGap(context, visible.length, pageCount > 1),
+          ),
           Divider(height: 16, color: cs.border.withValues(alpha: 0.55)),
           Row(
             children: [
               shadcn.IconButton.ghost(
-                onPressed: pageIndex > 0 ? () => setState(() => _signPageIndex = pageIndex - 1) : null,
+                onPressed: pageIndex > 0
+                    ? () => setState(() => _signPageIndex = pageIndex - 1)
+                    : null,
                 icon: Icon(
                   shadcn.LucideIcons.chevronLeft,
                   size: 16,
@@ -1636,11 +2121,15 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                 ),
               ),
               shadcn.IconButton.ghost(
-                onPressed: pageIndex < pageCount - 1 ? () => setState(() => _signPageIndex = pageIndex + 1) : null,
+                onPressed: pageIndex < pageCount - 1
+                    ? () => setState(() => _signPageIndex = pageIndex + 1)
+                    : null,
                 icon: Icon(
                   shadcn.LucideIcons.chevronRight,
                   size: 16,
-                  color: pageIndex < pageCount - 1 ? cs.foreground : cs.mutedForeground,
+                  color: pageIndex < pageCount - 1
+                      ? cs.foreground
+                      : cs.mutedForeground,
                 ),
               ),
             ],
@@ -1654,7 +2143,9 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     final signInfo = site.signInfo;
     if (signInfo == null || signInfo.isEmpty) return const [];
     final entries = signInfo.entries.map((entry) {
-      final value = entry.value is Map ? Map<String, dynamic>.from(entry.value as Map) : <String, dynamic>{};
+      final value = entry.value is Map
+          ? Map<String, dynamic>.from(entry.value as Map)
+          : <String, dynamic>{};
       return _SignEntry(date: entry.key, info: value);
     }).toList();
     entries.sort((a, b) => b.date.compareTo(a.date));
@@ -1667,24 +2158,40 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     return estimated.clamp(3, 9).toInt();
   }
 
-  double _signTimelineHeight(BuildContext context, int visibleCount, bool hasPager) {
+  double _signTimelineHeight(
+    BuildContext context,
+    int visibleCount,
+    bool hasPager,
+  ) {
     final height = MediaQuery.sizeOf(context).height;
     final reserved = context.isMobile ? 285.0 : 230.0;
-    final maxHeight = (height - reserved - (hasPager ? 58.0 : 0.0)).clamp(190.0, 560.0).toDouble();
+    final maxHeight = (height - reserved - (hasPager ? 58.0 : 0.0))
+        .clamp(190.0, 560.0)
+        .toDouble();
     return (visibleCount * 86.0).clamp(110.0, maxHeight).toDouble();
   }
 
-  double _signPagerTopGap(BuildContext context, int visibleCount, bool hasPager) {
+  double _signPagerTopGap(
+    BuildContext context,
+    int visibleCount,
+    bool hasPager,
+  ) {
     if (!hasPager) return 0;
     final timelineHeight = _signTimelineHeight(context, visibleCount, hasPager);
     final contentHeight = visibleCount * 86.0;
     return (timelineHeight - contentHeight).clamp(10.0, 36.0).toDouble();
   }
 
-  shadcn.TimelineData _signTimelineData(BuildContext context, _SignEntry entry, String todayKey) {
+  shadcn.TimelineData _signTimelineData(
+    BuildContext context,
+    _SignEntry entry,
+    String todayKey,
+  ) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final isToday = entry.date == todayKey;
-    final color = isToday ? cs.primary : cs.mutedForeground.withValues(alpha: 0.45);
+    final color = isToday
+        ? cs.primary
+        : cs.mutedForeground.withValues(alpha: 0.45);
 
     return shadcn.TimelineData(
       color: color,
@@ -1696,7 +2203,9 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
-              color: isToday ? cs.primary : cs.foreground.withValues(alpha: 0.45),
+              color: isToday
+                  ? cs.primary
+                  : cs.foreground.withValues(alpha: 0.45),
             ),
           ),
           const SizedBox(width: 8),
@@ -1713,7 +2222,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           if (entry.updatedAt.isNotEmpty)
             Text(
               formatTime(entry.updatedAt),
-              style: TextStyle(fontSize: 10, color: cs.foreground.withValues(alpha: 0.36)),
+              style: TextStyle(
+                fontSize: 10,
+                color: cs.foreground.withValues(alpha: 0.36),
+              ),
             ),
         ],
       ),
@@ -1721,16 +2233,23 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: isToday ? cs.primary.withValues(alpha: 0.08) : cs.foreground.withValues(alpha: 0.025),
+          color: isToday
+              ? cs.primary.withValues(alpha: 0.08)
+              : cs.foreground.withValues(alpha: 0.025),
           borderRadius: siteRadius(context, size: "sm"),
-          border: Border.all(color: isToday ? cs.primary.withValues(alpha: 0.2) : cs.border, width: 0.6),
+          border: Border.all(
+            color: isToday ? cs.primary.withValues(alpha: 0.2) : cs.border,
+            width: 0.6,
+          ),
         ),
         child: Text(
           entry.displayText.isEmpty ? '-' : entry.displayText,
           style: TextStyle(
             fontSize: 11,
             height: 1.35,
-            color: isToday ? cs.foreground : cs.foreground.withValues(alpha: 0.62),
+            color: isToday
+                ? cs.foreground
+                : cs.foreground.withValues(alpha: 0.62),
             fontWeight: isToday ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
@@ -1748,7 +2267,9 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   Future<void> _doSignIn(BuildContext context) async {
     try {
-      final message = await ProviderScope.containerOf(context).read(siteInfoListProvider.notifier).signIn(site.id);
+      final message = await ProviderScope.containerOf(
+        context,
+      ).read(siteInfoListProvider.notifier).signIn(site.id);
       if (context.mounted) {
         Toast.success(message);
       }
@@ -1761,7 +2282,11 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   // ────────────────── Header ──────────────────
 
-  PreferredSizeWidget _buildHeader(BuildContext context, shadcn.ColorScheme cs) {
+  PreferredSizeWidget _buildHeader(
+    BuildContext context,
+    shadcn.ColorScheme cs,
+    int limitSpeed,
+  ) {
     final configs = ref.read(websiteListProvider).valueOrNull ?? [];
     final website = findSiteWebsiteConfig(site, configs);
     final browseTargets = buildSiteBrowseTargets(site, website);
@@ -1781,7 +2306,11 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
               behavior: HitTestBehavior.opaque,
               child: Padding(
                 padding: const EdgeInsets.all(4),
-                child: Icon(shadcn.LucideIcons.arrowLeft, size: 20, color: cs.foreground),
+                child: Icon(
+                  shadcn.LucideIcons.arrowLeft,
+                  size: 20,
+                  color: cs.foreground,
+                ),
               ),
             ),
             const SizedBox(width: 10),
@@ -1790,7 +2319,9 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
               height: 8,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: site.available ? siteSuccess(context) : siteDanger(context),
+                color: site.available
+                    ? siteSuccess(context)
+                    : siteDanger(context),
               ),
             ),
             const SizedBox(width: 10),
@@ -1801,27 +2332,93 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                 children: [
                   Text(
                     site.site,
-                    style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: cs.foreground,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   if (site.nickname.isNotEmpty)
-                    Text(site.nickname, style: TextStyle(color: cs.foreground.withValues(alpha: 0.4), fontSize: 11)),
+                    Text(
+                      site.nickname,
+                      style: TextStyle(
+                        color: cs.foreground.withValues(alpha: 0.4),
+                        fontSize: 11,
+                      ),
+                    ),
                 ],
               ),
             ),
+            _buildLimitSpeedBadge(context, cs, limitSpeed),
             if (browseTargets.isNotEmpty)
-              Builder(
-                builder: (buttonContext) => GestureDetector(
-                  onTap: () => _showBrowseMenu(buttonContext, browseTargets),
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: cs.primary.withValues(alpha: 0.08),
-                      borderRadius: siteRadius(context, size: "md"),
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Builder(
+                  builder: (buttonContext) => GestureDetector(
+                    onTap: () => _showBrowseMenu(buttonContext, browseTargets),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: cs.primary.withValues(alpha: 0.08),
+                        borderRadius: siteRadius(context, size: "md"),
+                      ),
+                      child: Icon(
+                        shadcn.LucideIcons.globe,
+                        size: 16,
+                        color: cs.primary,
+                      ),
                     ),
-                    child: Icon(shadcn.LucideIcons.globe, size: 16, color: cs.primary),
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLimitSpeedBadge(
+    BuildContext context,
+    shadcn.ColorScheme cs,
+    int limitSpeed,
+  ) {
+    final enabled = limitSpeed > 0;
+    final color = enabled ? cs.primary : cs.foreground.withValues(alpha: 0.42);
+
+    return Tooltip(
+      message: '站点限速',
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 112),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: enabled
+              ? cs.primary.withValues(alpha: 0.08)
+              : cs.foreground.withValues(alpha: 0.04),
+          borderRadius: siteRadius(context, size: "md"),
+          border: Border.all(
+            color: enabled
+                ? cs.primary.withValues(alpha: 0.18)
+                : cs.border.withValues(alpha: 0.7),
+            width: 0.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(shadcn.LucideIcons.gauge, size: 14, color: color),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                _fmtLimitSpeed(limitSpeed),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -1856,7 +2453,8 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                     this.context,
                     site,
                     url: target.url,
-                    title: '${site.nickname.isNotEmpty ? site.nickname : site.site} · ${target.label}',
+                    title:
+                        '${site.nickname.isNotEmpty ? site.nickname : site.site} · ${target.label}',
                   );
                 },
                 child: Text(target.label),
@@ -1869,7 +2467,11 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   // ────────────────── 用户卡片 ──────────────────
 
-  Widget _buildUserCard(BuildContext context, shadcn.ColorScheme cs, double spFull) {
+  Widget _buildUserCard(
+    BuildContext context,
+    shadcn.ColorScheme cs,
+    double spFull,
+  ) {
     final status = site.latestStatus;
     final hasUser = site.username != null && site.username!.isNotEmpty;
 
@@ -1895,7 +2497,11 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                 child: Center(
                   child: Text(
                     hasUser ? site.username![0].toUpperCase() : '?',
-                    style: TextStyle(color: cs.primary, fontSize: 18, fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: cs.primary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
@@ -1906,12 +2512,19 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                   children: [
                     Text(
                       hasUser ? site.username! : '未配置',
-                      style: TextStyle(color: cs.foreground, fontSize: 15, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: cs.foreground,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       site.email ?? '-',
-                      style: TextStyle(color: cs.foreground.withValues(alpha: 0.4), fontSize: 12),
+                      style: TextStyle(
+                        color: cs.foreground.withValues(alpha: 0.4),
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -1921,7 +2534,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                 GestureDetector(
                   onTap: () => openLevelInfo(context, site: site),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: levelColor(status.myLevel).withValues(alpha: 0.12),
                       borderRadius: siteRadius(context, size: "sm"),
@@ -1941,7 +2557,9 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                         Icon(
                           Icons.keyboard_arrow_right_rounded,
                           size: 14,
-                          color: levelColor(status.myLevel).withValues(alpha: 0.6),
+                          color: levelColor(
+                            status.myLevel,
+                          ).withValues(alpha: 0.6),
                         ),
                       ],
                     ),
@@ -1950,24 +2568,44 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
             ],
           ),
           // 签到 + 消息 + 时魔 + HR
-          if (site.signInText != null || status != null || site.mail > 0 || site.notice > 0) ...[
+          if (site.signInText != null ||
+              status != null ||
+              site.mail > 0 ||
+              site.notice > 0) ...[
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 // HR
-                if (status != null && status.myHr != '0/0/0' && status.myHr != '0')
-                  _miniBadge(context, shadcn.LucideIcons.triangleAlert, 'HR ${status.myHr}', siteDanger(context)),
+                if (status != null &&
+                    status.myHr != '0/0/0' &&
+                    status.myHr != '0')
+                  _miniBadge(
+                    context,
+                    shadcn.LucideIcons.triangleAlert,
+                    'HR ${status.myHr}',
+                    siteDanger(context),
+                  ),
                 // 签到状态
                 if (site.signInText != null)
                   _miniBadge(
                     context,
-                    site.signInText == '已签到' ? shadcn.LucideIcons.check : shadcn.LucideIcons.x,
+                    site.signInText == '已签到'
+                        ? shadcn.LucideIcons.check
+                        : shadcn.LucideIcons.x,
                     site.signInText!,
-                    site.signInText == '已签到' ? siteSuccess(context) : siteDanger(context),
+                    site.signInText == '已签到'
+                        ? siteSuccess(context)
+                        : siteDanger(context),
                   ),
-                _miniIconBadge(context, shadcn.LucideIcons.mail, '${site.mail}', siteInfo(context), '短消息 ${site.mail}'),
+                _miniIconBadge(
+                  context,
+                  shadcn.LucideIcons.mail,
+                  '${site.mail}',
+                  siteInfo(context),
+                  '短消息 ${site.mail}',
+                ),
                 _miniIconBadge(
                   context,
                   shadcn.LucideIcons.bell,
@@ -1980,7 +2618,7 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                   _miniBadge(
                     context,
                     shadcn.LucideIcons.zap,
-                    '${_fmtMagicWithRatio(status.bonusHour, spFull)}/h',
+                    _fmtMagicWithRatio(status.bonusHour, spFull),
                     siteWarning(context),
                   ),
               ],
@@ -1993,7 +2631,12 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     );
   }
 
-  Widget _miniBadge(BuildContext context, IconData icon, String text, Color color) {
+  Widget _miniBadge(
+    BuildContext context,
+    IconData icon,
+    String text,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -2007,14 +2650,24 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
           const SizedBox(width: 4),
           Text(
             text,
-            style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _miniIconBadge(BuildContext context, IconData icon, String text, Color color, String tooltip) {
+  Widget _miniIconBadge(
+    BuildContext context,
+    IconData icon,
+    String text,
+    Color color,
+    String tooltip,
+  ) {
     return shadcn.Tooltip(
       tooltip: (_) => Text(tooltip),
       child: Container(
@@ -2030,7 +2683,11 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
             const SizedBox(width: 4),
             Text(
               text,
-              style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -2040,13 +2697,24 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   Widget _buildTimeMetaRow(BuildContext context, shadcn.ColorScheme cs) {
     final registerTime = fmtDate(site.timeJoin);
-    final latestActive = site.latestActiveText.isEmpty ? '-' : site.latestActiveText;
-    final style = TextStyle(color: cs.foreground.withValues(alpha: 0.45), fontSize: 11, fontWeight: FontWeight.w500);
+    final latestActive = site.latestActiveText.isEmpty
+        ? '-'
+        : site.latestActiveText;
+    final style = TextStyle(
+      color: cs.foreground.withValues(alpha: 0.45),
+      fontSize: 11,
+      fontWeight: FontWeight.w500,
+    );
 
     return Row(
       children: [
         Expanded(
-          child: Text('注册 $registerTime', maxLines: 1, overflow: TextOverflow.ellipsis, style: style),
+          child: Text(
+            '注册 $registerTime',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style,
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -2071,7 +2739,12 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   // ────────────────── Section ──────────────────
 
-  Widget _section(BuildContext ctx, String title, IconData icon, List<Widget> children) {
+  Widget _section(
+    BuildContext ctx,
+    String title,
+    IconData icon,
+    List<Widget> children,
+  ) {
     final cs = shadcn.Theme.of(ctx).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2105,7 +2778,12 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
               mainAxisSize: MainAxisSize.min,
               children: List.generate(children.length * 2 - 1, (i) {
                 if (i.isOdd) {
-                  return Divider(height: 0.5, thickness: 0.5, indent: 14, color: cs.border);
+                  return Divider(
+                    height: 0.5,
+                    thickness: 0.5,
+                    indent: 14,
+                    color: cs.border,
+                  );
                 }
                 return children[i ~/ 2];
               }),
@@ -2126,12 +2804,22 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
         children: [
           SizedBox(
             width: 80,
-            child: Text(label, style: TextStyle(color: cs.foreground.withValues(alpha: 0.45), fontSize: 13)),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: cs.foreground.withValues(alpha: 0.45),
+                fontSize: 13,
+              ),
+            ),
           ),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(color: cs.foreground, fontSize: 13, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                color: cs.foreground,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -2148,13 +2836,38 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
       _FlagItem('可用', site.available, shadcn.LucideIcons.check, 'available'),
       _FlagItem('签到', site.signIn, shadcn.LucideIcons.calendarCheck, 'signIn'),
       _FlagItem('信息', site.getInfo, shadcn.LucideIcons.info, 'getInfo'),
-      _FlagItem('辅种', site.repeatTorrents, shadcn.LucideIcons.copy, 'repeatTorrents'),
+      _FlagItem(
+        '辅种',
+        site.repeatTorrents,
+        shadcn.LucideIcons.copy,
+        'repeatTorrents',
+      ),
       _FlagItem('刷流', site.brushFree, shadcn.LucideIcons.download, 'brushFree'),
       _FlagItem('RSS', site.brushRss, shadcn.LucideIcons.rss, 'brushRss'),
-      _FlagItem('拆包', site.packageFile, shadcn.LucideIcons.package, 'packageFile'),
-      _FlagItem('HR', site.hrDiscern, shadcn.LucideIcons.triangleAlert, 'hrDiscern'),
-      _FlagItem('搜索', site.searchTorrents, shadcn.LucideIcons.search, 'searchTorrents'),
-      _FlagItem('首页', site.showInDash, shadcn.LucideIcons.layoutDashboard, 'showInDash'),
+      _FlagItem(
+        '拆包',
+        site.packageFile,
+        shadcn.LucideIcons.package,
+        'packageFile',
+      ),
+      _FlagItem(
+        'HR',
+        site.hrDiscern,
+        shadcn.LucideIcons.triangleAlert,
+        'hrDiscern',
+      ),
+      _FlagItem(
+        '搜索',
+        site.searchTorrents,
+        shadcn.LucideIcons.search,
+        'searchTorrents',
+      ),
+      _FlagItem(
+        '首页',
+        site.showInDash,
+        shadcn.LucideIcons.layoutDashboard,
+        'showInDash',
+      ),
     ];
 
     return Padding(
@@ -2167,7 +2880,8 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
               : constraints.maxWidth < 520
               ? 3
               : 5;
-          final itemWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
+          final itemWidth =
+              (constraints.maxWidth - spacing * (columns - 1)) / columns;
 
           return Wrap(
             spacing: spacing,
@@ -2181,11 +2895,20 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                   behavior: HitTestBehavior.opaque,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 160),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 7,
+                    ),
                     decoration: BoxDecoration(
-                      color: f.on ? siteSuccess(context).withValues(alpha: 0.1) : cs.foreground.withValues(alpha: 0.03),
+                      color: f.on
+                          ? siteSuccess(context).withValues(alpha: 0.1)
+                          : cs.foreground.withValues(alpha: 0.03),
                       borderRadius: siteRadius(context, size: "md"),
-                      border: Border.all(color: f.on ? siteSuccess(context).withValues(alpha: 0.26) : cs.border),
+                      border: Border.all(
+                        color: f.on
+                            ? siteSuccess(context).withValues(alpha: 0.26)
+                            : cs.border,
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -2194,13 +2917,18 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                           SizedBox(
                             width: 12,
                             height: 12,
-                            child: CircularProgressIndicator(strokeWidth: 1.4, color: cs.primary),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1.4,
+                              color: cs.primary,
+                            ),
                           )
                         else
                           Icon(
                             f.icon,
                             size: 12,
-                            color: f.on ? siteSuccess(context) : cs.foreground.withValues(alpha: 0.28),
+                            color: f.on
+                                ? siteSuccess(context)
+                                : cs.foreground.withValues(alpha: 0.28),
                           ),
                         const SizedBox(width: 5),
                         Flexible(
@@ -2210,8 +2938,12 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 11,
-                              color: f.on ? siteSuccess(context) : cs.foreground.withValues(alpha: 0.45),
-                              fontWeight: f.on ? FontWeight.w700 : FontWeight.w500,
+                              color: f.on
+                                  ? siteSuccess(context)
+                                  : cs.foreground.withValues(alpha: 0.45),
+                              fontWeight: f.on
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
                             ),
                           ),
                         ),
@@ -2234,9 +2966,14 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   String _fmtMagicWithRatio(double current, double full) {
     final value = current.toStringAsFixed(1);
-    if (full <= 0) return value;
+    if (full <= 0) return '$value/h';
     final pct = ((current / full) * 100).round();
-    return '$value($pct%)';
+    return '$value/h($pct%)';
+  }
+
+  String _fmtLimitSpeed(int value) {
+    if (value <= 0) return '不限速';
+    return '$value MB/s';
   }
 
   double _numVal(dynamic v) {
@@ -2424,10 +3161,17 @@ class _SitePagedTooltipState extends State<_SitePagedTooltip> {
     super.initState();
     _pageController = PageController();
     final rawLines = widget.text.split('\n');
-    _title = rawLines.isNotEmpty && rawLines.first.trim().isNotEmpty ? rawLines.first : '详情';
-    final bodyLines = rawLines.skip(1).where((line) => line.trim().isNotEmpty).toList();
+    _title = rawLines.isNotEmpty && rawLines.first.trim().isNotEmpty
+        ? rawLines.first
+        : '详情';
+    final bodyLines = rawLines
+        .skip(1)
+        .where((line) => line.trim().isNotEmpty)
+        .toList();
     _summaryLines = bodyLines.where(_isSiteTooltipSummaryLine).toList();
-    _pages = _chunkLines(bodyLines.where((line) => !_isSiteTooltipSummaryLine(line)).toList());
+    _pages = _chunkLines(
+      bodyLines.where((line) => !_isSiteTooltipSummaryLine(line)).toList(),
+    );
   }
 
   @override
@@ -2447,7 +3191,11 @@ class _SitePagedTooltipState extends State<_SitePagedTooltip> {
 
   void _goToPage(int page) {
     if (page < 0 || page >= _pages.length) return;
-    _pageController.animateToPage(page, duration: const Duration(milliseconds: 180), curve: Curves.easeOutCubic);
+    _pageController.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   Widget _buildLine(BuildContext context, String line) {
@@ -2493,7 +3241,12 @@ class _SitePagedTooltipState extends State<_SitePagedTooltip> {
     }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Text(line, style: theme.typography.xSmall.copyWith(color: theme.colorScheme.mutedForeground)),
+      child: Text(
+        line,
+        style: theme.typography.xSmall.copyWith(
+          color: theme.colorScheme.mutedForeground,
+        ),
+      ),
     );
   }
 
@@ -2512,7 +3265,10 @@ class _SitePagedTooltipState extends State<_SitePagedTooltip> {
         decoration: BoxDecoration(
           color: theme.colorScheme.primary.withValues(alpha: 0.08),
           borderRadius: siteRadius(context, size: "sm"),
-          border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.12), width: 0.6),
+          border: Border.all(
+            color: theme.colorScheme.primary.withValues(alpha: 0.12),
+            width: 0.6,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -2562,7 +3318,9 @@ class _SitePagedTooltipState extends State<_SitePagedTooltip> {
       decoration: BoxDecoration(
         color: theme.colorScheme.background.withValues(alpha: 0.98),
         borderRadius: siteRadius(context, size: "md"),
-        border: Border.all(color: theme.colorScheme.border.withValues(alpha: 0.78)),
+        border: Border.all(
+          color: theme.colorScheme.border.withValues(alpha: 0.78),
+        ),
         boxShadow: [
           BoxShadow(
             color: theme.colorScheme.foreground.withValues(alpha: 0.18),
@@ -2612,13 +3370,20 @@ class _SitePagedTooltipState extends State<_SitePagedTooltip> {
                 onTap: widget.onClose,
                 child: Padding(
                   padding: const EdgeInsets.all(4),
-                  child: Icon(shadcn.LucideIcons.x, size: 15, color: theme.colorScheme.mutedForeground),
+                  child: Icon(
+                    shadcn.LucideIcons.x,
+                    size: 15,
+                    color: theme.colorScheme.mutedForeground,
+                  ),
                 ),
               ),
             ],
           ),
           if (hasDetails) ...[
-            Divider(height: 14, color: theme.colorScheme.border.withValues(alpha: 0.45)),
+            Divider(
+              height: 14,
+              color: theme.colorScheme.border.withValues(alpha: 0.45),
+            ),
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -2629,7 +3394,9 @@ class _SitePagedTooltipState extends State<_SitePagedTooltip> {
                     padding: const EdgeInsets.symmetric(horizontal: 2),
                     child: ListView(
                       padding: EdgeInsets.zero,
-                      children: _pages[index].map((line) => _buildLine(context, line)).toList(),
+                      children: _pages[index]
+                          .map((line) => _buildLine(context, line))
+                          .toList(),
                     ),
                   );
                 },
@@ -2644,7 +3411,9 @@ class _SitePagedTooltipState extends State<_SitePagedTooltip> {
                     icon: Icon(
                       shadcn.LucideIcons.chevronLeft,
                       size: 16,
-                      color: canPrev ? theme.colorScheme.foreground : theme.colorScheme.mutedForeground,
+                      color: canPrev
+                          ? theme.colorScheme.foreground
+                          : theme.colorScheme.mutedForeground,
                     ),
                   ),
                   Expanded(
@@ -2662,7 +3431,9 @@ class _SitePagedTooltipState extends State<_SitePagedTooltip> {
                     icon: Icon(
                       shadcn.LucideIcons.chevronRight,
                       size: 16,
-                      color: canNext ? theme.colorScheme.foreground : theme.colorScheme.mutedForeground,
+                      color: canNext
+                          ? theme.colorScheme.foreground
+                          : theme.colorScheme.mutedForeground,
                     ),
                   ),
                 ],
