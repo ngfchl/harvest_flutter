@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/widgets.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -487,9 +488,13 @@ class _NavigationChrome extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = shadcn.Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(22);
+    final surfaceOpacity = appSurfaceOpacity(context);
+    final surfaceBlur = appSurfaceBlur(context);
     final background = dashboardChrome
-        ? _ShellBottomNavigationState._dashboardPanel.withValues(alpha: 0.9)
-        : colors.background.withValues(alpha: 0.78);
+        ? _ShellBottomNavigationState._dashboardPanel.withValues(
+            alpha: surfaceOpacity,
+          )
+        : colors.card.withValues(alpha: surfaceOpacity);
     final border = dashboardChrome
         ? _ShellBottomNavigationState._dashboardCyan.withValues(alpha: 0.26)
         : colors.border.withValues(alpha: 0.38);
@@ -541,12 +546,12 @@ class _NavigationChrome extends StatelessWidget {
       ),
     );
 
-    if (!enableBackdropBlur) return chrome;
+    if (!enableBackdropBlur || surfaceBlur <= 0) return chrome;
 
     return ClipRRect(
       borderRadius: radius,
       child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        filter: ui.ImageFilter.blur(sigmaX: surfaceBlur, sigmaY: surfaceBlur),
         child: chrome,
       ),
     );
@@ -859,9 +864,12 @@ class _ShellSearchButtonState extends State<ShellSearchButton>
   @override
   Widget build(BuildContext context) {
     final colors = shadcn.Theme.of(context).colorScheme;
+    final surfaceOpacity = appSurfaceOpacity(context);
     final background = widget.dashboardChrome
-        ? _ShellBottomNavigationState._dashboardPanel
-        : colors.background;
+        ? _ShellBottomNavigationState._dashboardPanel.withValues(
+            alpha: surfaceOpacity,
+          )
+        : colors.card.withValues(alpha: surfaceOpacity);
     final border = widget.dashboardChrome
         ? _ShellBottomNavigationState._dashboardCyan.withValues(alpha: 0.26)
         : colors.border;
@@ -1013,7 +1021,7 @@ class _SearchButtonChrome extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: background.withValues(alpha: 0.78),
+        color: background,
         border: Border.all(
           color: border.withValues(alpha: dashboardChrome ? 1 : 0.42),
         ),
@@ -1086,7 +1094,7 @@ class _CompositedLiquidSearchButton extends StatelessWidget {
               child: Stack(
                 children: [
                   _SearchButtonChrome(
-                    background: background.withValues(alpha: 0.72),
+                    background: background,
                     border: border,
                     primary: primary,
                     dashboardChrome: dashboardChrome,

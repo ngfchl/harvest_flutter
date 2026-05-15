@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide Switch, Theme;
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
@@ -145,13 +146,10 @@ class _OptionFormCardState extends State<OptionFormCard> {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typography = theme.typography;
-    return Container(
+    return AppSurfaceContainer(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: cs.background,
-        borderRadius: _optionCardRadius(context),
-        border: Border.all(color: cs.border, width: 0.5),
-      ),
+      color: appSurfaceColor(context, cs.card),
+      borderRadius: _optionCardRadius(context),
       child: ClipRRect(
         borderRadius: _optionCardRadius(context),
         child: Column(
@@ -178,7 +176,11 @@ class _OptionFormCardState extends State<OptionFormCard> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, shadcn.ColorScheme cs, shadcn.Typography typography) {
+  Widget _buildHeader(
+    BuildContext context,
+    shadcn.ColorScheme cs,
+    shadcn.Typography typography,
+  ) {
     return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
       behavior: HitTestBehavior.opaque,
@@ -209,7 +211,9 @@ class _OptionFormCardState extends State<OptionFormCard> {
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: Icon(
-                    _isActive ? shadcn.LucideIcons.badgeCheck : shadcn.LucideIcons.circleOff,
+                    _isActive
+                        ? shadcn.LucideIcons.badgeCheck
+                        : shadcn.LucideIcons.circleOff,
                     size: 18,
                     color: _isActive ? cs.primary : cs.destructive,
                   ),
@@ -230,7 +234,11 @@ class _OptionFormCardState extends State<OptionFormCard> {
     );
   }
 
-  Widget _buildBody(BuildContext context, shadcn.ColorScheme cs, shadcn.Typography typography) {
+  Widget _buildBody(
+    BuildContext context,
+    shadcn.ColorScheme cs,
+    shadcn.Typography typography,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
       child: Column(
@@ -256,7 +264,8 @@ class _OptionFormCardState extends State<OptionFormCard> {
                     controller: _ctrls[f.key],
                     hintText: f.label,
                     maxLines: f.maxLines,
-                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                    onSubmitted: (_) =>
+                        FocusManager.instance.primaryFocus?.unfocus(),
                   ),
                   if (f.helperText != null)
                     Padding(
@@ -394,13 +403,10 @@ class _ExpandableCardState extends State<ExpandableCard> {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typography = theme.typography;
-    return Container(
+    return AppSurfaceContainer(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: cs.background,
-        borderRadius: _optionCardRadius(context),
-        border: Border.all(color: cs.border, width: 0.5),
-      ),
+      color: appSurfaceColor(context, cs.card),
+      borderRadius: _optionCardRadius(context),
       child: ClipRRect(
         borderRadius: _optionCardRadius(context),
         child: Column(

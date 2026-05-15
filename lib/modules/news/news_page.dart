@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import 'package:harvest/core/cache/session_cache.dart';
@@ -54,7 +55,7 @@ class _NewsToolbar extends StatelessWidget {
                 shadcn.TabItem(child: Text('豆瓣')),
               ],
             ),
-            const SizedBox(height: 6),
+            if (cacheInfo.isCached) const SizedBox(height: 6),
           ],
           CacheStatusBanner(info: cacheInfo, margin: EdgeInsets.zero),
         ],
@@ -113,30 +114,33 @@ class _NewsPageState extends ConsumerState<NewsPage> {
     _refreshCachedTabOnce(cacheInfo);
 
     final cs = shadcn.Theme.of(context).colorScheme;
+    final pageBackground = appSurfaceColor(context, cs.background);
 
-    return shadcn.Scaffold(
-      backgroundColor: cs.background,
-      headerBackgroundColor: cs.background,
-      headers: [
-        _NewsToolbar(
-          mobile: mobile,
-          tabIndex: currentTabIndex,
-          tmdbEnabled: settings.tmdbEnabled,
-          doubanEnabled: settings.doubanEnabled,
-          cacheInfo: cacheInfo,
-          onTabChanged: (index) => setState(() => _tabIndex = index),
-        ),
-      ],
-      child: IndexedStack(
-        index: currentTabIndex,
-        children: [
-          TmdbPage(
-            scrollController: currentTabIndex == 0 ? _scrollController : null,
-          ),
-          DoubanPage(
-            scrollController: currentTabIndex == 1 ? _scrollController : null,
+    return AppBackground(
+      child: shadcn.Scaffold(
+        backgroundColor: pageBackground,
+        headerBackgroundColor: pageBackground,
+        headers: [
+          _NewsToolbar(
+            mobile: mobile,
+            tabIndex: currentTabIndex,
+            tmdbEnabled: settings.tmdbEnabled,
+            doubanEnabled: settings.doubanEnabled,
+            cacheInfo: cacheInfo,
+            onTabChanged: (index) => setState(() => _tabIndex = index),
           ),
         ],
+        child: IndexedStack(
+          index: currentTabIndex,
+          children: [
+            TmdbPage(
+              scrollController: currentTabIndex == 0 ? _scrollController : null,
+            ),
+            DoubanPage(
+              scrollController: currentTabIndex == 1 ? _scrollController : null,
+            ),
+          ],
+        ),
       ),
     );
   }

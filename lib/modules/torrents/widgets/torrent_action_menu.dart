@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
@@ -8,7 +9,8 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../download/model/downloader.dart';
 import '../model/torrent_model.dart';
 
-typedef OnTorrentAction = Future<bool> Function(String action, Map<String, dynamic> params);
+typedef OnTorrentAction =
+    Future<bool> Function(String action, Map<String, dynamic> params);
 
 // ══════════════════════════════════════════════════════════
 //  入口
@@ -64,16 +66,22 @@ class _MenuBody extends StatelessWidget {
     final cs = shadcn.Theme.of(context).colorScheme;
 
     return SafeArea(
-      child: ColoredBox(
-        color: cs.background,
-        child: Container(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.75,
+        ),
+        child: AppSurfaceContainer(
+          color: appSurfaceColor(context, cs.background),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           child: SingleChildScrollView(
             padding: const EdgeInsets.only(top: 8, bottom: 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (type == DownloaderType.qbittorrent) ..._buildQBMenu(context) else ..._buildTRMenu(context),
+                if (type == DownloaderType.qbittorrent)
+                  ..._buildQBMenu(context)
+                else
+                  ..._buildTRMenu(context),
               ],
             ),
           ),
@@ -395,7 +403,11 @@ class _MenuBody extends StatelessWidget {
 
   // ────────────────── 执行 ──────────────────
 
-  Future<void> _exec(BuildContext context, String action, Map<String, dynamic> params) async {
+  Future<void> _exec(
+    BuildContext context,
+    String action,
+    Map<String, dynamic> params,
+  ) async {
     if (context.mounted) closeAppSheet(context);
     final success = await onAction(action, params);
     Toast.success(success ? '操作成功' : '操作失败');
@@ -405,18 +417,19 @@ class _MenuBody extends StatelessWidget {
   //  UI 工具
   // ══════════════════════════════════════════════════════════
 
-  Widget _chevron(shadcn.ColorScheme cs) =>
-      Icon(Icons.chevron_right_rounded, size: 16, color: cs.foreground.withValues(alpha: 0.3));
+  Widget _chevron(shadcn.ColorScheme cs) => Icon(
+    Icons.chevron_right_rounded,
+    size: 16,
+    color: cs.foreground.withValues(alpha: 0.3),
+  );
 
   Widget _section(BuildContext context, List<Widget> children) {
     final cs = shadcn.Theme.of(context).colorScheme;
-    return Container(
+    return AppSurfaceContainer(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: cs.background,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: cs.border, width: 0.5),
-      ),
+      borderRadius: BorderRadius.circular(10),
+      color: appSurfaceColor(context, cs.card),
+      borderColor: cs.border,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Column(mainAxisSize: MainAxisSize.min, children: children),
@@ -467,8 +480,16 @@ class _MenuBody extends StatelessWidget {
       builder: (ctx) => _SubMenuBody(
         title: '复制',
         items: [
-          _SubMenuItem(icon: Icons.text_fields_rounded, label: '名称', onTap: () => _copy(ctx, torrent.name, '种子名称')),
-          _SubMenuItem(icon: Icons.tag_rounded, label: '哈希', onTap: () => _copy(ctx, torrent.hashString, '种子哈希')),
+          _SubMenuItem(
+            icon: Icons.text_fields_rounded,
+            label: '名称',
+            onTap: () => _copy(ctx, torrent.name, '种子名称'),
+          ),
+          _SubMenuItem(
+            icon: Icons.tag_rounded,
+            label: '哈希',
+            onTap: () => _copy(ctx, torrent.hashString, '种子哈希'),
+          ),
           _SubMenuItem(
             icon: shadcn.LucideIcons.magnet,
             label: '磁力链接',
@@ -497,8 +518,12 @@ class _MenuBody extends StatelessWidget {
         items: categories.map((cat) {
           final selected = cat == torrent.category;
           return _SubMenuItem(
-            icon: selected ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
-            iconColor: selected ? shadcn.Theme.of(ctx).colorScheme.primary : null,
+            icon: selected
+                ? Icons.check_box_rounded
+                : Icons.check_box_outline_blank_rounded,
+            iconColor: selected
+                ? shadcn.Theme.of(ctx).colorScheme.primary
+                : null,
             label: cat.isEmpty ? '未分类' : cat,
             onTap: () {
               closeAppSheet(ctx);
@@ -521,8 +546,12 @@ class _MenuBody extends StatelessWidget {
         items: tags.map((tag) {
           final selected = torrent.labels.contains(tag);
           return _SubMenuItem(
-            icon: selected ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
-            iconColor: selected ? shadcn.Theme.of(ctx).colorScheme.primary : null,
+            icon: selected
+                ? Icons.check_box_rounded
+                : Icons.check_box_outline_blank_rounded,
+            iconColor: selected
+                ? shadcn.Theme.of(ctx).colorScheme.primary
+                : null,
             label: tag,
             onTap: () {
               closeAppSheet(ctx);
@@ -599,8 +628,10 @@ class _MenuBody extends StatelessWidget {
         final cs = shadcn.Theme.of(ctx).colorScheme;
         return StatefulBuilder(
           builder: (ctx, setDialogState) => Dialog(
-            backgroundColor: cs.background,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            backgroundColor: appSurfaceColor(ctx, cs.background),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -609,12 +640,19 @@ class _MenuBody extends StatelessWidget {
                 children: [
                   Text(
                     '确认删除',
-                    style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: cs.foreground,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     torrent.name,
-                    style: TextStyle(color: cs.foreground.withValues(alpha: 0.5), fontSize: 12),
+                    style: TextStyle(
+                      color: cs.foreground.withValues(alpha: 0.5),
+                      fontSize: 12,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -622,16 +660,25 @@ class _MenuBody extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Text('同时删除文件', style: TextStyle(color: cs.foreground, fontSize: 13)),
+                        child: Text(
+                          '同时删除文件',
+                          style: TextStyle(color: cs.foreground, fontSize: 13),
+                        ),
                       ),
-                      Switch(value: deleteFiles, onChanged: (v) => setDialogState(() => deleteFiles = v)),
+                      Switch(
+                        value: deleteFiles,
+                        onChanged: (v) => setDialogState(() => deleteFiles = v),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                      shadcn.Button.ghost(
+                        onPressed: () => closeAppSheet(ctx),
+                        child: const Text('取消'),
+                      ),
                       const SizedBox(width: 8),
                       shadcn.Button.destructive(
                         onPressed: () {
@@ -654,7 +701,11 @@ class _MenuBody extends StatelessWidget {
     );
   }
 
-  void _showLocationDialog(BuildContext context, String hash, String currentPath) {
+  void _showLocationDialog(
+    BuildContext context,
+    String hash,
+    String currentPath,
+  ) {
     final ctrl = TextEditingController(text: currentPath);
     final isTR = type == DownloaderType.transmission;
 
@@ -663,8 +714,10 @@ class _MenuBody extends StatelessWidget {
       builder: (ctx) {
         final cs = shadcn.Theme.of(ctx).colorScheme;
         return Dialog(
-          backgroundColor: cs.background,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: appSurfaceColor(ctx, cs.background),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -673,30 +726,48 @@ class _MenuBody extends StatelessWidget {
               children: [
                 Text(
                   '更改保存位置',
-                  style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: cs.foreground,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   torrent.name,
-                  style: TextStyle(color: cs.foreground.withValues(alpha: 0.5), fontSize: 12),
+                  style: TextStyle(
+                    color: cs.foreground.withValues(alpha: 0.5),
+                    fontSize: 12,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                ShadTextField(controller: ctrl, onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus()),
+                ShadTextField(
+                  controller: ctrl,
+                  onSubmitted: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                    shadcn.Button.ghost(
+                      onPressed: () => closeAppSheet(ctx),
+                      child: const Text('取消'),
+                    ),
                     const SizedBox(width: 8),
                     shadcn.Button.primary(
                       onPressed: () {
                         closeAppSheet(ctx);
-                        _exec(context, isTR ? 'move_torrent_data' : 'set_location', {
-                          if (isTR) 'ids': [hash] else 'hashes': [hash],
-                          'savePath': ctrl.text,
-                        });
+                        _exec(
+                          context,
+                          isTR ? 'move_torrent_data' : 'set_location',
+                          {
+                            if (isTR) 'ids': [hash] else 'hashes': [hash],
+                            'savePath': ctrl.text,
+                          },
+                        );
                       },
                       child: const Text('确认'),
                     ),
@@ -710,16 +781,24 @@ class _MenuBody extends StatelessWidget {
     );
   }
 
-  void _showUploadLimitDialog(BuildContext context, String hash, int currentLimit) {
-    final ctrl = TextEditingController(text: currentLimit > 0 ? (currentLimit / 1024).round().toString() : '');
+  void _showUploadLimitDialog(
+    BuildContext context,
+    String hash,
+    int currentLimit,
+  ) {
+    final ctrl = TextEditingController(
+      text: currentLimit > 0 ? (currentLimit / 1024).round().toString() : '',
+    );
 
     showDialog(
       context: context,
       builder: (ctx) {
         final cs = shadcn.Theme.of(ctx).colorScheme;
         return Dialog(
-          backgroundColor: cs.background,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: appSurfaceColor(ctx, cs.background),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -728,12 +807,19 @@ class _MenuBody extends StatelessWidget {
               children: [
                 Text(
                   '限制上传速度',
-                  style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: cs.foreground,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   torrent.name,
-                  style: TextStyle(color: cs.foreground.withValues(alpha: 0.5), fontSize: 12),
+                  style: TextStyle(
+                    color: cs.foreground.withValues(alpha: 0.5),
+                    fontSize: 12,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -741,13 +827,17 @@ class _MenuBody extends StatelessWidget {
                 ShadTextField(
                   controller: ctrl,
                   hintText: '上传限制 (KiB/s)，0 为不限制',
-                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                  onSubmitted: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
                 ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                    shadcn.Button.ghost(
+                      onPressed: () => closeAppSheet(ctx),
+                      child: const Text('取消'),
+                    ),
                     const SizedBox(width: 8),
                     shadcn.Button.primary(
                       onPressed: () {
@@ -773,10 +863,14 @@ class _MenuBody extends StatelessWidget {
   void _showShareRatioDialog(BuildContext context, String hash) {
     double ratioMode = torrent.seedRatioLimit == -2 ? -2 : 0;
     final ratioCtrl = TextEditingController(
-      text: torrent.seedRatioLimit > 0 ? torrent.seedRatioLimit.toString() : '2.0',
+      text: torrent.seedRatioLimit > 0
+          ? torrent.seedRatioLimit.toString()
+          : '2.0',
     );
     final timeCtrl = TextEditingController(
-      text: torrent.secondsSeeding > 0 ? (torrent.secondsSeeding / 3600).round().toString() : '',
+      text: torrent.secondsSeeding > 0
+          ? (torrent.secondsSeeding / 3600).round().toString()
+          : '',
     );
 
     showDialog(
@@ -785,8 +879,10 @@ class _MenuBody extends StatelessWidget {
         final cs = shadcn.Theme.of(ctx).colorScheme;
         return StatefulBuilder(
           builder: (ctx, setDialogState) => Dialog(
-            backgroundColor: cs.background,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            backgroundColor: appSurfaceColor(ctx, cs.background),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: SingleChildScrollView(
@@ -796,7 +892,11 @@ class _MenuBody extends StatelessWidget {
                   children: [
                     Text(
                       '限制分享率',
-                      style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: cs.foreground,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _radioOption(ctx, '使用全局分享率限制', -2.0, ratioMode, (v) {
@@ -813,26 +913,35 @@ class _MenuBody extends StatelessWidget {
                       ShadTextField(
                         controller: ratioCtrl,
                         hintText: '分享率 (如 2.0)',
-                        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                        onSubmitted: (_) =>
+                            FocusManager.instance.primaryFocus?.unfocus(),
                       ),
                       const SizedBox(height: 8),
                       ShadTextField(
                         controller: timeCtrl,
                         hintText: '做种时间限制 (小时)',
-                        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                        onSubmitted: (_) =>
+                            FocusManager.instance.primaryFocus?.unfocus(),
                       ),
                     ],
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                        shadcn.Button.ghost(
+                          onPressed: () => closeAppSheet(ctx),
+                          child: const Text('取消'),
+                        ),
                         const SizedBox(width: 8),
                         shadcn.Button.primary(
                           onPressed: () {
                             closeAppSheet(ctx);
-                            final rl = ratioMode < 0 ? ratioMode : double.tryParse(ratioCtrl.text) ?? -2;
-                            final st = ratioMode < 0 ? -1.0 : (double.tryParse(timeCtrl.text) ?? 0) * 3600;
+                            final rl = ratioMode < 0
+                                ? ratioMode
+                                : double.tryParse(ratioCtrl.text) ?? -2;
+                            final st = ratioMode < 0
+                                ? -1.0
+                                : (double.tryParse(timeCtrl.text) ?? 0) * 3600;
                             _exec(context, 'set_share_limits', {
                               'hashes': [hash],
                               'ratioLimit': rl,
@@ -853,7 +962,13 @@ class _MenuBody extends StatelessWidget {
     );
   }
 
-  Widget _radioOption(BuildContext ctx, String label, double value, double groupValue, ValueChanged<double> onChanged) {
+  Widget _radioOption(
+    BuildContext ctx,
+    String label,
+    double value,
+    double groupValue,
+    ValueChanged<double> onChanged,
+  ) {
     final cs = shadcn.Theme.of(ctx).colorScheme;
     final selected = value == groupValue;
     return InkWell(
@@ -864,21 +979,38 @@ class _MenuBody extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              selected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
               size: 18,
-              color: selected ? cs.primary : cs.foreground.withValues(alpha: 0.3),
+              color: selected
+                  ? cs.primary
+                  : cs.foreground.withValues(alpha: 0.3),
             ),
             const SizedBox(width: 10),
-            Text(label, style: TextStyle(color: cs.foreground.withValues(alpha: 0.8), fontSize: 13)),
+            Text(
+              label,
+              style: TextStyle(
+                color: cs.foreground.withValues(alpha: 0.8),
+                fontSize: 13,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _showTrackerDialog(BuildContext context, String hash, {bool isTR = false}) {
+  void _showTrackerDialog(
+    BuildContext context,
+    String hash, {
+    bool isTR = false,
+  }) {
     final ctrl = TextEditingController(
-      text: torrent.visibleTrackerStats.map((t) => t.announce).where((a) => a.isNotEmpty).join('\n'),
+      text: torrent.visibleTrackerStats
+          .map((t) => t.announce)
+          .where((a) => a.isNotEmpty)
+          .join('\n'),
     );
 
     showDialog(
@@ -886,8 +1018,10 @@ class _MenuBody extends StatelessWidget {
       builder: (ctx) {
         final cs = shadcn.Theme.of(ctx).colorScheme;
         return Dialog(
-          backgroundColor: cs.background,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: appSurfaceColor(ctx, cs.background),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -896,12 +1030,19 @@ class _MenuBody extends StatelessWidget {
               children: [
                 Text(
                   '修改 Tracker',
-                  style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: cs.foreground,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   torrent.name,
-                  style: TextStyle(color: cs.foreground.withValues(alpha: 0.5), fontSize: 12),
+                  style: TextStyle(
+                    color: cs.foreground.withValues(alpha: 0.5),
+                    fontSize: 12,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -910,13 +1051,17 @@ class _MenuBody extends StatelessWidget {
                   controller: ctrl,
                   maxLines: 6,
                   hintText: "",
-                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                  onSubmitted: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
                 ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                    shadcn.Button.ghost(
+                      onPressed: () => closeAppSheet(ctx),
+                      child: const Text('取消'),
+                    ),
                     const SizedBox(width: 8),
                     shadcn.Button.primary(
                       onPressed: () {
@@ -945,14 +1090,21 @@ class _MenuBody extends StatelessWidget {
     );
   }
 
-  void _showConfirmDialog(BuildContext context, String title, String message, VoidCallback onConfirm) {
+  void _showConfirmDialog(
+    BuildContext context,
+    String title,
+    String message,
+    VoidCallback onConfirm,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) {
         final cs = shadcn.Theme.of(ctx).colorScheme;
         return Dialog(
-          backgroundColor: cs.background,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: appSurfaceColor(ctx, cs.background),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -960,15 +1112,28 @@ class _MenuBody extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: cs.foreground,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 12),
-                Text(message, style: TextStyle(color: cs.foreground.withValues(alpha: 0.6), fontSize: 13)),
+                Text(
+                  message,
+                  style: TextStyle(
+                    color: cs.foreground.withValues(alpha: 0.6),
+                    fontSize: 13,
+                  ),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                    shadcn.Button.ghost(
+                      onPressed: () => closeAppSheet(ctx),
+                      child: const Text('取消'),
+                    ),
                     const SizedBox(width: 8),
                     shadcn.Button.primary(
                       onPressed: () {
@@ -1009,10 +1174,13 @@ class _SubMenuBody extends StatelessWidget {
     final cs = shadcn.Theme.of(context).colorScheme;
 
     return SafeArea(
-      child: ColoredBox(
-        color: cs.background,
-        child: Container(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.6,
+        ),
+        child: AppSurfaceContainer(
+          color: appSurfaceColor(context, cs.background),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           child: SingleChildScrollView(
             padding: const EdgeInsets.only(top: 8, bottom: 16),
             child: Column(
@@ -1027,33 +1195,44 @@ class _SubMenuBody extends StatelessWidget {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                Container(
+                AppSurfaceContainer(
                   width: double.infinity,
-                  color: cs.background,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  color: appSurfaceColor(context, cs.background),
+                  borderRadius: BorderRadius.zero,
+                  borderColor: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   child: Row(
                     children: [
                       GestureDetector(
                         onTap: () => closeAppSheet(context),
-                        child: Icon(Icons.chevron_left_rounded, size: 22, color: cs.foreground.withValues(alpha: 0.6)),
+                        child: Icon(
+                          Icons.chevron_left_rounded,
+                          size: 22,
+                          color: cs.foreground.withValues(alpha: 0.6),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         title,
-                        style: TextStyle(color: cs.foreground, fontSize: 15, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: cs.foreground,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Container(height: 0.5, color: cs.border),
                 const SizedBox(height: 8),
-                Container(
+                AppSurfaceContainer(
                   margin: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: cs.background,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: cs.border, width: 0.5),
-                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  color: appSurfaceColor(context, cs.card),
+                  borderColor: cs.border,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: Column(
@@ -1065,17 +1244,30 @@ class _SubMenuBody extends StatelessWidget {
                               child: InkWell(
                                 onTap: item.onTap,
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 12,
+                                  ),
                                   child: Row(
                                     children: [
                                       Icon(
                                         item.icon,
                                         size: 18,
-                                        color: item.iconColor ?? cs.foreground.withValues(alpha: 0.6),
+                                        color:
+                                            item.iconColor ??
+                                            cs.foreground.withValues(
+                                              alpha: 0.6,
+                                            ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
-                                        child: Text(item.label, style: TextStyle(color: cs.foreground, fontSize: 13.5)),
+                                        child: Text(
+                                          item.label,
+                                          style: TextStyle(
+                                            color: cs.foreground,
+                                            fontSize: 13.5,
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -1102,5 +1294,10 @@ class _SubMenuItem {
   final VoidCallback onTap;
   final Color? iconColor;
 
-  const _SubMenuItem({required this.icon, required this.label, required this.onTap, this.iconColor});
+  const _SubMenuItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.iconColor,
+  });
 }

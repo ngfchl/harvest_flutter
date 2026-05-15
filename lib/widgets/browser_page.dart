@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
 import 'package:harvest/modules/search/model/search_torrent_info.dart';
@@ -402,6 +403,8 @@ class _BrowserPageState extends State<BrowserPage> {
         !_closing &&
         !_isLoading;
 
+    final pageBackground = appSurfaceColor(context, cs.background);
+
     return PopScope(
       canPop: _closing,
       onPopInvokedWithResult: (didPop, _) async {
@@ -412,10 +415,11 @@ class _BrowserPageState extends State<BrowserPage> {
           await _closeBrowser();
         }
       },
-      child: Scaffold(
-        backgroundColor: cs.background,
-        body: SafeArea(
-          child: Stack(
+      child: AppBackground(
+        child: Scaffold(
+          backgroundColor: pageBackground,
+          body: SafeArea(
+            child: Stack(
             children: [
               Column(
                 children: [
@@ -505,6 +509,7 @@ class _BrowserPageState extends State<BrowserPage> {
                   ),
                 ),
             ],
+            ),
           ),
         ),
       ),
@@ -515,7 +520,7 @@ class _BrowserPageState extends State<BrowserPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: cs.background,
+        color: appSurfaceColor(context, cs.background),
         border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
       ),
       child: Row(
@@ -662,7 +667,7 @@ class _BrowserPageState extends State<BrowserPage> {
     return Container(
       padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
       decoration: BoxDecoration(
-        color: cs.background,
+        color: appSurfaceColor(context, cs.background),
         border: Border(top: BorderSide(color: cs.border, width: 0.5)),
       ),
       child: Row(
@@ -3118,7 +3123,7 @@ class _BrowserPageState extends State<BrowserPage> {
       await showAppSheet<void>(
         context: context,
         isScrollControlled: true,
-        backgroundColor: cs.background,
+        backgroundColor: cs.background.withValues(alpha: (shadcn.Theme.of(context).surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble()),
         builder: (sheetContext) =>
             StatefulBuilder(
               builder: (sheetContext, setDialogState) =>

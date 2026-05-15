@@ -10,6 +10,7 @@ import 'package:harvest/modules/site/widgets/site_browser.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/browser_page.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
+import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 Future<void> showSiteTimelineDialog(BuildContext context) async {
@@ -42,33 +43,37 @@ class SiteTimelinePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
+    final pageBackground = cs.background.withValues(alpha: surfaceOpacity);
 
     return EscapeBackScope(
       onBack: () => Navigator.of(context).pop(),
-      child: shadcn.Scaffold(
-        backgroundColor: cs.background,
-        headerBackgroundColor: cs.background,
-        headers: [
-          shadcn.AppBar(
-            backgroundColor: cs.background,
-            title: Text(
-              '站点时间轴',
-              style: theme.typography.large.copyWith(
-                color: cs.foreground,
-                fontWeight: FontWeight.w700,
+      child: GlobalDrawerSwipeArea(
+        child: shadcn.Scaffold(
+          backgroundColor: pageBackground,
+          headerBackgroundColor: pageBackground,
+          headers: [
+            shadcn.AppBar(
+              backgroundColor: pageBackground,
+              title: Text(
+                '站点时间轴',
+                style: theme.typography.large.copyWith(
+                  color: cs.foreground,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
+              leading: [
+                shadcn.IconButton.ghost(
+                  icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 18),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
             ),
-            leading: [
-              shadcn.IconButton.ghost(
-                icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 18),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
+          ],
+          child: const Padding(
+            padding: EdgeInsets.fromLTRB(12, 8, 12, 16),
+            child: SiteTimelineContent(),
           ),
-        ],
-        child: const Padding(
-          padding: EdgeInsets.fromLTRB(12, 8, 12, 16),
-          child: SiteTimelineContent(),
         ),
       ),
     );
@@ -582,6 +587,7 @@ Widget _siteTimelineRow({
 }) {
   final theme = shadcn.Theme.of(context);
   final cs = theme.colorScheme;
+  final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
   final titleTime = showDurationOnTitle ? entry.durationText : entry.registeredAtText;
   final showStates = entry.isDisabled || !entry.isOwned;
   final items = <_TimelineMetric>[
@@ -620,7 +626,7 @@ Widget _siteTimelineRow({
   return Container(
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: cs.card,
+      color: cs.card.withValues(alpha: surfaceOpacity),
       borderRadius: BorderRadius.circular(12),
       border: Border.all(color: cs.border.withValues(alpha: 0.82)),
       boxShadow: [

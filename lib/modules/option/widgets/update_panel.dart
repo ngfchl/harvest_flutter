@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart'
     show IconExtension, TextExtension;
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -132,10 +133,9 @@ class _UpdateOverview extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: shadcn.Card(
+      child: AppSurfaceCard(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-        filled: state.hasAnyUpdate,
-        fillColor: cs.primary.withValues(alpha: 0.06),
+        color: state.hasAnyUpdate ? cs.primary.withValues(alpha: 0.10) : null,
         borderColor: state.hasAnyUpdate
             ? cs.primary.withValues(alpha: 0.35)
             : null,
@@ -210,10 +210,11 @@ class _UpdateTargetCard extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: shadcn.Card(
+      child: AppSurfaceCard(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-        filled: current?.needsUpdate == true,
-        fillColor: cs.primary.withValues(alpha: 0.04),
+        color: current?.needsUpdate == true
+            ? cs.primary.withValues(alpha: 0.08)
+            : null,
         borderColor: current?.needsUpdate == true
             ? cs.primary.withValues(alpha: 0.35)
             : null,
@@ -330,10 +331,9 @@ class _GlobalActions extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cs = shadcn.Theme.of(context).colorScheme;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: shadcn.Card(
+      child: AppSurfaceCard(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -538,9 +538,7 @@ class _CommitTimelineTitle extends StatelessWidget {
         : currentOrBelow
         ? cs.chart2
         : cs.mutedForeground;
-    final authorColor = currentOrBelow
-        ? cs.chart2
-        : cs.mutedForeground;
+    final authorColor = currentOrBelow ? cs.chart2 : cs.mutedForeground;
     final time = Text(timeText, maxLines: 1, overflow: TextOverflow.ellipsis);
 
     return Column(
@@ -633,20 +631,18 @@ class _StatusBadge extends StatelessWidget {
 shadcn.AbstractButtonStyle _successBadgeStyle(BuildContext context) {
   final successColor = shadcn.Theme.of(context).colorScheme.chart2;
   return const shadcn.ButtonStyle.secondary(
-          size: shadcn.ButtonSize.small,
-          density: shadcn.ButtonDensity.dense,
-          shape: shadcn.ButtonShape.rectangle,
-        )
-        .withBackgroundColor(
-          color: successColor.withValues(alpha: 0.10),
-        )
-        .withForegroundColor(color: successColor)
-        .withBorder(
-          border: Border.all(
-            color: successColor.withValues(alpha: 0.24),
-            width: 0.5,
-          ),
-        );
+        size: shadcn.ButtonSize.small,
+        density: shadcn.ButtonDensity.dense,
+        shape: shadcn.ButtonShape.rectangle,
+      )
+      .withBackgroundColor(color: successColor.withValues(alpha: 0.10))
+      .withForegroundColor(color: successColor)
+      .withBorder(
+        border: Border.all(
+          color: successColor.withValues(alpha: 0.24),
+          width: 0.5,
+        ),
+      );
 }
 
 class _ButtonContent extends StatelessWidget {
@@ -674,7 +670,7 @@ class _EmptyLog extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: shadcn.Card(
+      child: AppSurfaceCard(
         padding: const EdgeInsets.all(12),
         child: Text('${target.title}暂无更新记录').small.muted,
       ),
@@ -691,7 +687,7 @@ class _RawLogBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: shadcn.Card(
+      child: AppSurfaceCard(
         padding: const EdgeInsets.all(8),
         child: Text(
           text.trim(),

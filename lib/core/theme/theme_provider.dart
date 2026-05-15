@@ -64,6 +64,32 @@ class ThemeNotifier extends _$ThemeNotifier {
     _persist();
   }
 
+  void setUseBackground(bool useBackground) {
+    state = state.copyWith(useBackground: useBackground);
+    _persist();
+  }
+
+  void setManageBackgroundImages(bool manageBackgroundImages) {
+    state = state.copyWith(manageBackgroundImages: manageBackgroundImages);
+    _persist();
+  }
+
+  void setBackgroundMode(String backgroundMode) {
+    state = state.copyWith(backgroundMode: backgroundMode);
+    _persist();
+  }
+
+  void setBackgroundImage(String backgroundImage) {
+    state = state.copyWith(backgroundImage: backgroundImage);
+    _persist();
+  }
+
+  void setUseImageProxy(bool useImageProxy) {
+    state = state.copyWith(useImageProxy: useImageProxy);
+    _persist();
+  }
+
+
   void reset() {
     state = const ThemeState();
     _persist();

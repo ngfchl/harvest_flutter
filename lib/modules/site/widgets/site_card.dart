@@ -65,14 +65,16 @@ class SiteCard extends ConsumerWidget {
     final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
     final config = configs.firstWhereOrNull((c) => c.name == site.site);
     final spFull = _numVal(config?.spFull);
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
 
     return SiteActionMenu(
       site: site,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: cs.background,
+          color: cs.background.withValues(alpha: surfaceOpacity),
           borderRadius: siteRadius(context, size: "lg"),
           border: Border.all(color: cs.border, width: 1),
           boxShadow: [
@@ -1607,12 +1609,17 @@ class SiteCard2 extends ConsumerWidget {
   bool _isDark(BuildContext context) =>
       shadcn.Theme.of(context).colorScheme.brightness == Brightness.dark;
 
-  Color _cardColor(BuildContext context) => _isDark(context)
-      ? Color.alphaBlend(
-          shadcn.Theme.of(context).colorScheme.muted.withValues(alpha: 0.10),
-          shadcn.Theme.of(context).colorScheme.background,
-        )
-      : siteColors(context).background;
+  Color _cardColor(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
+    final color = _isDark(context)
+        ? Color.alphaBlend(
+            theme.colorScheme.muted.withValues(alpha: 0.10),
+            theme.colorScheme.background,
+          )
+        : siteColors(context).background;
+    return color.withValues(alpha: surfaceOpacity);
+  }
 
   Color _borderColor(BuildContext context) => _isDark(context)
       ? shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.56)
@@ -2356,12 +2363,17 @@ class SiteCard3 extends ConsumerWidget {
   bool _isDark(BuildContext context) =>
       shadcn.Theme.of(context).colorScheme.brightness == Brightness.dark;
 
-  Color _cardColor(BuildContext context) => _isDark(context)
-      ? Color.alphaBlend(
-          shadcn.Theme.of(context).colorScheme.muted.withValues(alpha: 0.08),
-          shadcn.Theme.of(context).colorScheme.background,
-        )
-      : siteColors(context).background;
+  Color _cardColor(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
+    final color = _isDark(context)
+        ? Color.alphaBlend(
+            theme.colorScheme.muted.withValues(alpha: 0.08),
+            theme.colorScheme.background,
+          )
+        : siteColors(context).background;
+    return color.withValues(alpha: surfaceOpacity);
+  }
 
   Color _borderColor(BuildContext context) => _isDark(context)
       ? shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.54)

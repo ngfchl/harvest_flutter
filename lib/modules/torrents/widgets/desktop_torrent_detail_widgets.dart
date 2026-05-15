@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
 
@@ -13,11 +14,7 @@ class DesktopEmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
 
-  const DesktopEmptyState({
-    super.key,
-    required this.icon,
-    required this.title,
-  });
+  const DesktopEmptyState({super.key, required this.icon, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +23,11 @@ class DesktopEmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 28, color: cs.mutedForeground.withValues(alpha: 0.4)),
+          Icon(
+            icon,
+            size: 28,
+            color: cs.mutedForeground.withValues(alpha: 0.4),
+          ),
           const SizedBox(height: 8),
           Text(title).xSmall.muted,
         ],
@@ -56,7 +57,7 @@ class DesktopDetailSection extends StatelessWidget {
     final cs = shadcn.Theme.of(context).colorScheme;
     return shadcn.Card(
       filled: true,
-      fillColor: cs.card,
+      fillColor: appSurfaceColor(context, cs.card),
       borderColor: cs.border,
       borderWidth: 0.5,
       borderRadius: shadcn.Theme.of(context).borderRadiusMd,
@@ -101,7 +102,7 @@ class DesktopSelectedSummary extends StatelessWidget {
         : torrent.effectiveErrorMessage;
     return shadcn.Card(
       filled: true,
-      fillColor: cs.background,
+      fillColor: appSurfaceColor(context, cs.background),
       borderColor: cs.border,
       borderWidth: 0.5,
       borderRadius: shadcn.Theme.of(context).borderRadiusMd,
@@ -119,8 +120,7 @@ class DesktopSelectedSummary extends StatelessWidget {
             spacing: 12,
             runSpacing: 4,
             children: [
-              if (siteMatch != null)
-                Text(siteMatch!.displayName).xSmall.muted,
+              if (siteMatch != null) Text(siteMatch!.displayName).xSmall.muted,
               if (torrent.category.isNotEmpty)
                 Text(torrent.category).xSmall.muted,
               if (torrent.labels.isNotEmpty)
@@ -193,10 +193,11 @@ class DesktopDetailMetrics extends StatelessWidget {
     final torrentSizeText = TorrentUtils.formatBytes(torrent.sizeWhenDone);
     final propertyTotalSize = properties.isEmpty
         ? ''
-        : desktopPropertyText(
-      properties,
-      const ['total_size', 'totalSize', 'total_size_bytes'],
-    );
+        : desktopPropertyText(properties, const [
+            'total_size',
+            'totalSize',
+            'total_size_bytes',
+          ]);
 
     final items = [
       _metric('大小', torrentSizeText, shadcn.LucideIcons.hardDrive),
@@ -253,11 +254,7 @@ class DesktopDetailMetrics extends StatelessWidget {
         _metric('总大小', propertyTotalSize, shadcn.LucideIcons.database),
     ];
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: items,
-    );
+    return Wrap(spacing: 8, runSpacing: 8, children: items);
   }
 
   Widget _metric(String label, String value, IconData icon) {
@@ -279,7 +276,7 @@ class _DesktopDetailMetric extends StatelessWidget {
       width: 146,
       child: shadcn.Card(
         filled: true,
-        fillColor: cs.background,
+        fillColor: appSurfaceColor(context, cs.background),
         borderColor: cs.border,
         borderWidth: 0.5,
         borderRadius: shadcn.Theme.of(context).borderRadiusSm,
@@ -323,9 +320,7 @@ class DesktopFieldTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final entries = data.entries.toList()
-      ..sort(
-            (a, b) => a.key.toLowerCase().compareTo(b.key.toLowerCase()),
-      );
+      ..sort((a, b) => a.key.toLowerCase().compareTo(b.key.toLowerCase()));
     if (entries.isEmpty) return const DesktopMutedLine('暂无字段');
     return Column(
       children: [
@@ -440,7 +435,7 @@ class _DesktopTrackerRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: cs.background,
+        color: appSurfaceColor(context, cs.background),
         borderRadius: shadcn.Theme.of(context).borderRadiusSm,
         border: Border.all(color: cs.border, width: 0.5),
       ),
@@ -454,9 +449,11 @@ class _DesktopTrackerRow extends StatelessWidget {
           ).xSmall.bold.foreground,
           if (announce.isNotEmpty && announce != label) ...[
             const SizedBox(height: 2),
-            Text(announce, maxLines: 1, overflow: TextOverflow.ellipsis)
-                .xSmall
-                .muted,
+            Text(
+              announce,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ).xSmall.muted,
           ],
         ],
       ),
@@ -503,14 +500,12 @@ class _DesktopFileRow extends StatelessWidget {
     final done = bytesCompleted is int
         ? bytesCompleted
         : int.tryParse('$bytesCompleted') ?? 0;
-    final progress = total > 0
-        ? (done / total).clamp(0.0, 1.0)
-        : 0.0;
+    final progress = total > 0 ? (done / total).clamp(0.0, 1.0) : 0.0;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: cs.background,
+        color: appSurfaceColor(context, cs.background),
         borderRadius: shadcn.Theme.of(context).borderRadiusSm,
         border: Border.all(color: cs.border, width: 0.5),
       ),
@@ -531,14 +526,11 @@ class _DesktopFileRow extends StatelessWidget {
                   backgroundColor: cs.border,
                   color: cs.primary,
                   minHeight: 4,
-                  borderRadius:
-                  shadcn.Theme.of(context).borderRadiusSm,
+                  borderRadius: shadcn.Theme.of(context).borderRadiusSm,
                 ),
               ),
               const SizedBox(width: 8),
-              Text('${(progress * 100).toStringAsFixed(0)}%')
-                  .xSmall
-                  .muted,
+              Text('${(progress * 100).toStringAsFixed(0)}%').xSmall.muted,
             ],
           ),
         ],

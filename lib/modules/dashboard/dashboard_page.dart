@@ -10,6 +10,8 @@ import 'package:harvest/core/http/hooks.dart';
 import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
+import 'package:harvest/core/theme/app_surface.dart';
+import 'package:harvest/core/theme/theme_provider.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/cache_status_banner.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -69,36 +71,32 @@ bool _isDashboardTooltipSummaryLine(String line) {
   final tabIndex = line.indexOf('\t');
   if (tabIndex <= 0) return false;
   final label = line.substring(0, tabIndex).trim();
-  return label == '汇总' || label == '今日汇总' || label == '数值' || label == '总数' || label == '总值' || label == '占比';
+  return label == '汇总' ||
+      label == '今日汇总' ||
+      label == '数值' ||
+      label == '总数' ||
+      label == '总值' ||
+      label == '占比';
 }
 
 class _DashboardIconTooltip extends StatelessWidget {
   final String message;
   final Widget child;
 
-  const _DashboardIconTooltip({
-    required this.message,
-    required this.child,
-  });
+  const _DashboardIconTooltip({required this.message, required this.child});
 
   @override
   Widget build(BuildContext context) {
     if (message.trim().isEmpty) return child;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => _showDashboardIconTooltip(
-        context,
-        message,
-      ),
+      onTap: () => _showDashboardIconTooltip(context, message),
       child: child,
     );
   }
 }
 
-void _showDashboardIconTooltip(
-  BuildContext anchorContext,
-  String message,
-) {
+void _showDashboardIconTooltip(BuildContext anchorContext, String message) {
   shadcn.showPopover<void>(
     context: anchorContext,
     handler: const shadcn.PopoverOverlayHandler(),
@@ -122,7 +120,9 @@ class _DashboardIconTooltipPanel extends StatelessWidget {
     final lines = message.split('\n');
     final title = lines.isNotEmpty ? lines.first : '详情';
     final body = lines.length > 1 ? lines.skip(1).toList() : const <String>[];
-    final width = (MediaQuery.sizeOf(context).width - 32).clamp(220.0, 320.0).toDouble();
+    final width = (MediaQuery.sizeOf(context).width - 32)
+        .clamp(220.0, 320.0)
+        .toDouble();
 
     return shadcn.ModalContainer(
       padding: EdgeInsets.all(theme.density.baseContentPadding * theme.scaling),
@@ -147,47 +147,56 @@ class _DashboardIconTooltipPanel extends StatelessWidget {
                 ),
                 shadcn.IconButton.ghost(
                   density: shadcn.ButtonDensity.compact,
-                  icon: Icon(shadcn.LucideIcons.x, size: 15, color: cs.mutedForeground),
+                  icon: Icon(
+                    shadcn.LucideIcons.x,
+                    size: 15,
+                    color: cs.mutedForeground,
+                  ),
                   onPressed: () => shadcn.closeOverlay(context),
                 ),
               ],
             ),
             if (body.isNotEmpty) ...[
               SizedBox(height: theme.density.baseGap * theme.scaling),
-              ...body.map(
-                (line) {
-                  final tabIndex = line.indexOf('\t');
-                  if (tabIndex > 0) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              line.substring(0, tabIndex),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            line.substring(tabIndex + 1),
-                            style: theme.typography.xSmall.copyWith(
-                              color: cs.foreground,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+              ...body.map((line) {
+                final tabIndex = line.indexOf('\t');
+                if (tabIndex > 0) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Text(line, style: theme.typography.xSmall.copyWith(color: cs.mutedForeground)),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            line.substring(0, tabIndex),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.typography.xSmall.copyWith(
+                              color: cs.mutedForeground,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          line.substring(tabIndex + 1),
+                          style: theme.typography.xSmall.copyWith(
+                            color: cs.foreground,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
                   );
-                },
-              ),
+                }
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Text(
+                    line,
+                    style: theme.typography.xSmall.copyWith(
+                      color: cs.mutedForeground,
+                    ),
+                  ),
+                );
+              }),
             ],
           ],
         ),
@@ -218,7 +227,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       _dashboardThemeTone(cs.primary, hueShift: 86, saturationScale: 0.82),
       _dashboardThemeTone(cs.destructive, hueShift: 24, lightnessDelta: 0.04),
       _dashboardThemeBlend(cs.primary, cs.destructive, 0.4),
-      _dashboardThemeTone(cs.secondary, saturationScale: 1.35, lightnessDelta: -0.08),
+      _dashboardThemeTone(
+        cs.secondary,
+        saturationScale: 1.35,
+        lightnessDelta: -0.08,
+      ),
       _dashboardThemeTone(cs.primary, hueShift: 126, saturationScale: 0.76),
       _dashboardThemeTone(cs.destructive, hueShift: -38, saturationScale: 0.88),
       _dashboardThemeTone(cs.primary, hueShift: -82, saturationScale: 0.78),
@@ -226,7 +239,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     ];
   }
 
-  Color _dashboardThemeTone(Color color, {double hueShift = 0, double saturationScale = 1, double lightnessDelta = 0}) {
+  Color _dashboardThemeTone(
+    Color color, {
+    double hueShift = 0,
+    double saturationScale = 1,
+    double lightnessDelta = 0,
+  }) {
     final hsl = HSLColor.fromColor(color);
     return hsl
         .withHue((hsl.hue + hueShift) % 360)
@@ -254,7 +272,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   bool _isRefreshingSiteData = false;
   bool _isSigningInSites = false;
 
-  bool get _hasRunningSummaryAction => _isRefreshingDashboardData || _isRefreshingSiteData || _isSigningInSites;
+  bool get _hasRunningSummaryAction =>
+      _isRefreshingDashboardData || _isRefreshingSiteData || _isSigningInSites;
 
   @override
   void initState() {
@@ -266,15 +285,21 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     _treemapCount = DashboardChartConfig.getTreemapCount();
     _phoneTrendDays = DashboardChartConfig.getPhoneTrendDays();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
+      ref
+          .read(dashboardNotifierProvider.notifier)
+          .refresh(days: _phoneDashboardFetchDays);
       _syncPhoneMonitorCards(_chartVisibility);
       if (mounted) {
-        ref.read(activeScrollControllerProvider.notifier).state = _scrollController;
+        ref.read(activeScrollControllerProvider.notifier).state =
+            _scrollController;
       }
     });
   }
 
-  void _showChartSettings(BuildContext anchorContext, {bool allowReorder = true}) {
+  void _showChartSettings(
+    BuildContext anchorContext, {
+    bool allowReorder = true,
+  }) {
     shadcn.showDialog<void>(
       context: context,
       builder: (ctx) => ChartSettingsDialog(
@@ -287,12 +312,19 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         onSaved: (order, visibility, height, treemapCount, phoneTrendDays) {
           ref
               .read(serverResourceIntervalProvider.notifier)
-              .update(HiveManager.get<int>(StorageKeys.serverResourceInterval) ?? kDefaultServerResourceInterval);
+              .update(
+                HiveManager.get<int>(StorageKeys.serverResourceInterval) ??
+                    kDefaultServerResourceInterval,
+              );
           ref
               .read(serverResourceDurationProvider.notifier)
-              .update(HiveManager.get<int>(StorageKeys.serverResourceDuration) ?? kDefaultServerResourceDuration);
+              .update(
+                HiveManager.get<int>(StorageKeys.serverResourceDuration) ??
+                    kDefaultServerResourceDuration,
+              );
           final autoStart =
-              HiveManager.get<bool>(StorageKeys.serverResourceAutoStart) ?? kDefaultServerResourceAutoStart;
+              HiveManager.get<bool>(StorageKeys.serverResourceAutoStart) ??
+              kDefaultServerResourceAutoStart;
           ref.read(serverResourceAutoStartProvider.notifier).update(autoStart);
           _syncPhoneMonitorCards(visibility);
           setState(() {
@@ -336,7 +368,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   Future<void> _onRefresh() async {
     try {
-      await ref.read(appAutoRefreshControllerProvider).refresh(dashboardDays: _phoneDashboardFetchDays);
+      await ref
+          .read(appAutoRefreshControllerProvider)
+          .refresh(dashboardDays: _phoneDashboardFetchDays);
     } finally {
       _refreshController.finishRefresh();
     }
@@ -347,7 +381,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     setState(() => _isRefreshingDashboardData = true);
 
     try {
-      await ref.read(appAutoRefreshControllerProvider).refresh(dashboardDays: _phoneDashboardFetchDays);
+      await ref
+          .read(appAutoRefreshControllerProvider)
+          .refresh(dashboardDays: _phoneDashboardFetchDays);
       Toast.success('刷新数据完成');
     } catch (e, st) {
       AppLogger.error('刷新首页数据失败', e, st);
@@ -362,7 +398,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     setState(() => _phoneTrendDays = days);
   }
 
-  String _taskEndpoint(String api) => api.endsWith('/') ? api.substring(0, api.length - 1) : api;
+  String _taskEndpoint(String api) =>
+      api.endsWith('/') ? api.substring(0, api.length - 1) : api;
 
   Future<void> _refreshSiteData() async {
     if (_hasRunningSummaryAction) return;
@@ -371,7 +408,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     try {
       await fetchBasic(_taskEndpoint(API.MYSITE_STATUS_OPERATE));
       await ref.read(siteInfoListProvider.notifier).refresh();
-      await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
+      await ref
+          .read(dashboardNotifierProvider.notifier)
+          .refresh(days: _phoneDashboardFetchDays);
       Toast.success('站点数据任务已执行');
     } catch (e, st) {
       AppLogger.error('执行站点数据刷新任务失败', e, st);
@@ -388,7 +427,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     try {
       await fetchBasic(_taskEndpoint(API.MYSITE_SIGNIN_OPERATE));
       await ref.read(siteInfoListProvider.notifier).refresh();
-      await ref.read(dashboardNotifierProvider.notifier).refresh(days: _phoneDashboardFetchDays);
+      await ref
+          .read(dashboardNotifierProvider.notifier)
+          .refresh(days: _phoneDashboardFetchDays);
       Toast.success('站点签到任务已执行');
     } catch (e, st) {
       AppLogger.error('执行站点签到任务失败', e, st);
@@ -471,11 +512,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final privacy = ref.watch(privacyModeProvider);
     final isPhone = PlatformTool.isPhone();
     final cs = shadcn.Theme.of(context).colorScheme;
+    final pageBackground = appSurfaceColor(context, cs.background);
 
     if (data == null) {
-      return shadcn.Scaffold(
-        backgroundColor: cs.background,
-        child: Center(child: shadcn.CircularProgressIndicator(size: 18)),
+      return AppBackground(
+        child: shadcn.Scaffold(
+          backgroundColor: pageBackground,
+          child: Center(child: shadcn.CircularProgressIndicator(size: 18)),
+        ),
       );
     }
 
@@ -493,13 +537,19 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               shadcn.IconButton.ghost(
-                icon: Icon(privacy ? shadcn.LucideIcons.eyeOff : shadcn.LucideIcons.eye),
-                onPressed: () => ref.read(privacyModeProvider.notifier).toggle(),
+                icon: Icon(
+                  privacy ? shadcn.LucideIcons.eyeOff : shadcn.LucideIcons.eye,
+                ),
+                onPressed: () =>
+                    ref.read(privacyModeProvider.notifier).toggle(),
               ),
               Builder(
                 builder: (buttonContext) => shadcn.IconButton.ghost(
                   icon: const Icon(shadcn.LucideIcons.trash2),
-                  onPressed: () => showDashboardCacheClearPopover(buttonContext, above: true),
+                  onPressed: () => showDashboardCacheClearPopover(
+                    buttonContext,
+                    above: true,
+                  ),
                 ),
               ),
               Builder(
@@ -520,10 +570,15 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final uri = Uri.tryParse(server);
     if (uri == null || uri.host.isEmpty) return _mask(server, privacy);
 
-    final maskedHost = uri.host.split('.').map((part) => _mask(part, privacy)).join('.');
+    final maskedHost = uri.host
+        .split('.')
+        .map((part) => _mask(part, privacy))
+        .join('.');
     final authority = uri.hasPort ? '$maskedHost:${uri.port}' : maskedHost;
     final path = uri.path.isEmpty ? '' : '/***';
-    return uri.hasScheme ? '${uri.scheme}://$authority$path' : '$authority$path';
+    return uri.hasScheme
+        ? '${uri.scheme}://$authority$path'
+        : '$authority$path';
   }
 
   String _maskEmail(String email, bool privacy) {
@@ -613,7 +668,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     return null;
   }
 
-  List<MapEntry<String, String>> _dashboardAuthEntries(dynamic data, bool privacy) {
+  List<MapEntry<String, String>> _dashboardAuthEntries(
+    dynamic data,
+    bool privacy,
+  ) {
     if (data == null) return const [];
     if (data is Map) {
       return data.entries
@@ -655,15 +713,21 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final invite = _findDashboardAuthValue(data, const ['invite']);
 
     final parts = <String>[];
-    if (active != null) parts.add('状态 ${_dashboardAuthValue('active', active, privacy)}');
-    if (expire != null) parts.add('到期时间 ${_dashboardAuthValue('expire', expire, privacy)}');
-    if (pay != null) parts.add('额度 ${_dashboardAuthValue('pay', pay, privacy)}');
-    if (invite != null) parts.add('邀请 ${_dashboardAuthValue('invite', invite, privacy)}');
+    if (active != null)
+      parts.add('状态 ${_dashboardAuthValue('active', active, privacy)}');
+    if (expire != null)
+      parts.add('到期时间 ${_dashboardAuthValue('expire', expire, privacy)}');
+    if (pay != null)
+      parts.add('额度 ${_dashboardAuthValue('pay', pay, privacy)}');
+    if (invite != null)
+      parts.add('邀请 ${_dashboardAuthValue('invite', invite, privacy)}');
     if (parts.isNotEmpty) return parts.join(' · ');
 
     final entries = _dashboardAuthEntries(data, privacy).take(2).toList();
     if (entries.isEmpty) return '暂无授权信息';
-    return entries.map((entry) => '${entry.key} ${entry.value.replaceAll('\n', ' ')}').join(' · ');
+    return entries
+        .map((entry) => '${entry.key} ${entry.value.replaceAll('\n', ' ')}')
+        .join(' · ');
   }
 
   DateTime? _parseDashboardAuthExpire(dynamic value) {
@@ -681,7 +745,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     if (text.isEmpty) return null;
     final numeric = num.tryParse(text);
     if (numeric != null) return _parseDashboardAuthExpire(numeric);
-    return DateTime.tryParse(text.replaceFirst(' ', 'T')) ?? DateTime.tryParse(text);
+    return DateTime.tryParse(text.replaceFirst(' ', 'T')) ??
+        DateTime.tryParse(text);
   }
 
   bool _isDashboardAuthExpiringSoon(dynamic data) {
@@ -705,7 +770,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final host = uri?.host.isNotEmpty == true ? uri!.host : server;
     final port = uri?.hasPort == true ? ':${uri!.port}' : '';
     if (!privacy) return '$host$port';
-    final maskedHost = host.split('.').map((part) => _mask(part, true)).join('.');
+    final maskedHost = host
+        .split('.')
+        .map((part) => _mask(part, true))
+        .join('.');
     return '$maskedHost$port';
   }
 
@@ -715,12 +783,19 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     if (active is bool) return active;
     if (active is String) {
       final normalized = active.toLowerCase();
-      return normalized == 'true' || normalized == '1' || normalized == 'yes' || normalized == 'active';
+      return normalized == 'true' ||
+          normalized == '1' ||
+          normalized == 'yes' ||
+          normalized == 'active';
     }
     return true;
   }
 
-  Widget _buildServerStatusPill({required String label, required Color color, required IconData icon}) {
+  Widget _buildServerStatusPill({
+    required String label,
+    required Color color,
+    required IconData icon,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -735,7 +810,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
           const SizedBox(width: 5),
           Text(
             label,
-            style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w900),
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+            ),
           ),
         ],
       ),
@@ -766,7 +845,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               Container(
                 width: 30,
                 height: 30,
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.16), borderRadius: context._dashRadiusMd),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.16),
+                  borderRadius: context._dashRadiusMd,
+                ),
                 child: Icon(icon, size: 16, color: color),
               ),
               const SizedBox(width: 8),
@@ -775,7 +857,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: cs.mutedForeground, fontSize: 12, fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    color: cs.mutedForeground,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ],
@@ -785,14 +871,24 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w900, height: 1.1),
+            style: TextStyle(
+              color: cs.foreground,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              height: 1.1,
+            ),
           ),
           const SizedBox(height: 5),
           Text(
             subtitle,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: cs.mutedForeground, fontSize: 11, fontWeight: FontWeight.w600, height: 1.25),
+            style: TextStyle(
+              color: cs.mutedForeground,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              height: 1.25,
+            ),
           ),
         ],
       ),
@@ -800,7 +896,8 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   }
 
   Widget _buildServerBar(bool privacy) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
     final authState = ref.watch(authNotifierProvider);
     final authInfo = ref.watch(authInfoProvider);
     final user = authState.user;
@@ -835,28 +932,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       loading: () => _dashboardThemeTone(cs.primary, hueShift: -36),
       error: (_, __) => cs.destructive,
     );
-    return Container(
+    return AppSurfaceContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cs.background,
-        borderRadius: context._dashRadiusXl,
-        border: Border.all(color: cs.border.withValues(alpha: 0.34)),
-        boxShadow: [
-          BoxShadow(
-            color: cs.foreground.withValues(alpha: 0.09),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-            spreadRadius: -8,
-          ),
-          BoxShadow(
-            color: cs.border.withValues(alpha: 0.30),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-            spreadRadius: -4,
-          ),
-        ],
-      ),
+      borderRadius: context._dashRadiusXl,
+      color: appSurfaceColor(context, cs.card),
+      borderColor: cs.border.withValues(alpha: 0.34),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -871,7 +952,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   borderRadius: context._dashRadiusLg,
                   border: Border.all(color: cs.primary.withValues(alpha: 0.16)),
                 ),
-                child: Icon(shadcn.LucideIcons.user, size: 24, color: cs.primary),
+                child: Icon(
+                  shadcn.LucideIcons.user,
+                  size: 24,
+                  color: cs.primary,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -897,7 +982,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           const SizedBox(width: 8),
                           _buildServerStatusPill(
                             label: '即将到期',
-                            color: _dashboardThemeTone(cs.primary, hueShift: 42, lightnessDelta: 0.04),
+                            color: _dashboardThemeTone(
+                              cs.primary,
+                              hueShift: 42,
+                              lightnessDelta: 0.04,
+                            ),
                             icon: shadcn.LucideIcons.circleAlert,
                           ),
                         ],
@@ -908,15 +997,24 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       username,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: cs.mutedForeground, fontSize: 12, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        color: cs.mutedForeground,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 6),
               shadcn.IconButton.ghost(
-                onPressed: () async => ref.read(authNotifierProvider.notifier).logout(),
-                icon: Icon(shadcn.LucideIcons.logOut, size: 16, color: cs.destructive),
+                onPressed: () async =>
+                    ref.read(authNotifierProvider.notifier).logout(),
+                icon: Icon(
+                  shadcn.LucideIcons.logOut,
+                  size: 16,
+                  color: cs.destructive,
+                ),
               ),
             ],
           ),
@@ -938,7 +1036,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 child: _buildServerMetricTile(
                   icon: shadcn.LucideIcons.shieldCheck,
                   label: '授权信息',
-                  title: showExpireWarning ? '$authStatusText · 即将到期' : authStatusText,
+                  title: showExpireWarning
+                      ? '$authStatusText · 即将到期'
+                      : authStatusText,
                   subtitle: authText,
                   color: statusColor,
                 ),
@@ -952,31 +1052,21 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   // ———————————————— 卡片容器 ————————————————
 
-  Widget _buildCard({required String title, required Widget child, Widget? legend}) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+  Widget _buildCard({
+    required String title,
+    required Widget child,
+    Widget? legend,
+  }) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
 
-    return Container(
+    return AppSurfaceContainer(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-      decoration: BoxDecoration(
-        color: cs.background.withValues(alpha: 0.98),
-        borderRadius: context._dashRadiusMd,
-        border: Border.all(color: cs.border.withValues(alpha: 0.72), width: 0.8),
-        boxShadow: [
-          BoxShadow(
-            color: cs.foreground.withValues(alpha: 0.09),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
-            spreadRadius: -8,
-          ),
-          BoxShadow(
-            color: cs.border.withValues(alpha: 0.22),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-            spreadRadius: -4,
-          ),
-        ],
-      ),
+      borderRadius: context._dashRadiusMd,
+      color: appSurfaceColor(context, cs.background),
+      borderColor: cs.border.withValues(alpha: 0.72),
+      borderWidth: 0.8,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -989,13 +1079,19 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   color: cs.primary.withValues(alpha: 0.10),
                   borderRadius: context._dashRadiusSm,
                 ),
-                child: Icon(shadcn.LucideIcons.chartNoAxesCombined, size: 12, color: cs.primary),
+                child: Icon(
+                  shadcn.LucideIcons.chartNoAxesCombined,
+                  size: 12,
+                  color: cs.primary,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
-                  style: shadcn.Theme.of(context).typography.base.copyWith(fontWeight: FontWeight.w800),
+                  style: shadcn.Theme.of(
+                    context,
+                  ).typography.base.copyWith(fontWeight: FontWeight.w800),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1024,13 +1120,17 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               Icon(
                 shadcn.LucideIcons.chartNoAxesCombined,
                 size: 32,
-                color: shadcn.Theme.of(context).colorScheme.mutedForeground.withValues(alpha: 0.3),
+                color: shadcn.Theme.of(
+                  context,
+                ).colorScheme.mutedForeground.withValues(alpha: 0.3),
               ),
               const SizedBox(height: 8),
               Text(
                 '暂无数据',
                 style: shadcn.Theme.of(context).typography.small.copyWith(
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground.withValues(alpha: 0.5),
+                  color: shadcn.Theme.of(
+                    context,
+                  ).colorScheme.mutedForeground.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -1042,9 +1142,15 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
 
   // ———————————————— Treemap ————————————————
 
-  Widget _buildStatusChart(String title, List<SiteStatusData> data, bool privacy, {List<Color>? colors}) {
+  Widget _buildStatusChart(
+    String title,
+    List<SiteStatusData> data,
+    bool privacy, {
+    List<Color>? colors,
+  }) {
     if (data.isEmpty) return _buildEmptyPlaceholder(title);
-    final sorted = data.toList()..sort((a, b) => b.value.uploaded.compareTo(a.value.uploaded));
+    final sorted = data.toList()
+      ..sort((a, b) => b.value.uploaded.compareTo(a.value.uploaded));
     final filtered = sorted.where((e) => e.value.uploaded > 0).toList();
     if (filtered.isEmpty) return _buildEmptyPlaceholder(title);
     return _buildCard(
@@ -1063,7 +1169,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   // ———————————————— Tooltip ————————————————
 
   Widget _buildTooltipWidget(String text) {
-    return _DashboardPagedTooltip(text: text, onClose: _hideDashboardOverlayTooltip);
+    return _DashboardPagedTooltip(
+      text: text,
+      onClose: _hideDashboardOverlayTooltip,
+    );
   }
 
   void _rememberDashboardTooltipPosition(PointerDownEvent event) {
@@ -1088,21 +1197,34 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final size = MediaQuery.sizeOf(context);
     final padding = MediaQuery.viewPaddingOf(context);
     const margin = 12.0;
-    final availableWidth = (size.width - margin * 2).clamp(160.0, size.width).toDouble();
-    final availableHeight = (size.height - padding.top - padding.bottom - margin * 2).clamp(160.0, size.height).toDouble();
+    final availableWidth = (size.width - margin * 2)
+        .clamp(160.0, size.width)
+        .toDouble();
+    final availableHeight =
+        (size.height - padding.top - padding.bottom - margin * 2)
+            .clamp(160.0, size.height)
+            .toDouble();
     final tooltipWidth = availableWidth.clamp(160.0, 420.0).toDouble();
-    final tooltipHeight = _dashboardTooltipPreferredHeight(text, availableHeight);
-    final position = _dashboardTooltipPosition ?? Offset(size.width / 2, size.height / 2);
+    final tooltipHeight = _dashboardTooltipPreferredHeight(
+      text,
+      availableHeight,
+    );
+    final position =
+        _dashboardTooltipPosition ?? Offset(size.width / 2, size.height / 2);
 
     final minTop = padding.top + margin;
-    final maxTop = (size.height - padding.bottom - tooltipHeight - margin).clamp(minTop, size.height).toDouble();
+    final maxTop = (size.height - padding.bottom - tooltipHeight - margin)
+        .clamp(minTop, size.height)
+        .toDouble();
     final aboveTop = position.dy - tooltipHeight - 14;
     final belowTop = position.dy + 14;
     var top = aboveTop >= minTop ? aboveTop : belowTop;
     top = top.clamp(minTop, maxTop).toDouble();
 
     final minLeft = margin;
-    final maxLeft = (size.width - tooltipWidth - margin).clamp(minLeft, size.width).toDouble();
+    final maxLeft = (size.width - tooltipWidth - margin)
+        .clamp(minLeft, size.width)
+        .toDouble();
     var left = position.dx - tooltipWidth / 2;
     left = left.clamp(minLeft, maxLeft).toDouble();
 
@@ -1137,17 +1259,25 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       ),
     );
     overlay.insert(_dashboardTooltipEntry!);
-    _dashboardTooltipTimer = Timer(const Duration(seconds: 12), _hideDashboardOverlayTooltip);
+    _dashboardTooltipTimer = Timer(
+      const Duration(seconds: 12),
+      _hideDashboardOverlayTooltip,
+    );
   }
 
   double _dashboardTooltipPreferredHeight(String text, double availableHeight) {
     final lines = text.split('\n');
     final hideTitle = lines.isNotEmpty && lines.first == '__NO_HEADER__';
     final hasDateTitle = lines.isNotEmpty && lines.first.startsWith('📅');
-    final hasPlainTitle = lines.isNotEmpty && !hideTitle && !hasDateTitle && !lines.first.contains('\t');
-    final bodyLines = (hideTitle || hasDateTitle || hasPlainTitle ? lines.skip(1) : lines)
-        .where((line) => line.trim().isNotEmpty)
-        .toList();
+    final hasPlainTitle =
+        lines.isNotEmpty &&
+        !hideTitle &&
+        !hasDateTitle &&
+        !lines.first.contains('\t');
+    final bodyLines =
+        (hideTitle || hasDateTitle || hasPlainTitle ? lines.skip(1) : lines)
+            .where((line) => line.trim().isNotEmpty)
+            .toList();
     final summaryCount = bodyLines.where(_isDashboardTooltipSummaryLine).length;
     final detailCount = bodyLines.length - summaryCount;
     if (detailCount <= 0) {
@@ -1156,7 +1286,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final visibleDetails = detailCount.clamp(1, 8).toInt();
     final pagerHeight = detailCount > 8 ? 40.0 : 0.0;
     final preferred = 64.0 + visibleDetails * 32.0 + pagerHeight;
-    return preferred.clamp(112.0, availableHeight.clamp(112.0, 380.0)).toDouble();
+    return preferred
+        .clamp(112.0, availableHeight.clamp(112.0, 380.0))
+        .toDouble();
   }
 
   void _hideDashboardOverlayTooltip() {
@@ -1165,7 +1297,6 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     _dashboardTooltipEntry?.remove();
     _dashboardTooltipEntry = null;
   }
-
 }
 
 class _DesignationCard extends StatefulWidget {
@@ -1187,7 +1318,8 @@ class _DesignationCard extends StatefulWidget {
   State<_DesignationCard> createState() => _DesignationCardState();
 }
 
-class _DesignationCardState extends State<_DesignationCard> with TickerProviderStateMixin {
+class _DesignationCardState extends State<_DesignationCard>
+    with TickerProviderStateMixin {
   late AnimationController _animCtrl;
 
   static const _designations = <int, String>{
@@ -1206,16 +1338,39 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
     10: [Color(0xFF06B6D4), Color(0xFF3B82F6), Color(0xFF06B6D4)],
     20: [Color(0xFF3B82F6), Color(0xFF8B5CF6), Color(0xFF3B82F6)],
     30: [Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF8B5CF6)],
-    50: [Color(0xFF3B82F6), Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF3B82F6)],
-    100: [Color(0xFFFF6B6B), Color(0xFFFF8E53), Color(0xFFFFD93D), Color(0xFFFF6B6B)],
-    150: [Color(0xFFE11D48), Color(0xFFFF6B6B), Color(0xFFFFD93D), Color(0xFFE11D48)],
-    200: [Color(0xFFFFD700), Color(0xFFE11D48), Color(0xFF9B59B6), Color(0xFFFFD700)],
+    50: [
+      Color(0xFF3B82F6),
+      Color(0xFF8B5CF6),
+      Color(0xFFEC4899),
+      Color(0xFF3B82F6),
+    ],
+    100: [
+      Color(0xFFFF6B6B),
+      Color(0xFFFF8E53),
+      Color(0xFFFFD93D),
+      Color(0xFFFF6B6B),
+    ],
+    150: [
+      Color(0xFFE11D48),
+      Color(0xFFFF6B6B),
+      Color(0xFFFFD93D),
+      Color(0xFFE11D48),
+    ],
+    200: [
+      Color(0xFFFFD700),
+      Color(0xFFE11D48),
+      Color(0xFF9B59B6),
+      Color(0xFFFFD700),
+    ],
   };
 
   @override
   void initState() {
     super.initState();
-    _animCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
   }
 
   @override
@@ -1244,7 +1399,8 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
         // Position the popover above the button, shifted by 8px.
         alignment: Alignment.topCenter,
         offset: const Offset(0, 8),
-        builder: (BuildContext context) => _buildPopoverContent(cs, typo).sized(width: 300),
+        builder: (BuildContext context) =>
+            _buildPopoverContent(cs, typo).sized(width: 300),
       ),
       child: Container(
         width: widget.width,
@@ -1270,9 +1426,13 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
           child: ShaderMask(
             shaderCallback: (bounds) {
               final colors = _colors;
-              final stops = List.generate(colors.length, (i) => i / (colors.length - 1));
+              final stops = List.generate(
+                colors.length,
+                (i) => i / (colors.length - 1),
+              );
               final offset = _animCtrl.value;
-              final animatedStops = stops.map((s) => (s + offset) % 1.0).toList()..sort();
+              final animatedStops =
+                  stops.map((s) => (s + offset) % 1.0).toList()..sort();
 
               return LinearGradient(
                 colors: colors,
@@ -1285,7 +1445,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
             blendMode: BlendMode.srcIn,
             child: Stack(
               children: [
-                for (final offset in const [Offset.zero, Offset(0.45, 0), Offset(0, 0.35)])
+                for (final offset in const [
+                  Offset.zero,
+                  Offset(0.45, 0),
+                  Offset(0, 0.35),
+                ])
                   Transform.translate(
                     offset: offset,
                     child: Text(
@@ -1307,22 +1471,26 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
   }
 
   Widget _buildPopoverContent(shadcn.ColorScheme cs, shadcn.Typography typo) {
-    final entries = _designations.entries.toList()..sort((a, b) => b.key.compareTo(a.key));
+    final entries = _designations.entries.toList()
+      ..sort((a, b) => b.key.compareTo(a.key));
     final progress = _unlockProgress();
-    return Container(
+    return AppSurfaceContainer(
       width: 230,
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.background,
-        borderRadius: context._dashRadiusMd,
-        border: Border.all(color: cs.border),
-        boxShadow: [BoxShadow(color: cs.foreground.withValues(alpha: 0.1), blurRadius: 12, offset: const Offset(0, 4))],
-      ),
+      borderRadius: context._dashRadiusMd,
+      color: appSurfaceColor(context, cs.card),
+      borderColor: cs.border,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('称号等级', style: typo.small.copyWith(fontWeight: FontWeight.w600, fontSize: 13)),
+          Text(
+            '称号等级',
+            style: typo.small.copyWith(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
           const SizedBox(height: 8),
           _buildUnlockProgress(cs, typo, progress),
           const SizedBox(height: 10),
@@ -1337,7 +1505,9 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                     width: 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: isCurrent ? const Color(0xFFE11D48) : (isActive ? const Color(0xFF10B981) : cs.border),
+                      color: isCurrent
+                          ? const Color(0xFFE11D48)
+                          : (isActive ? const Color(0xFF10B981) : cs.border),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -1347,7 +1517,9 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                     child: Text(
                       '${entry.key}站',
                       style: typo.xSmall.copyWith(
-                        color: isActive ? cs.foreground : cs.mutedForeground.withValues(alpha: 0.4),
+                        color: isActive
+                            ? cs.foreground
+                            : cs.mutedForeground.withValues(alpha: 0.4),
                         fontSize: 11,
                       ),
                     ),
@@ -1357,7 +1529,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (isCurrent) ...[
-                          Icon(shadcn.RadixIcons.check, size: 13, color: const Color(0xFFE11D48)),
+                          Icon(
+                            shadcn.RadixIcons.check,
+                            size: 13,
+                            color: const Color(0xFFE11D48),
+                          ),
                           const SizedBox(width: 6),
                         ],
                         Flexible(
@@ -1367,8 +1543,14 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                             style: typo.xSmall.copyWith(
                               color: isCurrent
                                   ? const Color(0xFFE11D48)
-                                  : (isActive ? cs.foreground : cs.mutedForeground.withValues(alpha: 0.4)),
-                              fontWeight: isCurrent ? FontWeight.w700 : FontWeight.normal,
+                                  : (isActive
+                                        ? cs.foreground
+                                        : cs.mutedForeground.withValues(
+                                            alpha: 0.4,
+                                          )),
+                              fontWeight: isCurrent
+                                  ? FontWeight.w700
+                                  : FontWeight.normal,
                               fontSize: 12,
                             ),
                           ),
@@ -1386,7 +1568,8 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
   }
 
   _DesignationProgress _unlockProgress() {
-    final levels = _designations.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    final levels = _designations.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
     var current = levels.first;
     MapEntry<int, String>? next;
 
@@ -1424,7 +1607,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
     );
   }
 
-  Widget _buildUnlockProgress(shadcn.ColorScheme cs, shadcn.Typography typo, _DesignationProgress progress) {
+  Widget _buildUnlockProgress(
+    shadcn.ColorScheme cs,
+    shadcn.Typography typo,
+    _DesignationProgress progress,
+  ) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -1440,24 +1627,39 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
             children: [
               Text(
                 '${widget.siteCount}站',
-                style: typo.small.copyWith(color: const Color(0xFFE11D48), fontWeight: FontWeight.w800, fontSize: 13),
+                style: typo.small.copyWith(
+                  color: const Color(0xFFE11D48),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                ),
               ),
               const Spacer(),
               Text(
-                progress.completed ? '已解锁最高称号' : '距 ${progress.nextTitle} 还差 ${progress.remaining}站',
-                style: typo.xSmall.copyWith(color: cs.mutedForeground, fontSize: 11),
+                progress.completed
+                    ? '已解锁最高称号'
+                    : '距 ${progress.nextTitle} 还差 ${progress.remaining}站',
+                style: typo.xSmall.copyWith(
+                  color: cs.mutedForeground,
+                  fontSize: 11,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 8),
           Container(
             height: 5,
-            decoration: BoxDecoration(color: cs.border.withValues(alpha: 0.55), borderRadius: context._dashRadiusXs),
+            decoration: BoxDecoration(
+              color: cs.border.withValues(alpha: 0.55),
+              borderRadius: context._dashRadiusXs,
+            ),
             alignment: Alignment.centerLeft,
             child: FractionallySizedBox(
               widthFactor: progress.ratio.clamp(0.0, 1.0).toDouble(),
               child: Container(
-                decoration: BoxDecoration(color: const Color(0xFFE11D48), borderRadius: context._dashRadiusXs),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE11D48),
+                  borderRadius: context._dashRadiusXs,
+                ),
               ),
             ),
           ),
@@ -1468,7 +1670,11 @@ class _DesignationCardState extends State<_DesignationCard> with TickerProviderS
                 : '${progress.currentLevel}站 ${progress.currentTitle} -> ${progress.nextLevel}站 ${progress.nextTitle}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: typo.xSmall.copyWith(color: cs.foreground, fontSize: 11, fontWeight: FontWeight.w600),
+            style: typo.xSmall.copyWith(
+              color: cs.foreground,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -1547,13 +1753,26 @@ class _DashboardPagedTooltipState extends State<_DashboardPagedTooltip> {
     final rawLines = widget.text.split('\n');
     final hideTitle = rawLines.isNotEmpty && rawLines.first == '__NO_HEADER__';
     final hasDateTitle = rawLines.isNotEmpty && rawLines.first.startsWith('📅');
-    final hasPlainTitle = rawLines.isNotEmpty && !hideTitle && !hasDateTitle && !rawLines.first.contains('\t');
-    _title = hideTitle ? '详情' : (hasDateTitle || hasPlainTitle) ? rawLines.first : '详情';
-    final bodyLines = (hideTitle || hasDateTitle || hasPlainTitle ? rawLines.skip(1) : rawLines)
-        .where((line) => line.trim().isNotEmpty)
-        .toList();
+    final hasPlainTitle =
+        rawLines.isNotEmpty &&
+        !hideTitle &&
+        !hasDateTitle &&
+        !rawLines.first.contains('\t');
+    _title = hideTitle
+        ? '详情'
+        : (hasDateTitle || hasPlainTitle)
+        ? rawLines.first
+        : '详情';
+    final bodyLines =
+        (hideTitle || hasDateTitle || hasPlainTitle
+                ? rawLines.skip(1)
+                : rawLines)
+            .where((line) => line.trim().isNotEmpty)
+            .toList();
     _summaryLines = bodyLines.where(_isDashboardTooltipSummaryLine).toList();
-    _detailLines = bodyLines.where((line) => !_isDashboardTooltipSummaryLine(line)).toList();
+    _detailLines = bodyLines
+        .where((line) => !_isDashboardTooltipSummaryLine(line))
+        .toList();
     _pages = _chunkLines(_detailLines);
   }
 
@@ -1574,7 +1793,11 @@ class _DashboardPagedTooltipState extends State<_DashboardPagedTooltip> {
 
   void _goToPage(int page) {
     if (page < 0 || page >= _pages.length) return;
-    _pageController.animateToPage(page, duration: const Duration(milliseconds: 180), curve: Curves.easeOutCubic);
+    _pageController.animateToPage(
+      page,
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   Widget _buildLine(BuildContext context, String line) {
@@ -1617,7 +1840,12 @@ class _DashboardPagedTooltipState extends State<_DashboardPagedTooltip> {
     }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Text(line, style: theme.typography.small.copyWith(color: theme.colorScheme.mutedForeground)),
+      child: Text(
+        line,
+        style: theme.typography.small.copyWith(
+          color: theme.colorScheme.mutedForeground,
+        ),
+      ),
     );
   }
 
@@ -1631,7 +1859,10 @@ class _DashboardPagedTooltipState extends State<_DashboardPagedTooltip> {
       decoration: BoxDecoration(
         color: theme.colorScheme.primary.withValues(alpha: 0.08),
         borderRadius: context._dashRadiusSm,
-        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.12), width: 0.6),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.12),
+          width: 0.6,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1671,7 +1902,9 @@ class _DashboardPagedTooltipState extends State<_DashboardPagedTooltip> {
       decoration: BoxDecoration(
         color: theme.colorScheme.background.withValues(alpha: 0.98),
         borderRadius: context._dashRadiusMd,
-        border: Border.all(color: theme.colorScheme.border.withValues(alpha: 0.78)),
+        border: Border.all(
+          color: theme.colorScheme.border.withValues(alpha: 0.78),
+        ),
         boxShadow: [
           BoxShadow(
             color: theme.colorScheme.foreground.withValues(alpha: 0.18),
@@ -1721,13 +1954,20 @@ class _DashboardPagedTooltipState extends State<_DashboardPagedTooltip> {
                 onTap: widget.onClose,
                 child: Padding(
                   padding: const EdgeInsets.all(4),
-                  child: Icon(shadcn.LucideIcons.x, size: 15, color: theme.colorScheme.mutedForeground),
+                  child: Icon(
+                    shadcn.LucideIcons.x,
+                    size: 15,
+                    color: theme.colorScheme.mutedForeground,
+                  ),
                 ),
               ),
             ],
           ),
           if (hasDetails) ...[
-            Divider(height: 18, color: theme.colorScheme.border.withValues(alpha: 0.45)),
+            Divider(
+              height: 18,
+              color: theme.colorScheme.border.withValues(alpha: 0.45),
+            ),
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -1738,7 +1978,9 @@ class _DashboardPagedTooltipState extends State<_DashboardPagedTooltip> {
                     padding: const EdgeInsets.symmetric(horizontal: 2),
                     child: ListView(
                       padding: EdgeInsets.zero,
-                      children: _pages[index].map((line) => _buildLine(context, line)).toList(),
+                      children: _pages[index]
+                          .map((line) => _buildLine(context, line))
+                          .toList(),
                     ),
                   );
                 },
@@ -1750,7 +1992,13 @@ class _DashboardPagedTooltipState extends State<_DashboardPagedTooltip> {
                 children: [
                   shadcn.IconButton.ghost(
                     onPressed: canPrev ? () => _goToPage(_page - 1) : null,
-                    icon: Icon(shadcn.LucideIcons.chevronLeft, size: 16, color: canPrev ? theme.colorScheme.foreground : theme.colorScheme.mutedForeground),
+                    icon: Icon(
+                      shadcn.LucideIcons.chevronLeft,
+                      size: 16,
+                      color: canPrev
+                          ? theme.colorScheme.foreground
+                          : theme.colorScheme.mutedForeground,
+                    ),
                   ),
                   Expanded(
                     child: Text(
@@ -1764,7 +2012,13 @@ class _DashboardPagedTooltipState extends State<_DashboardPagedTooltip> {
                   ),
                   shadcn.IconButton.ghost(
                     onPressed: canNext ? () => _goToPage(_page + 1) : null,
-                    icon: Icon(shadcn.LucideIcons.chevronRight, size: 16, color: canNext ? theme.colorScheme.foreground : theme.colorScheme.mutedForeground),
+                    icon: Icon(
+                      shadcn.LucideIcons.chevronRight,
+                      size: 16,
+                      color: canNext
+                          ? theme.colorScheme.foreground
+                          : theme.colorScheme.mutedForeground,
+                    ),
                   ),
                 ],
               ),
@@ -1783,7 +2037,13 @@ class _DistributionItem {
   final String? valueText;
   final String? tooltip;
 
-  const _DistributionItem({required this.name, required this.value, required this.color, this.valueText, this.tooltip});
+  const _DistributionItem({
+    required this.name,
+    required this.value,
+    required this.color,
+    this.valueText,
+    this.tooltip,
+  });
 }
 
 class _IncrementChartItem {
@@ -1792,7 +2052,12 @@ class _IncrementChartItem {
   final num download;
   final String tooltip;
 
-  const _IncrementChartItem(this.name, this.upload, this.download, this.tooltip);
+  const _IncrementChartItem(
+    this.name,
+    this.upload,
+    this.download,
+    this.tooltip,
+  );
 }
 
 class _TrendPoint {
@@ -1824,7 +2089,12 @@ class _MonthlyChartItem {
   final String displayValue;
   final String tooltip;
 
-  const _MonthlyChartItem(this.label, this.value, this.displayValue, this.tooltip);
+  const _MonthlyChartItem(
+    this.label,
+    this.value,
+    this.displayValue,
+    this.tooltip,
+  );
 }
 
 class _PieData {
@@ -1833,7 +2103,12 @@ class _PieData {
   final String tooltip;
   final Color color;
 
-  _PieData({required this.name, required this.value, required this.tooltip, required this.color});
+  _PieData({
+    required this.name,
+    required this.value,
+    required this.tooltip,
+    required this.color,
+  });
 }
 
 class _StatItem {
@@ -1843,11 +2118,5 @@ class _StatItem {
   final Color color;
   final VoidCallback? onTap;
 
-  const _StatItem(
-    this.label,
-    this.value,
-    this.icon,
-    this.color, {
-    this.onTap,
-  });
+  const _StatItem(this.label, this.value, this.icon, this.color, {this.onTap});
 }

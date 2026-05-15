@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:harvest/core/theme/background_image_picker_page.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/notice/model/notice_history.dart';
@@ -440,6 +441,10 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                     _openDrawerPage(const AdminUserPage());
                   },
                   onUpdate: () => _openDrawerPage(const UpdatePage()),
+                  onBackgroundManager: () {
+                    _closeDrawer();
+                    showBackgroundImageDialog(context);
+                  },
                   onAppUpgrade: () {
                     _closeDrawer();
                     context.push('/app-upgrade');
@@ -490,8 +495,9 @@ class _ShellHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
     final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     final hasUnread = unreadNotices.isNotEmpty;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -499,7 +505,7 @@ class _ShellHeader extends StatelessWidget {
           ? SystemUiOverlayStyle.light
           : SystemUiOverlayStyle.dark,
       child: Material(
-        color: cs.background,
+        color: cs.background.withValues(alpha: surfaceOpacity),
         child: SafeArea(
           bottom: false,
           child: shadcn.AnimatedContainer(
@@ -1211,6 +1217,7 @@ class _ShellDrawerPanel extends StatelessWidget {
       onUsers,
       onAdminUsers,
       onUpdate,
+      onBackgroundManager,
       onAppUpgrade,
       onLogs;
 
@@ -1229,6 +1236,7 @@ class _ShellDrawerPanel extends StatelessWidget {
     required this.onUsers,
     required this.onAdminUsers,
     required this.onUpdate,
+    required this.onBackgroundManager,
     required this.onAppUpgrade,
     required this.onLogs,
   });
@@ -1239,15 +1247,16 @@ class _ShellDrawerPanel extends StatelessWidget {
     final theme = tokens.theme;
     final cs = tokens.cs;
     final typo = theme.typography;
+    final surfaceOpacity = ((theme.surfaceOpacity ?? 1.0) + 0.2).clamp(0.0, 1.0).toDouble();
 
     return Material(
-      color: cs.background,
+      color: cs.background.withValues(alpha: surfaceOpacity),
       child: SafeArea(
         right: false,
         child: Container(
           margin: tokens.edgeOnly(top: 6, right: 6, bottom: 6),
           decoration: BoxDecoration(
-            color: cs.background,
+            color: cs.background.withValues(alpha: surfaceOpacity),
             border: Border.all(
               color: cs.border.withValues(alpha: 0.7),
               width: 0.8,
@@ -1388,6 +1397,11 @@ class _ShellDrawerPanel extends StatelessWidget {
                           label: '程序更新',
                           icon: shadcn.LucideIcons.arrowUpFromLine,
                           onTap: onUpdate,
+                        ),
+                        _DrawerTile(
+                          label: '背景图管理',
+                          icon: shadcn.LucideIcons.image,
+                          onTap: onBackgroundManager,
                         ),
                         if (!kIsWeb)
                           _DrawerTile(

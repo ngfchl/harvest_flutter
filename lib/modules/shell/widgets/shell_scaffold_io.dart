@@ -1,12 +1,16 @@
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show MaterialPageRoute;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
+import '../../../core/theme/app_background_image.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/theme_provider.dart';
 import '../../search/unified_search_page.dart';
 import 'shell_bottom_navigation.dart';
 
-class ShellScaffold extends StatelessWidget {
+class ShellScaffold extends ConsumerWidget {
   final Widget header;
   final Widget child;
   final int index;
@@ -112,7 +116,8 @@ class ShellScaffold extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeState = ref.watch(themeNotifierProvider);
     final useNativeIOSBottomBar =
         PlatformInfo.isIOS && PlatformInfo.isIOS26OrHigher();
     final effectiveDashboardChrome = dashboardChrome && !useNativeIOSBottomBar;
@@ -139,14 +144,24 @@ class ShellScaffold extends StatelessWidget {
               ),
           ],
         ),
-        body: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: Column(
-            children: [
-              header,
-              Expanded(child: child),
-            ],
+        body: _ShellBackground(
+          themeState: themeState,
+          child: shadcn.ComponentTheme(
+            data: shadcn.ScaffoldTheme(
+              backgroundColor: colors.background.withValues(
+                alpha: themeState.surfaceOpacity,
+              ),
+            ),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: Column(
+                children: [
+                  header,
+                  Expanded(child: child),
+                ],
+              ),
+            ),
           ),
         ),
       );
@@ -160,6 +175,7 @@ class ShellScaffold extends StatelessWidget {
       dashboardChrome: effectiveDashboardChrome,
       showNews: showNews,
       useShaderLiquidGlass: false,
+      themeState: themeState,
       child: child,
     );
   }
@@ -174,6 +190,7 @@ class _CustomShellScaffoldBody extends StatelessWidget {
   final bool dashboardChrome;
   final bool showNews;
   final bool useShaderLiquidGlass;
+  final ThemeState themeState;
 
   const _CustomShellScaffoldBody({
     required this.header,
@@ -184,21 +201,31 @@ class _CustomShellScaffoldBody extends StatelessWidget {
     required this.dashboardChrome,
     required this.showNews,
     required this.useShaderLiquidGlass,
+    required this.themeState,
   });
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        Positioned.fill(child: _ShellBackground(themeState: themeState)),
         Positioned.fill(
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-            child: Column(
-              children: [
-                header,
-                Expanded(child: child),
-              ],
+          child: shadcn.ComponentTheme(
+            data: shadcn.ScaffoldTheme(
+              backgroundColor: shadcn.Theme.of(context)
+                  .colorScheme
+                  .background
+                  .withValues(alpha: themeState.surfaceOpacity),
+            ),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: Column(
+                children: [
+                  header,
+                  Expanded(child: child),
+                ],
+              ),
             ),
           ),
         ),
@@ -219,6 +246,34 @@ class _CustomShellScaffoldBody extends StatelessWidget {
     );
   }
 }
+
+class _ShellBackground extends StatelessWidget {
+  final ThemeState themeState;
+  final Widget? child;
+
+  const _ShellBackground({required this.themeState, this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    Widget background = ColoredBox(color: cs.background);
+    if (themeState.useBackground) {
+      final overlayOpacity =
+          (1.0 - themeState.surfaceOpacity).clamp(0.0, 1.0).toDouble();
+      background = Stack(
+        fit: StackFit.expand,
+        children: [
+          background,
+          appThemeBackgroundImage(themeState),
+          ColoredBox(color: cs.background.withValues(alpha: overlayOpacity)),
+        ],
+      );
+    }
+    if (child == null) return background;
+    return Stack(fit: StackFit.expand, children: [background, child!]);
+  }
+}
+
 
 class _AdaptiveShellNavItem {
   final String label;

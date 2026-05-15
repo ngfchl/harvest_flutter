@@ -41,6 +41,7 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard> {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     final categoryColor = isQb ? cs.primary : cs.destructive;
     final successColor = cs.primary;
     final inactiveColor = cs.destructive;
@@ -71,6 +72,8 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard> {
         onDoubleTap: _openTorrentList,
         child: shadcn.Card(
           padding: EdgeInsets.zero,
+          filled: true,
+          fillColor: cs.card.withValues(alpha: surfaceOpacity),
           child: Padding(
             padding: EdgeInsets.all(
               theme.density.baseContentPadding * theme.scaling * 0.85,

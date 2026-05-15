@@ -138,6 +138,7 @@ extension _PhoneDashboardView on _DashboardPageState {
   Widget _buildPhoneLayout(DashboardData data, bool privacy, DataCacheInfo cacheInfo, int refreshSerial) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
+    final pageBackground = appSurfaceColor(context, cs.background);
     final children = <Widget>[
       CacheStatusBanner(
         info: cacheInfo,
@@ -148,31 +149,30 @@ extension _PhoneDashboardView on _DashboardPageState {
     ];
 
     final scrollView = SizedBox.expand(
-      child: ColoredBox(
-        color: cs.background,
-        child: EasyRefresh(
-          key: ValueKey('phone-dashboard-$refreshSerial'),
-          controller: _refreshController,
-          onRefresh: _onRefresh,
-          header: appRefreshHeader(context),
-          child: CustomScrollView(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: theme.density.baseContentPadding * theme.scaling,
-                  vertical: theme.density.baseGap * theme.scaling * 2.25,
-                ),
-                sliver: SliverList(delegate: SliverChildListDelegate(children)),
+      child: EasyRefresh(
+        key: ValueKey('phone-dashboard-$refreshSerial'),
+        controller: _refreshController,
+        onRefresh: _onRefresh,
+        header: appRefreshHeader(context),
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.symmetric(
+                horizontal: theme.density.baseContentPadding * theme.scaling,
+                vertical: theme.density.baseGap * theme.scaling * 2.25,
               ),
-            ],
-          ),
+              sliver: SliverList(delegate: SliverChildListDelegate(children)),
+            ),
+          ],
         ),
       ),
     );
 
-    return shadcn.Scaffold(backgroundColor: cs.background, child: scrollView);
+    return AppBackground(
+      child: shadcn.Scaffold(backgroundColor: pageBackground, child: scrollView),
+    );
   }
 
   List<Widget> _buildPolishedPhoneDashboardChildren(DashboardData data, bool privacy) {
@@ -955,11 +955,12 @@ extension _PhoneDashboardView on _DashboardPageState {
   Widget _buildBeautyCard({required Widget child, EdgeInsetsGeometry padding = const EdgeInsets.all(16)}) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     return SizedBox(
       width: double.infinity,
       child: shadcn.Card(
         filled: true,
-        fillColor: cs.card,
+        fillColor: cs.card.withValues(alpha: surfaceOpacity),
         borderColor: cs.border.withValues(alpha: 0.72),
         borderRadius: theme.borderRadiusXl,
         padding: padding,

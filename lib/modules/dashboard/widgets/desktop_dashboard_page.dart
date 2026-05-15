@@ -11,6 +11,8 @@ import 'package:harvest/core/http/hooks.dart';
 import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
+import 'package:harvest/core/theme/app_surface.dart';
+import 'package:harvest/core/theme/background_image_picker_page.dart';
 import 'package:harvest/core/theme/theme_provider.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/cache_status_banner.dart';
@@ -53,7 +55,8 @@ class _DesktopDashboardIconTooltip extends StatelessWidget {
         anchorAlignment: Alignment.bottomCenter,
         offset: const Offset(0, 8),
         consumeOutsideTaps: false,
-        builder: (context) => _DesktopDashboardIconTooltipPanel(message: message),
+        builder: (context) =>
+            _DesktopDashboardIconTooltipPanel(message: message),
       ),
       child: child,
     );
@@ -96,7 +99,11 @@ class _DesktopDashboardIconTooltipPanel extends StatelessWidget {
                 ),
                 shadcn.IconButton.ghost(
                   density: shadcn.ButtonDensity.compact,
-                  icon: Icon(shadcn.LucideIcons.x, size: 15, color: cs.mutedForeground),
+                  icon: Icon(
+                    shadcn.LucideIcons.x,
+                    size: 15,
+                    color: cs.mutedForeground,
+                  ),
                   onPressed: () => shadcn.closeOverlay(context),
                 ),
               ],
@@ -106,7 +113,12 @@ class _DesktopDashboardIconTooltipPanel extends StatelessWidget {
               ...body.map(
                 (line) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text(line, style: theme.typography.xSmall.copyWith(color: cs.mutedForeground)),
+                  child: Text(
+                    line,
+                    style: theme.typography.xSmall.copyWith(
+                      color: cs.mutedForeground,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -436,31 +448,31 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       data: MediaQuery.of(
         context,
       ).copyWith(textScaler: TextScaler.linear(tokens.textScale)),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: tokens.background,
-          gradient: tokens.pageGradient,
-        ),
-        child: Stack(
-          children: [
-            if (_dynamicBackgroundEnabled)
-              Positioned.fill(child: _buildBackdrop()),
-            Positioned.fill(
-              child: data == null
-                  ? Center(
-                      child: shadcn.CircularProgressIndicator(
-                        size: tokens.size(18),
+      child: AppBackground(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: appSurfaceColor(context, tokens.background),
+            gradient: tokens.pageGradient,
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: data == null
+                    ? Center(
+                        child: shadcn.CircularProgressIndicator(
+                          size: tokens.size(18),
+                        ),
+                      )
+                    : _buildBoard(
+                        context,
+                        data,
+                        cacheInfo,
+                        privacy,
+                        refreshSerial,
                       ),
-                    )
-                  : _buildBoard(
-                      context,
-                      data,
-                      cacheInfo,
-                      privacy,
-                      refreshSerial,
-                    ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -619,6 +631,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
           ),
           tokens.hGap(8),
           _headerAction(
+            icon: shadcn.LucideIcons.image,
+            label: '背景',
+            onTap: (_) => showBackgroundImageDialog(context),
+          ),
+          tokens.hGap(8),
+          _headerAction(
             icon: privacy ? shadcn.LucideIcons.eyeOff : shadcn.LucideIcons.eye,
             label: privacy ? '隐私' : '明文',
             onTap: (_) => ref.read(privacyModeProvider.notifier).toggle(),
@@ -640,7 +658,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       height: tokens.size(38),
       padding: tokens.edgeAll(2),
       decoration: BoxDecoration(
-        color: _panelSoft.withValues(alpha: 0.86),
+        color: _panelSoft.withValues(alpha: tokens.surfaceOpacity * 0.86),
         borderRadius: theme.borderRadiusMd,
         border: Border.all(color: _line.withValues(alpha: 0.92)),
       ),
@@ -692,35 +710,37 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       behavior: HitTestBehavior.opaque,
       onTap: () => ref.read(themeNotifierProvider.notifier).setMode(mode),
       child: AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
-          height: tokens.size(32),
-          padding: tokens.edgeSymmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            color: selected ? colors.primary : colors.background.withValues(alpha: 0),
-            borderRadius: theme.borderRadiusSm,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _DesktopDashboardIconTooltip(
-                message: tooltip,
-                child: Icon(
-                  icon,
-                  size: tokens.size(14),
-                  color: selected ? colors.primaryForeground : _cyan,
-                ),
+        duration: const Duration(milliseconds: 140),
+        height: tokens.size(32),
+        padding: tokens.edgeSymmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: selected
+              ? colors.primary
+              : colors.background.withValues(alpha: 0),
+          borderRadius: theme.borderRadiusSm,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _DesktopDashboardIconTooltip(
+              message: tooltip,
+              child: Icon(
+                icon,
+                size: tokens.size(14),
+                color: selected ? colors.primaryForeground : _cyan,
               ),
-              tokens.hGap(4),
-              Text(
-                label,
-                style: TextStyle(
-                  color: selected ? colors.primaryForeground : _text,
-                  fontSize: tokens.font(12),
-                  fontWeight: FontWeight.w800,
-                ),
+            ),
+            tokens.hGap(4),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? colors.primaryForeground : _text,
+                fontSize: tokens.font(12),
+                fontWeight: FontWeight.w800,
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -739,7 +759,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
           height: tokens.size(38),
           padding: tokens.edgeSymmetric(horizontal: 10),
           decoration: BoxDecoration(
-            color: _panelSoft.withValues(alpha: 0.86),
+            color: _panelSoft.withValues(alpha: tokens.surfaceOpacity * 0.86),
             borderRadius: shadcn.Theme.of(context).borderRadiusMd,
             border: Border.all(color: _line.withValues(alpha: 0.92)),
           ),
@@ -1011,8 +1031,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                           data,
                           height: showResource ? 128 : 440,
                         ),
-                      if (showDesignation && showResource)
-                        tokens.vGap(10),
+                      if (showDesignation && showResource) tokens.vGap(10),
                       if (showResource)
                         _buildResourcePanel(
                           data,
@@ -1052,7 +1071,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
               if ((showServerResource || showServiceStatus) && showAccount)
                 tokens.hGap(10),
               if (showAccount)
-                Expanded(flex: 4, child: _buildAccountPanel(data, privacy, height: 300)),
+                Expanded(
+                  flex: 4,
+                  child: _buildAccountPanel(data, privacy, height: 300),
+                ),
             ],
           ),
           tokens.vGap(10),
@@ -1098,18 +1120,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
 
     return Column(
       children: [
-        if (showDesignation) ...[
-          _buildDesignationPanel(data),
-          tokens.vGap(10),
-        ],
-        if (showTrend) ...[
-          _buildTrendPanel(data, privacy),
-          tokens.vGap(10),
-        ],
-        if (showToday) ...[
-          _buildTodayPanel(data, privacy),
-          tokens.vGap(10),
-        ],
+        if (showDesignation) ...[_buildDesignationPanel(data), tokens.vGap(10)],
+        if (showTrend) ...[_buildTrendPanel(data, privacy), tokens.vGap(10)],
+        if (showToday) ...[_buildTodayPanel(data, privacy), tokens.vGap(10)],
         if (showServerResource) ...[
           _buildServerResourcePanel(height: 320),
           tokens.vGap(10),
@@ -1126,14 +1139,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
           _buildDistributionRow(data, privacy, stacked: true),
           tokens.vGap(10),
         ],
-        if (showResource) ...[
-          _buildResourcePanel(data),
-          tokens.vGap(10),
-        ],
-        if (showRank) ...[
-          _buildRankPanel(data, privacy),
-          tokens.vGap(10),
-        ],
+        if (showResource) ...[_buildResourcePanel(data), tokens.vGap(10)],
+        if (showRank) ...[_buildRankPanel(data, privacy), tokens.vGap(10)],
         if (showPublished) ...[
           _buildMonthlyPublishPanel(data, privacy),
           tokens.vGap(10),
@@ -1164,9 +1171,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
               decoration: BoxDecoration(
                 color: _red.withValues(alpha: 0.16),
                 borderRadius: shadcn.Theme.of(context).borderRadiusMd,
-                border: Border.all(
-                  color: _red.withValues(alpha: 0.42),
-                ),
+                border: Border.all(color: _red.withValues(alpha: 0.42)),
               ),
               child: Icon(
                 shadcn.LucideIcons.award,
@@ -1220,7 +1225,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         children: [
           Row(
             children: [
-              Container(width: tokens.size(3), height: tokens.size(15), color: _cyan),
+              Container(
+                width: tokens.size(3),
+                height: tokens.size(15),
+                color: _cyan,
+              ),
               tokens.hGap(8),
               Text(
                 '服务器状态',
@@ -1268,7 +1277,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
               ),
               tokens.hGap(8),
               shadcn.IconButton.ghost(
-                        onPressed: () =>
+                onPressed: () =>
                     ref.read(serverResourceProvider.notifier).toggle(),
                 icon: Icon(
                   running ? shadcn.LucideIcons.pause : shadcn.LucideIcons.play,
@@ -1583,7 +1592,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         children: [
           Row(
             children: [
-              Container(width: tokens.size(3), height: tokens.size(15), color: _green),
+              Container(
+                width: tokens.size(3),
+                height: tokens.size(15),
+                color: _green,
+              ),
               tokens.hGap(8),
               Text(
                 '后台服务状态',
@@ -1631,7 +1644,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
               ),
               tokens.hGap(8),
               shadcn.IconButton.ghost(
-                        onPressed: () =>
+                onPressed: () =>
                     ref.read(backendServiceStatusProvider.notifier).toggle(),
                 icon: Icon(
                   running ? shadcn.LucideIcons.pause : shadcn.LucideIcons.play,
@@ -1690,10 +1703,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                 );
                 final rowExtent = rows <= 1
                     ? constraints.maxHeight
-                    : ((constraints.maxHeight - tokens.size(8) * (rows - 1)) / rows).clamp(
-                        tokens.size(42),
-                        tokens.size(56),
-                      );
+                    : ((constraints.maxHeight - tokens.size(8) * (rows - 1)) /
+                              rows)
+                          .clamp(tokens.size(42), tokens.size(56));
                 final visibleServices = services
                     .take(math.min(services.length, columns * rows))
                     .toList();
@@ -1770,7 +1782,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     return Container(
       padding: tokens.edgeSymmetric(horizontal: 9, vertical: 7),
       decoration: BoxDecoration(
-        color: _panelSoft.withValues(alpha: 0.72),
+        color: _panelSoft.withValues(alpha: tokens.surfaceOpacity * 0.72),
         borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: _line.withValues(alpha: 0.70)),
       ),
@@ -2039,7 +2051,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                     legend: Legend(
                       isVisible: true,
                       position: LegendPosition.bottom,
-                      textStyle: TextStyle(color: _muted, fontSize: _tokens.font(11)),
+                      textStyle: TextStyle(
+                        color: _muted,
+                        fontSize: _tokens.font(11),
+                      ),
                       iconHeight: 8,
                       iconWidth: 8,
                     ),
@@ -2170,10 +2185,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     bool privacy, {
     double height = 440,
   }) {
-    final items = data.statusList
-        .where((item) => item.value.uploaded > 0)
-        .toList()
-      ..sort((a, b) => b.value.uploaded.compareTo(a.value.uploaded));
+    final items =
+        data.statusList.where((item) => item.value.uploaded > 0).toList()
+          ..sort((a, b) => b.value.uploaded.compareTo(a.value.uploaded));
 
     return _boardPanel(
       title: '站点状态',
@@ -2311,7 +2325,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       color: _panel,
       canShowMarker: false,
       builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
-          _donutTooltip(dataPoint, items, formatter, onClose: () => tooltipBehavior.hide()),
+          _donutTooltip(
+            dataPoint,
+            items,
+            formatter,
+            onClose: () => tooltipBehavior.hide(),
+          ),
     );
     return SfCircularChart(
       margin: EdgeInsets.zero,
@@ -2452,7 +2471,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     return Container(
       padding: tokens.edgeSymmetric(horizontal: 9, vertical: 7),
       decoration: BoxDecoration(
-        color: _panelSoft.withValues(alpha: 0.58),
+        color: _panelSoft.withValues(alpha: tokens.surfaceOpacity * 0.58),
         borderRadius: shadcn.Theme.of(context).borderRadiusSm,
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
@@ -2894,7 +2913,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
                 tokens.hGap(8),
                 shadcn.IconButton.ghost(
                   density: shadcn.ButtonDensity.compact,
-                  icon: Icon(shadcn.LucideIcons.x, size: tokens.size(14), color: _muted),
+                  icon: Icon(
+                    shadcn.LucideIcons.x,
+                    size: tokens.size(14),
+                    color: _muted,
+                  ),
                   onPressed: onClose,
                 ),
               ],
@@ -3210,7 +3233,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       color: _panel,
       canShowMarker: false,
       builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
-          _todayIncrementDonutTooltip(dataPoint, items, onClose: () => tooltipBehavior.hide()),
+          _todayIncrementDonutTooltip(
+            dataPoint,
+            items,
+            onClose: () => tooltipBehavior.hide(),
+          ),
     );
 
     return SfCircularChart(
@@ -3260,8 +3287,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
 
   Widget _todayIncrementDonutTooltip(
     dynamic dataPoint,
-    List<_NameValuePoint> items,
-    {
+    List<_NameValuePoint> items, {
     VoidCallback? onClose,
   }) {
     if (dataPoint is! _NameValuePoint) {
@@ -3329,7 +3355,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
             xValueMapper: (p, _) => _formatMonth(p.label),
             yValueMapper: (p, _) => p.published,
             color: _amber.withValues(alpha: 0.72),
-            borderRadius: BorderRadius.vertical(top: shadcn.Theme.of(context).radiusXsRadius),
+            borderRadius: BorderRadius.vertical(
+              top: shadcn.Theme.of(context).radiusXsRadius,
+            ),
           ),
         ],
       ),
@@ -3511,7 +3539,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         children: [
           Row(
             children: [
-              Container(width: tokens.size(3), height: tokens.size(15), color: _cyan),
+              Container(
+                width: tokens.size(3),
+                height: tokens.size(15),
+                color: _cyan,
+              ),
               tokens.hGap(8),
               Expanded(
                 child: Text(
@@ -3567,7 +3599,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
           ),
           if (!tokens.isDark)
             BoxShadow(
-              color: tokens.background.withValues(alpha: 0.80),
+              color: tokens.background.withValues(alpha: tokens.surfaceOpacity * 0.80),
               blurRadius: 0,
               offset: Offset(0, tokens.size(1)),
               spreadRadius: -1,
@@ -3578,10 +3610,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     );
   }
 
-  TextStyle _axisStyle() => TextStyle(
-    color: _muted,
-    fontSize: _tokens.font(10),
-  );
+  TextStyle _axisStyle() =>
+      TextStyle(color: _muted, fontSize: _tokens.font(10));
 
   List<_TrendPoint> _monthTrend(DashboardData data) {
     final map = SplayTreeMap<String, _TrendPoint>();
@@ -3747,8 +3777,10 @@ class _DesignationCardState extends State<_DesignationCard>
     if (widget.siteCount >= 50) {
       return [tokens.blue, tokens.violet, tokens.red, tokens.blue];
     }
-    if (widget.siteCount >= 30) return [tokens.violet, tokens.red, tokens.violet];
-    if (widget.siteCount >= 20) return [tokens.blue, tokens.violet, tokens.blue];
+    if (widget.siteCount >= 30)
+      return [tokens.violet, tokens.red, tokens.violet];
+    if (widget.siteCount >= 20)
+      return [tokens.blue, tokens.violet, tokens.blue];
     if (widget.siteCount >= 10) return [tokens.cyan, tokens.blue, tokens.cyan];
     return [tokens.green, tokens.cyan, palette.first];
   }
@@ -3766,19 +3798,19 @@ class _DesignationCardState extends State<_DesignationCard>
         builder: (_) => Dialog(child: _buildPopoverContent(tokens, cs, typo)),
       ),
       child: Container(
-          width: widget.width,
+        width: widget.width,
+        height: widget.height,
+        padding: tokens.edgeSymmetric(horizontal: 12),
+        alignment: Alignment.centerLeft,
+        child: SizedBox(
+          width: widget.width - tokens.size(24),
           height: widget.height,
-          padding: tokens.edgeSymmetric(horizontal: 12),
-          alignment: Alignment.centerLeft,
-          child: SizedBox(
-            width: widget.width - tokens.size(24),
-            height: widget.height,
-            child: _animatedDesignationText(
-              fontSize: widget.fontSize,
-              tokens: tokens,
-            ),
+          child: _animatedDesignationText(
+            fontSize: widget.fontSize,
+            tokens: tokens,
           ),
         ),
+      ),
     );
   }
 
@@ -3851,7 +3883,7 @@ class _DesignationCardState extends State<_DesignationCard>
       width: tokens.size(230),
       padding: tokens.edgeAll(12),
       decoration: BoxDecoration(
-        color: cs.background,
+        color: appSurfaceColor(context, cs.background),
         borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: cs.border),
         boxShadow: [
@@ -3866,10 +3898,7 @@ class _DesignationCardState extends State<_DesignationCard>
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '称号等级',
-            style: typo.small.copyWith(fontWeight: FontWeight.w600),
-          ),
+          Text('称号等级', style: typo.small.copyWith(fontWeight: FontWeight.w600)),
           tokens.vGap(8),
           _buildUnlockProgress(tokens, cs, typo, progress),
           tokens.vGap(10),
@@ -4175,6 +4204,7 @@ class _DashboardThemeTokens {
   final bool isDark;
   final double densityScale;
   final double textScale;
+  final double surfaceOpacity;
   final Color background;
   final Color panel;
   final Color panelSoft;
@@ -4195,6 +4225,7 @@ class _DashboardThemeTokens {
     required this.isDark,
     required this.densityScale,
     required this.textScale,
+    required this.surfaceOpacity,
     required this.background,
     required this.panel,
     required this.panelSoft,
@@ -4214,6 +4245,7 @@ class _DashboardThemeTokens {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = cs.brightness == Brightness.dark;
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1).clamp(0.0, 1.0).toDouble();
     final densityScale =
         ((theme.density.baseContainerPadding / 20.0) * theme.scaling).clamp(
           0.48,
@@ -4222,7 +4254,11 @@ class _DashboardThemeTokens {
     final textScale = theme.scaling.clamp(0.82, 1.35);
     final accent = cs.primary;
     final danger = cs.destructive;
-    final cool = _tone(accent, hueShift: isDark ? 18 : 10, saturationScale: 1.12);
+    final cool = _tone(
+      accent,
+      hueShift: isDark ? 18 : 10,
+      saturationScale: 1.12,
+    );
     final success = _tone(accent, hueShift: 120, saturationScale: 0.98);
     final warning = _tone(accent, hueShift: 62, saturationScale: 1.08);
     final info = _tone(accent, hueShift: -34, saturationScale: 1.04);
@@ -4235,8 +4271,9 @@ class _DashboardThemeTokens {
       isDark: isDark,
       densityScale: densityScale.toDouble(),
       textScale: textScale.toDouble(),
-      background: cs.background,
-      panel: cs.card.withValues(alpha: (theme.surfaceOpacity ?? 1).clamp(0.58, 1.0)),
+      surfaceOpacity: surfaceOpacity,
+      background: appSurfaceColor(context, cs.background),
+      panel: appSurfaceColor(context, cs.card),
       panelSoft: cs.muted,
       line: cs.border,
       text: cs.foreground,
@@ -4271,77 +4308,98 @@ class _DashboardThemeTokens {
 
   double get bottomGap => size(84);
 
-  LinearGradient get pageGradient => isDark
-      ? LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [background, Color.lerp(background, panelSoft, 0.34)!],
-        )
-      : LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color.lerp(background, cyan, 0.08)!,
-            background,
-            Color.lerp(background, blue, 0.07)!,
-          ],
-        );
+  LinearGradient get pageGradient {
+    final opacity = surfaceOpacity;
+    return isDark
+        ? LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              background.withValues(alpha: opacity),
+              Color.lerp(
+                background,
+                panelSoft,
+                0.34,
+              )!.withValues(alpha: opacity),
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color.lerp(background, cyan, 0.08)!.withValues(alpha: opacity),
+              background.withValues(alpha: opacity),
+              Color.lerp(background, blue, 0.07)!.withValues(alpha: opacity),
+            ],
+          );
+  }
 
   LinearGradient get panelGradient => LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: isDark
-            ? [
-                cs.card.withValues(alpha: (theme.surfaceOpacity ?? 1).clamp(0.70, 1.0)),
-                Color.lerp(cs.card, panelSoft, 0.30)!.withValues(
-                  alpha: (theme.surfaceOpacity ?? 1).clamp(0.62, 1.0),
-                ),
-              ]
-            : [
-                Color.lerp(cs.card, background, 0.55)!.withValues(
-                  alpha: (theme.surfaceOpacity ?? 1).clamp(0.66, 1.0),
-                ),
-                Color.lerp(cs.card, cyan, 0.08)!.withValues(
-                  alpha: (theme.surfaceOpacity ?? 1).clamp(0.62, 1.0),
-                ),
-              ],
-      );
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: isDark
+        ? [
+            cs.card.withValues(
+              alpha: theme.surfaceOpacity ?? 1,
+            ),
+            Color.lerp(
+              cs.card,
+              panelSoft,
+              0.30,
+            )!.withValues(alpha: theme.surfaceOpacity ?? 1),
+          ]
+        : [
+            Color.lerp(
+              cs.card,
+              background,
+              0.55,
+            )!.withValues(alpha: theme.surfaceOpacity ?? 1),
+            Color.lerp(
+              cs.card,
+              cyan,
+              0.08,
+            )!.withValues(alpha: theme.surfaceOpacity ?? 1),
+          ],
+  );
 
   Color get panelBorder => isDark
       ? line.withValues(alpha: 0.82)
       : Color.lerp(line, cyan, 0.30)!.withValues(alpha: 0.84);
 
-  Color get panelShadow => isDark
-      ? text.withValues(alpha: 0.06)
-      : cyan.withValues(alpha: 0.11);
+  Color get panelShadow =>
+      isDark ? text.withValues(alpha: 0.06) : cyan.withValues(alpha: 0.11);
 
   List<Color> get treemapColors => [
-        cyan,
-        green,
-        amber,
-        red,
-        blue,
-        violet,
-        orange,
-        _tone(green, hueShift: 28),
-        _tone(violet, hueShift: 20),
-        _tone(cyan, hueShift: -18),
-        _tone(red, hueShift: -22, saturationScale: 0.9),
-        muted,
-      ];
+    cyan,
+    green,
+    amber,
+    red,
+    blue,
+    violet,
+    orange,
+    _tone(green, hueShift: 28),
+    _tone(violet, hueShift: 20),
+    _tone(cyan, hueShift: -18),
+    _tone(red, hueShift: -22, saturationScale: 0.9),
+    muted,
+  ];
 
   EdgeInsets edgeAll(num value) => EdgeInsets.all(size(value));
 
   EdgeInsets edgeLTRB(num left, num top, num right, num bottom) =>
       EdgeInsets.fromLTRB(size(left), size(top), size(right), size(bottom));
 
-  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) =>
-      EdgeInsets.only(
-        left: size(left),
-        top: size(top),
-        right: size(right),
-        bottom: size(bottom),
-      );
+  EdgeInsets edgeOnly({
+    num left = 0,
+    num top = 0,
+    num right = 0,
+    num bottom = 0,
+  }) => EdgeInsets.only(
+    left: size(left),
+    top: size(top),
+    right: size(right),
+    bottom: size(bottom),
+  );
 
   EdgeInsets edgeSymmetric({num horizontal = 0, num vertical = 0}) =>
       EdgeInsets.symmetric(
@@ -4440,7 +4498,9 @@ class _BoardBackdropPainter extends CustomPainter {
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     for (var column = 0; column < columns; column++) {
-      final x = column * columnStep + (column.isEven ? tokens.size(8) : tokens.size(18));
+      final x =
+          column * columnStep +
+          (column.isEven ? tokens.size(8) : tokens.size(18));
       final speed = 0.72 + (column % 5) * 0.18;
       final verticalShift = (phase * speed + column * 9) % rowStep;
       final columnHighlight = (phase + column * 7) % rows;
@@ -4452,7 +4512,8 @@ class _BoardBackdropPainter extends CustomPainter {
         final distance = ((row - columnHighlight).abs() % rows).toDouble();
         final pulse = math.max(0.0, 1.0 - distance / 5.5);
         final edgeFade = _edgeFade(x, size.width);
-        final baseAlpha = (isDark ? 0.035 : 0.075) +
+        final baseAlpha =
+            (isDark ? 0.035 : 0.075) +
             ((column + row).abs() % 4) * (isDark ? 0.014 : 0.022);
         final alpha = (baseAlpha + pulse * (isDark ? 0.12 : 0.22)) * edgeFade;
         if (alpha <= (isDark ? 0.006 : 0.018)) continue;
@@ -4463,7 +4524,9 @@ class _BoardBackdropPainter extends CustomPainter {
           text: '$digit',
           style: TextStyle(
             color: color.withValues(alpha: alpha),
-            fontSize: tokens.font((isDark ? 12 : 13) + pulse * (isDark ? 3 : 4)),
+            fontSize: tokens.font(
+              (isDark ? 12 : 13) + pulse * (isDark ? 3 : 4),
+            ),
             fontWeight: pulse > 0.65 ? FontWeight.w800 : FontWeight.w600,
             height: 1,
           ),

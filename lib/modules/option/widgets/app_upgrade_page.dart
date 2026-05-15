@@ -10,7 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:harvest/widgets/browser_page.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
@@ -18,17 +20,15 @@ import 'package:install_plugin_v3/install_plugin_v3.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart'
-    show IconExtension, TextExtension;
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart' show IconExtension, TextExtension;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'option_form_card.dart';
 
 const _appUpgradeLatestUrl = 'https://repeat.ptools.fun/api/app/version/latest';
-const _appUpgradeVersionListUrl =
-    'https://repeat.ptools.fun/api/app/version/list';
+const _appUpgradeVersionListUrl = 'https://repeat.ptools.fun/api/app/version/list';
 const _appUpgradeDownloadPageUrl = 'https://repeat.ptools.fun';
 const _appUpgradeTestFlightUrl = 'https://testflight.apple.com/join/kwLil5xf';
 const _appUpgradeIgnoreVersionKey = 'app_upgrade_ignore_version';
@@ -49,9 +49,7 @@ final appUpgradeStatusProvider = FutureProvider<AppUpgradeStatus>((ref) async {
   final response = await Dio().get<Map<String, dynamic>>(_appUpgradeLatestUrl);
   final latest = AppUpdateInfo.fromApiResponse(response.data);
   final ignored = isAppUpgradeVersionIgnored(latest.version);
-  final hasNewVersion =
-      latest.version.trim().isNotEmpty &&
-      _compareVersions(latest.version, currentVersion) > 0;
+  final hasNewVersion = latest.version.trim().isNotEmpty && _compareVersions(latest.version, currentVersion) > 0;
 
   return AppUpgradeStatus(
     currentVersion: currentVersion,
@@ -108,9 +106,7 @@ class AppUpgradeSummaryCard extends ConsumerWidget {
       title: 'APP更新',
       leading: hasUpdate
           ? const Icon(shadcn.LucideIcons.circleAlert).iconSmall.iconPrimary
-          : const Icon(
-              shadcn.LucideIcons.circleArrowUp,
-            ).iconSmall.iconMutedForeground,
+          : const Icon(shadcn.LucideIcons.circleArrowUp).iconSmall.iconMutedForeground,
       builder: (_) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -238,8 +234,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
   Future<void> _init() async {
     try {
       _packageInfo = await PackageInfo.fromPlatform();
-      _useGithubProxy =
-          HiveManager.get<bool>(_appUpgradeUseGithubProxyKey) ?? false;
+      _useGithubProxy = HiveManager.get<bool>(_appUpgradeUseGithubProxyKey) ?? false;
       _githubProxy = _savedGithubProxy();
       if (kIsWeb) {
         _error = 'Web 端不支持 APP 更新检测';
@@ -277,9 +272,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     _error = null;
     _refreshUi();
     try {
-      final response = await _dio.get<Map<String, dynamic>>(
-        _appUpgradeLatestUrl,
-      );
+      final response = await _dio.get<Map<String, dynamic>>(_appUpgradeLatestUrl);
       _latest = AppUpdateInfo.fromApiResponse(response.data);
       AppLogger.debug(
         '[AppUpgrade] latest parsed: version=${_latest?.version}, '
@@ -308,9 +301,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     _error = null;
     _refreshUi();
     try {
-      final response = await _dio.get<Map<String, dynamic>>(
-        _appUpgradeVersionListUrl,
-      );
+      final response = await _dio.get<Map<String, dynamic>>(_appUpgradeVersionListUrl);
       _versions = AppUpdateInfo.listFromApiResponse(response.data);
       AppLogger.debug(
         '[AppUpgrade] version list parsed: count=${_versions.length}, '
@@ -341,16 +332,11 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
             _dialogSetState = setDialogState;
             final size = MediaQuery.sizeOf(context);
             final isCompactDialog = size.width < 568;
-            final dialogInsetPadding = EdgeInsets.symmetric(
-              horizontal: isCompactDialog ? 8 : 12,
-              vertical: 24,
-            );
+            final dialogInsetPadding = EdgeInsets.symmetric(horizontal: isCompactDialog ? 8 : 12, vertical: 24);
             final cs = shadcn.Theme.of(context).colorScheme;
             final success = cs.chart2;
             final dialogWidth = isCompactDialog
-                ? (size.width - dialogInsetPadding.horizontal)
-                      .clamp(320.0, size.width)
-                      .toDouble()
+                ? (size.width - dialogInsetPadding.horizontal).clamp(320.0, size.width).toDouble()
                 : 520.0;
             final dialogHeight = isCompactDialog
                 ? (size.height * 0.48).clamp(180.0, 360.0).toDouble()
@@ -363,16 +349,12 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
                   child: Row(
                     children: [
                       Icon(
-                        _hasNewVersion
-                            ? shadcn.LucideIcons.circleArrowUp
-                            : shadcn.LucideIcons.badgeCheck,
+                        _hasNewVersion ? shadcn.LucideIcons.circleArrowUp : shadcn.LucideIcons.badgeCheck,
                         size: 18,
                         color: _hasNewVersion ? cs.primary : success,
                       ),
                       const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(_hasNewVersion ? '发现新版本' : 'APP 更新'),
-                      ),
+                      Expanded(child: Text(_hasNewVersion ? '发现新版本' : 'APP 更新')),
                     ],
                   ),
                 ),
@@ -382,17 +364,12 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        height: dialogHeight,
-                        child: _buildDialogBody(context),
-                      ),
+                      SizedBox(height: dialogHeight, child: _buildDialogBody(context)),
                       const SizedBox(height: 10),
                       _UpgradeOptionRow(
                         ignored: _ignoredLatest,
                         ignoreEnabled: _latest != null,
-                        onIgnoreChanged: _latest == null
-                            ? null
-                            : _setIgnoredLatest,
+                        onIgnoreChanged: _latest == null ? null : _setIgnoredLatest,
                         proxyEnabled: _useGithubProxy,
                         proxyTesting: _testingGithubProxy,
                         proxy: _githubProxy,
@@ -412,9 +389,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
                             : _downloading
                             ? _cancelDownload
                             : () => _downloadPreferred(_latest),
-                        onTestFlight: kIsWeb || !Platform.isIOS
-                            ? null
-                            : () => _openIosTestFlight(),
+                        onTestFlight: kIsWeb || !Platform.isIOS ? null : () => _openIosTestFlight(),
                       ),
                     ],
                   ),
@@ -435,9 +410,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
   Widget _buildDialogBody(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final contentHeight = (constraints.maxHeight - 56)
-            .clamp(120.0, constraints.maxHeight)
-            .toDouble();
+        final contentHeight = (constraints.maxHeight - 56).clamp(120.0, constraints.maxHeight).toDouble();
         return Column(
           children: [
             shadcn.Tabs(
@@ -457,10 +430,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
               height: contentHeight,
               child: IndexedStack(
                 index: _dialogTabIndex,
-                children: [
-                  _buildLatestTab(context),
-                  _buildVersionsTab(context),
-                ],
+                children: [_buildLatestTab(context), _buildVersionsTab(context)],
               ),
             ),
           ],
@@ -478,19 +448,9 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _VersionHeader(
-          currentVersion: _currentVersion,
-          latestVersion: latest?.version,
-          hasNewVersion: _hasNewVersion,
-        ),
-        if (_error != null) ...[
-          const SizedBox(height: 10),
-          _MessageBox(message: _error!, destructive: true),
-        ],
-        if (_downloading) ...[
-          const SizedBox(height: 12),
-          _DownloadProgress(progress: _progress),
-        ],
+        _VersionHeader(currentVersion: _currentVersion, latestVersion: latest?.version, hasNewVersion: _hasNewVersion),
+        if (_error != null) ...[const SizedBox(height: 10), _MessageBox(message: _error!, destructive: true)],
+        if (_downloading) ...[const SizedBox(height: 12), _DownloadProgress(progress: _progress)],
         SizedBox(height: compact ? 8 : 12),
         _PanelCard(
           child: Column(
@@ -499,9 +459,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
               _SectionTitle('更新日志'),
               SizedBox(height: compact ? 5 : 8),
               if (_loadingLatest && latest == null)
-                const Center(
-                  child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-                )
+                const Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2))
               else
                 _ChangeLog(text: latest?.changelog, compact: compact),
             ],
@@ -520,11 +478,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
                 onCopy: _copyDownloadUrl,
                 onOpenPage: compact
                     ? null
-                    : () => BrowserPage.open(
-                        context,
-                        url: _appUpgradeDownloadPageUrl,
-                        title: 'APP 下载',
-                      ),
+                    : () => BrowserPage.open(context, url: _appUpgradeDownloadPageUrl, title: 'APP 下载'),
                 compact: compact,
               ),
             ],
@@ -544,17 +498,13 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
               Expanded(child: _SectionTitle('版本列表')),
               shadcn.Button.outline(
                 onPressed: _loadingVersions ? null : _loadVersions,
-                child: _loadingVersions
-                    ? const _SmallProgress(label: '加载中')
-                    : const Text('刷新'),
+                child: _loadingVersions ? const _SmallProgress(label: '加载中') : const Text('刷新'),
               ),
             ],
           ),
           const SizedBox(height: 12),
           if (_loadingVersions && _versions.isEmpty)
-            const Center(
-              child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-            )
+            const Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2))
           else if (_versions.isEmpty)
             const _MessageBox(message: '暂无版本记录')
           else
@@ -592,10 +542,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     await _downloadEntry(info, entry);
   }
 
-  Future<void> _downloadEntry(
-    AppUpdateInfo info,
-    MapEntry<String, String> entry,
-  ) async {
+  Future<void> _downloadEntry(AppUpdateInfo info, MapEntry<String, String> entry) async {
     if (_downloading) return;
     _cancelToken = CancelToken();
     _downloading = true;
@@ -634,11 +581,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
           return;
         }
 
-        final savePath = await FilePicker.saveFile(
-          dialogTitle: '保存安装包',
-          fileName: fileName,
-          type: FileType.any,
-        );
+        final savePath = await FilePicker.saveFile(dialogTitle: '保存安装包', fileName: fileName, type: FileType.any);
         if (savePath == null) return;
         _activeDownloadPath = savePath;
         await _downloadToPath(url, savePath, _cancelToken!);
@@ -653,9 +596,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
           Toast.success('安装包已下载，正在打开安装器');
           await _installAndroidApk(savePath);
         } else if (Platform.isIOS) {
-          await SharePlus.instance.share(
-            ShareParams(files: [XFile(savePath)], text: 'APP 安装包：$fileName'),
-          );
+          await SharePlus.instance.share(ShareParams(files: [XFile(savePath)], text: 'APP 安装包：$fileName'));
         } else {
           Toast.info('安装包已下载到 $savePath');
         }
@@ -700,9 +641,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
       return;
     }
 
-    final errorMessage = result is Map
-        ? result['errorMessage']?.toString()
-        : null;
+    final errorMessage = result is Map ? result['errorMessage']?.toString() : null;
     if (errorMessage?.trim().isNotEmpty == true) {
       Toast.error(errorMessage!.trim());
     } else {
@@ -711,9 +650,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
   }
 
   Future<void> _openIosTestFlight([String? url]) async {
-    final target = url?.trim().isNotEmpty == true
-        ? url!.trim()
-        : _appUpgradeTestFlightUrl;
+    final target = url?.trim().isNotEmpty == true ? url!.trim() : _appUpgradeTestFlightUrl;
     final uri = Uri.parse(target);
     AppLogger.debug('[AppUpgrade] ios open TestFlight url: url=$target');
     final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -724,11 +661,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     }
   }
 
-  Future<void> _downloadToPath(
-    String url,
-    String savePath,
-    CancelToken token,
-  ) async {
+  Future<void> _downloadToPath(String url, String savePath, CancelToken token) async {
     await _dio.download(
       url,
       savePath,
@@ -760,10 +693,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     }
   }
 
-  Future<void> _copyDownloadUrl(
-    AppUpdateInfo info,
-    MapEntry<String, String> entry,
-  ) async {
+  Future<void> _copyDownloadUrl(AppUpdateInfo info, MapEntry<String, String> entry) async {
     final url = await _resolveEffectiveDownloadUrl(info, entry);
     AppLogger.debug(
       '[AppUpgrade] copy download url: version=${info.version}, asset=${entry.key}, '
@@ -777,9 +707,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     return Clipboard.setData(ClipboardData(text: text));
   }
 
-  Future<MapEntry<String, String>?> _selectPreferredAsset(
-    AppUpdateInfo info,
-  ) async {
+  Future<MapEntry<String, String>?> _selectPreferredAsset(AppUpdateInfo info) async {
     if (info.downloadLinks.isEmpty) {
       AppLogger.debug('[AppUpgrade] select asset skipped: empty downloadLinks');
       return null;
@@ -850,9 +778,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
         }
       }
     }
-    AppLogger.debug(
-      '[AppUpgrade] select asset fallback: asset=${entries.first.key}, url=${entries.first.value}',
-    );
+    AppLogger.debug('[AppUpgrade] select asset fallback: asset=${entries.first.key}, url=${entries.first.value}');
     return entries.first;
   }
 
@@ -870,46 +796,31 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     }
   }
 
-  String _resolveDownloadUrl(
-    AppUpdateInfo info,
-    MapEntry<String, String> entry,
-  ) {
+  String _resolveDownloadUrl(AppUpdateInfo info, MapEntry<String, String> entry) {
     final raw = entry.value.trim();
     if (raw.startsWith('http://') || raw.startsWith('https://')) {
-      AppLogger.debug(
-        '[AppUpgrade] resolve raw url: asset=${entry.key}, url=$raw',
-      );
+      AppLogger.debug('[AppUpgrade] resolve raw url: asset=${entry.key}, url=$raw');
       return raw;
     }
-    final fallback =
-        'https://github.com/ngfchl/harvest_flutter/releases/download/${info.version}/${entry.key}';
-    AppLogger.debug(
-      '[AppUpgrade] resolve github fallback url: asset=${entry.key}, url=$fallback',
-    );
+    final fallback = 'https://github.com/ngfchl/harvest_flutter/releases/download/${info.version}/${entry.key}';
+    AppLogger.debug('[AppUpgrade] resolve github fallback url: asset=${entry.key}, url=$fallback');
     return fallback;
   }
 
-  Future<String> _resolveEffectiveDownloadUrl(
-    AppUpdateInfo info,
-    MapEntry<String, String> entry,
-  ) async {
+  Future<String> _resolveEffectiveDownloadUrl(AppUpdateInfo info, MapEntry<String, String> entry) async {
     final url = _resolveDownloadUrl(info, entry);
     if (!_useGithubProxy) {
       AppLogger.debug('[AppUpgrade] github proxy disabled: url=$url');
       return url;
     }
     if (!isGithubDownloadUrl(url)) {
-      AppLogger.debug(
-        '[AppUpgrade] url is not github, proxy skipped: url=$url',
-      );
+      AppLogger.debug('[AppUpgrade] url is not github, proxy skipped: url=$url');
       return url;
     }
 
     final proxy = await _resolveGithubProxy();
     if (proxy == null) {
-      AppLogger.debug(
-        '[AppUpgrade] github proxy unavailable, fallback original: url=$url',
-      );
+      AppLogger.debug('[AppUpgrade] github proxy unavailable, fallback original: url=$url');
       return url;
     }
     final proxied = buildGithubProxyUrl(proxy.url, url);
@@ -946,9 +857,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     if (!_useGithubProxy) return null;
     _githubProxy ??= _savedGithubProxy();
     if (_githubProxy != null && !force) {
-      AppLogger.debug(
-        '[AppUpgrade] reuse github proxy: proxy=${_githubProxy!.url}, time=${_githubProxy!.time}',
-      );
+      AppLogger.debug('[AppUpgrade] reuse github proxy: proxy=${_githubProxy!.url}, time=${_githubProxy!.time}');
       return _githubProxy;
     }
     if (_testingGithubProxy) {
@@ -994,15 +903,8 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     return proxy.url.trim().isEmpty ? null : proxy;
   }
 
-  String _resolveInstallerFileName(
-    MapEntry<String, String> entry,
-    String effectiveUrl,
-  ) {
-    final candidates = <String?>[
-      entry.key,
-      _fileNameFromUrl(entry.value),
-      _fileNameFromUrl(effectiveUrl),
-    ];
+  String _resolveInstallerFileName(MapEntry<String, String> entry, String effectiveUrl) {
+    final candidates = <String?>[entry.key, _fileNameFromUrl(entry.value), _fileNameFromUrl(effectiveUrl)];
     String? fallback;
     for (final candidate in candidates) {
       if (candidate == null || candidate.trim().isEmpty) continue;
@@ -1044,11 +946,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
 
     final child = widget.child;
     if (child != null) {
-      return shadcn.Clickable(
-        behavior: HitTestBehavior.opaque,
-        onPressed: _handleOpenUpgradeDialog,
-        child: child,
-      );
+      return shadcn.Clickable(behavior: HitTestBehavior.opaque, onPressed: _handleOpenUpgradeDialog, child: child);
     }
 
     return _buildFullPage(context);
@@ -1057,114 +955,101 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
   Widget _buildFullPage(BuildContext context) {
     final theme = shadcn.Theme.of(context);
     final cs = shadcn.Theme.of(context).colorScheme;
+    final pageBackground = appSurfaceColor(context, cs.background);
     return EscapeBackScope(
       onBack: () => Navigator.of(context).maybePop(),
-      child: shadcn.Scaffold(
-        backgroundColor: cs.background,
-        headers: [
-          shadcn.AppBar(
-            backgroundColor: cs.background,
-            title: Text(
-              'APP 升级',
-              style: theme.typography.large.copyWith(
-                color: cs.foreground,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            leading: [
-              shadcn.IconButton.ghost(
-                icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 18),
-                onPressed: () => Navigator.of(context).maybePop(),
-              ),
-            ],
-            trailing: [
-              shadcn.IconButton.ghost(
-                onPressed: kIsWeb || _loadingLatest ? null : () => _checkLatest(),
-                icon: _loadingLatest
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(shadcn.LucideIcons.refreshCw, size: 18),
-              ),
-              const DebugThemeButton.shadcn(),
-            ],
-          ),
-        ],
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            12,
-            16,
-            MediaQuery.of(context).padding.bottom + 24,
-          ),
-          children: [
-            _buildLatestContent(context, compact: true),
-            const SizedBox(height: 8),
-            _UpgradeOptionRow(
-              ignored: _ignoredLatest,
-              ignoreEnabled: _latest != null,
-              onIgnoreChanged: _latest == null ? null : _setIgnoredLatest,
-              proxyEnabled: _useGithubProxy,
-              proxyTesting: _testingGithubProxy,
-              proxy: _githubProxy,
-              onProxyChanged: _setUseGithubProxy,
-              onProxyTest: _useGithubProxy && !_testingGithubProxy
-                  ? () => _resolveGithubProxy(force: true)
-                  : null,
-            ),
-            const SizedBox(height: 8),
-            _DialogActionBar(
-              loadingLatest: _loadingLatest,
-              downloading: _downloading,
-              hasNewVersion: _hasNewVersion,
-              onCheck: kIsWeb || _loadingLatest ? null : () => _checkLatest(),
-              onDownload: kIsWeb
-                  ? null
-                  : _downloading
-                  ? _cancelDownload
-                  : () => _downloadPreferred(_latest),
-              onTestFlight: kIsWeb || !Platform.isIOS
-                  ? null
-                  : () => _openIosTestFlight(),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(child: _SectionTitle('历史版本')),
-                shadcn.Button.outline(
-                  onPressed: kIsWeb || _loadingVersions ? null : _loadVersions,
-                  child: _loadingVersions
-                      ? const _SmallProgress(label: '加载中')
-                      : const Text('刷新'),
+      child: GlobalDrawerSwipeArea(
+        child: AppBackground(
+          child: shadcn.Scaffold(
+            backgroundColor: pageBackground,
+            headers: [
+              shadcn.AppBar(
+                backgroundColor: pageBackground,
+                title: Text(
+                  'APP 升级',
+                  style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                 ),
+                leading: [
+                  shadcn.IconButton.ghost(
+                    icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 18),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                ],
+                trailing: [
+                  shadcn.IconButton.ghost(
+                    onPressed: kIsWeb || _loadingLatest ? null : () => _checkLatest(),
+                    icon: _loadingLatest
+                        ? const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(shadcn.LucideIcons.refreshCw, size: 18),
+                  ),
+                  const DebugThemeButton.shadcn(),
+                ],
+              ),
+            ],
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 24),
+              children: [
+                _buildLatestContent(context, compact: true),
+                const SizedBox(height: 8),
+                _UpgradeOptionRow(
+                  ignored: _ignoredLatest,
+                  ignoreEnabled: _latest != null,
+                  onIgnoreChanged: _latest == null ? null : _setIgnoredLatest,
+                  proxyEnabled: _useGithubProxy,
+                  proxyTesting: _testingGithubProxy,
+                  proxy: _githubProxy,
+                  onProxyChanged: _setUseGithubProxy,
+                  onProxyTest: _useGithubProxy && !_testingGithubProxy ? () => _resolveGithubProxy(force: true) : null,
+                ),
+                const SizedBox(height: 8),
+                _DialogActionBar(
+                  loadingLatest: _loadingLatest,
+                  downloading: _downloading,
+                  hasNewVersion: _hasNewVersion,
+                  onCheck: kIsWeb || _loadingLatest ? null : () => _checkLatest(),
+                  onDownload: kIsWeb
+                      ? null
+                      : _downloading
+                      ? _cancelDownload
+                      : () => _downloadPreferred(_latest),
+                  onTestFlight: kIsWeb || !Platform.isIOS ? null : () => _openIosTestFlight(),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: _SectionTitle('历史版本')),
+                    shadcn.Button.outline(
+                      onPressed: kIsWeb || _loadingVersions ? null : _loadVersions,
+                      child: _loadingVersions ? const _SmallProgress(label: '加载中') : const Text('刷新'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (kIsWeb)
+                  const _MessageBox(message: 'Web 端不支持 APP 更新检测')
+                else if (_loadingVersions && _versions.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                else if (_versions.isEmpty)
+                  const _MessageBox(message: '暂无版本记录')
+                else
+                  for (final info in _versions)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _VersionCard(
+                        info: info,
+                        currentVersion: _currentVersion,
+                        onDownload: _downloadEntry,
+                        onCopy: _copyDownloadUrl,
+                      ),
+                    ),
               ],
             ),
-            const SizedBox(height: 8),
-            if (kIsWeb)
-              const _MessageBox(message: 'Web 端不支持 APP 更新检测')
-            else if (_loadingVersions && _versions.isEmpty)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-                ),
-              )
-            else if (_versions.isEmpty)
-              const _MessageBox(message: '暂无版本记录')
-            else
-              for (final info in _versions)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _VersionCard(
-                    info: info,
-                    currentVersion: _currentVersion,
-                    onDownload: _downloadEntry,
-                    onCopy: _copyDownloadUrl,
-                  ),
-                ),
-          ],
+          ),
         ),
       ),
     );
@@ -1185,9 +1070,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
           proxyTesting: _testingGithubProxy,
           proxy: _githubProxy,
           onProxyChanged: _setUseGithubProxy,
-          onProxyTest: _useGithubProxy && !_testingGithubProxy
-              ? () => _resolveGithubProxy(force: true)
-              : null,
+          onProxyTest: _useGithubProxy && !_testingGithubProxy ? () => _resolveGithubProxy(force: true) : null,
         ),
         const SizedBox(height: 8),
         _DialogActionBar(
@@ -1200,9 +1083,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
               : _downloading
               ? _cancelDownload
               : () => _downloadPreferred(_latest),
-          onTestFlight: kIsWeb || !Platform.isIOS
-              ? null
-              : () => _openIosTestFlight(),
+          onTestFlight: kIsWeb || !Platform.isIOS ? null : () => _openIosTestFlight(),
         ),
       ],
     );
@@ -1214,18 +1095,10 @@ class AppUpdateInfo {
   final String changelog;
   final Map<String, String> downloadLinks;
 
-  const AppUpdateInfo({
-    required this.version,
-    required this.changelog,
-    required this.downloadLinks,
-  });
+  const AppUpdateInfo({required this.version, required this.changelog, required this.downloadLinks});
 
   factory AppUpdateInfo.fromJson(Map<String, dynamic> json) {
-    final linksValue =
-        json['downloadLinks'] ??
-        json['download_links'] ??
-        json['downloads'] ??
-        json['assets'];
+    final linksValue = json['downloadLinks'] ?? json['download_links'] ?? json['downloads'] ?? json['assets'];
     final links = <String, String>{};
     if (linksValue is Map) {
       for (final entry in linksValue.entries) {
@@ -1235,29 +1108,15 @@ class AppUpdateInfo {
       for (final item in linksValue) {
         if (item is! Map) continue;
         final map = Map<String, dynamic>.from(item);
-        final name =
-            (map['name'] ?? map['file'] ?? map['filename'] ?? map['label'])
-                ?.toString();
-        final url =
-            (map['url'] ??
-                    map['download_url'] ??
-                    map['downloadUrl'] ??
-                    map['link'])
-                ?.toString();
+        final name = (map['name'] ?? map['file'] ?? map['filename'] ?? map['label'])?.toString();
+        final url = (map['url'] ?? map['download_url'] ?? map['downloadUrl'] ?? map['link'])?.toString();
         if (name != null && name.isNotEmpty) links[name] = url ?? '';
       }
     }
 
     return AppUpdateInfo(
-      version: (json['version'] ?? json['tag'] ?? json['name'] ?? '')
-          .toString(),
-      changelog:
-          (json['changelog'] ??
-                  json['changeLog'] ??
-                  json['notes'] ??
-                  json['body'] ??
-                  '')
-              .toString(),
+      version: (json['version'] ?? json['tag'] ?? json['name'] ?? '').toString(),
+      changelog: (json['changelog'] ?? json['changeLog'] ?? json['notes'] ?? json['body'] ?? '').toString(),
       downloadLinks: links,
     );
   }
@@ -1270,15 +1129,12 @@ class AppUpdateInfo {
     return const AppUpdateInfo(version: '', changelog: '', downloadLinks: {});
   }
 
-  static List<AppUpdateInfo> listFromApiResponse(
-    Map<String, dynamic>? response,
-  ) {
+  static List<AppUpdateInfo> listFromApiResponse(Map<String, dynamic>? response) {
     final data = _unwrapData(response);
     if (data is List) {
       return [
         for (final item in data)
-          if (item is Map)
-            AppUpdateInfo.fromJson(Map<String, dynamic>.from(item)),
+          if (item is Map) AppUpdateInfo.fromJson(Map<String, dynamic>.from(item)),
       ];
     }
     return const [];
@@ -1291,11 +1147,7 @@ class AppUpdateInfo {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'version': version,
-      'changelog': changelog,
-      'download_links': downloadLinks,
-    };
+    return {'version': version, 'changelog': changelog, 'download_links': downloadLinks};
   }
 }
 
@@ -1319,11 +1171,7 @@ class _VersionHeader extends StatelessWidget {
   final String? latestVersion;
   final bool hasNewVersion;
 
-  const _VersionHeader({
-    required this.currentVersion,
-    required this.latestVersion,
-    required this.hasNewVersion,
-  });
+  const _VersionHeader({required this.currentVersion, required this.latestVersion, required this.hasNewVersion});
 
   @override
   Widget build(BuildContext context) {
@@ -1339,9 +1187,7 @@ class _VersionHeader extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              hasNewVersion
-                  ? shadcn.LucideIcons.circleArrowUp
-                  : shadcn.LucideIcons.badgeCheck,
+              hasNewVersion ? shadcn.LucideIcons.circleArrowUp : shadcn.LucideIcons.badgeCheck,
               color: accent,
               size: 18,
             ),
@@ -1355,12 +1201,7 @@ class _VersionHeader extends StatelessWidget {
                   _InfoLine(label: '当前', value: 'v$currentVersion'),
                   if (hasNewVersion) ...[
                     const SizedBox(height: 2),
-                    _InfoLine(
-                      label: '最新',
-                      value: latestVersion?.isNotEmpty == true
-                          ? 'v$latestVersion'
-                          : '-',
-                    ),
+                    _InfoLine(label: '最新', value: latestVersion?.isNotEmpty == true ? 'v$latestVersion' : '-'),
                   ] else ...[
                     const SizedBox(height: 2),
                     const _InfoLine(label: '状态', value: '无需更新'),
@@ -1384,7 +1225,7 @@ class _PanelCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: shadcn.Card(padding: const EdgeInsets.all(10), child: child),
+      child: AppSurfaceCard(padding: const EdgeInsets.all(10), child: child),
     );
   }
 }
@@ -1434,9 +1275,7 @@ class _UpgradeOptionRow extends StatelessWidget {
       icon: shadcn.LucideIcons.gauge,
       title: 'GitHub 加速',
       subtitle: proxySubtitle,
-      tooltip: proxyEnabled
-          ? '下载 GitHub Release 资源前自动测速并使用可用加速地址'
-          : '关闭后直接使用原始下载地址',
+      tooltip: proxyEnabled ? '下载 GitHub Release 资源前自动测速并使用可用加速地址' : '关闭后直接使用原始下载地址',
       value: proxyEnabled,
       enabled: !proxyTesting,
       onChanged: onProxyChanged,
@@ -1446,20 +1285,14 @@ class _UpgradeOptionRow extends StatelessWidget {
               density: shadcn.ButtonDensity.iconDense,
               onPressed: onProxyTest,
               icon: proxyTesting
-                  ? const SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? const SizedBox(width: 14, height: 14, child: shadcn.CircularProgressIndicator(strokeWidth: 2))
                   : const Icon(shadcn.LucideIcons.refreshCw, size: 14),
             )
           : null,
     );
 
     return compact
-        ? Column(
-            children: [ignoreOption, const SizedBox(height: 8), proxyOption],
-          )
+        ? Column(children: [ignoreOption, const SizedBox(height: 8), proxyOption])
         : Row(
             children: [
               Expanded(child: ignoreOption),
@@ -1502,35 +1335,21 @@ class _SwitchOptionCard extends StatelessWidget {
     return shadcn.Tooltip(
       tooltip: (_) => ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 260),
-        child: Text(
-          tooltipText,
-          style: theme.typography.xSmall.copyWith(
-            color: cs.popoverForeground,
-            height: 1.35,
-          ),
-        ),
+        child: Text(tooltipText, style: theme.typography.xSmall.copyWith(color: cs.popoverForeground, height: 1.35)),
       ),
       child: shadcn.Card(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         filled: true,
-        fillColor: value
-            ? cs.primary.withValues(alpha: 0.08)
-            : cs.muted.withValues(alpha: 0.14),
-        borderColor: value
-            ? cs.primary.withValues(alpha: 0.24)
-            : cs.border.withValues(alpha: 0.48),
+        fillColor: value ? cs.primary.withValues(alpha: 0.08) : cs.muted.withValues(alpha: 0.14),
+        borderColor: value ? cs.primary.withValues(alpha: 0.24) : cs.border.withValues(alpha: 0.48),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             shadcn.Card(
               padding: const EdgeInsets.all(7),
               filled: true,
-              fillColor: value
-                  ? cs.primary.withValues(alpha: 0.12)
-                  : cs.background.withValues(alpha: 0.72),
-              borderColor: value
-                  ? cs.primary.withValues(alpha: 0.18)
-                  : cs.border.withValues(alpha: 0.36),
+              fillColor: value ? cs.primary.withValues(alpha: 0.12) : appSurfaceColor(context, cs.background),
+              borderColor: value ? cs.primary.withValues(alpha: 0.18) : cs.border.withValues(alpha: 0.36),
               child: Icon(icon, size: 16, color: accent),
             ),
             const SizedBox(width: 10),
@@ -1542,28 +1361,17 @@ class _SwitchOptionCard extends StatelessWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.typography.small.copyWith(
-                        color: cs.foreground,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
                     ),
                   ),
                   const SizedBox(width: 6),
-                  Icon(
-                    shadcn.LucideIcons.info,
-                    size: 13,
-                    color: cs.mutedForeground,
-                  ),
+                  Icon(shadcn.LucideIcons.info, size: 13, color: cs.mutedForeground),
                 ],
               ),
             ),
             if (trailing != null) ...[const SizedBox(width: 8), trailing!],
             const SizedBox(width: 8),
-            shadcn.Switch(
-              value: value,
-              enabled: effectiveEnabled,
-              onChanged: effectiveEnabled ? onChanged : null,
-            ),
+            shadcn.Switch(value: value, enabled: effectiveEnabled, onChanged: effectiveEnabled ? onChanged : null),
           ],
         ),
       ),
@@ -1574,8 +1382,7 @@ class _SwitchOptionCard extends StatelessWidget {
 class _VersionCard extends StatelessWidget {
   final AppUpdateInfo info;
   final String currentVersion;
-  final Future<void> Function(AppUpdateInfo, MapEntry<String, String>)
-  onDownload;
+  final Future<void> Function(AppUpdateInfo, MapEntry<String, String>) onDownload;
   final Future<void> Function(AppUpdateInfo, MapEntry<String, String>) onCopy;
 
   const _VersionCard({
@@ -1587,9 +1394,10 @@ class _VersionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
     final current = _compareVersions(info.version, currentVersion) == 0;
-    return shadcn.Card(
+    return AppSurfaceCard(
       padding: const EdgeInsets.all(10),
       borderColor: current ? cs.primary.withValues(alpha: 0.5) : null,
       child: Column(
@@ -1619,8 +1427,7 @@ class _VersionCard extends StatelessWidget {
 
 class _DownloadLinks extends StatefulWidget {
   final AppUpdateInfo? info;
-  final Future<void> Function(AppUpdateInfo, MapEntry<String, String>)
-  onDownload;
+  final Future<void> Function(AppUpdateInfo, MapEntry<String, String>) onDownload;
   final Future<void> Function(AppUpdateInfo, MapEntry<String, String>) onCopy;
   final VoidCallback? onOpenPage;
   final bool compact;
@@ -1652,9 +1459,7 @@ class _DownloadLinksState extends State<_DownloadLinks> {
     try {
       final info = await DeviceInfoPlugin().macOsInfo;
       final raw = info.arch.trim().toLowerCase();
-      final arch = raw.contains('arm64') || raw.contains('aarch64')
-          ? 'arm64'
-          : 'x86_64';
+      final arch = raw.contains('arm64') || raw.contains('aarch64') ? 'arm64' : 'x86_64';
       if (mounted) setState(() => _macosArch = arch);
     } catch (e, st) {
       AppLogger.warn('解析 macOS 安装包列表架构失败: $e\n$st');
@@ -1664,16 +1469,10 @@ class _DownloadLinksState extends State<_DownloadLinks> {
   @override
   Widget build(BuildContext context) {
     final current = widget.info;
-    final entries =
-        current?.downloadLinks.entries.toList() ??
-        const <MapEntry<String, String>>[];
+    final entries = current?.downloadLinks.entries.toList() ?? const <MapEntry<String, String>>[];
     final platformEntries = entries.where(_isCurrentPlatformAsset).toList();
-    final otherEntries = entries
-        .where((entry) => !_isCurrentPlatformAsset(entry))
-        .toList();
-    final primaryEntries = platformEntries.isNotEmpty
-        ? platformEntries
-        : entries.take(1).toList();
+    final otherEntries = entries.where((entry) => !_isCurrentPlatformAsset(entry)).toList();
+    final primaryEntries = platformEntries.isNotEmpty ? platformEntries : entries.take(1).toList();
     final visibleEntries = widget.compact && primaryEntries.length > 1
         ? primaryEntries.take(1).toList()
         : primaryEntries;
@@ -1684,56 +1483,40 @@ class _DownloadLinksState extends State<_DownloadLinks> {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: shadcn.Button.outline(
-              style: const shadcn.ButtonStyle.outline(
-                density: shadcn.ButtonDensity.dense,
-              ),
+              style: const shadcn.ButtonStyle.outline(density: shadcn.ButtonDensity.dense),
               onPressed: widget.onOpenPage,
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(shadcn.LucideIcons.externalLink, size: 15),
-                  SizedBox(width: 6),
-                  Text('打开下载页'),
-                ],
+                children: [Icon(shadcn.LucideIcons.externalLink, size: 15), SizedBox(width: 6), Text('打开下载页')],
               ),
             ),
           ),
         if (current == null || entries.isEmpty)
           const _MessageBox(message: '暂无安装包下载链接')
         else ...[
-          for (final entry in visibleEntries)
-            _downloadEntryTile(context, current, entry),
+          for (final entry in visibleEntries) _downloadEntryTile(context, current, entry),
           if (!widget.compact && otherEntries.isNotEmpty) ...[
             const SizedBox(height: 2),
             _OtherPlatformsToggle(
               count: otherEntries.length,
               expanded: _showOtherPlatforms,
-              onTap: () =>
-                  setState(() => _showOtherPlatforms = !_showOtherPlatforms),
+              onTap: () => setState(() => _showOtherPlatforms = !_showOtherPlatforms),
             ),
             if (_showOtherPlatforms)
-              for (final entry in otherEntries)
-                _downloadEntryTile(context, current, entry),
+              for (final entry in otherEntries) _downloadEntryTile(context, current, entry),
           ],
         ],
       ],
     );
   }
 
-  Widget _downloadEntryTile(
-    BuildContext context,
-    AppUpdateInfo current,
-    MapEntry<String, String> entry,
-  ) {
+  Widget _downloadEntryTile(BuildContext context, AppUpdateInfo current, MapEntry<String, String> entry) {
     final cs = shadcn.Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsets.only(bottom: widget.compact ? 6 : 8),
       child: shadcn.Card(
-        padding: EdgeInsets.symmetric(
-          horizontal: 9,
-          vertical: widget.compact ? 6 : 8,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: 9, vertical: widget.compact ? 6 : 8),
         filled: true,
         fillColor: cs.muted.withValues(alpha: 0.16),
         child: Row(
@@ -1744,26 +1527,14 @@ class _DownloadLinksState extends State<_DownloadLinks> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    entry.key,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ).small.bold,
+                  Text(entry.key, maxLines: 1, overflow: TextOverflow.ellipsis).small.bold,
                   const SizedBox(height: 2),
-                  Text(
-                    _downloadHost(entry.value),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ).xSmall.muted,
+                  Text(_downloadHost(entry.value), maxLines: 1, overflow: TextOverflow.ellipsis).xSmall.muted,
                 ],
               ),
             ),
             const SizedBox(width: 6),
-            _MiniActionButton(
-              icon: shadcn.LucideIcons.copy,
-              tip: '复制链接',
-              onPress: () => widget.onCopy(current, entry),
-            ),
+            _MiniActionButton(icon: shadcn.LucideIcons.copy, tip: '复制链接', onPress: () => widget.onCopy(current, entry)),
             const SizedBox(width: 4),
             _MiniActionButton(
               icon: shadcn.LucideIcons.download,
@@ -1821,11 +1592,7 @@ class _OtherPlatformsToggle extends StatelessWidget {
   final bool expanded;
   final VoidCallback onTap;
 
-  const _OtherPlatformsToggle({
-    required this.count,
-    required this.expanded,
-    required this.onTap,
-  });
+  const _OtherPlatformsToggle({required this.count, required this.expanded, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1841,11 +1608,7 @@ class _OtherPlatformsToggle extends StatelessWidget {
             AnimatedRotation(
               turns: expanded ? 0.5 : 0,
               duration: const Duration(milliseconds: 180),
-              child: Icon(
-                shadcn.LucideIcons.chevronDown,
-                size: 15,
-                color: cs.mutedForeground,
-              ),
+              child: Icon(shadcn.LucideIcons.chevronDown, size: 15, color: cs.mutedForeground),
             ),
           ],
         ),
@@ -1874,20 +1637,13 @@ class _ChangeLog extends StatelessWidget {
       onTapLink: (label, href, title) {
         final url = href?.trim();
         if (url == null || url.isEmpty) return;
-        BrowserPage.open(
-          context,
-          url: url,
-          title: label.trim().isEmpty ? null : label.trim(),
-        );
+        BrowserPage.open(context, url: url, title: label.trim().isEmpty ? null : label.trim());
       },
     );
   }
 }
 
-MarkdownStyleSheet _changeLogMarkdownStyleSheet(
-  BuildContext context, {
-  required bool compact,
-}) {
+MarkdownStyleSheet _changeLogMarkdownStyleSheet(BuildContext context, {required bool compact}) {
   final theme = shadcn.Theme.of(context);
   final cs = theme.colorScheme;
   final typography = theme.typography;
@@ -1896,11 +1652,7 @@ MarkdownStyleSheet _changeLogMarkdownStyleSheet(
       .copyWith(height: 1.45, color: cs.foreground);
   final code = (compact ? typography.xSmall : typography.small)
       .merge(typography.mono)
-      .copyWith(
-        height: 1.35,
-        color: cs.foreground,
-        backgroundColor: cs.muted.withValues(alpha: 0.65),
-      );
+      .copyWith(height: 1.35, color: cs.foreground, backgroundColor: cs.muted.withValues(alpha: 0.65));
   final h1 = (compact ? typography.large : typography.xLarge)
       .merge(typography.black)
       .copyWith(height: 1.25, color: cs.foreground);
@@ -1929,10 +1681,7 @@ MarkdownStyleSheet _changeLogMarkdownStyleSheet(
       border: Border(left: BorderSide(color: cs.border, width: 3)),
     ),
     code: code,
-    codeblockDecoration: BoxDecoration(
-      color: cs.muted.withValues(alpha: 0.65),
-      borderRadius: theme.borderRadiusSm,
-    ),
+    codeblockDecoration: BoxDecoration(color: cs.muted.withValues(alpha: 0.65), borderRadius: theme.borderRadiusSm),
   );
 }
 
@@ -2010,11 +1759,7 @@ class _SmallProgress extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(
-          width: 14,
-          height: 14,
-          child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-        ),
+        const SizedBox(width: 14, height: 14, child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
         const SizedBox(width: 6),
         Text(label),
       ],
@@ -2047,9 +1792,7 @@ class _DialogActionBar extends StatelessWidget {
           child: shadcn.Button.outline(
             onPressed: onCheck,
             alignment: Alignment.center,
-            child: loadingLatest
-                ? const _SmallProgress(label: '检查')
-                : const Text('检查'),
+            child: loadingLatest ? const _SmallProgress(label: '检查') : const Text('检查'),
           ),
         ),
         if (onTestFlight != null) ...[
@@ -2067,9 +1810,7 @@ class _DialogActionBar extends StatelessWidget {
           child: shadcn.Button.primary(
             onPressed: onDownload,
             alignment: Alignment.center,
-            child: downloading
-                ? const Text('取消')
-                : Text(hasNewVersion ? '更新' : '重装'),
+            child: downloading ? const Text('取消') : Text(hasNewVersion ? '更新' : '重装'),
           ),
         ),
       ],
@@ -2083,12 +1824,7 @@ class _MiniActionButton extends StatelessWidget {
   final VoidCallback onPress;
   final bool outlined;
 
-  const _MiniActionButton({
-    required this.icon,
-    required this.tip,
-    required this.onPress,
-    this.outlined = false,
-  });
+  const _MiniActionButton({required this.icon, required this.tip, required this.onPress, this.outlined = false});
 
   @override
   Widget build(BuildContext context) {
@@ -2135,8 +1871,5 @@ int _compareVersions(String a, String b) {
 }
 
 List<int> _versionParts(String value) {
-  return RegExp(r'\d+')
-      .allMatches(value)
-      .map((match) => int.tryParse(match.group(0) ?? '0') ?? 0)
-      .toList();
+  return RegExp(r'\d+').allMatches(value).map((match) => int.tryParse(match.group(0) ?? '0') ?? 0).toList();
 }

@@ -1,6 +1,7 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -55,14 +56,14 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
     final refreshHeader = appRefreshHeader(context);
     final tokens = _DownloaderPageTokens.of(context);
     final horizontalInset = mobile ? tokens.size(12) : tokens.size(24);
+    final pageBackground = appSurfaceColor(context, cs.background);
 
-    return shadcn.Scaffold(
-      backgroundColor: cs.background,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: ColoredBox(
-              color: cs.background,
+    return AppBackground(
+      child: shadcn.Scaffold(
+        backgroundColor: pageBackground,
+        child: Stack(
+          children: [
+            Positioned.fill(
               child: asyncList.when(
                 loading: () => Center(
                   child: shadcn.CircularProgressIndicator(
@@ -161,8 +162,8 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
                 },
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -180,7 +181,7 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
         tokens.size(8),
       ),
       decoration: BoxDecoration(
-        color: cs.background,
+        color: appSurfaceColor(context, cs.background),
         border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
       ),
       child: Consumer(

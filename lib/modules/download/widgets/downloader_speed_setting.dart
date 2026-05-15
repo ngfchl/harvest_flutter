@@ -8,16 +8,18 @@ import '../provider/downloader_speed_provider.dart';
 void showSpeedSettings(BuildContext context, WidgetRef ref) {
   final theme = shadcn.Theme.of(context);
   final cs = shadcn.Theme.of(context).colorScheme;
+  final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
+  final sheetBackground = cs.background.withValues(alpha: surfaceOpacity);
 
   showAppSheet<void>(
     context: context,
-    backgroundColor: cs.background,
+    backgroundColor: sheetBackground,
     isScrollControlled: true,
     builder: (ctx) => SafeArea(
       top: false,
       child: shadcn.Card(
         filled: true,
-        fillColor: cs.background,
+        fillColor: sheetBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(theme.radiusLg)),
         padding: EdgeInsets.fromLTRB(
           theme.density.baseContentPadding * theme.scaling,
@@ -61,7 +63,6 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     final duration = ref.watch(speedDurationProvider);
     final enabled = ref.watch(speedEnabledProvider);
     final theme = shadcn.Theme.of(context);
-    final cs = theme.colorScheme;
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: theme.density.baseGap * theme.scaling),

@@ -1,10 +1,12 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/auth/user_model.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
+import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -33,40 +35,47 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
     final users = ref.watch(managedUserListProvider);
     final currentUser = ref.watch(authNotifierProvider).user;
     final tokens = _UserManagementThemeTokens.of(context);
-    final cs = tokens.cs;
 
     return EscapeBackScope(
       onBack: () => Navigator.of(context).pop(),
-      child: ColoredBox(
-        color: cs.background,
-        child: Column(
-          children: [
-            SafeArea(
-              bottom: false,
-              child: _Header(
-                title: '用户中心',
-                onBack: () => Navigator.of(context).pop(),
-                onRefresh: () => ref.read(managedUserListProvider.notifier).refresh(),
-              ),
-            ),
-            Expanded(
-              child: EasyRefresh(
-                onRefresh: _refresh,
-                header: appRefreshHeader(context),
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: tokens.edgeFromLTRB(12, 12, 12, 24),
-                  children: [
-                    users.when(
-                      loading: () => const _LoadingBlock(label: '用户列表加载中...'),
-                      error: (error, _) => _ErrorBlock(title: '用户列表加载失败', error: error, onRetry: () => ref.read(managedUserListProvider.notifier).refresh()),
-                      data: (items) => _buildUserManagement(items, currentUser),
-                    ),
-                  ],
+      child: GlobalDrawerSwipeArea(
+        child: AppBackground(
+          child: Column(
+            children: [
+              SafeArea(
+                bottom: false,
+                child: _Header(
+                  title: '用户中心',
+                  onBack: () => Navigator.of(context).pop(),
+                  onRefresh: () =>
+                      ref.read(managedUserListProvider.notifier).refresh(),
                 ),
               ),
-            ),
-          ],
+              Expanded(
+                child: EasyRefresh(
+                  onRefresh: _refresh,
+                  header: appRefreshHeader(context),
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: tokens.edgeFromLTRB(12, 12, 12, 24),
+                    children: [
+                      users.when(
+                        loading: () => const _LoadingBlock(label: '用户列表加载中...'),
+                        error: (error, _) => _ErrorBlock(
+                          title: '用户列表加载失败',
+                          error: error,
+                          onRetry: () => ref
+                              .read(managedUserListProvider.notifier)
+                              .refresh(),
+                        ),
+                        data: (items) => _buildUserManagement(items, currentUser),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -80,10 +89,21 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
     final tokens = _UserManagementThemeTokens.of(context);
     final keyword = _keyword.trim().toLowerCase();
     final currentManagedUser = _findCurrentManagedUser(users, currentUser);
-    final canManageStatus = currentManagedUser?.isStaff == true || currentManagedUser?.isSuperuser == true || currentUser?.isStaff == true || currentUser?.isSuperuser == true;
+    final canManageStatus =
+        currentManagedUser?.isStaff == true ||
+        currentManagedUser?.isSuperuser == true ||
+        currentUser?.isStaff == true ||
+        currentUser?.isSuperuser == true;
     final filtered = keyword.isEmpty
         ? users
-        : users.where((user) => user.username.toLowerCase().contains(keyword) || user.email.toLowerCase().contains(keyword) || user.id.toString().contains(keyword)).toList();
+        : users
+              .where(
+                (user) =>
+                    user.username.toLowerCase().contains(keyword) ||
+                    user.email.toLowerCase().contains(keyword) ||
+                    user.id.toString().contains(keyword),
+              )
+              .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -109,7 +129,8 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
             currentUsername: currentUser?.username,
             canManageStatus: canManageStatus,
             onEdit: (user) => _openUserDialog(user: user),
-            onResetPassword: (user) => _openUserDialog(user: user, resetPassword: true),
+            onResetPassword: (user) =>
+                _openUserDialog(user: user, resetPassword: true),
             onToggleStatus: _toggleUserStatus,
             onDelete: _confirmDelete,
           ),
@@ -117,10 +138,15 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
     );
   }
 
-  ManagedUser? _findCurrentManagedUser(List<ManagedUser> users, User? currentUser) {
+  ManagedUser? _findCurrentManagedUser(
+    List<ManagedUser> users,
+    User? currentUser,
+  ) {
     if (currentUser == null) return null;
     for (final user in users) {
-      if (user.id == currentUser.id || user.username == currentUser.username) return user;
+      if (user.id == currentUser.id || user.username == currentUser.username) {
+        return user;
+      }
     }
     return null;
   }
@@ -178,7 +204,10 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
               ),
             ),
             actions: [
-              shadcn.Button.outline(onPressed: saving ? null : () => Navigator.of(ctx).pop(), child: const Text('取消')),
+              shadcn.Button.outline(
+                onPressed: saving ? null : () => Navigator.of(ctx).pop(),
+                child: const Text('取消'),
+              ),
               shadcn.Button.primary(
                 onPressed: saving
                     ? null
@@ -200,19 +229,38 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                         }
                         setDialogState(() => saving = true);
                         try {
-                          final credentials = UserCredentials(username: username, password: password);
+                          final credentials = UserCredentials(
+                            username: username,
+                            password: password,
+                          );
                           if (isEdit) {
-                            await ref.read(managedUserListProvider.notifier).updateUser(user.id, credentials);
+                            await ref
+                                .read(managedUserListProvider.notifier)
+                                .updateUser(user.id, credentials);
                           } else {
-                            await ref.read(managedUserListProvider.notifier).createUser(credentials);
+                            await ref
+                                .read(managedUserListProvider.notifier)
+                                .createUser(credentials);
                           }
                           if (ctx.mounted) Navigator.of(ctx).pop();
-                          Toast.success(resetPassword ? '密码已重置' : (isEdit ? '用户已更新' : '用户已添加'));
+                          Toast.success(
+                            resetPassword
+                                ? '密码已重置'
+                                : (isEdit ? '用户已更新' : '用户已添加'),
+                          );
                         } catch (_) {
                           if (ctx.mounted) setDialogState(() => saving = false);
                         }
                       },
-                child: saving ? SizedBox(width: tokens.iconMd, height: tokens.iconMd, child: shadcn.CircularProgressIndicator(strokeWidth: tokens.size(2))) : Text(isEdit ? '保存' : '添加'),
+                child: saving
+                    ? SizedBox(
+                        width: tokens.iconMd,
+                        height: tokens.iconMd,
+                        child: shadcn.CircularProgressIndicator(
+                          strokeWidth: tokens.size(2),
+                        ),
+                      )
+                    : Text(isEdit ? '保存' : '添加'),
               ),
             ],
           );
@@ -228,12 +276,17 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
         title: const Text('确认删除'),
         content: Text('确定要删除用户「${user.username}」吗？'),
         actions: [
-          shadcn.Button.outline(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
+          shadcn.Button.outline(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('取消'),
+          ),
           shadcn.Button.destructive(
             onPressed: () async {
               Navigator.of(ctx).pop();
               try {
-                await ref.read(managedUserListProvider.notifier).deleteUser(user.id);
+                await ref
+                    .read(managedUserListProvider.notifier)
+                    .deleteUser(user.id);
                 Toast.success('用户已删除');
               } catch (_) {}
             },
@@ -247,7 +300,9 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
   Future<void> _toggleUserStatus(ManagedUser user) async {
     final nextActive = !user.isActive;
     try {
-      await ref.read(managedUserListProvider.notifier).updateUserStatus(user, nextActive);
+      await ref
+          .read(managedUserListProvider.notifier)
+          .updateUserStatus(user, nextActive);
       Toast.success(nextActive ? '用户已启用' : '用户已禁用');
     } catch (_) {}
   }
@@ -258,7 +313,11 @@ class _Header extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onRefresh;
 
-  const _Header({required this.title, required this.onBack, required this.onRefresh});
+  const _Header({
+    required this.title,
+    required this.onBack,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -270,14 +329,23 @@ class _Header extends StatelessWidget {
       padding: tokens.edgeFromLTRB(8, 8, 8, 4),
       child: Row(
         children: [
-          shadcn.IconButton.ghost(icon: Icon(shadcn.LucideIcons.chevronLeft, size: tokens.iconLg), onPressed: onBack),
+          shadcn.IconButton.ghost(
+            icon: Icon(shadcn.LucideIcons.chevronLeft, size: tokens.iconLg),
+            onPressed: onBack,
+          ),
           Expanded(
             child: Text(
               title,
-              style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
+              style: theme.typography.large.copyWith(
+                color: cs.foreground,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
-          shadcn.IconButton.ghost(icon: Icon(shadcn.LucideIcons.refreshCw, size: tokens.iconMd), onPressed: onRefresh),
+          shadcn.IconButton.ghost(
+            icon: Icon(shadcn.LucideIcons.refreshCw, size: tokens.iconMd),
+            onPressed: onRefresh,
+          ),
         ],
       ),
     );
@@ -292,7 +360,14 @@ class _UserToolbar extends StatelessWidget {
   final VoidCallback onClear;
   final VoidCallback onAdd;
 
-  const _UserToolbar({required this.controller, required this.total, required this.current, required this.onSearch, required this.onClear, required this.onAdd});
+  const _UserToolbar({
+    required this.controller,
+    required this.total,
+    required this.current,
+    required this.onSearch,
+    required this.onClear,
+    required this.onAdd,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -302,23 +377,40 @@ class _UserToolbar extends StatelessWidget {
     final tokens = _UserManagementThemeTokens.of(context);
     return Row(
       children: [
-        Expanded(child: ShadTextField(
-          controller: controller,
-          onChanged: onSearch,
-          onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-          placeholder: const Text('搜索用户名、邮箱或 ID'),
-          features: [
-            shadcn.InputFeature.leading(Icon(shadcn.LucideIcons.search, size: tokens.iconSm, color: cs.mutedForeground)),
-            if (controller.text.isNotEmpty)
-              shadcn.InputFeature.trailing(
-                shadcn.IconButton.ghost(onPressed: onClear, icon: Icon(shadcn.LucideIcons.x, size: tokens.iconSm)),
+        Expanded(
+          child: ShadTextField(
+            controller: controller,
+            onChanged: onSearch,
+            onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+            placeholder: const Text('搜索用户名、邮箱或 ID'),
+            features: [
+              shadcn.InputFeature.leading(
+                Icon(
+                  shadcn.LucideIcons.search,
+                  size: tokens.iconSm,
+                  color: cs.mutedForeground,
+                ),
               ),
-          ],
-        ),),
+              if (controller.text.isNotEmpty)
+                shadcn.InputFeature.trailing(
+                  shadcn.IconButton.ghost(
+                    onPressed: onClear,
+                    icon: Icon(shadcn.LucideIcons.x, size: tokens.iconSm),
+                  ),
+                ),
+            ],
+          ),
+        ),
         tokens.hGap(8),
-        Text('$current / $total', style: typo.small.copyWith(color: cs.mutedForeground)),
+        Text(
+          '$current / $total',
+          style: typo.small.copyWith(color: cs.mutedForeground),
+        ),
         tokens.hGap(8),
-        shadcn.IconButton.primary(onPressed: onAdd, icon: Icon(shadcn.LucideIcons.userPlus, size: tokens.iconMd)),
+        shadcn.IconButton.primary(
+          onPressed: onAdd,
+          icon: Icon(shadcn.LucideIcons.userPlus, size: tokens.iconMd),
+        ),
       ],
     );
   }
@@ -334,25 +426,36 @@ class _UserList extends StatelessWidget {
   final ValueChanged<ManagedUser> onToggleStatus;
   final ValueChanged<ManagedUser> onDelete;
 
-  const _UserList({required this.users, required this.currentUserId, required this.currentUsername, required this.canManageStatus, required this.onEdit, required this.onResetPassword, required this.onToggleStatus, required this.onDelete});
+  const _UserList({
+    required this.users,
+    required this.currentUserId,
+    required this.currentUsername,
+    required this.canManageStatus,
+    required this.onEdit,
+    required this.onResetPassword,
+    required this.onToggleStatus,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
     final tokens = _UserManagementThemeTokens.of(context);
     return Column(
       children: users
-          .map((user) => Padding(
-                padding: tokens.edgeOnly(bottom: 10),
-                child: _UserTile(
-                  user: user,
-                  isCurrentUser: _isCurrentUser(user),
-                  canManageStatus: canManageStatus,
-                  onEdit: onEdit,
-                  onResetPassword: onResetPassword,
-                  onToggleStatus: onToggleStatus,
-                  onDelete: onDelete,
-                ),
-              ))
+          .map(
+            (user) => Padding(
+              padding: tokens.edgeOnly(bottom: 10),
+              child: _UserTile(
+                user: user,
+                isCurrentUser: _isCurrentUser(user),
+                canManageStatus: canManageStatus,
+                onEdit: onEdit,
+                onResetPassword: onResetPassword,
+                onToggleStatus: onToggleStatus,
+                onDelete: onDelete,
+              ),
+            ),
+          )
           .toList(),
     );
   }
@@ -372,7 +475,9 @@ class _UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = _UserManagementThemeTokens.of(context);
     final cs = tokens.cs;
-    final initial = user.username.isEmpty ? '?' : user.username.substring(0, 1).toUpperCase();
+    final initial = user.username.isEmpty
+        ? '?'
+        : user.username.substring(0, 1).toUpperCase();
     return shadcn.Avatar(
       initials: initial,
       size: tokens.avatarSize,
@@ -403,8 +508,15 @@ class _UserSubtitle extends StatelessWidget {
             spacing: tokens.size(6),
             runSpacing: tokens.size(4),
             children: [
-              Text('ID ${user.id}', style: typo.xSmall.copyWith(color: cs.mutedForeground)),
-              if (user.email.isNotEmpty) Text(user.email, style: typo.xSmall.copyWith(color: cs.mutedForeground)),
+              Text(
+                'ID ${user.id}',
+                style: typo.xSmall.copyWith(color: cs.mutedForeground),
+              ),
+              if (user.email.isNotEmpty)
+                Text(
+                  user.email,
+                  style: typo.xSmall.copyWith(color: cs.mutedForeground),
+                ),
             ],
           ),
           tokens.vGap(6),
@@ -412,9 +524,13 @@ class _UserSubtitle extends StatelessWidget {
             spacing: tokens.size(6),
             runSpacing: tokens.size(6),
             children: [
-              _StatusPill(text: user.isActive ? '启用' : '停用', active: user.isActive),
+              _StatusPill(
+                text: user.isActive ? '启用' : '停用',
+                active: user.isActive,
+              ),
               if (user.isStaff) const _StatusPill(text: '管理员', active: true),
-              if (user.isSuperuser) const _StatusPill(text: '超级用户', active: true),
+              if (user.isSuperuser)
+                const _StatusPill(text: '超级用户', active: true),
               if (isCurrentUser) const _StatusPill(text: '当前用户', active: true),
             ],
           ),
@@ -446,7 +562,15 @@ class _UserTile extends StatelessWidget {
   final ValueChanged<ManagedUser> onToggleStatus;
   final ValueChanged<ManagedUser> onDelete;
 
-  const _UserTile({required this.user, required this.isCurrentUser, required this.canManageStatus, required this.onEdit, required this.onResetPassword, required this.onToggleStatus, required this.onDelete});
+  const _UserTile({
+    required this.user,
+    required this.isCurrentUser,
+    required this.canManageStatus,
+    required this.onEdit,
+    required this.onResetPassword,
+    required this.onToggleStatus,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -454,8 +578,10 @@ class _UserTile extends StatelessWidget {
       onTap: () => _showMenu(context),
       onLongPress: () => _showMenu(context),
       onSecondaryTap: () => _showMenu(context),
-      child: shadcn.Card(
-        padding: _UserManagementThemeTokens.of(context).edgeFromLTRB(12, 10, 12, 10),
+      child: AppSurfaceCard(
+        padding: _UserManagementThemeTokens.of(
+          context,
+        ).edgeFromLTRB(12, 10, 12, 10),
         child: Row(
           children: [
             _UserAvatar(user: user),
@@ -470,9 +596,9 @@ class _UserTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: shadcn.Theme.of(context).typography.small.copyWith(
-                          color: shadcn.Theme.of(context).colorScheme.foreground,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: shadcn.Theme.of(context).colorScheme.foreground,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   _UserSubtitle(user: user, isCurrentUser: isCurrentUser),
                 ],
@@ -494,11 +620,42 @@ class _UserTile extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _ActionTile(icon: shadcn.LucideIcons.squarePen, title: '编辑', onTap: () { Navigator.pop(ctx); onEdit(user); }),
-              _ActionTile(icon: shadcn.LucideIcons.keyRound, title: '重置密码', onTap: () { Navigator.pop(ctx); onResetPassword(user); }),
+              _ActionTile(
+                icon: shadcn.LucideIcons.squarePen,
+                title: '编辑',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  onEdit(user);
+                },
+              ),
+              _ActionTile(
+                icon: shadcn.LucideIcons.keyRound,
+                title: '重置密码',
+                onTap: () {
+                  Navigator.pop(ctx);
+                  onResetPassword(user);
+                },
+              ),
               if (canManageStatus && !isCurrentUser)
-                _ActionTile(icon: user.isActive ? shadcn.LucideIcons.pause : shadcn.LucideIcons.play, title: user.isActive ? '禁用' : '启用', onTap: () { Navigator.pop(ctx); onToggleStatus(user); }),
-              _ActionTile(icon: shadcn.LucideIcons.trash2, title: '删除', destructive: true, onTap: () { Navigator.pop(ctx); onDelete(user); }),
+                _ActionTile(
+                  icon: user.isActive
+                      ? shadcn.LucideIcons.pause
+                      : shadcn.LucideIcons.play,
+                  title: user.isActive ? '禁用' : '启用',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    onToggleStatus(user);
+                  },
+                ),
+              _ActionTile(
+                icon: shadcn.LucideIcons.trash2,
+                title: '删除',
+                destructive: true,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  onDelete(user);
+                },
+              ),
             ],
           ),
         ),
@@ -515,12 +672,23 @@ class _LoadingBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = _UserManagementThemeTokens.of(context);
-    final theme = tokens.theme;
     final cs = tokens.cs;
-    return shadcn.Card(
+    return AppSurfaceCard(
       padding: tokens.edgeAll(18),
       child: Center(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [shadcn.CircularProgressIndicator(strokeWidth: tokens.size(2)), tokens.vGap(10), Text(label, style: theme.typography.small.copyWith(color: cs.mutedForeground))]),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            shadcn.CircularProgressIndicator(strokeWidth: tokens.size(2)),
+            tokens.vGap(10),
+            Text(
+              label,
+              style: tokens.theme.typography.small.copyWith(
+                color: cs.mutedForeground,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -531,7 +699,11 @@ class _ErrorBlock extends StatelessWidget {
   final Object error;
   final VoidCallback onRetry;
 
-  const _ErrorBlock({required this.title, required this.error, required this.onRetry});
+  const _ErrorBlock({
+    required this.title,
+    required this.error,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -540,7 +712,10 @@ class _ErrorBlock extends StatelessWidget {
       leading: Icon(shadcn.LucideIcons.circleAlert, color: cs.destructive),
       title: Text(title),
       subtitle: Text('$error'),
-      trailing: shadcn.Button.outline(onPressed: onRetry, child: const Text('重试')),
+      trailing: shadcn.Button.outline(
+        onPressed: onRetry,
+        child: const Text('重试'),
+      ),
     );
   }
 }
@@ -553,11 +728,17 @@ class _EmptyBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = _UserManagementThemeTokens.of(context);
-    final theme = tokens.theme;
     final cs = tokens.cs;
-    return shadcn.Card(
+    return AppSurfaceCard(
       padding: tokens.edgeAll(18),
-      child: Center(child: Text(text, style: theme.typography.small.copyWith(color: cs.mutedForeground))),
+      child: Center(
+        child: Text(
+          text,
+          style: tokens.theme.typography.small.copyWith(
+            color: cs.mutedForeground,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -568,7 +749,12 @@ class _PanelTile extends StatelessWidget {
   final Widget? subtitle;
   final Widget? trailing;
 
-  const _PanelTile({this.leading, required this.title, this.subtitle, this.trailing});
+  const _PanelTile({
+    this.leading,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -581,7 +767,24 @@ class _PanelTile extends StatelessWidget {
         children: [
           if (leading != null) ...[leading!, tokens.hGap(10)],
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [DefaultTextStyle.merge(style: theme.typography.small.copyWith(color: cs.foreground), child: title), if (subtitle != null) ...[tokens.vGap(2), DefaultTextStyle.merge(style: theme.typography.xSmall.copyWith(color: cs.mutedForeground), child: subtitle!)]]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DefaultTextStyle.merge(
+                  style: theme.typography.small.copyWith(color: cs.foreground),
+                  child: title,
+                ),
+                if (subtitle != null) ...[
+                  tokens.vGap(2),
+                  DefaultTextStyle.merge(
+                    style: theme.typography.xSmall.copyWith(
+                      color: cs.mutedForeground,
+                    ),
+                    child: subtitle!,
+                  ),
+                ],
+              ],
+            ),
           ),
           if (trailing != null) ...[tokens.hGap(12), trailing!],
         ],
@@ -596,7 +799,12 @@ class _ActionTile extends StatelessWidget {
   final VoidCallback onTap;
   final bool destructive;
 
-  const _ActionTile({required this.icon, required this.title, required this.onTap, this.destructive = false});
+  const _ActionTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.destructive = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -608,7 +816,10 @@ class _ActionTile extends StatelessWidget {
       alignment: Alignment.centerLeft,
       onPressed: onTap,
       leading: Icon(icon, size: tokens.iconMd, color: color),
-      child: Text(title, style: theme.typography.small.copyWith(color: color ?? cs.foreground)),
+      child: Text(
+        title,
+        style: theme.typography.small.copyWith(color: color ?? cs.foreground),
+      ),
     );
   }
 }
@@ -628,7 +839,11 @@ class _UserManagementThemeTokens {
 
   factory _UserManagementThemeTokens.of(BuildContext context) {
     final theme = shadcn.Theme.of(context);
-    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.55, 1.45);
+    final densityScale =
+        ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(
+          0.55,
+          1.45,
+        );
     final textScale = theme.scaling.clamp(0.86, 1.30);
     return _UserManagementThemeTokens._(
       theme: theme,
@@ -655,17 +870,25 @@ class _UserManagementThemeTokens {
   EdgeInsets edgeAll(num value) => EdgeInsets.all(size(value));
 
   EdgeInsets edgeSymmetric({num horizontal = 0, num vertical = 0}) =>
-      EdgeInsets.symmetric(horizontal: size(horizontal), vertical: size(vertical));
+      EdgeInsets.symmetric(
+        horizontal: size(horizontal),
+        vertical: size(vertical),
+      );
 
   EdgeInsets edgeFromLTRB(num left, num top, num right, num bottom) =>
       EdgeInsets.fromLTRB(size(left), size(top), size(right), size(bottom));
 
-  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) => EdgeInsets.only(
-        left: size(left),
-        top: size(top),
-        right: size(right),
-        bottom: size(bottom),
-      );
+  EdgeInsets edgeOnly({
+    num left = 0,
+    num top = 0,
+    num right = 0,
+    num bottom = 0,
+  }) => EdgeInsets.only(
+    left: size(left),
+    top: size(top),
+    right: size(right),
+    bottom: size(bottom),
+  );
 
   SizedBox hGap(num value) => SizedBox(width: size(value));
 

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-
-import 'site_theme.dart';
 
 import '../provider/site_filter_state.dart';
 import '../provider/site_filtered_provider.dart';
@@ -20,17 +19,10 @@ class SiteFilterPanel extends ConsumerWidget {
     final cs = theme.colorScheme;
     final typo = theme.typography;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.background,
-        boxShadow: [
-          BoxShadow(
-            color: siteShadow(context, alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return AppSurfaceContainer(
+      color: appSurfaceColor(context, cs.background),
+      borderRadius: BorderRadius.zero,
+      borderColor: cs.border.withValues(alpha: 0.42),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

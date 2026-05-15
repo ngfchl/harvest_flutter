@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 
 import '../model/notice_history.dart';
+import '../service/local_notice_notification_service.dart';
 import '../service/notice_service.dart';
 
 final noticeHistoryProvider =
@@ -21,7 +22,7 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
     if (!HiveManager.hasAccessToken) {
       return Future.value(const <NoticeHistory>[]);
     }
-    return NoticeService.fetchNoticeHistory();
+    return _fetchNoticeHistoryWithNotification();
   }
 
   Future<void> refresh() async {
@@ -33,7 +34,7 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
     final previous = state.valueOrNull;
     if (previous == null) state = const AsyncValue.loading();
 
-    final result = await AsyncValue.guard(NoticeService.fetchNoticeHistory);
+    final result = await AsyncValue.guard(_fetchNoticeHistoryWithNotification);
     if (result.hasError && previous != null) {
       state = AsyncValue.data(previous);
       return;
@@ -121,5 +122,15 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
       for (final notice in notices)
         ids.contains(notice.id) ? notice.copyWith(isRead: true) : notice,
     ]);
+  }
+
+  Future<List<NoticeHistory>> _fetchNoticeHistoryWithNotification() async {
+    final notices = await NoticeService.fetchNoticeHistory();
+    try {
+      await LocalNoticeNotificationService.instance.showNewNotices(notices);
+    } catch (_) {
+      // 系统通知失败不应影响站内通知列表刷新。
+    }
+    return notices;
   }
 }

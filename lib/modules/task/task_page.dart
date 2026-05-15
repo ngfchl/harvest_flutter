@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -32,20 +33,23 @@ class TaskPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tasksAsync = ref.watch(scheduleProvider);
     final theme = shadcn.Theme.of(context);
+    final pageBackground = appSurfaceColor(context, theme.colorScheme.background);
 
-    return shadcn.Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      child: tasksAsync.when(
-        loading: () => const Center(
-          child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-        ),
-        error: (e, _) => _ErrorView(
-          error: e,
-          onRetry: () => ref.invalidate(scheduleProvider),
-        ),
-        data: (tasks) => _TaskListView(
-          tasks: tasks,
-          onAdd: (buttonContext) => _openAdd(buttonContext, ref),
+    return AppBackground(
+      child: shadcn.Scaffold(
+        backgroundColor: pageBackground,
+        child: tasksAsync.when(
+          loading: () => const Center(
+            child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+          ),
+          error: (e, _) => _ErrorView(
+            error: e,
+            onRetry: () => ref.invalidate(scheduleProvider),
+          ),
+          data: (tasks) => _TaskListView(
+            tasks: tasks,
+            onAdd: (buttonContext) => _openAdd(buttonContext, ref),
+          ),
         ),
       ),
     );
@@ -406,9 +410,8 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
       items: _taskMenuItems(context, task),
       openOnTap: isMobile,
       openOnLongPress: !isMobile,
-      child: shadcn.Card(
-        filled: true,
-        fillColor: cs.card,
+      child: AppSurfaceContainer(
+        color: appSurfaceColor(context, cs.card),
         borderColor: cs.border,
         borderRadius: BorderRadius.circular(theme.radiusLg),
         padding: EdgeInsets.zero,
@@ -575,7 +578,16 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
               shadcn.Theme.of(context).scaling *
               0.4,
         ),
-        child: shadcn.SecondaryBadge(
+        child: AppSurfaceContainer(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          borderRadius: shadcn.Theme.of(context).borderRadiusSm,
+          color: appSurfaceColor(
+            context,
+            shadcn.Theme.of(context).colorScheme.muted,
+          ),
+          borderColor: shadcn.Theme.of(
+            context,
+          ).colorScheme.border.withValues(alpha: 0.55),
           child: Text(
             parts.join(' · '),
             maxLines: 1,

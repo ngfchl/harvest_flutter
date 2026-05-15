@@ -7,10 +7,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/news/provider/media_info_settings_provider.dart';
 import 'package:harvest/modules/option/widgets/app_upgrade_page.dart';
+import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
@@ -437,95 +439,96 @@ class OptionPage extends ConsumerWidget {
 
     return EscapeBackScope(
       onBack: () => Navigator.of(context).pop(),
-      child: ColoredBox(
-        color: cs.background,
-        child: Column(
-          children: [
-            SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
-                child: Row(
-                  children: [
-                    shadcn.IconButton.ghost(
-                      icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 20),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                    Expanded(
-                      child: Text(
-                        '选项设置',
-                        style: typo.large.copyWith(
-                          color: cs.foreground,
-                          fontWeight: FontWeight.w700,
+      child: GlobalDrawerSwipeArea(
+        child: AppBackground(
+          child: Column(
+            children: [
+              SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+                  child: Row(
+                    children: [
+                      shadcn.IconButton.ghost(
+                        icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 20),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      Expanded(
+                        child: Text(
+                          '选项设置',
+                          style: typo.large.copyWith(
+                            color: cs.foreground,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                    ),
-                    const DebugThemeButton.shadcn(),
-                    shadcn.IconButton.ghost(
-                      icon: const Icon(shadcn.LucideIcons.refreshCw, size: 18),
-                      onPressed: () =>
-                          ref.read(optionProvider.notifier).fetchOptions(),
-                    ),
-                  ],
+                      const DebugThemeButton.shadcn(),
+                      shadcn.IconButton.ghost(
+                        icon: const Icon(shadcn.LucideIcons.refreshCw, size: 18),
+                        onPressed: () =>
+                            ref.read(optionProvider.notifier).fetchOptions(),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-              child: state.isLoading
-                  ? const Center(
-                      child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : EasyRefresh(
-                      onRefresh: () =>
-                          ref.read(optionProvider.notifier).fetchOptions(),
-                      header: appRefreshHeader(context),
-                      child: ListView(
-                        padding: const EdgeInsets.only(top: 8, bottom: 100),
-                        children: [
-                          _buildVersionCard(context),
-                          if (!kIsWeb) _buildAppUpgradeCard(context),
-                          _buildUpdateCard(context),
-                          const _CookieBackupImportCard(),
-                          const _AppAutoRefreshIntervalCard(),
-                          const _MediaInfoSettingsCard(),
-                          _buildSpeedTest(context, ref),
-                          _buildNoticeTest(context, ref),
-                          const _BulkUpgradeCard(),
-                          _buildTelegramWebhook(context, ref),
-                          ..._formConfigs.entries.map((entry) {
-                            final optionName = entry.key;
-                            final config = entry.value;
-                            final serverOption = state.getOption(optionName);
+              Expanded(
+                child: state.isLoading
+                    ? const Center(
+                        child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : EasyRefresh(
+                        onRefresh: () =>
+                            ref.read(optionProvider.notifier).fetchOptions(),
+                        header: appRefreshHeader(context),
+                        child: ListView(
+                          padding: const EdgeInsets.only(top: 8, bottom: 100),
+                          children: [
+                            _buildVersionCard(context),
+                            if (!kIsWeb) _buildAppUpgradeCard(context),
+                            _buildUpdateCard(context),
+                            const _CookieBackupImportCard(),
+                            const _AppAutoRefreshIntervalCard(),
+                            const _MediaInfoSettingsCard(),
+                            _buildSpeedTest(context, ref),
+                            _buildNoticeTest(context, ref),
+                            const _BulkUpgradeCard(),
+                            _buildTelegramWebhook(context, ref),
+                            ..._formConfigs.entries.map((entry) {
+                              final optionName = entry.key;
+                              final config = entry.value;
+                              final serverOption = state.getOption(optionName);
 
-                            return OptionFormCard(
-                              key: ValueKey(optionName),
-                              title: config.title,
-                              optionName: optionName,
-                              option: serverOption,
-                              icon: config.icon,
-                              textFields: config.textFields,
-                              switchFields: config.switchFields,
-                              extraBuilder: config.extraBuilder,
-                              buildValue: config.buildValue,
-                              onSave: (opt) async {
-                                return ref
-                                    .read(optionProvider.notifier)
-                                    .saveOption(opt);
-                              },
-                              onToggleActive: serverOption != null
-                                  ? (opt) async {
-                                      await ref
-                                          .read(optionProvider.notifier)
-                                          .saveOption(opt);
-                                    }
-                                  : null,
-                            );
-                          }),
-                        ],
+                              return OptionFormCard(
+                                key: ValueKey(optionName),
+                                title: config.title,
+                                optionName: optionName,
+                                option: serverOption,
+                                icon: config.icon,
+                                textFields: config.textFields,
+                                switchFields: config.switchFields,
+                                extraBuilder: config.extraBuilder,
+                                buildValue: config.buildValue,
+                                onSave: (opt) async {
+                                  return ref
+                                      .read(optionProvider.notifier)
+                                      .saveOption(opt);
+                                },
+                                onToggleActive: serverOption != null
+                                    ? (opt) async {
+                                        await ref
+                                            .read(optionProvider.notifier)
+                                            .saveOption(opt);
+                                      }
+                                    : null,
+                              );
+                            }),
+                          ],
+                        ),
                       ),
-                    ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -742,8 +745,9 @@ class _MediaInfoSettingsCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(mediaInfoSettingsProvider);
     final notifier = ref.read(mediaInfoSettingsProvider.notifier);
+    final theme = shadcn.Theme.of(context);
     final cs = _optionColors(context);
-    final typo = shadcn.Theme.of(context).typography;
+    final typo = theme.typography;
 
     Widget row({
       required String title,
@@ -751,16 +755,11 @@ class _MediaInfoSettingsCard extends ConsumerWidget {
       required bool value,
       required ValueChanged<bool> onChanged,
     }) {
-      return Container(
+      return AppSurfaceContainer(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: cs.background,
-          borderRadius: _optionRadius(context),
-          border: Border.all(
-            color: cs.border.withValues(alpha: 0.7),
-            width: 0.5,
-          ),
-        ),
+        borderRadius: _optionRadius(context),
+        color: appSurfaceColor(context, cs.card),
+        borderColor: cs.border.withValues(alpha: 0.7),
         child: Row(
           children: [
             Expanded(
@@ -1001,16 +1000,11 @@ class _ImportActionTile extends StatelessWidget {
       opacity: enabled ? 1 : 0.55,
       child: shadcn.Button.ghost(
         onPressed: enabled ? onTap : null,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: cs.background,
-            borderRadius: _optionRadius(context),
-            border: Border.all(
-              color: cs.border.withValues(alpha: 0.7),
-              width: 0.5,
-            ),
-          ),
+        child: AppSurfaceContainer(
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          borderRadius: _optionRadius(context),
+          color: appSurfaceColor(context, cs.card),
+          borderColor: cs.border.withValues(alpha: 0.7),
           child: Row(
             children: [
               leading,
@@ -1094,7 +1088,8 @@ class _AppAutoRefreshIntervalCardState
   @override
   Widget build(BuildContext context) {
     final cs = _optionColors(context);
-    final typo = shadcn.Theme.of(context).typography;
+    final theme = shadcn.Theme.of(context);
+    final typo = theme.typography;
     final minutes = ref.watch(appAutoRefreshIntervalProvider);
 
     if (!_minutesFocus.hasFocus && _minutesCtrl.text != '$minutes') {
@@ -1113,16 +1108,11 @@ class _AppAutoRefreshIntervalCardState
             style: typo.small.copyWith(color: cs.mutedForeground, height: 1.35),
           ),
           const SizedBox(height: 12),
-          Container(
+          AppSurfaceContainer(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: cs.background,
-              borderRadius: _optionRadius(context),
-              border: Border.all(
-                color: cs.border.withValues(alpha: 0.7),
-                width: 0.5,
-              ),
-            ),
+            borderRadius: _optionRadius(context),
+            color: appSurfaceColor(context, cs.card),
+            borderColor: cs.border.withValues(alpha: 0.7),
             child: Row(
               children: [
                 Icon(

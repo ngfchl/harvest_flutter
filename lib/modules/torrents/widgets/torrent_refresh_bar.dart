@@ -43,10 +43,12 @@ class TorrentRefreshBar extends ConsumerWidget {
         ? cs.foreground.withValues(alpha: 0.04)
         : pauseButtonColor.withValues(alpha: 0.1);
 
+    final surfaceOpacity = (shadcn.Theme.of(context).surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
       decoration: BoxDecoration(
-        color: cs.background,
+        color: cs.background.withValues(alpha: surfaceOpacity),
         border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
       ),
       child: Row(

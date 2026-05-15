@@ -2,6 +2,7 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/browser_page.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
@@ -19,25 +20,29 @@ class NoticeHistoryPage extends ConsumerWidget {
 
     return EscapeBackScope(
       onBack: () => Navigator.of(context).pop(),
-      child: Scaffold(
-        body: Column(
-          children: [
-            _NoticePageHeader(
-              title: '通知历史',
-              onBack: () => Navigator.of(context).pop(),
-            ),
-            Expanded(
-              child: noticesAsync.when(
-                loading: () => const Center(child: shadcn.CircularProgressIndicator()),
-                error: (error, _) => _NoticeErrorView(
-                  error: error,
-                  onRetry: () =>
-                      ref.read(noticeHistoryProvider.notifier).refresh(),
-                ),
-                data: (notices) => _NoticeHistoryBody(notices: notices),
+      child: AppBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Column(
+            children: [
+              _NoticePageHeader(
+                title: '通知历史',
+                onBack: () => Navigator.of(context).pop(),
               ),
-            ),
-          ],
+              Expanded(
+                child: noticesAsync.when(
+                  loading: () =>
+                      const Center(child: shadcn.CircularProgressIndicator()),
+                  error: (error, _) => _NoticeErrorView(
+                    error: error,
+                    onRetry: () =>
+                        ref.read(noticeHistoryProvider.notifier).refresh(),
+                  ),
+                  data: (notices) => _NoticeHistoryBody(notices: notices),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -56,17 +61,11 @@ class _NoticePageHeader extends StatelessWidget {
     final cs = theme.colorScheme;
     final top = MediaQuery.paddingOf(context).top;
 
-    return Container(
+    return AppSurfaceContainer(
       padding: EdgeInsets.fromLTRB(8, top + 6, 16, 8),
-      decoration: BoxDecoration(
-        color: cs.background,
-        border: Border(
-          bottom: BorderSide(
-            color: cs.border.withValues(alpha: 0.5),
-            width: 0.5,
-          ),
-        ),
-      ),
+      borderRadius: BorderRadius.zero,
+      color: appSurfaceColor(context, cs.background),
+      borderColor: cs.border.withValues(alpha: 0.5),
       child: Row(
         children: [
           shadcn.IconButton.ghost(
@@ -128,18 +127,12 @@ class _NoticeToolbar extends ConsumerWidget {
     final cs = shadcn.Theme.of(context).colorScheme;
     final typo = shadcn.Theme.of(context).typography;
 
-    return Container(
+    return AppSurfaceContainer(
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: cs.background,
-        border: Border(
-          bottom: BorderSide(
-            color: cs.border.withValues(alpha: 0.5),
-            width: 0.5,
-          ),
-        ),
-      ),
+      borderRadius: BorderRadius.zero,
+      color: appSurfaceColor(context, cs.background),
+      borderColor: cs.border.withValues(alpha: 0.5),
       child: Row(
         children: [
           Icon(
@@ -305,7 +298,7 @@ class _NoticeTile extends ConsumerWidget {
     final time = _displayTime(notice);
 
     return Material(
-      color: cs.background,
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
@@ -314,15 +307,11 @@ class _NoticeTile extends ConsumerWidget {
             pageBuilder: (_, __, ___) => NoticeDetailPage(notice: notice),
           ),
         ),
-        child: Container(
+        child: AppSurfaceContainer(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: cs.border.withValues(alpha: 0.6),
-              width: 0.5,
-            ),
-          ),
+          borderRadius: BorderRadius.circular(8),
+          color: appSurfaceColor(context, cs.card),
+          borderColor: cs.border.withValues(alpha: 0.6),
           child: Row(
             children: [
               SizedBox(
@@ -405,118 +394,121 @@ class NoticeDetailPage extends ConsumerWidget {
 
     return EscapeBackScope(
       onBack: () => Navigator.of(context).pop(),
-      child: Scaffold(
-        body: Column(
-          children: [
-            _NoticePageHeader(
-              title: '通知详情',
-              onBack: () => Navigator.of(context).pop(),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-                children: [
-                  Text(
-                    title,
-                    style: shadcn.Theme.of(
-                      context,
-                    ).typography.xLarge.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: time.isEmpty
-                            ? const SizedBox.shrink()
-                            : Text(
-                                time,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: shadcn.Theme.of(context)
-                                    .typography
-                                    .xSmall
-                                    .copyWith(color: cs.mutedForeground),
-                              ),
-                      ),
-                      _NoticeToolbarAction(
-                        tooltip: '删除通知',
-                        icon: shadcn.LucideIcons.trash2,
-                        color: cs.destructive,
-                        onPress: () async {
-                          final confirmed = await _confirmNoticeAction(
-                            context,
-                            title: '删除通知',
-                            message: '确定要删除这条通知吗？此操作不可撤销。',
-                            confirmText: '删除通知',
-                            destructive: true,
-                          );
-                          if (!confirmed) return;
-                          if (!context.mounted) return;
-                          try {
-                            await ref
-                                .read(noticeHistoryProvider.notifier)
-                                .deleteNotice(current);
-                            Toast.success('通知已删除');
-                            if (context.mounted) Navigator.of(context).pop();
-                          } catch (_) {
-                            Toast.error('删除失败');
-                          }
-                        },
-                      ),
-                      if (!current.isRead) ...[
-                        const SizedBox(width: 4),
+      child: AppBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Column(
+            children: [
+              _NoticePageHeader(
+                title: '通知详情',
+                onBack: () => Navigator.of(context).pop(),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                  children: [
+                    Text(
+                      title,
+                      style: shadcn.Theme.of(
+                        context,
+                      ).typography.xLarge.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: time.isEmpty
+                              ? const SizedBox.shrink()
+                              : Text(
+                                  time,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: shadcn.Theme.of(context)
+                                      .typography
+                                      .xSmall
+                                      .copyWith(color: cs.mutedForeground),
+                                ),
+                        ),
                         _NoticeToolbarAction(
-                          tooltip: '标记已读',
-                          icon: shadcn.LucideIcons.check,
-                          color: cs.foreground,
+                          tooltip: '删除通知',
+                          icon: shadcn.LucideIcons.trash2,
+                          color: cs.destructive,
                           onPress: () async {
+                            final confirmed = await _confirmNoticeAction(
+                              context,
+                              title: '删除通知',
+                              message: '确定要删除这条通知吗？此操作不可撤销。',
+                              confirmText: '删除通知',
+                              destructive: true,
+                            );
+                            if (!confirmed) return;
+                            if (!context.mounted) return;
                             try {
                               await ref
                                   .read(noticeHistoryProvider.notifier)
-                                  .markRead(current);
+                                  .deleteNotice(current);
+                              Toast.success('通知已删除');
+                              if (context.mounted) Navigator.of(context).pop();
                             } catch (_) {
-                              Toast.error('标记已读失败');
+                              Toast.error('删除失败');
                             }
                           },
                         ),
+                        if (!current.isRead) ...[
+                          const SizedBox(width: 4),
+                          _NoticeToolbarAction(
+                            tooltip: '标记已读',
+                            icon: shadcn.LucideIcons.check,
+                            color: cs.foreground,
+                            onPress: () async {
+                              try {
+                                await ref
+                                    .read(noticeHistoryProvider.notifier)
+                                    .markRead(current);
+                              } catch (_) {
+                                Toast.error('标记已读失败');
+                              }
+                            },
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  MarkdownBody(
-                    data: current.content.trim().isEmpty
-                        ? '暂无内容'
-                        : current.content.trim(),
-                    selectable: true,
-                    fitContent: false,
-                    softLineBreak: true,
-                    extensionSet: null,
-                    styleSheet: _markdownStyleSheet(context),
-                    onTapLink: (text, href, title) {
-                      final url = href?.trim();
-                      if (url == null || url.isEmpty) return;
-                      BrowserPage.open(
-                        context,
-                        url: url,
-                        title: text.trim().isEmpty ? null : text.trim(),
-                      );
-                    },
-                  ),
-                  if (hasUrl) ...[
-                    const SizedBox(height: 20),
-                    shadcn.Button.outline(
-                      onPressed: () => BrowserPage.open(
-                        context,
-                        url: current.url!.trim(),
-                        title: title,
-                      ),
-                      child: const Text('打开链接'),
                     ),
+                    const SizedBox(height: 18),
+                    MarkdownBody(
+                      data: current.content.trim().isEmpty
+                          ? '暂无内容'
+                          : current.content.trim(),
+                      selectable: true,
+                      fitContent: false,
+                      softLineBreak: true,
+                      extensionSet: null,
+                      styleSheet: _markdownStyleSheet(context),
+                      onTapLink: (text, href, title) {
+                        final url = href?.trim();
+                        if (url == null || url.isEmpty) return;
+                        BrowserPage.open(
+                          context,
+                          url: url,
+                          title: text.trim().isEmpty ? null : text.trim(),
+                        );
+                      },
+                    ),
+                    if (hasUrl) ...[
+                      const SizedBox(height: 20),
+                      shadcn.Button.outline(
+                        onPressed: () => BrowserPage.open(
+                          context,
+                          url: current.url!.trim(),
+                          title: title,
+                        ),
+                        child: const Text('打开链接'),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

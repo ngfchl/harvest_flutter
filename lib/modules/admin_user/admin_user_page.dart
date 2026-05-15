@@ -3,10 +3,12 @@ import 'dart:math' as math;
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
+import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import 'model/admin_user_model.dart';
@@ -95,41 +97,46 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
   Widget build(BuildContext context) {
     final usersAsync = ref.watch(adminUserListProvider);
     final cs = _adminColors(context);
+    final pageBackground = appSurfaceColor(context, cs.background);
     return EscapeBackScope(
       onBack: () => Navigator.of(context).pop(),
-      child: Material(
-        color: cs.background,
-        child: Column(
-          children: [
-            SafeArea(
-              bottom: false,
-              child: _Header(
-                onBack: () => Navigator.of(context).pop(),
-                onRefresh: () => ref.read(adminUserListProvider.notifier).refresh(),
-              ),
-            ),
-            Expanded(
-              child: EasyRefresh(
-                onRefresh: () => ref.read(adminUserListProvider.notifier).refresh(),
-                header: appRefreshHeader(context),
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
-                  children: [
-                    usersAsync.when(
-                      loading: () => const _AdminLoadingBlock(label: '授权用户加载中...'),
-                      error: (error, _) => _AdminErrorBlock(
-                        title: '授权用户加载失败',
-                        error: error,
-                        onRetry: () => ref.read(adminUserListProvider.notifier).refresh(),
-                      ),
-                      data: _buildContent,
-                    ),
-                  ],
+      child: GlobalDrawerSwipeArea(
+        child: AppBackground(
+          child: Material(
+            color: pageBackground,
+            child: Column(
+              children: [
+                SafeArea(
+                  bottom: false,
+                  child: _Header(
+                    onBack: () => Navigator.of(context).pop(),
+                    onRefresh: () => ref.read(adminUserListProvider.notifier).refresh(),
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: EasyRefresh(
+                    onRefresh: () => ref.read(adminUserListProvider.notifier).refresh(),
+                    header: appRefreshHeader(context),
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+                      children: [
+                        usersAsync.when(
+                          loading: () => const _AdminLoadingBlock(label: '授权用户加载中...'),
+                          error: (error, _) => _AdminErrorBlock(
+                            title: '授权用户加载失败',
+                            error: error,
+                            onRetry: () => ref.read(adminUserListProvider.notifier).refresh(),
+                          ),
+                          data: _buildContent,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -882,12 +889,14 @@ class _AdminUserTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
     final cs = _adminColors(context);
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     final expired = _isExpired(user);
     final tile = Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       decoration: BoxDecoration(
-        color: cs.background,
+        color: cs.background.withValues(alpha: surfaceOpacity),
         borderRadius: _adminRadius(context),
         border: Border.all(color: cs.border.withValues(alpha: 0.8), width: 0.8),
         boxShadow: [
@@ -1075,10 +1084,11 @@ class _StatCard extends StatelessWidget {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: cs.background,
+        color: cs.background.withValues(alpha: surfaceOpacity),
         borderRadius: _adminRadius(context),
         border: Border.all(color: cs.border.withValues(alpha: 0.8), width: 0.8),
       ),
@@ -1122,12 +1132,13 @@ class _DonutChartBlock extends StatelessWidget {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     final total = items.fold<int>(0, (sum, item) => sum + item.value);
     return Container(
       height: 128,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: cs.background,
+        color: cs.background.withValues(alpha: surfaceOpacity),
         borderRadius: _adminRadius(context),
         border: Border.all(color: cs.border.withValues(alpha: 0.8), width: 0.8),
       ),

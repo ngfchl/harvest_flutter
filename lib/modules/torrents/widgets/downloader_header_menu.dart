@@ -57,7 +57,7 @@ class DownloaderHeaderMenu extends StatelessWidget {
       if (isQb) ...[
         HeaderMenuAction('category', shadcn.LucideIcons.tags, '分类管理', downloader != null ? onCategoryManagement : null),
         HeaderMenuAction('tag', shadcn.LucideIcons.tag, '标签管理', downloader != null ? onTagManagement : null),
-        HeaderMenuAction('trackers', shadcn.LucideIcons.replace, '按站点批量替换 Tracker', onReplaceTrackers),
+        HeaderMenuAction('trackers', shadcn.LucideIcons.replace, '批量替换 Tracker', onReplaceTrackers),
       ],
     ];
 

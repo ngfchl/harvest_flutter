@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/formatters/file_size_formatter.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
@@ -12,7 +13,12 @@ class TorrentDetailSheet extends StatefulWidget {
   final Torrent torrent;
   final TorrentSiteMatch? siteMatch;
 
-  const TorrentDetailSheet({super.key, required this.downloaderId, required this.torrent, this.siteMatch});
+  const TorrentDetailSheet({
+    super.key,
+    required this.downloaderId,
+    required this.torrent,
+    this.siteMatch,
+  });
 
   @override
   State<TorrentDetailSheet> createState() => _TorrentDetailSheetState();
@@ -24,56 +30,81 @@ class _TorrentDetailSheetState extends State<TorrentDetailSheet> {
   @override
   void initState() {
     super.initState();
-    _future = DownloaderService.fetchTorrentDetail(widget.downloaderId, widget.torrent.hashString);
+    _future = DownloaderService.fetchTorrentDetail(
+      widget.downloaderId,
+      widget.torrent.hashString,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
     return SafeArea(
       child: SizedBox(
         height: MediaQuery.of(context).size.height * 0.86,
-        child: shadcn.Scaffold(
-          backgroundColor: cs.background,
-          child: FutureBuilder<Map<String, dynamic>>(
-            future: _future,
-            builder: (context, snapshot) {
-              final detail = snapshot.data ?? const <String, dynamic>{};
-              final loading = snapshot.connectionState == ConnectionState.waiting;
-              final files = _extractList(detail, const ['files', 'contents']);
-              final trackers = _extractList(detail, const ['trackers', 'trackerStats']);
-              final properties = _extractMap(detail, const ['properties', 'props']);
+        child: AppSurfaceContainer(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          color: appSurfaceColor(context, cs.background),
+          borderColor: cs.border.withValues(alpha: 0.5),
+          child: shadcn.Scaffold(
+            backgroundColor: Colors.transparent,
+            child: FutureBuilder<Map<String, dynamic>>(
+              future: _future,
+              builder: (context, snapshot) {
+                final detail = snapshot.data ?? const <String, dynamic>{};
+                final loading =
+                    snapshot.connectionState == ConnectionState.waiting;
+                final files = _extractList(detail, const ['files', 'contents']);
+                final trackers = _extractList(detail, const [
+                  'trackers',
+                  'trackerStats',
+                ]);
+                final properties = _extractMap(detail, const [
+                  'properties',
+                  'props',
+                ]);
 
-              return Column(
-                children: [
-                  _DetailHeader(
-                    torrent: widget.torrent,
-                    siteMatch: widget.siteMatch,
-                    loading: loading,
-                    onRefresh: () => setState(() {
-                      _future = DownloaderService.fetchTorrentDetail(widget.downloaderId, widget.torrent.hashString);
-                    }),
-                  ),
-                  Divider(height: 1, color: cs.border),
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
-                      children: [
-                        _SummaryPanel(torrent: widget.torrent, properties: properties),
-                        const SizedBox(height: 10),
-                        _TrackerPanel(torrent: widget.torrent, trackers: trackers),
-                        const SizedBox(height: 10),
-                        _FilePanel(files: files),
-                        if (snapshot.hasError) ...[
-                          const SizedBox(height: 10),
-                          _ErrorPanel(error: snapshot.error.toString()),
-                        ],
-                      ],
+                return Column(
+                  children: [
+                    _DetailHeader(
+                      torrent: widget.torrent,
+                      siteMatch: widget.siteMatch,
+                      loading: loading,
+                      onRefresh: () => setState(() {
+                        _future = DownloaderService.fetchTorrentDetail(
+                          widget.downloaderId,
+                          widget.torrent.hashString,
+                        );
+                      }),
                     ),
-                  ),
-                ],
-              );
-            },
+                    Divider(height: 1, color: cs.border),
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+                        children: [
+                          _SummaryPanel(
+                            torrent: widget.torrent,
+                            properties: properties,
+                          ),
+                          const SizedBox(height: 10),
+                          _TrackerPanel(
+                            torrent: widget.torrent,
+                            trackers: trackers,
+                          ),
+                          const SizedBox(height: 10),
+                          _FilePanel(files: files),
+                          if (snapshot.hasError) ...[
+                            const SizedBox(height: 10),
+                            _ErrorPanel(error: snapshot.error.toString()),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -87,11 +118,17 @@ class _DetailHeader extends StatelessWidget {
   final bool loading;
   final VoidCallback onRefresh;
 
-  const _DetailHeader({required this.torrent, required this.siteMatch, required this.loading, required this.onRefresh});
+  const _DetailHeader({
+    required this.torrent,
+    required this.siteMatch,
+    required this.loading,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
     final color = _statusColor(torrent);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
@@ -102,7 +139,10 @@ class _DetailHeader extends StatelessWidget {
             width: 40,
             height: 40,
             alignment: Alignment.center,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Icon(shadcn.LucideIcons.download, size: 19, color: color),
           ),
           const SizedBox(width: 10),
@@ -120,7 +160,11 @@ class _DetailHeader extends StatelessWidget {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    _MiniChip(icon: shadcn.LucideIcons.activity, text: torrent.torrentStatus.label, color: color),
+                    _MiniChip(
+                      icon: shadcn.LucideIcons.activity,
+                      text: torrent.torrentStatus.label,
+                      color: color,
+                    ),
                     if (siteMatch != null)
                       _MiniChip(
                         icon: shadcn.LucideIcons.globe,
@@ -140,7 +184,11 @@ class _DetailHeader extends StatelessWidget {
           shadcn.IconButton.ghost(
             onPressed: loading ? null : onRefresh,
             icon: loading
-                ? const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(size: 18))
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: shadcn.CircularProgressIndicator(size: 18),
+                  )
                 : const Icon(shadcn.LucideIcons.refreshCw, size: 16),
           ),
         ],
@@ -158,20 +206,64 @@ class _SummaryPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      _DetailItem('大小', TorrentUtils.formatBytes(torrent.sizeWhenDone), shadcn.LucideIcons.hardDrive),
-      _DetailItem('下载', TorrentUtils.formatSpeed(torrent.rateDownload), shadcn.LucideIcons.arrowDown),
-      _DetailItem('上传', TorrentUtils.formatSpeed(torrent.rateUpload), shadcn.LucideIcons.arrowUp),
-      _DetailItem('分享率', TorrentUtils.formatRatio(torrent.uploadRatio), shadcn.LucideIcons.chartPie),
-      _DetailItem('分类', torrent.category.isEmpty ? '未分类' : torrent.category, shadcn.LucideIcons.folder),
-      _DetailItem('标签', torrent.labels.isEmpty ? '无' : torrent.labels.join(', '), shadcn.LucideIcons.tags),
-      _DetailItem('保存路径', torrent.downloadDir.isEmpty ? '-' : torrent.downloadDir, shadcn.LucideIcons.folderOpen),
-      _DetailItem('内容路径', torrent.contentPath.isEmpty ? '-' : torrent.contentPath, shadcn.LucideIcons.file),
-      _DetailItem('添加时间', TorrentUtils.formatTimeAgo(torrent.addedDate), shadcn.LucideIcons.calendarPlus),
-      _DetailItem('活动时间', TorrentUtils.formatTimeAgo(torrent.activityDate), shadcn.LucideIcons.clock),
+      _DetailItem(
+        '大小',
+        TorrentUtils.formatBytes(torrent.sizeWhenDone),
+        shadcn.LucideIcons.hardDrive,
+      ),
+      _DetailItem(
+        '下载',
+        TorrentUtils.formatSpeed(torrent.rateDownload),
+        shadcn.LucideIcons.arrowDown,
+      ),
+      _DetailItem(
+        '上传',
+        TorrentUtils.formatSpeed(torrent.rateUpload),
+        shadcn.LucideIcons.arrowUp,
+      ),
+      _DetailItem(
+        '分享率',
+        TorrentUtils.formatRatio(torrent.uploadRatio),
+        shadcn.LucideIcons.chartPie,
+      ),
+      _DetailItem(
+        '分类',
+        torrent.category.isEmpty ? '未分类' : torrent.category,
+        shadcn.LucideIcons.folder,
+      ),
+      _DetailItem(
+        '标签',
+        torrent.labels.isEmpty ? '无' : torrent.labels.join(', '),
+        shadcn.LucideIcons.tags,
+      ),
+      _DetailItem(
+        '保存路径',
+        torrent.downloadDir.isEmpty ? '-' : torrent.downloadDir,
+        shadcn.LucideIcons.folderOpen,
+      ),
+      _DetailItem(
+        '内容路径',
+        torrent.contentPath.isEmpty ? '-' : torrent.contentPath,
+        shadcn.LucideIcons.file,
+      ),
+      _DetailItem(
+        '添加时间',
+        TorrentUtils.formatTimeAgo(torrent.addedDate),
+        shadcn.LucideIcons.calendarPlus,
+      ),
+      _DetailItem(
+        '活动时间',
+        TorrentUtils.formatTimeAgo(torrent.activityDate),
+        shadcn.LucideIcons.clock,
+      ),
       if (properties.isNotEmpty)
         _DetailItem(
           '总大小',
-          _propertyText(properties, const ['total_size', 'totalSize', 'total_size_bytes']),
+          _propertyText(properties, const [
+            'total_size',
+            'totalSize',
+            'total_size_bytes',
+          ]),
           shadcn.LucideIcons.database,
         ),
     ];
@@ -182,7 +274,9 @@ class _SummaryPanel extends StatelessWidget {
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: items.map((item) => _DetailMetric(item: item)).toList(growable: false),
+        children: items
+            .map((item) => _DetailMetric(item: item))
+            .toList(growable: false),
       ),
     );
   }
@@ -196,7 +290,9 @@ class _TrackerPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final apiTrackers = trackers.where((tracker) => !_isVirtualTrackerData(tracker)).toList();
+    final apiTrackers = trackers
+        .where((tracker) => !_isVirtualTrackerData(tracker))
+        .toList();
     final fallback = torrent.visibleTrackerStats
         .map(
           (tracker) => {
@@ -229,9 +325,13 @@ class _TrackerPanel extends StatelessWidget {
 }
 
 bool _isVirtualTrackerData(Map<String, dynamic> data) {
-  return TorrentUtils.isVirtualTrackerText(_value(data, const ['announce', 'url'])) ||
+  return TorrentUtils.isVirtualTrackerText(
+        _value(data, const ['announce', 'url']),
+      ) ||
       TorrentUtils.isVirtualTrackerText(_value(data, const ['host'])) ||
-      TorrentUtils.isVirtualTrackerText(_value(data, const ['name', 'sitename', 'site_name']));
+      TorrentUtils.isVirtualTrackerText(
+        _value(data, const ['name', 'sitename', 'site_name']),
+      );
 }
 
 class _FilePanel extends StatelessWidget {
@@ -272,26 +372,40 @@ class _TrackerRow extends StatelessWidget {
     final host = _value(data, const ['host']);
     final msg = _value(data, const ['msg', 'message', 'lastAnnounceResult']);
     final seeds = _value(data, const ['seeds', 'seederCount', 'num_seeds']);
-    final leeches = _value(data, const ['leeches', 'leecherCount', 'num_leeches']);
+    final leeches = _value(data, const [
+      'leeches',
+      'leecherCount',
+      'num_leeches',
+    ]);
 
-    return shadcn.Card(
-      filled: true,
-      fillColor: cs.background,
-      borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+    return AppSurfaceCard(
+      color: appSurfaceColor(context, cs.background),
       padding: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(host.isNotEmpty ? host : url, maxLines: 1, overflow: TextOverflow.ellipsis).small.medium.foreground,
+          Text(
+            host.isNotEmpty ? host : url,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ).small.medium.foreground,
           if (url.isNotEmpty && url != host) ...[
             const SizedBox(height: 3),
-            Text(url, maxLines: 1, overflow: TextOverflow.ellipsis).xSmall.muted,
+            Text(
+              url,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ).xSmall.muted,
           ],
           const SizedBox(height: 6),
           Wrap(
             spacing: 8,
             runSpacing: 4,
-            children: [_TinyText('S $seeds'), _TinyText('L $leeches'), if (msg.isNotEmpty) _TinyText(msg)],
+            children: [
+              _TinyText('S $seeds'),
+              _TinyText('L $leeches'),
+              if (msg.isNotEmpty) _TinyText(msg),
+            ],
           ),
         ],
       ),
@@ -307,7 +421,9 @@ class _FileTreeEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return node.isFile ? _FileLeaf(node: node, depth: depth) : _FolderNode(node: node, depth: depth);
+    return node.isFile
+        ? _FileLeaf(node: node, depth: depth)
+        : _FolderNode(node: node, depth: depth);
   }
 }
 
@@ -336,10 +452,8 @@ class _FolderNodeState extends State<_FolderNode> {
     final node = widget.node;
     final depth = widget.depth;
 
-    return shadcn.Card(
-      filled: true,
-      fillColor: cs.background,
-      borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+    return AppSurfaceCard(
+      color: appSurfaceColor(context, cs.background),
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Column(
         children: [
@@ -351,7 +465,9 @@ class _FolderNodeState extends State<_FolderNode> {
               child: Row(
                 children: [
                   Icon(
-                    _expanded ? shadcn.LucideIcons.chevronDown : shadcn.LucideIcons.chevronRight,
+                    _expanded
+                        ? shadcn.LucideIcons.chevronDown
+                        : shadcn.LucideIcons.chevronRight,
                     size: 14,
                     color: cs.mutedForeground,
                   ),
@@ -362,7 +478,11 @@ class _FolderNodeState extends State<_FolderNode> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(node.name, maxLines: 1, overflow: TextOverflow.ellipsis).small.medium.foreground,
+                        Text(
+                          node.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ).small.medium.foreground,
                         const SizedBox(height: 5),
                         shadcn.LinearProgressIndicator(
                           value: node.progress.clamp(0.0, 1.0),
@@ -389,8 +509,12 @@ class _FolderNodeState extends State<_FolderNode> {
                     child: Column(
                       children: [
                         for (var i = 0; i < node.children.length; i++) ...[
-                          _FileTreeEntry(node: node.children[i], depth: depth + 1),
-                          if (i != node.children.length - 1) const SizedBox(height: 6),
+                          _FileTreeEntry(
+                            node: node.children[i],
+                            depth: depth + 1,
+                          ),
+                          if (i != node.children.length - 1)
+                            const SizedBox(height: 6),
                         ],
                       ],
                     ),
@@ -413,10 +537,8 @@ class _FileLeaf extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
 
-    return shadcn.Card(
-      filled: true,
-      fillColor: cs.background,
-      borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+    return AppSurfaceCard(
+      color: appSurfaceColor(context, cs.background),
       padding: EdgeInsets.fromLTRB(10 + depth * 14, 10, 10, 10),
       child: Row(
         children: [
@@ -426,7 +548,11 @@ class _FileLeaf extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(node.name, maxLines: 1, overflow: TextOverflow.ellipsis).small.medium.foreground,
+                Text(
+                  node.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ).small.medium.foreground,
                 const SizedBox(height: 4),
                 shadcn.LinearProgressIndicator(
                   value: node.progress.clamp(0.0, 1.0),
@@ -452,9 +578,18 @@ class _FileTreeNode {
   int size;
   double progress;
 
-  _FileTreeNode.folder(this.name) : isFile = false, children = [], size = 0, progress = 0;
+  _FileTreeNode.folder(this.name)
+    : isFile = false,
+      children = [],
+      size = 0,
+      progress = 0;
 
-  _FileTreeNode.file({required this.name, required this.size, required this.progress}) : isFile = true, children = [];
+  _FileTreeNode.file({
+    required this.name,
+    required this.size,
+    required this.progress,
+  }) : isFile = true,
+       children = [];
 
   _FileTreeNode folderChild(String name) {
     for (final child in children) {
@@ -474,7 +609,11 @@ _FileTreeNode _buildFileTree(List<Map<String, dynamic>> files) {
   final root = _FileTreeNode.folder('');
   for (final file in files) {
     final path = _value(file, const ['name', 'path']);
-    final parts = path.split(RegExp(r'[\\/]+')).map((part) => part.trim()).where((part) => part.isNotEmpty).toList();
+    final parts = path
+        .split(RegExp(r'[\\/]+'))
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .toList();
     final normalizedParts = parts.isEmpty ? ['(未命名文件)'] : parts;
     var parent = root;
     for (final folder in normalizedParts.take(normalizedParts.length - 1)) {
@@ -505,10 +644,14 @@ void _finalizeFileTree(_FileTreeNode node) {
   if (node.size <= 0) {
     node.progress = node.children.isEmpty
         ? 0
-        : node.children.fold(0.0, (sum, child) => sum + child.progress) / node.children.length;
+        : node.children.fold(0.0, (sum, child) => sum + child.progress) /
+              node.children.length;
     return;
   }
-  final completed = node.children.fold<double>(0, (sum, child) => sum + child.size * child.progress.clamp(0.0, 1.0));
+  final completed = node.children.fold<double>(
+    0,
+    (sum, child) => sum + child.size * child.progress.clamp(0.0, 1.0),
+  );
   node.progress = completed / node.size;
 }
 
@@ -517,17 +660,16 @@ class _SectionCard extends StatelessWidget {
   final IconData icon;
   final Widget child;
 
-  const _SectionCard({required this.title, required this.icon, required this.child});
+  const _SectionCard({
+    required this.title,
+    required this.icon,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
-    return shadcn.Card(
-      filled: true,
-      fillColor: cs.card,
-      borderColor: cs.border,
-      borderWidth: 0.5,
-      borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+    return AppSurfaceCard(
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -557,10 +699,8 @@ class _DetailMetric extends StatelessWidget {
     final cs = shadcn.Theme.of(context).colorScheme;
     return SizedBox(
       width: 150,
-      child: shadcn.Card(
-        filled: true,
-        fillColor: cs.background,
-        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+      child: AppSurfaceCard(
+        color: appSurfaceColor(context, cs.background),
         padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -569,11 +709,21 @@ class _DetailMetric extends StatelessWidget {
               children: [
                 Icon(item.icon, size: 13, color: cs.mutedForeground),
                 const SizedBox(width: 5),
-                Expanded(child: Text(item.label, maxLines: 1, overflow: TextOverflow.ellipsis).xSmall.muted),
+                Expanded(
+                  child: Text(
+                    item.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ).xSmall.muted,
+                ),
               ],
             ),
             const SizedBox(height: 6),
-            Text(item.value, maxLines: 2, overflow: TextOverflow.ellipsis).small.medium.foreground,
+            Text(
+              item.value,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ).small.medium.foreground,
           ],
         ),
       ),
@@ -586,7 +736,11 @@ class _MiniChip extends StatelessWidget {
   final String text;
   final Color color;
 
-  const _MiniChip({required this.icon, required this.text, required this.color});
+  const _MiniChip({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -651,14 +805,23 @@ class _DetailItem {
   const _DetailItem(this.label, this.value, this.icon);
 }
 
-List<Map<String, dynamic>> _extractList(Map<String, dynamic> data, List<String> keys) {
+List<Map<String, dynamic>> _extractList(
+  Map<String, dynamic> data,
+  List<String> keys,
+) {
   for (final key in keys) {
     final value = data[key];
     if (value is List) {
-      return value.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+      return value
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
     }
     if (value is Map) {
-      return value.values.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+      return value.values
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
     }
   }
   return const <Map<String, dynamic>>[];
@@ -699,9 +862,11 @@ double _doubleValue(Map<String, dynamic> data, List<String> keys) {
 Color _statusColor(Torrent torrent) {
   if (torrent.hasError) return const Color(0xFFEF4444);
   return switch (torrent.torrentStatus) {
-    TorrentStatus.downloading || TorrentStatus.downloadWait => const Color(0xFF60A5FA),
+    TorrentStatus.downloading ||
+    TorrentStatus.downloadWait => const Color(0xFF60A5FA),
     TorrentStatus.seeding || TorrentStatus.seedWait => const Color(0xFF4ADE80),
-    TorrentStatus.checking || TorrentStatus.checkWait => const Color(0xFFFBBF24),
+    TorrentStatus.checking ||
+    TorrentStatus.checkWait => const Color(0xFFFBBF24),
     TorrentStatus.stopped => const Color(0xFF9CA3AF),
   };
 }

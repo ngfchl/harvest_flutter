@@ -1,11 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
+import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../widgets/browser_page.dart';
@@ -326,18 +328,18 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   void _onHistoryTap(String keyword) {
+    final theme = shadcn.Theme.of(context);
     showAppSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: appSurfaceColor(context, theme.colorScheme.background),
       builder: (ctx) {
-        final cs = shadcn.Theme.of(ctx).colorScheme;
-        final typo = shadcn.Theme.of(ctx).typography;
+        final theme = shadcn.Theme.of(ctx);
+        final cs = theme.colorScheme;
+        final typo = theme.typography;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: cs.background,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-          ),
+        return AppSurfaceContainer(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          color: appSurfaceColor(ctx, cs.background),
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -425,59 +427,72 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
         resourceState.query == _resourceSubmittedQuery &&
         resourceState.searching;
 
+    final pageBackground = appSurfaceColor(context, cs.background);
+
     return EscapeBackScope(
       onBack: () => closeAppSheet(context),
-      // ← 加这一层
-      child: shadcn.OverlayManagerLayer(
-        popoverHandler: const shadcn.PopoverOverlayHandler(),
-        tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-        menuHandler: const shadcn.PopoverOverlayHandler(),
-        child: Scaffold(
-          backgroundColor: cs.background,
-          appBar: AppBar(
-            backgroundColor: cs.background,
-            surfaceTintColor: Colors.transparent,
-            elevation: 0,
-            leading: shadcn.IconButton.ghost(
-              icon: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: cs.foreground),
-              onPressed: () => closeAppSheet(context),
-            ),
-            leadingWidth: 48,
-            titleSpacing: 0,
-            title: Padding(
-              padding: const EdgeInsets.only(right: 4),
-              child: UnifiedSearchBar(
-                controller: _ctrl,
-                focusNode: _focusNode,
-                onChanged: _onTextChanged,
-                onSubmit: _doSearch,
-                onClear: _onClear,
-                hint: _mode == SearchMode.media ? '搜索电影、剧集...' : '搜索种子资源...',
-              ),
-            ),
-            actions: [
-              const DebugThemeButton.material(),
-              if (_mode == SearchMode.resource)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: shadcn.IconButton.ghost(
-                    icon: Icon(shadcn.LucideIcons.settings, size: 19, color: cs.foreground),
-                    onPressed: _showSearchSettings,
+      child: GlobalDrawerSwipeArea(
+        child: AppBackground(
+          child: shadcn.OverlayManagerLayer(
+            popoverHandler: const shadcn.PopoverOverlayHandler(),
+            tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+            menuHandler: const shadcn.PopoverOverlayHandler(),
+            child: Scaffold(
+              backgroundColor: pageBackground,
+              appBar: AppBar(
+                backgroundColor: pageBackground,
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                leading: shadcn.IconButton.ghost(
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 18,
+                    color: cs.foreground,
+                  ),
+                  onPressed: () => closeAppSheet(context),
+                ),
+                leadingWidth: 48,
+                titleSpacing: 0,
+                title: Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: UnifiedSearchBar(
+                    controller: _ctrl,
+                    focusNode: _focusNode,
+                    onChanged: _onTextChanged,
+                    onSubmit: _doSearch,
+                    onClear: _onClear,
+                    hint: _mode == SearchMode.media ? '搜索电影、剧集...' : '搜索种子资源...',
                   ),
                 ),
-            ],
-          ),
-          body: Column(
-            children: [
-              _buildModeSwitcher(),
-              Container(height: 0.5, color: cs.border.withValues(alpha: 0.3)),
-              if (showResourceProgress) _buildResourceProgress(resourceState),
-              if (showHistory) _buildHistorySuggestions(),
-              Expanded(child: _buildBody(context, resourceState)),
-            ],
+                actions: [
+                  const DebugThemeButton.material(),
+                  if (_mode == SearchMode.resource)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: shadcn.IconButton.ghost(
+                        icon: Icon(
+                          shadcn.LucideIcons.settings,
+                          size: 19,
+                          color: cs.foreground,
+                        ),
+                        onPressed: _showSearchSettings,
+                      ),
+                    ),
+                ],
+              ),
+              body: Column(
+                children: [
+                  _buildModeSwitcher(),
+                  Container(height: 0.5, color: cs.border.withValues(alpha: 0.3)),
+                  if (showResourceProgress) _buildResourceProgress(resourceState),
+                  if (showHistory) _buildHistorySuggestions(),
+                  Expanded(child: _buildBody(context, resourceState)),
+                ],
+              ),
+            ),
           ),
         ),
-      ), // ← OverlayManagerLayer 结束
+      ),
     );
   }
 
@@ -565,15 +580,15 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   // ═══════════════════════════════════════════════
 
   Widget _buildHistorySuggestions() {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final typo = theme.typography;
     final history = SearchHistoryManager.getHistory();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.background,
-        border: Border(bottom: BorderSide(color: cs.border.withValues(alpha: 0.4), width: 0.5)),
-      ),
+    return AppSurfaceContainer(
+      borderRadius: BorderRadius.zero,
+      color: appSurfaceColor(context, cs.background),
+      borderColor: cs.border.withValues(alpha: 0.4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1158,14 +1173,14 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   Widget _buildResourceSortBar(ResourceSearchState state) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
     final filteredCount = _filteredResourceResults(state.results).length;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.background,
-        border: Border(bottom: BorderSide(color: cs.border.withValues(alpha: 0.25), width: 0.5)),
-      ),
+    return AppSurfaceContainer(
+      borderRadius: BorderRadius.zero,
+      color: appSurfaceColor(context, cs.background),
+      borderColor: cs.border.withValues(alpha: 0.25),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(12, 7, 12, 7),
@@ -1811,14 +1826,13 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
 
   void _onTorrentTap(SearchTorrentInfo item) {
     showAppSheet(
-      context: context, // 直接用页面 context，不要用 navigatorKey
+      context: context,
+      // 直接用页面 context，不要用 navigatorKey
       title: '选择下载器',
       showDefaultHeader: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      constraints: const BoxConstraints(
-        maxWidth: DownloaderSelectSheet.desktopWidth,
-      ),
+      constraints: const BoxConstraints(maxWidth: DownloaderSelectSheet.desktopWidth),
       builder: (ctx) => DownloaderSelectSheet(
         useDefaultHeader: true,
         onSelected: (downloader) {
@@ -1826,12 +1840,11 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             showAppSheet<void>(
-              context: context, // 这里也一样
+              context: context,
+              // 这里也一样
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
-              constraints: const BoxConstraints(
-                maxWidth: PushTorrentSheet.desktopWidth,
-              ),
+              constraints: const BoxConstraints(maxWidth: PushTorrentSheet.desktopWidth),
               builder: (_) => PushTorrentSheet(torrent: item, downloader: downloader),
             );
           });
@@ -1971,15 +1984,11 @@ class _ResourceFilterPanelState extends State<_ResourceFilterPanel> {
         (widget.sizeEnabled ? 1 : 0) +
         (widget.hrOnly ? 1 : 0);
 
-    return Container(
+    return AppSurfaceContainer(
       width: panelWidth,
-      decoration: BoxDecoration(
-        color: cs.background,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: cs.border.withValues(alpha: 0.42)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 18, offset: const Offset(0, 8))],
-      ),
-      clipBehavior: Clip.antiAlias,
+      borderRadius: BorderRadius.circular(10),
+      color: appSurfaceColor(context, cs.background),
+      borderColor: cs.border.withValues(alpha: 0.42),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: widget.maxHeight),
         child: Column(
@@ -2094,14 +2103,12 @@ class _ResourceFilterSwitchTile extends StatelessWidget {
     final cs = shadcn.Theme.of(context).colorScheme;
     final typo = shadcn.Theme.of(context).typography;
 
-    return Container(
+    return AppSurfaceContainer(
       margin: const EdgeInsets.only(top: 4, bottom: 6),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: cs.mutedForeground.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: cs.border.withValues(alpha: 0.35)),
-      ),
+      borderRadius: BorderRadius.circular(8),
+      color: appSurfaceColor(context, cs.card),
+      borderColor: cs.border.withValues(alpha: 0.35),
       child: Row(
         children: [
           Text(
@@ -2236,14 +2243,12 @@ class _ResourceSizeRangeFilter extends StatelessWidget {
     final start = value.start.round();
     final end = value.end.round();
 
-    return Container(
+    return AppSurfaceContainer(
       margin: const EdgeInsets.only(top: 4, bottom: 6),
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-      decoration: BoxDecoration(
-        color: cs.mutedForeground.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: cs.border.withValues(alpha: 0.35)),
-      ),
+      borderRadius: BorderRadius.circular(8),
+      color: appSurfaceColor(context, cs.card),
+      borderColor: cs.border.withValues(alpha: 0.35),
       child: Column(
         children: [
           Row(

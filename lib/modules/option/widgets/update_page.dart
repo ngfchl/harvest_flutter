@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/theme/app_surface.dart';
+import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -15,35 +17,40 @@ class UpdatePage extends ConsumerWidget {
     final tokens = _UpdatePageThemeTokens.of(context);
     final theme = tokens.theme;
     final cs = tokens.cs;
+    final pageBackground = appSurfaceColor(context, cs.background);
 
     return EscapeBackScope(
       onBack: () => Navigator.of(context).pop(),
-      child: shadcn.Scaffold(
-        backgroundColor: cs.background,
-        headers: [
-          shadcn.AppBar(
-            backgroundColor: cs.background,
-            title: Text(
-              '程序更新',
-              style: theme.typography.large.copyWith(
-                color: cs.foreground,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            leading: [
-              shadcn.IconButton.ghost(
-                icon: Icon(shadcn.LucideIcons.arrowLeft, size: tokens.iconSm),
-                onPressed: () => Navigator.of(context).pop(),
+      child: GlobalDrawerSwipeArea(
+        child: AppBackground(
+          child: shadcn.Scaffold(
+            backgroundColor: pageBackground,
+            headers: [
+              shadcn.AppBar(
+                backgroundColor: pageBackground,
+                title: Text(
+                  '程序更新',
+                  style: theme.typography.large.copyWith(
+                    color: cs.foreground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                leading: [
+                  shadcn.IconButton.ghost(
+                    icon: Icon(shadcn.LucideIcons.arrowLeft, size: tokens.iconSm),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+                trailing: const [DebugThemeButton.shadcn()],
               ),
             ],
-            trailing: const [DebugThemeButton.shadcn()],
-          ),
-        ],
-        child: shadcn.RefreshTrigger(
-          onRefresh: () => ref.read(updateProvider.notifier).refresh(),
-          child: ListView(
-            padding: tokens.edgeOnly(top: 8, bottom: 24),
-            children: const [UpdatePanel(maxCommitCount: 12)],
+            child: shadcn.RefreshTrigger(
+              onRefresh: () => ref.read(updateProvider.notifier).refresh(),
+              child: ListView(
+                padding: tokens.edgeOnly(top: 8, bottom: 24),
+                children: const [UpdatePanel(maxCommitCount: 12)],
+              ),
+            ),
           ),
         ),
       ),
@@ -66,7 +73,11 @@ class _UpdatePageThemeTokens {
 
   factory _UpdatePageThemeTokens.of(BuildContext context) {
     final theme = shadcn.Theme.of(context);
-    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.55, 1.45);
+    final densityScale =
+        ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(
+          0.55,
+          1.45,
+        );
     final textScale = theme.scaling.clamp(0.86, 1.30);
     return _UpdatePageThemeTokens._(
       theme: theme,
@@ -82,10 +93,15 @@ class _UpdatePageThemeTokens {
 
   double get iconSm => font(16);
 
-  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) => EdgeInsets.only(
-        left: size(left),
-        top: size(top),
-        right: size(right),
-        bottom: size(bottom),
-      );
+  EdgeInsets edgeOnly({
+    num left = 0,
+    num top = 0,
+    num right = 0,
+    num bottom = 0,
+  }) => EdgeInsets.only(
+    left: size(left),
+    top: size(top),
+    right: size(right),
+    bottom: size(bottom),
+  );
 }
