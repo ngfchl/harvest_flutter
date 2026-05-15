@@ -23,6 +23,10 @@ class ResponseInterceptor extends Interceptor {
       response.requestOptions.extra[responseMessageKey] = message;
     }
 
+    if (allowAnySucceed && _isAllowedLooseSuccess(data)) {
+      return handler.next(response);
+    }
+
     /// 👉 你的后端规范
     if (data is Map &&
         data['succeed'] == true &&
@@ -66,5 +70,13 @@ class ResponseInterceptor extends Interceptor {
       return messages.isEmpty ? null : messages.join('\n');
     }
     return null;
+  }
+
+  static bool _isAllowedLooseSuccess(dynamic data) {
+    if (data is! Map) return true;
+    if (data['succeed'] == false) return false;
+    final code = data['code'];
+    if (data['succeed'] != true && code is num && code != 0) return false;
+    return true;
   }
 }
