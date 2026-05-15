@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
+import 'package:harvest/modules/notice/provider/notice_provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 // ignore: implementation_imports
 import 'package:shadcn_flutter/src/components/locale/shadcn_localizations_en.dart';
@@ -23,26 +24,33 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   late Brightness _platformBrightness;
   AppLifecycleState _lifecycleState = AppLifecycleState.resumed;
   Timer? _foregroundRefreshTimer;
+  Timer? _backgroundNoticeRefreshTimer;
+  Future<void>? _runningBackgroundNoticeRefresh;
+  DateTime _lastBackgroundNoticeRefreshAt = DateTime.now();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _platformBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
-    _lifecycleState = WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed;
-    _scheduleForegroundRefreshTimer();
+    _platformBrightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    _lifecycleState =
+        WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed;
+    _scheduleCurrentRefreshTimer();
   }
 
   @override
   void dispose() {
     _foregroundRefreshTimer?.cancel();
+    _backgroundNoticeRefreshTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangePlatformBrightness() {
-    final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    final brightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
     if (_platformBrightness == brightness) return;
     setState(() => _platformBrightness = brightness);
   }
@@ -51,12 +59,15 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _lifecycleState = state;
     if (state == AppLifecycleState.resumed) {
+      _backgroundNoticeRefreshTimer?.cancel();
+      _backgroundNoticeRefreshTimer = null;
       _refreshForegroundDataIfDue();
       return;
     }
 
     _foregroundRefreshTimer?.cancel();
     _foregroundRefreshTimer = null;
+    _scheduleBackgroundNoticeRefreshTimer();
   }
 
   void _refreshForegroundDataIfDue() {
@@ -66,9 +77,13 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   void _scheduleForegroundRefreshTimer() {
     _foregroundRefreshTimer?.cancel();
+    _backgroundNoticeRefreshTimer?.cancel();
+    _backgroundNoticeRefreshTimer = null;
     if (_lifecycleState != AppLifecycleState.resumed) return;
 
-    final delay = ref.read(appAutoRefreshControllerProvider).timeUntilNextRefresh;
+    final delay = ref
+        .read(appAutoRefreshControllerProvider)
+        .timeUntilNextRefresh;
 
     _foregroundRefreshTimer = Timer(delay, () {
       if (!mounted || _lifecycleState != AppLifecycleState.resumed) return;
@@ -77,15 +92,57 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     });
   }
 
+  Duration get _backgroundNoticeRefreshInterval {
+    return Duration(minutes: ref.read(appAutoRefreshIntervalProvider));
+  }
+
+  Duration get _timeUntilBackgroundNoticeRefresh {
+    final elapsed = DateTime.now().difference(_lastBackgroundNoticeRefreshAt);
+    if (elapsed >= _backgroundNoticeRefreshInterval) return Duration.zero;
+    return _backgroundNoticeRefreshInterval - elapsed;
+  }
+
+  void _scheduleBackgroundNoticeRefreshTimer() {
+    _backgroundNoticeRefreshTimer?.cancel();
+    if (_lifecycleState == AppLifecycleState.resumed) return;
+
+    final delay = _timeUntilBackgroundNoticeRefresh;
+    _backgroundNoticeRefreshTimer = Timer(delay, () {
+      if (!mounted || _lifecycleState == AppLifecycleState.resumed) return;
+      _markBackgroundNoticeRefreshStarted();
+      unawaited(
+        _refreshBackgroundNotices().whenComplete(() {
+          if (!mounted || _lifecycleState == AppLifecycleState.resumed) return;
+          _scheduleBackgroundNoticeRefreshTimer();
+        }),
+      );
+    });
+  }
+
+  Future<void> _refreshBackgroundNotices() {
+    final running = _runningBackgroundNoticeRefresh;
+    if (running != null) return running;
+
+    final next = ref.read(noticeHistoryProvider.notifier).refresh();
+    _runningBackgroundNoticeRefresh = next.whenComplete(
+      () => _runningBackgroundNoticeRefresh = null,
+    );
+    return _runningBackgroundNoticeRefresh!;
+  }
+
+  void _markBackgroundNoticeRefreshStarted() {
+    _lastBackgroundNoticeRefreshAt = DateTime.now();
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen<int>(appAutoRefreshIntervalProvider, (previous, next) {
       if (previous == next) return;
-      _scheduleForegroundRefreshTimer();
+      _scheduleCurrentRefreshTimer();
     });
     ref.listen<int>(appAutoRefreshRevisionProvider, (previous, next) {
       if (previous == next) return;
-      _scheduleForegroundRefreshTimer();
+      _scheduleCurrentRefreshTimer();
     });
 
     final themeState = ref.watch(themeNotifierProvider);
@@ -126,6 +183,14 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       },
     );
   }
+
+  void _scheduleCurrentRefreshTimer() {
+    if (_lifecycleState == AppLifecycleState.resumed) {
+      _scheduleForegroundRefreshTimer();
+      return;
+    }
+    _scheduleBackgroundNoticeRefreshTimer();
+  }
 }
 
 class _GlobalKeyboardDismiss extends StatelessWidget {
@@ -160,11 +225,13 @@ class _GlobalKeyboardDismiss extends StatelessWidget {
   }
 }
 
-class _AppShadcnLocalizationsDelegate extends LocalizationsDelegate<shadcn.ShadcnLocalizations> {
+class _AppShadcnLocalizationsDelegate
+    extends LocalizationsDelegate<shadcn.ShadcnLocalizations> {
   const _AppShadcnLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) => locale.languageCode == 'zh' || locale.languageCode == 'en';
+  bool isSupported(Locale locale) =>
+      locale.languageCode == 'zh' || locale.languageCode == 'en';
 
   @override
   Future<shadcn.ShadcnLocalizations> load(Locale locale) {

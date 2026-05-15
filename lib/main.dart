@@ -11,6 +11,7 @@ import 'core/storage/storage_keys.dart';
 import 'core/theme/theme_storage.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'modules/auth/auth_provider.dart';
+import 'modules/notice/service/local_notice_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +25,9 @@ void main() async {
   var canConnectInternet = await HiveManager.get('canConnectInternet');
   if (!kIsWeb && (canConnectInternet == null || !canConnectInternet)) {
     try {
-      final res = await Dio().get('https://www.baidu.com').timeout(const Duration(seconds: 5));
+      final res = await Dio()
+          .get('https://www.baidu.com')
+          .timeout(const Duration(seconds: 5));
       if (res.statusCode != 200) {
         AppLogger.debug("============尝试访问网络失败: ${res.statusCode}===========");
       } else {
@@ -39,7 +42,9 @@ void main() async {
   }
 
   AppLogger.debug("============处理状态栏背景颜色透明问题===========");
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(statusBarColor: Colors.transparent));
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+  );
   AppLogger.debug("============处理状态栏背景颜色透明问题完成===========");
   AppLogger.debug("============设置SystemUiMode为edgeToEdge===========");
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -61,6 +66,7 @@ void main() async {
   // ✅ 确认状态
   AppLogger.debug("启动 auth: ${container.read(authNotifierProvider).loggedIn}");
   runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
+  await LocalNoticeNotificationService.instance.handleLaunchNotificationTap();
   await Future.delayed(const Duration(seconds: 2), () {
     FlutterNativeSplash.remove();
   });

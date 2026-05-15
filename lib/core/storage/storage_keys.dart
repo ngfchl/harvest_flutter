@@ -44,6 +44,8 @@ class StorageKeys {
   static const String serverResourceAutoStart = 'server_resource_auto_start';
   static const String appAutoRefreshIntervalMinutes =
       'app_auto_refresh_interval_minutes';
+  static const String localNoticeLastNotifiedId =
+      'local_notice_last_notified_id';
   static const String torrentDeleteFilesWhenUnpreserved =
       'torrent_delete_files_when_unpreserved';
 }
