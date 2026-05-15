@@ -67,7 +67,9 @@ class SiteCard extends ConsumerWidget {
     final spFull = _numVal(config?.spFull);
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0)
+        .clamp(0.0, 1.0)
+        .toDouble();
 
     return SiteActionMenu(
       site: site,
@@ -945,6 +947,8 @@ Widget _siteUnreadIndicators(
   double height = 22,
   double horizontal = 6,
   double gap = 5,
+  Color? mailColor,
+  Color? noticeColor,
 }) {
   final indicators = <Widget>[
     if (site.mail > 0)
@@ -952,7 +956,7 @@ Widget _siteUnreadIndicators(
         context,
         icon: shadcn.LucideIcons.mail,
         value: fmtCompact(site.mail.toDouble()),
-        color: siteInfo(context),
+        color: mailColor ?? siteInfo(context),
         tooltip: '短消息 ${site.mail}',
         iconSize: iconSize,
         fontSize: fontSize,
@@ -964,7 +968,7 @@ Widget _siteUnreadIndicators(
         context,
         icon: shadcn.LucideIcons.bell,
         value: fmtCompact(site.notice.toDouble()),
-        color: siteWarning(context),
+        color: noticeColor ?? siteWarning(context),
         tooltip: '公告通知 ${site.notice}',
         iconSize: iconSize,
         fontSize: fontSize,
@@ -1035,6 +1039,7 @@ Widget _siteLevelMilestoneBadge(
   double vertical = 1,
   double radius = 3,
   double? iconSize,
+  double? height,
 }) {
   final color = milestone.color(context);
   final isDark = shadcn.Theme.of(context).brightness == Brightness.dark;
@@ -1051,7 +1056,11 @@ Widget _siteLevelMilestoneBadge(
   return _siteTooltip(
     milestone.tooltip,
     Container(
-      padding: EdgeInsets.symmetric(horizontal: horizontal, vertical: vertical),
+      height: height,
+      padding: EdgeInsets.symmetric(
+        horizontal: horizontal,
+        vertical: height == null ? vertical : 0,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -1095,14 +1104,19 @@ Widget _siteLevelMilestoneBadge(
   );
 }
 
-Widget _siteInvitePill(BuildContext context, int invitation) {
+Widget _siteInvitePill(
+  BuildContext context,
+  int invitation, {
+  double height = 24,
+  bool emojiLabel = false,
+}) {
   final accent = siteInfo(context);
   final isDark = shadcn.Theme.of(context).brightness == Brightness.dark;
   final foreground = shadcn.Theme.of(context).colorScheme.foreground;
   return _siteTooltip(
     '邀请数 $invitation',
     Container(
-      height: 24,
+      height: height,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         color: accent.withValues(alpha: isDark ? 0.14 : 0.10),
@@ -1115,10 +1129,15 @@ Widget _siteInvitePill(BuildContext context, int invitation) {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.person, size: 12, color: accent.withValues(alpha: 0.68)),
-          const SizedBox(width: 4),
+          if (emojiLabel)
+            const Text('🎟️', style: TextStyle(fontSize: 11, height: 1))
+          else
+            Icon(Icons.person, size: 12, color: accent.withValues(alpha: 0.68)),
+          SizedBox(width: emojiLabel ? 2 : 4),
           Text(
-            '邀请 ${fmtCompact(invitation.toDouble())}',
+            emojiLabel
+                ? fmtCompact(invitation.toDouble())
+                : '邀请 ${fmtCompact(invitation.toDouble())}',
             style: TextStyle(
               color: foreground.withValues(alpha: 0.80),
               fontSize: 11,
@@ -1611,7 +1630,9 @@ class SiteCard2 extends ConsumerWidget {
 
   Color _cardColor(BuildContext context) {
     final theme = shadcn.Theme.of(context);
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0)
+        .clamp(0.0, 1.0)
+        .toDouble();
     final color = _isDark(context)
         ? Color.alphaBlend(
             theme.colorScheme.muted.withValues(alpha: 0.10),
@@ -1670,6 +1691,11 @@ class SiteCard3 extends ConsumerWidget {
   final bool privacy;
 
   const SiteCard3({super.key, required this.site, required this.privacy});
+
+  static const double _statusBadgeHeight = 20;
+  static const double _statusBadgeIconSize = 11;
+  static const double _statusBadgeFontSize = 11;
+  static const double _statusBadgeHorizontal = 8;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1773,20 +1799,21 @@ class SiteCard3 extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(child: _title(context)),
+                  if (signStatus != null) ...[
+                    const SizedBox(width: 8),
+                    _siteSignBadge(context, signStatus),
+                  ],
                   if (_hasSiteUnread(site)) ...[
                     const SizedBox(width: 8),
                     _siteUnreadIndicators(
                       context,
                       site,
-                      iconSize: 13,
-                      fontSize: 11,
-                      height: 24,
-                      horizontal: 7,
+                      iconSize: _statusBadgeIconSize,
+                      fontSize: _statusBadgeFontSize,
+                      height: _statusBadgeHeight,
+                      horizontal: _statusBadgeHorizontal,
+                      mailColor: siteDanger(context),
                     ),
-                  ],
-                  if (signStatus != null) ...[
-                    const SizedBox(width: 8),
-                    _siteSignBadge(context, signStatus),
                   ],
                 ],
               ),
@@ -1826,10 +1853,6 @@ class SiteCard3 extends ConsumerWidget {
                     const SizedBox(width: 8),
                     _levelPill(context, status.myLevel),
                   ],
-                  if (status.invitation > 0) ...[
-                    const SizedBox(width: 6),
-                    _invitePill(context, status.invitation),
-                  ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 6),
                     _siteSignBadge(context, signStatus),
@@ -1857,27 +1880,33 @@ class SiteCard3 extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  if (_hasSiteUnread(site)) ...[
+                  if (status.invitation > 0) ...[
                     const SizedBox(width: 8),
-                    _siteUnreadIndicators(
-                      context,
-                      site,
-                      iconSize: 13,
-                      fontSize: 11,
-                      height: 24,
-                      horizontal: 7,
-                    ),
+                    _invitePill(context, status.invitation),
                   ],
                   if (milestone != null) ...[
                     const SizedBox(width: 8),
                     _siteLevelMilestoneBadge(
                       context,
                       milestone,
-                      fontSize: 12,
-                      horizontal: 9,
-                      vertical: 5,
+                      fontSize: _statusBadgeFontSize,
+                      horizontal: _statusBadgeHorizontal,
+                      vertical: 0,
                       radius: 16,
-                      iconSize: 13,
+                      iconSize: _statusBadgeIconSize,
+                      height: _statusBadgeHeight,
+                    ),
+                  ],
+                  if (_hasSiteUnread(site)) ...[
+                    const SizedBox(width: 8),
+                    _siteUnreadIndicators(
+                      context,
+                      site,
+                      iconSize: _statusBadgeIconSize,
+                      fontSize: _statusBadgeFontSize,
+                      height: _statusBadgeHeight,
+                      horizontal: _statusBadgeHorizontal,
+                      mailColor: siteDanger(context),
                     ),
                   ],
                 ],
@@ -2333,7 +2362,12 @@ class SiteCard3 extends ConsumerWidget {
   }
 
   Widget _invitePill(BuildContext context, int invitation) {
-    return _siteInvitePill(context, invitation);
+    return _siteInvitePill(
+      context,
+      invitation,
+      height: _statusBadgeHeight,
+      emojiLabel: true,
+    );
   }
 
   Widget _moreCircle(BuildContext context) {
@@ -2365,7 +2399,9 @@ class SiteCard3 extends ConsumerWidget {
 
   Color _cardColor(BuildContext context) {
     final theme = shadcn.Theme.of(context);
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
+    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0)
+        .clamp(0.0, 1.0)
+        .toDouble();
     final color = _isDark(context)
         ? Color.alphaBlend(
             theme.colorScheme.muted.withValues(alpha: 0.08),
