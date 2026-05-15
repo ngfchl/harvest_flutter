@@ -158,28 +158,14 @@ class DashboardChartConfig {
     await HiveManager.set(StorageKeys.dashboardDesktopTreemapCount, count);
   }
 
-  static const bool defaultDesktopDynamicBackground = true;
-
-  static bool getDesktopDynamicBackgroundEnabled() {
-    return HiveManager.get<bool>(
-          StorageKeys.dashboardDesktopDynamicBackground,
-        ) ??
-        defaultDesktopDynamicBackground;
-  }
-
-  static Future<void> saveDesktopDynamicBackgroundEnabled(bool enabled) async {
-    await HiveManager.set(
-      StorageKeys.dashboardDesktopDynamicBackground,
-      enabled,
-    );
-  }
-
   static const int defaultPhoneTrendDays = 7;
   static const phoneTrendDayOptions = [1, 7, 30];
 
   static int getPhoneTrendDays() {
     final saved = HiveManager.get<int>(StorageKeys.dashboardPhoneTrendDays);
-    return phoneTrendDayOptions.contains(saved) ? saved! : defaultPhoneTrendDays;
+    return phoneTrendDayOptions.contains(saved)
+        ? saved!
+        : defaultPhoneTrendDays;
   }
 
   static Future<void> savePhoneTrendDays(int days) async {

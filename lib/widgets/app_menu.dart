@@ -3,16 +3,12 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class AppDropdownMenu extends StatelessWidget {
   final List<shadcn.MenuItem> children;
-  final double? surfaceOpacity;
-  final double? surfaceBlur;
   final Axis direction;
   final Object? regionGroupId;
 
   const AppDropdownMenu({
     super.key,
     required this.children,
-    this.surfaceOpacity,
-    this.surfaceBlur,
     this.direction = Axis.vertical,
     this.regionGroupId,
   });
@@ -39,11 +35,7 @@ class AppDropdownMenu extends StatelessWidget {
               : EdgeInsets.zero,
           onDismissed: () => shadcn.closeOverlay(context),
           direction: direction,
-          builder: (context, children) => shadcn.MenuPopup(
-            surfaceOpacity: surfaceOpacity,
-            surfaceBlur: surfaceBlur,
-            children: children,
-          ),
+          builder: (context, children) => shadcn.MenuPopup(children: children),
           children: children,
         ),
       ),

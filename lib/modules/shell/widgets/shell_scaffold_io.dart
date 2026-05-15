@@ -4,9 +4,6 @@ import 'package:flutter/material.dart' show MaterialPageRoute;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
-import '../../../core/theme/app_background_image.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../core/theme/theme_provider.dart';
 import '../../search/unified_search_page.dart';
 import 'shell_bottom_navigation.dart';
 
@@ -117,7 +114,6 @@ class ShellScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeState = ref.watch(themeNotifierProvider);
     final useNativeIOSBottomBar =
         PlatformInfo.isIOS && PlatformInfo.isIOS26OrHigher();
     final effectiveDashboardChrome = dashboardChrome && !useNativeIOSBottomBar;
@@ -127,7 +123,7 @@ class ShellScaffold extends ConsumerWidget {
 
       return AdaptiveScaffold(
         minimizeBehavior: TabBarMinimizeBehavior.never,
-        enableBlur: true,
+        enableBlur: false,
         bottomNavigationBar: AdaptiveBottomNavigationBar(
           useNativeBottomBar: true,
           selectedIndex: _selectedIndex,
@@ -145,13 +141,8 @@ class ShellScaffold extends ConsumerWidget {
           ],
         ),
         body: _ShellBackground(
-          themeState: themeState,
           child: shadcn.ComponentTheme(
-            data: shadcn.ScaffoldTheme(
-              backgroundColor: colors.background.withValues(
-                alpha: themeState.surfaceOpacity,
-              ),
-            ),
+            data: shadcn.ScaffoldTheme(backgroundColor: colors.background),
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -175,7 +166,6 @@ class ShellScaffold extends ConsumerWidget {
       dashboardChrome: effectiveDashboardChrome,
       showNews: showNews,
       useShaderLiquidGlass: false,
-      themeState: themeState,
       child: child,
     );
   }
@@ -190,7 +180,6 @@ class _CustomShellScaffoldBody extends StatelessWidget {
   final bool dashboardChrome;
   final bool showNews;
   final bool useShaderLiquidGlass;
-  final ThemeState themeState;
 
   const _CustomShellScaffoldBody({
     required this.header,
@@ -201,21 +190,17 @@ class _CustomShellScaffoldBody extends StatelessWidget {
     required this.dashboardChrome,
     required this.showNews,
     required this.useShaderLiquidGlass,
-    required this.themeState,
   });
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Positioned.fill(child: _ShellBackground(themeState: themeState)),
+        const Positioned.fill(child: _ShellBackground()),
         Positioned.fill(
           child: shadcn.ComponentTheme(
             data: shadcn.ScaffoldTheme(
-              backgroundColor: shadcn.Theme.of(context)
-                  .colorScheme
-                  .background
-                  .withValues(alpha: themeState.surfaceOpacity),
+              backgroundColor: shadcn.Theme.of(context).colorScheme.background,
             ),
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
@@ -248,32 +233,17 @@ class _CustomShellScaffoldBody extends StatelessWidget {
 }
 
 class _ShellBackground extends StatelessWidget {
-  final ThemeState themeState;
   final Widget? child;
 
-  const _ShellBackground({required this.themeState, this.child});
+  const _ShellBackground({this.child});
 
   @override
   Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
-    Widget background = ColoredBox(color: cs.background);
-    if (themeState.useBackground) {
-      final overlayOpacity =
-          (1.0 - themeState.surfaceOpacity).clamp(0.0, 1.0).toDouble();
-      background = Stack(
-        fit: StackFit.expand,
-        children: [
-          background,
-          appThemeBackgroundImage(themeState),
-          ColoredBox(color: cs.background.withValues(alpha: overlayOpacity)),
-        ],
-      );
-    }
-    if (child == null) return background;
-    return Stack(fit: StackFit.expand, children: [background, child!]);
+    if (child == null) return ColoredBox(color: cs.background);
+    return ColoredBox(color: cs.background, child: child);
   }
 }
-
 
 class _AdaptiveShellNavItem {
   final String label;

@@ -41,7 +41,6 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard> {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     final categoryColor = isQb ? cs.primary : cs.destructive;
     final successColor = cs.primary;
     final inactiveColor = cs.destructive;
@@ -73,7 +72,7 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard> {
         child: shadcn.Card(
           padding: EdgeInsets.zero,
           filled: true,
-          fillColor: cs.card.withValues(alpha: surfaceOpacity),
+          fillColor: cs.card,
           child: Padding(
             padding: EdgeInsets.all(
               theme.density.baseContentPadding * theme.scaling * 0.85,
@@ -81,145 +80,152 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              // ── 顶部：图标 + 名称 + 状态标签 ──
-              Row(
-                children: [
-                  shadcn.SecondaryBadge(
-                    child: Text(
-                      isQb ? 'QB' : 'TR',
-                      style: typo.xSmall.copyWith(
-                        color: categoryColor,
-                        fontWeight: FontWeight.w800,
+                // ── 顶部：图标 + 名称 + 状态标签 ──
+                Row(
+                  children: [
+                    shadcn.SecondaryBadge(
+                      child: Text(
+                        isQb ? 'QB' : 'TR',
+                        style: typo.xSmall.copyWith(
+                          color: categoryColor,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: theme.density.baseGap * theme.scaling),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          d.name,
-                          style: typo.small.copyWith(
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.2,
+                    SizedBox(width: theme.density.baseGap * theme.scaling),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            d.name,
+                            style: typo.small.copyWith(
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.2,
+                            ),
                           ),
-                        ),
-                        SizedBox(
-                          height: theme.density.baseGap * theme.scaling * 0.35,
-                        ),
-                        Row(
-                          children: [
-                            // 连接状态
-                            _statusDot(
-                              active: liveInfo != null,
-                              color: liveInfo != null
-                                  ? successColor
-                                  : inactiveColor,
-                            ),
-                            SizedBox(
-                              width:
-                                  theme.density.baseGap * theme.scaling * 0.5,
-                            ),
-                            Text(
-                              liveInfo != null ? '已连接' : '未连接',
-                              style: typo.xSmall.copyWith(
+                          SizedBox(
+                            height:
+                                theme.density.baseGap * theme.scaling * 0.35,
+                          ),
+                          Row(
+                            children: [
+                              // 连接状态
+                              _statusDot(
+                                active: liveInfo != null,
                                 color: liveInfo != null
                                     ? successColor
                                     : inactiveColor,
                               ),
-                            ),
-                            // 启用状态
-                            SizedBox(
-                              width: theme.density.baseGap * theme.scaling,
-                            ),
-                            _statusDot(
-                              active: d.isActive,
-                              color: d.isActive ? successColor : inactiveColor,
-                            ),
-                            SizedBox(
-                              width:
-                                  theme.density.baseGap * theme.scaling * 0.5,
-                            ),
-                            Text(
-                              d.isActive ? '运行中' : '已停用',
-                              style: typo.xSmall.copyWith(
+                              SizedBox(
+                                width:
+                                    theme.density.baseGap * theme.scaling * 0.5,
+                              ),
+                              Text(
+                                liveInfo != null ? '已连接' : '未连接',
+                                style: typo.xSmall.copyWith(
+                                  color: liveInfo != null
+                                      ? successColor
+                                      : inactiveColor,
+                                ),
+                              ),
+                              // 启用状态
+                              SizedBox(
+                                width: theme.density.baseGap * theme.scaling,
+                              ),
+                              _statusDot(
+                                active: d.isActive,
                                 color: d.isActive
                                     ? successColor
                                     : inactiveColor,
                               ),
-                            ),
-                            // 辅种标签
-                            if (!d.brush) ...[
                               SizedBox(
-                                width: theme.density.baseGap * theme.scaling,
+                                width:
+                                    theme.density.baseGap * theme.scaling * 0.5,
                               ),
-                              const shadcn.OutlineBadge(child: Text('辅种')),
+                              Text(
+                                d.isActive ? '运行中' : '已停用',
+                                style: typo.xSmall.copyWith(
+                                  color: d.isActive
+                                      ? successColor
+                                      : inactiveColor,
+                                ),
+                              ),
+                              // 辅种标签
+                              if (!d.brush) ...[
+                                SizedBox(
+                                  width: theme.density.baseGap * theme.scaling,
+                                ),
+                                const shadcn.OutlineBadge(child: Text('辅种')),
+                              ],
                             ],
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
 
-              // ── 连接信息 ──
-              SizedBox(height: theme.density.baseGap * theme.scaling),
-              SizedBox(
-                width: double.infinity,
-                child: shadcn.Card(
-                  padding: EdgeInsets.symmetric(
-                    horizontal:
-                        theme.density.baseContentPadding * theme.scaling * 0.65,
-                    vertical: theme.density.baseGap * theme.scaling * 0.75,
-                  ),
-                  filled: true,
-                  fillColor: cs.muted.withValues(alpha: 0.35),
-                  child: Row(
-                    children: [
-                      Icon(
-                        shadcn.LucideIcons.globe,
-                        size: theme.scaling * 12,
-                        color: cs.mutedForeground,
-                      ),
-                      SizedBox(
-                        width: theme.density.baseGap * theme.scaling * 0.75,
-                      ),
-                      Expanded(
-                        child: Text(
-                          '${d.protocol}://${d.host}:${d.port}',
+                // ── 连接信息 ──
+                SizedBox(height: theme.density.baseGap * theme.scaling),
+                SizedBox(
+                  width: double.infinity,
+                  child: shadcn.Card(
+                    padding: EdgeInsets.symmetric(
+                      horizontal:
+                          theme.density.baseContentPadding *
+                          theme.scaling *
+                          0.65,
+                      vertical: theme.density.baseGap * theme.scaling * 0.75,
+                    ),
+                    filled: true,
+                    fillColor: cs.muted.withValues(alpha: 0.35),
+                    child: Row(
+                      children: [
+                        Icon(
+                          shadcn.LucideIcons.globe,
+                          size: theme.scaling * 12,
+                          color: cs.mutedForeground,
+                        ),
+                        SizedBox(
+                          width: theme.density.baseGap * theme.scaling * 0.75,
+                        ),
+                        Expanded(
+                          child: Text(
+                            '${d.protocol}://${d.host}:${d.port}',
+                            style: typo.xSmall.copyWith(
+                              color: cs.mutedForeground,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Icon(
+                          shadcn.LucideIcons.folder,
+                          size: theme.scaling * 12,
+                          color: cs.mutedForeground,
+                        ),
+                        SizedBox(
+                          width: theme.density.baseGap * theme.scaling * 0.5,
+                        ),
+                        Text(
+                          d.torrentPath,
                           style: typo.xSmall.copyWith(
                             color: cs.mutedForeground,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      Icon(
-                        shadcn.LucideIcons.folder,
-                        size: theme.scaling * 12,
-                        color: cs.mutedForeground,
-                      ),
-                      SizedBox(
-                        width: theme.density.baseGap * theme.scaling * 0.5,
-                      ),
-                      Text(
-                        d.torrentPath,
-                        style: typo.xSmall.copyWith(color: cs.mutedForeground),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-              // ── 实时数据 ──
-              if (liveInfo != null) ...[
-                SizedBox(height: theme.density.baseGap * theme.scaling),
-                DownloaderLiveInfo(info: liveInfo, isQb: isQb),
-              ],
+                // ── 实时数据 ──
+                if (liveInfo != null) ...[
+                  SizedBox(height: theme.density.baseGap * theme.scaling),
+                  DownloaderLiveInfo(info: liveInfo, isQb: isQb),
+                ],
               ],
             ),
           ),

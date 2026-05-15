@@ -8,8 +8,7 @@ import '../provider/downloader_speed_provider.dart';
 void showSpeedSettings(BuildContext context, WidgetRef ref) {
   final theme = shadcn.Theme.of(context);
   final cs = shadcn.Theme.of(context).colorScheme;
-  final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
-  final sheetBackground = cs.background.withValues(alpha: surfaceOpacity);
+  final sheetBackground = cs.background;
 
   showAppSheet<void>(
     context: context,
@@ -20,7 +19,9 @@ void showSpeedSettings(BuildContext context, WidgetRef ref) {
       child: shadcn.Card(
         filled: true,
         fillColor: sheetBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(theme.radiusLg)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(theme.radiusLg),
+        ),
         padding: EdgeInsets.fromLTRB(
           theme.density.baseContentPadding * theme.scaling,
           theme.density.baseGap * theme.scaling,
@@ -32,14 +33,23 @@ void showSpeedSettings(BuildContext context, WidgetRef ref) {
           children: [
             // 标题
             Padding(
-              padding: EdgeInsets.symmetric(vertical: theme.density.baseGap * theme.scaling * 0.5),
+              padding: EdgeInsets.symmetric(
+                vertical: theme.density.baseGap * theme.scaling * 0.5,
+              ),
               child: Row(
                 children: [
-                  Icon(shadcn.LucideIcons.settings, size: theme.scaling * 16, color: cs.mutedForeground),
+                  Icon(
+                    shadcn.LucideIcons.settings,
+                    size: theme.scaling * 16,
+                    color: cs.mutedForeground,
+                  ),
                   SizedBox(width: theme.density.baseGap * theme.scaling),
                   Text(
                     '刷新设置',
-                    style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
+                    style: theme.typography.small.copyWith(
+                      color: cs.foreground,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -65,7 +75,9 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     final theme = shadcn.Theme.of(context);
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: theme.density.baseGap * theme.scaling),
+      padding: EdgeInsets.symmetric(
+        vertical: theme.density.baseGap * theme.scaling,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -93,7 +105,8 @@ class DownloaderSpeedSettings extends ConsumerWidget {
               min: kMinInterval.toDouble(),
               max: kMaxInterval.toDouble(),
               divisions: kMaxInterval - kMinInterval,
-              onChanged: (v) => ref.read(speedIntervalProvider.notifier).update(v.round()),
+              onChanged: (v) =>
+                  ref.read(speedIntervalProvider.notifier).update(v.round()),
             ),
             SizedBox(height: theme.density.baseGap * theme.scaling),
 
@@ -108,7 +121,8 @@ class DownloaderSpeedSettings extends ConsumerWidget {
               min: kMinDuration.toDouble(),
               max: kMaxDuration.toDouble(),
               divisions: kMaxDuration - kMinDuration,
-              onChanged: (v) => ref.read(speedDurationProvider.notifier).update(v.round()),
+              onChanged: (v) =>
+                  ref.read(speedDurationProvider.notifier).update(v.round()),
             ),
           ],
           SizedBox(height: theme.density.baseGap * theme.scaling),
@@ -117,7 +131,12 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     );
   }
 
-  Widget _settingRow(BuildContext context, {required IconData icon, required String label, required Widget trailing}) {
+  Widget _settingRow(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Widget trailing,
+  }) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final theme = shadcn.Theme.of(context);
     return Row(
@@ -127,7 +146,10 @@ class DownloaderSpeedSettings extends ConsumerWidget {
         Expanded(
           child: Text(
             label,
-            style: theme.typography.xSmall.copyWith(color: cs.foreground, fontWeight: FontWeight.w500),
+            style: theme.typography.xSmall.copyWith(
+              color: cs.foreground,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
         trailing,
@@ -158,7 +180,10 @@ class DownloaderSpeedSettings extends ConsumerWidget {
             Expanded(
               child: Text(
                 label,
-                style: theme.typography.xSmall.copyWith(color: cs.foreground, fontWeight: FontWeight.w500),
+                style: theme.typography.xSmall.copyWith(
+                  color: cs.foreground,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             Container(
@@ -166,7 +191,10 @@ class DownloaderSpeedSettings extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: cs.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: cs.primary.withValues(alpha: 0.2), width: 0.5),
+                border: Border.all(
+                  color: cs.primary.withValues(alpha: 0.2),
+                  width: 0.5,
+                ),
               ),
               child: Text(
                 valueLabel,
@@ -207,8 +235,14 @@ class DownloaderSpeedSettings extends ConsumerWidget {
         children: presets
             .map(
               (v) => current == v
-                  ? shadcn.Button.secondary(onPressed: () => onTap(v), child: Text('$v$unit'))
-                  : shadcn.Button.outline(onPressed: () => onTap(v), child: Text('$v$unit')),
+                  ? shadcn.Button.secondary(
+                      onPressed: () => onTap(v),
+                      child: Text('$v$unit'),
+                    )
+                  : shadcn.Button.outline(
+                      onPressed: () => onTap(v),
+                      child: Text('$v$unit'),
+                    ),
             )
             .toList(),
       ),
@@ -260,7 +294,12 @@ class _NumberPicker extends StatelessWidget {
     );
   }
 
-  Widget _btn(BuildContext context, IconData icon, bool enabled, VoidCallback onTap) {
+  Widget _btn(
+    BuildContext context,
+    IconData icon,
+    bool enabled,
+    VoidCallback onTap,
+  ) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final theme = shadcn.Theme.of(context);
     return shadcn.IconButton.outline(
@@ -268,7 +307,9 @@ class _NumberPicker extends StatelessWidget {
       icon: Icon(
         icon,
         size: theme.scaling * 14,
-        color: enabled ? cs.foreground.withValues(alpha: 0.7) : cs.foreground.withValues(alpha: 0.2),
+        color: enabled
+            ? cs.foreground.withValues(alpha: 0.7)
+            : cs.foreground.withValues(alpha: 0.2),
       ),
     );
   }

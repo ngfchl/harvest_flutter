@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:harvest/core/theme/background_image_picker_page.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/notice/model/notice_history.dart';
@@ -37,13 +36,6 @@ import 'provider/screenshot_provider.dart';
 import 'widgets/log_floating_overlay.dart';
 import 'widgets/shell_scaffold.dart';
 import 'widgets/theme_dialog.dart';
-
-// ─── Dashboard 深色主题色 ───
-const _dashboardShellBg = Color(0xFF07111F);
-const _dashboardShellPanelSoft = Color(0xFF10243B);
-const _dashboardShellLine = Color(0xFF1D3757);
-const _dashboardShellText = Color(0xFFEAF2FF);
-const _dashboardShellCyan = Color(0xFF22D3EE);
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  ShellPage
@@ -441,10 +433,6 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                     _openDrawerPage(const AdminUserPage());
                   },
                   onUpdate: () => _openDrawerPage(const UpdatePage()),
-                  onBackgroundManager: () {
-                    _closeDrawer();
-                    showBackgroundImageDialog(context);
-                  },
                   onAppUpgrade: () {
                     _closeDrawer();
                     context.push('/app-upgrade');
@@ -497,7 +485,6 @@ class _ShellHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     final hasUnread = unreadNotices.isNotEmpty;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -505,7 +492,7 @@ class _ShellHeader extends StatelessWidget {
           ? SystemUiOverlayStyle.light
           : SystemUiOverlayStyle.dark,
       child: Material(
-        color: cs.background.withValues(alpha: surfaceOpacity),
+        color: cs.background,
         child: SafeArea(
           bottom: false,
           child: shadcn.AnimatedContainer(
@@ -659,7 +646,7 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
                     child: Text(
                       count > 99 ? '99+' : '$count',
                       style: TextStyle(
-                        color: cs.destructiveForeground,
+                        color: Colors.white,
                         fontSize: 8,
                         height: 1,
                         fontWeight: FontWeight.w700,
@@ -830,7 +817,7 @@ class _HeaderNoticeButton extends StatelessWidget {
                     child: Text(
                       display,
                       style: TextStyle(
-                        color: cs.destructiveForeground,
+                        color: Colors.white,
                         fontSize: 8,
                         height: 1,
                         fontWeight: FontWeight.w800,
@@ -1217,7 +1204,6 @@ class _ShellDrawerPanel extends StatelessWidget {
       onUsers,
       onAdminUsers,
       onUpdate,
-      onBackgroundManager,
       onAppUpgrade,
       onLogs;
 
@@ -1236,7 +1222,6 @@ class _ShellDrawerPanel extends StatelessWidget {
     required this.onUsers,
     required this.onAdminUsers,
     required this.onUpdate,
-    required this.onBackgroundManager,
     required this.onAppUpgrade,
     required this.onLogs,
   });
@@ -1247,16 +1232,15 @@ class _ShellDrawerPanel extends StatelessWidget {
     final theme = tokens.theme;
     final cs = tokens.cs;
     final typo = theme.typography;
-    final surfaceOpacity = ((theme.surfaceOpacity ?? 1.0) + 0.2).clamp(0.0, 1.0).toDouble();
 
     return Material(
-      color: cs.background.withValues(alpha: surfaceOpacity),
+      color: cs.background,
       child: SafeArea(
         right: false,
         child: Container(
           margin: tokens.edgeOnly(top: 6, right: 6, bottom: 6),
           decoration: BoxDecoration(
-            color: cs.background.withValues(alpha: surfaceOpacity),
+            color: cs.background,
             border: Border.all(
               color: cs.border.withValues(alpha: 0.7),
               width: 0.8,
@@ -1397,11 +1381,6 @@ class _ShellDrawerPanel extends StatelessWidget {
                           label: '程序更新',
                           icon: shadcn.LucideIcons.arrowUpFromLine,
                           onTap: onUpdate,
-                        ),
-                        _DrawerTile(
-                          label: '背景图管理',
-                          icon: shadcn.LucideIcons.image,
-                          onTap: onBackgroundManager,
                         ),
                         if (!kIsWeb)
                           _DrawerTile(

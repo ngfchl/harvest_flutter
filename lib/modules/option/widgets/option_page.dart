@@ -450,7 +450,10 @@ class OptionPage extends ConsumerWidget {
                   child: Row(
                     children: [
                       shadcn.IconButton.ghost(
-                        icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 20),
+                        icon: const Icon(
+                          shadcn.LucideIcons.arrowLeft,
+                          size: 20,
+                        ),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       Expanded(
@@ -464,7 +467,10 @@ class OptionPage extends ConsumerWidget {
                       ),
                       const DebugThemeButton.shadcn(),
                       shadcn.IconButton.ghost(
-                        icon: const Icon(shadcn.LucideIcons.refreshCw, size: 18),
+                        icon: const Icon(
+                          shadcn.LucideIcons.refreshCw,
+                          size: 18,
+                        ),
                         onPressed: () =>
                             ref.read(optionProvider.notifier).fetchOptions(),
                       ),

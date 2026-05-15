@@ -94,20 +94,6 @@ class AppThemeOptions {
     AppThemeOption(id: 'large', label: 'Large', value: 1.15),
   ];
 
-  static const surfaceOpacityOptions = [
-    AppThemeOption(id: 'solid', label: 'Solid', value: 1.0),
-    AppThemeOption(id: 'frosted', label: 'Frosted', value: 0.9),
-    AppThemeOption(id: 'translucent', label: 'Translucent', value: 0.8),
-    AppThemeOption(id: 'ghosted', label: 'Ghosted', value: 0.7),
-  ];
-
-  static const surfaceBlurOptions = [
-    AppThemeOption(id: 'none', label: 'None', value: 0.0),
-    AppThemeOption(id: 'soft', label: 'Soft', value: 4.0),
-    AppThemeOption(id: 'medium', label: 'Medium', value: 8.0),
-    AppThemeOption(id: 'strong', label: 'Strong', value: 12.0),
-  ];
-
   static String normalizeBase(Object? value) {
     final id = value?.toString();
     return baseSchemes.any((option) => option.id == id) ? id! : 'neutral';

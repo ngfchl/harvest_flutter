@@ -10,13 +10,6 @@ class ThemeState {
   final double radius;
   final String density;
   final double scaling;
-  final double surfaceOpacity;
-  final double surfaceBlur;
-  final bool useBackground;
-  final bool manageBackgroundImages;
-  final String backgroundMode;
-  final String backgroundImage;
-  final bool useImageProxy;
 
   const ThemeState({
     this.baseScheme = 'neutral',
@@ -25,13 +18,6 @@ class ThemeState {
     this.radius = 0.5,
     this.density = 'default',
     this.scaling = 1.0,
-    this.surfaceOpacity = 1.0,
-    this.surfaceBlur = 0.0,
-    this.useBackground = true,
-    this.manageBackgroundImages = false,
-    this.backgroundMode = 'asset',
-    this.backgroundImage = 'assets/images/background.png',
-    this.useImageProxy = false,
   });
 
   AppTheme get theme => AppThemes.fromState(this);
@@ -49,8 +35,6 @@ class ThemeState {
       colorScheme: AppThemeOptions.colorScheme(baseScheme, accent, dark),
       radius: radius,
       density: shadcnDensity,
-      surfaceOpacity: surfaceOpacity,
-      surfaceBlur: surfaceBlur,
     );
   }
 
@@ -125,13 +109,6 @@ class ThemeState {
     double? radius,
     String? density,
     double? scaling,
-    double? surfaceOpacity,
-    double? surfaceBlur,
-    bool? useBackground,
-    bool? manageBackgroundImages,
-    String? backgroundMode,
-    String? backgroundImage,
-    bool? useImageProxy,
   }) {
     return ThemeState(
       baseScheme: baseScheme ?? this.baseScheme,
@@ -140,14 +117,6 @@ class ThemeState {
       radius: radius ?? this.radius,
       density: density ?? this.density,
       scaling: scaling ?? this.scaling,
-      surfaceOpacity: surfaceOpacity ?? this.surfaceOpacity,
-      surfaceBlur: surfaceBlur ?? this.surfaceBlur,
-      useBackground: useBackground ?? this.useBackground,
-      manageBackgroundImages:
-          manageBackgroundImages ?? this.manageBackgroundImages,
-      backgroundMode: backgroundMode ?? this.backgroundMode,
-      backgroundImage: backgroundImage ?? this.backgroundImage,
-      useImageProxy: useImageProxy ?? this.useImageProxy,
     );
   }
 
@@ -159,13 +128,6 @@ class ThemeState {
       'radius': radius,
       'density': density,
       'scaling': scaling,
-      'surfaceOpacity': surfaceOpacity,
-      'surfaceBlur': surfaceBlur,
-      'useBackground': useBackground,
-      'manageBackgroundImages': manageBackgroundImages,
-      'backgroundMode': backgroundMode,
-      'backgroundImage': backgroundImage,
-      'useImageProxy': useImageProxy,
     };
   }
 
@@ -192,25 +154,6 @@ class ThemeState {
       radius: (json['radius'] as num?)?.toDouble() ?? 0.5,
       density: AppThemeOptions.normalizeDensity(json['density']),
       scaling: (json['scaling'] as num?)?.toDouble() ?? 1.0,
-      surfaceOpacity: (json['surfaceOpacity'] as num?)?.toDouble() ?? 1.0,
-      surfaceBlur: (json['surfaceBlur'] as num?)?.toDouble() ?? 0.0,
-      useBackground: json['useBackground'] is bool
-          ? json['useBackground'] as bool
-          : true,
-      manageBackgroundImages: json['manageBackgroundImages'] is bool
-          ? json['manageBackgroundImages'] as bool
-          : false,
-      backgroundMode: switch (json['backgroundMode']?.toString()) {
-        'file' => 'file',
-        'network' => 'network',
-        _ => 'asset',
-      },
-      backgroundImage: (json['backgroundImage']?.toString().isNotEmpty ?? false)
-          ? json['backgroundImage'].toString()
-          : 'assets/images/background.png',
-      useImageProxy: json['useImageProxy'] is bool
-          ? json['useImageProxy'] as bool
-          : false,
     );
   }
 }
@@ -234,14 +177,12 @@ class AppTheme {
     colorScheme: AppThemeOptions.colorScheme(baseScheme, accent, false),
     radius: 0.5,
     density: shadcn.Density.defaultDensity,
-    surfaceOpacity: 1.0,
   );
 
   shadcn.ThemeData get shadcnDark => shadcn.ThemeData(
     colorScheme: AppThemeOptions.colorScheme(baseScheme, accent, true),
     radius: 0.5,
     density: shadcn.Density.defaultDensity,
-    surfaceOpacity: 1.0,
   );
 
   Map<String, dynamic> toJson() {

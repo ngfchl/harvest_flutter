@@ -12,7 +12,6 @@ import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/theme/app_surface.dart';
-import 'package:harvest/core/theme/background_image_picker_page.dart';
 import 'package:harvest/core/theme/theme_provider.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/cache_status_banner.dart';
@@ -137,8 +136,7 @@ class DesktopDashboardPage extends ConsumerStatefulWidget {
       _DesktopDashboardPageState();
 }
 
-class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
-    with SingleTickerProviderStateMixin {
+class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   _DashboardThemeTokens get _tokens => _DashboardThemeTokens.of(context);
   Color get _panel => _tokens.panel;
   Color get _panelSoft => _tokens.panelSoft;
@@ -174,10 +172,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   bool _refreshingSites = false;
   bool _signingIn = false;
   bool _showWeeks = false;
-  bool _dynamicBackgroundEnabled = true;
   late int _treemapCount;
   late Map<String, bool> _chartVisibility;
-  late final AnimationController _backdropController;
   _ChartTooltipData? _trendTooltip;
   Offset? _trendTooltipPosition;
   bool _trendTooltipHovering = false;
@@ -196,15 +192,6 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
   @override
   void initState() {
     super.initState();
-    _dynamicBackgroundEnabled =
-        DashboardChartConfig.getDesktopDynamicBackgroundEnabled();
-    _backdropController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2800),
-    );
-    if (_dynamicBackgroundEnabled) {
-      _backdropController.repeat();
-    }
     _treemapCount = DashboardChartConfig.getDesktopTreemapCount();
     _chartVisibility = DashboardChartConfig.getVisibility();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -219,7 +206,6 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
 
   @override
   void dispose() {
-    _backdropController.dispose();
     _refreshController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -249,11 +235,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         allowReorder: false,
         showSizingControls: false,
         showTreemapCountControl: true,
-        showDesktopDynamicBackgroundControl: true,
-        desktopDynamicBackgroundEnabled: _dynamicBackgroundEnabled,
         title: '桌面看板显示设置',
         onTreemapCountSaved: DashboardChartConfig.saveDesktopTreemapCount,
-        onDesktopDynamicBackgroundSaved: _setDynamicBackgroundEnabled,
         onSaved: (_, visibility, __, treemapCount, ___) {
           ref
               .read(serverResourceIntervalProvider.notifier)
@@ -279,16 +262,6 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
         },
       ),
     );
-  }
-
-  void _setDynamicBackgroundEnabled(bool enabled) {
-    if (_dynamicBackgroundEnabled == enabled) return;
-    setState(() => _dynamicBackgroundEnabled = enabled);
-    if (enabled) {
-      _backdropController.repeat();
-    } else {
-      _backdropController.stop();
-    }
   }
 
   void _syncDesktopMonitorCards(Map<String, bool> visibility) {
@@ -478,22 +451,6 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     );
   }
 
-  Widget _buildBackdrop() {
-    return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: _backdropController,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: _BoardBackdropPainter(
-              tick: _backdropController.value,
-              tokens: _tokens,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   Widget _buildBoard(
     BuildContext context,
     DashboardData data,
@@ -631,12 +588,6 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
           ),
           tokens.hGap(8),
           _headerAction(
-            icon: shadcn.LucideIcons.image,
-            label: '背景',
-            onTap: (_) => showBackgroundImageDialog(context),
-          ),
-          tokens.hGap(8),
-          _headerAction(
             icon: privacy ? shadcn.LucideIcons.eyeOff : shadcn.LucideIcons.eye,
             label: privacy ? '隐私' : '明文',
             onTap: (_) => ref.read(privacyModeProvider.notifier).toggle(),
@@ -658,7 +609,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
       height: tokens.size(38),
       padding: tokens.edgeAll(2),
       decoration: BoxDecoration(
-        color: _panelSoft.withValues(alpha: tokens.surfaceOpacity * 0.86),
+        color: _panelSoft.withValues(alpha: 0.86),
         borderRadius: theme.borderRadiusMd,
         border: Border.all(color: _line.withValues(alpha: 0.92)),
       ),
@@ -759,7 +710,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
           height: tokens.size(38),
           padding: tokens.edgeSymmetric(horizontal: 10),
           decoration: BoxDecoration(
-            color: _panelSoft.withValues(alpha: tokens.surfaceOpacity * 0.86),
+            color: _panelSoft.withValues(alpha: 0.86),
             borderRadius: shadcn.Theme.of(context).borderRadiusMd,
             border: Border.all(color: _line.withValues(alpha: 0.92)),
           ),
@@ -1782,7 +1733,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     return Container(
       padding: tokens.edgeSymmetric(horizontal: 9, vertical: 7),
       decoration: BoxDecoration(
-        color: _panelSoft.withValues(alpha: tokens.surfaceOpacity * 0.72),
+        color: _panelSoft.withValues(alpha: 0.72),
         borderRadius: shadcn.Theme.of(context).borderRadiusMd,
         border: Border.all(color: _line.withValues(alpha: 0.70)),
       ),
@@ -2471,7 +2422,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
     return Container(
       padding: tokens.edgeSymmetric(horizontal: 9, vertical: 7),
       decoration: BoxDecoration(
-        color: _panelSoft.withValues(alpha: tokens.surfaceOpacity * 0.58),
+        color: _panelSoft.withValues(alpha: 0.58),
         borderRadius: shadcn.Theme.of(context).borderRadiusSm,
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
@@ -3599,7 +3550,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage>
           ),
           if (!tokens.isDark)
             BoxShadow(
-              color: tokens.background.withValues(alpha: tokens.surfaceOpacity * 0.80),
+              color: tokens.background.withValues(alpha: 0.80),
               blurRadius: 0,
               offset: Offset(0, tokens.size(1)),
               spreadRadius: -1,
@@ -3777,10 +3728,12 @@ class _DesignationCardState extends State<_DesignationCard>
     if (widget.siteCount >= 50) {
       return [tokens.blue, tokens.violet, tokens.red, tokens.blue];
     }
-    if (widget.siteCount >= 30)
+    if (widget.siteCount >= 30) {
       return [tokens.violet, tokens.red, tokens.violet];
-    if (widget.siteCount >= 20)
+    }
+    if (widget.siteCount >= 20) {
       return [tokens.blue, tokens.violet, tokens.blue];
+    }
     if (widget.siteCount >= 10) return [tokens.cyan, tokens.blue, tokens.cyan];
     return [tokens.green, tokens.cyan, palette.first];
   }
@@ -4204,7 +4157,6 @@ class _DashboardThemeTokens {
   final bool isDark;
   final double densityScale;
   final double textScale;
-  final double surfaceOpacity;
   final Color background;
   final Color panel;
   final Color panelSoft;
@@ -4225,7 +4177,6 @@ class _DashboardThemeTokens {
     required this.isDark,
     required this.densityScale,
     required this.textScale,
-    required this.surfaceOpacity,
     required this.background,
     required this.panel,
     required this.panelSoft,
@@ -4245,7 +4196,6 @@ class _DashboardThemeTokens {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = cs.brightness == Brightness.dark;
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1).clamp(0.0, 1.0).toDouble();
     final densityScale =
         ((theme.density.baseContainerPadding / 20.0) * theme.scaling).clamp(
           0.48,
@@ -4271,7 +4221,6 @@ class _DashboardThemeTokens {
       isDark: isDark,
       densityScale: densityScale.toDouble(),
       textScale: textScale.toDouble(),
-      surfaceOpacity: surfaceOpacity,
       background: appSurfaceColor(context, cs.background),
       panel: appSurfaceColor(context, cs.card),
       panelSoft: cs.muted,
@@ -4309,27 +4258,19 @@ class _DashboardThemeTokens {
   double get bottomGap => size(84);
 
   LinearGradient get pageGradient {
-    final opacity = surfaceOpacity;
     return isDark
         ? LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              background.withValues(alpha: opacity),
-              Color.lerp(
-                background,
-                panelSoft,
-                0.34,
-              )!.withValues(alpha: opacity),
-            ],
+            colors: [background, Color.lerp(background, panelSoft, 0.34)!],
           )
         : LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color.lerp(background, cyan, 0.08)!.withValues(alpha: opacity),
-              background.withValues(alpha: opacity),
-              Color.lerp(background, blue, 0.07)!.withValues(alpha: opacity),
+              Color.lerp(background, cyan, 0.08)!,
+              background,
+              Color.lerp(background, blue, 0.07)!,
             ],
           );
   }
@@ -4338,27 +4279,10 @@ class _DashboardThemeTokens {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: isDark
-        ? [
-            cs.card.withValues(
-              alpha: theme.surfaceOpacity ?? 1,
-            ),
-            Color.lerp(
-              cs.card,
-              panelSoft,
-              0.30,
-            )!.withValues(alpha: theme.surfaceOpacity ?? 1),
-          ]
+        ? [cs.card, Color.lerp(cs.card, panelSoft, 0.30)!]
         : [
-            Color.lerp(
-              cs.card,
-              background,
-              0.55,
-            )!.withValues(alpha: theme.surfaceOpacity ?? 1),
-            Color.lerp(
-              cs.card,
-              cyan,
-              0.08,
-            )!.withValues(alpha: theme.surfaceOpacity ?? 1),
+            Color.lerp(cs.card, background, 0.55)!,
+            Color.lerp(cs.card, cyan, 0.08)!,
           ],
   );
 
@@ -4420,229 +4344,4 @@ class _DashboardThemeTokens {
   Widget vGap(num value) => SizedBox(height: size(value));
 
   Widget hGap(num value) => SizedBox(width: size(value));
-}
-
-class _BoardBackdropPainter extends CustomPainter {
-  final double tick;
-  final _DashboardThemeTokens tokens;
-
-  const _BoardBackdropPainter({required this.tick, required this.tokens});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final isDark = tokens.isDark;
-    final topWash = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          tokens.blue.withValues(alpha: isDark ? 0.34 : 0.20),
-          tokens.panelSoft.withValues(alpha: isDark ? 0 : 0.08),
-        ],
-      ).createShader(Offset.zero & size);
-    canvas.drawRect(Offset.zero & size, topWash);
-
-    final sideWash = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [
-          tokens.cyan.withValues(alpha: isDark ? 0.08 : 0.18),
-          tokens.background.withValues(alpha: 0),
-          tokens.blue.withValues(alpha: isDark ? 0.07 : 0.15),
-        ],
-      ).createShader(Offset.zero & size);
-    canvas.drawRect(Offset.zero & size, sideWash);
-
-    final fineGridPaint = Paint()
-      ..color = tokens.blue.withValues(alpha: isDark ? 0.10 : 0.18)
-      ..strokeWidth = 0.45;
-    final fineStep = tokens.size(22);
-    for (double x = 0; x <= size.width; x += fineStep) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), fineGridPaint);
-    }
-    for (double y = 0; y <= size.height; y += fineStep) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), fineGridPaint);
-    }
-
-    final majorGridPaint = Paint()
-      ..color = tokens.cyan.withValues(alpha: isDark ? 0.12 : 0.28)
-      ..strokeWidth = 0.75;
-    final majorStep = tokens.size(88);
-    for (double x = 0; x <= size.width; x += majorStep) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), majorGridPaint);
-    }
-    for (double y = 0; y <= size.height; y += majorStep) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), majorGridPaint);
-    }
-
-    final scanPaint = Paint()
-      ..color = tokens.cyan.withValues(alpha: isDark ? 0.028 : 0.060)
-      ..strokeWidth = 0.5;
-    for (double y = tokens.size(3); y <= size.height; y += tokens.size(6)) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), scanPaint);
-    }
-
-    _drawJumpingDigits(canvas, size);
-    _drawCircuitTraces(canvas, size);
-    _drawCornerBrackets(canvas, size);
-  }
-
-  void _drawJumpingDigits(Canvas canvas, Size size) {
-    final isDark = tokens.isDark;
-    final columnStep = tokens.size(27);
-    final rowStep = tokens.size(22);
-    final phase = tick * tokens.size(64);
-    final columns = (size.width / columnStep).ceil() + 1;
-    final rows = (size.height / rowStep).ceil() + 1;
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
-
-    for (var column = 0; column < columns; column++) {
-      final x =
-          column * columnStep +
-          (column.isEven ? tokens.size(8) : tokens.size(18));
-      final speed = 0.72 + (column % 5) * 0.18;
-      final verticalShift = (phase * speed + column * 9) % rowStep;
-      final columnHighlight = (phase + column * 7) % rows;
-
-      for (var row = -1; row < rows; row++) {
-        final y = row * rowStep + verticalShift;
-        if (y < -rowStep || y > size.height + rowStep) continue;
-
-        final distance = ((row - columnHighlight).abs() % rows).toDouble();
-        final pulse = math.max(0.0, 1.0 - distance / 5.5);
-        final edgeFade = _edgeFade(x, size.width);
-        final baseAlpha =
-            (isDark ? 0.035 : 0.075) +
-            ((column + row).abs() % 4) * (isDark ? 0.014 : 0.022);
-        final alpha = (baseAlpha + pulse * (isDark ? 0.12 : 0.22)) * edgeFade;
-        if (alpha <= (isDark ? 0.006 : 0.018)) continue;
-
-        final digit = ((column * 7 + row * 3 + phase.floor()) % 10).abs();
-        final color = column.isEven ? tokens.cyan : tokens.green;
-        textPainter.text = TextSpan(
-          text: '$digit',
-          style: TextStyle(
-            color: color.withValues(alpha: alpha),
-            fontSize: tokens.font(
-              (isDark ? 12 : 13) + pulse * (isDark ? 3 : 4),
-            ),
-            fontWeight: pulse > 0.65 ? FontWeight.w800 : FontWeight.w600,
-            height: 1,
-          ),
-        );
-        textPainter.layout();
-        textPainter.paint(canvas, Offset(x, y));
-      }
-    }
-  }
-
-  double _edgeFade(double x, double width) {
-    final distanceToEdge = math.min(x, width - x).clamp(0.0, 180.0);
-    final edge = distanceToEdge / 180.0;
-    final middle = (1 - ((x / width) - 0.5).abs() * 1.55).clamp(0.36, 1.0);
-    return (0.45 + edge * 0.55) * middle;
-  }
-
-  void _drawCircuitTraces(Canvas canvas, Size size) {
-    final isDark = tokens.isDark;
-    final cyanPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = tokens.cyan.withValues(alpha: isDark ? 0.18 : 0.34);
-    final bluePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8
-      ..color = tokens.blue.withValues(alpha: isDark ? 0.15 : 0.25);
-
-    final topTrace = Path()
-      ..moveTo(size.width * 0.04, size.height * 0.18)
-      ..lineTo(size.width * 0.18, size.height * 0.18)
-      ..lineTo(size.width * 0.23, size.height * 0.12)
-      ..lineTo(size.width * 0.42, size.height * 0.12)
-      ..lineTo(size.width * 0.48, size.height * 0.22)
-      ..lineTo(size.width * 0.62, size.height * 0.22);
-    canvas.drawPath(topTrace, cyanPaint);
-
-    final middleTrace = Path()
-      ..moveTo(size.width * 0.92, size.height * 0.28)
-      ..lineTo(size.width * 0.74, size.height * 0.28)
-      ..lineTo(size.width * 0.69, size.height * 0.38)
-      ..lineTo(size.width * 0.56, size.height * 0.38)
-      ..lineTo(size.width * 0.50, size.height * 0.48)
-      ..lineTo(size.width * 0.34, size.height * 0.48);
-    canvas.drawPath(middleTrace, bluePaint);
-
-    final lowerTrace = Path()
-      ..moveTo(size.width * 0.07, size.height * 0.72)
-      ..lineTo(size.width * 0.18, size.height * 0.72)
-      ..lineTo(size.width * 0.23, size.height * 0.64)
-      ..lineTo(size.width * 0.37, size.height * 0.64)
-      ..lineTo(size.width * 0.42, size.height * 0.76)
-      ..lineTo(size.width * 0.57, size.height * 0.76)
-      ..lineTo(size.width * 0.62, size.height * 0.68)
-      ..lineTo(size.width * 0.82, size.height * 0.68);
-    canvas.drawPath(lowerTrace, cyanPaint);
-
-    final nodePaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = tokens.cyan.withValues(alpha: isDark ? 0.44 : 0.72);
-    final nodes = [
-      Offset(size.width * 0.23, size.height * 0.12),
-      Offset(size.width * 0.48, size.height * 0.22),
-      Offset(size.width * 0.69, size.height * 0.38),
-      Offset(size.width * 0.50, size.height * 0.48),
-      Offset(size.width * 0.23, size.height * 0.64),
-      Offset(size.width * 0.42, size.height * 0.76),
-      Offset(size.width * 0.62, size.height * 0.68),
-    ];
-    for (final node in nodes) {
-      canvas.drawCircle(node, 2.4, nodePaint);
-      canvas.drawCircle(
-        node,
-        5.8,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.7
-          ..color = tokens.cyan.withValues(alpha: isDark ? 0.18 : 0.36),
-      );
-    }
-  }
-
-  void _drawCornerBrackets(Canvas canvas, Size size) {
-    final isDark = tokens.isDark;
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.1
-      ..color = tokens.cyan.withValues(alpha: isDark ? 0.24 : 0.42);
-    final inset = tokens.size(20);
-    final length = tokens.size(54);
-
-    final paths = [
-      Path()
-        ..moveTo(inset, inset + length)
-        ..lineTo(inset, inset)
-        ..lineTo(inset + length, inset),
-      Path()
-        ..moveTo(size.width - inset - length, inset)
-        ..lineTo(size.width - inset, inset)
-        ..lineTo(size.width - inset, inset + length),
-      Path()
-        ..moveTo(inset, size.height - inset - length)
-        ..lineTo(inset, size.height - inset)
-        ..lineTo(inset + length, size.height - inset),
-      Path()
-        ..moveTo(size.width - inset - length, size.height - inset)
-        ..lineTo(size.width - inset, size.height - inset)
-        ..lineTo(size.width - inset, size.height - inset - length),
-    ];
-
-    for (final path in paths) {
-      canvas.drawPath(path, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _BoardBackdropPainter oldDelegate) =>
-      oldDelegate.tick != tick || oldDelegate.tokens != tokens;
 }

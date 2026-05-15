@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 
 import 'package:flutter/widgets.dart';
-import 'package:harvest/core/theme/app_surface.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -280,7 +278,6 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation>
                     selectedIndex: _selectedIndex,
                     selectedBackgroundOpacity: 0,
                     dashboardChrome: widget.dashboardChrome,
-                    enableBackdropBlur: true,
                     showItems: false,
                   ),
                 ),
@@ -472,7 +469,6 @@ class _NavigationChrome extends StatelessWidget {
   final int selectedIndex;
   final double selectedBackgroundOpacity;
   final bool dashboardChrome;
-  final bool enableBackdropBlur;
   final bool showItems;
 
   const _NavigationChrome({
@@ -480,7 +476,6 @@ class _NavigationChrome extends StatelessWidget {
     required this.selectedIndex,
     required this.selectedBackgroundOpacity,
     required this.dashboardChrome,
-    this.enableBackdropBlur = false,
     this.showItems = true,
   });
 
@@ -488,13 +483,9 @@ class _NavigationChrome extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = shadcn.Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(22);
-    final surfaceOpacity = appSurfaceOpacity(context);
-    final surfaceBlur = appSurfaceBlur(context);
     final background = dashboardChrome
-        ? _ShellBottomNavigationState._dashboardPanel.withValues(
-            alpha: surfaceOpacity,
-          )
-        : colors.card.withValues(alpha: surfaceOpacity);
+        ? _ShellBottomNavigationState._dashboardPanel
+        : colors.card;
     final border = dashboardChrome
         ? _ShellBottomNavigationState._dashboardCyan.withValues(alpha: 0.26)
         : colors.border.withValues(alpha: 0.38);
@@ -546,15 +537,7 @@ class _NavigationChrome extends StatelessWidget {
       ),
     );
 
-    if (!enableBackdropBlur || surfaceBlur <= 0) return chrome;
-
-    return ClipRRect(
-      borderRadius: radius,
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: surfaceBlur, sigmaY: surfaceBlur),
-        child: chrome,
-      ),
-    );
+    return chrome;
   }
 }
 
@@ -864,12 +847,9 @@ class _ShellSearchButtonState extends State<ShellSearchButton>
   @override
   Widget build(BuildContext context) {
     final colors = shadcn.Theme.of(context).colorScheme;
-    final surfaceOpacity = appSurfaceOpacity(context);
     final background = widget.dashboardChrome
-        ? _ShellBottomNavigationState._dashboardPanel.withValues(
-            alpha: surfaceOpacity,
-          )
-        : colors.card.withValues(alpha: surfaceOpacity);
+        ? _ShellBottomNavigationState._dashboardPanel
+        : colors.card;
     final border = widget.dashboardChrome
         ? _ShellBottomNavigationState._dashboardCyan.withValues(alpha: 0.26)
         : colors.border;
@@ -1089,63 +1069,60 @@ class _CompositedLiquidSearchButton extends StatelessWidget {
         Positioned.fill(
           child: ClipRRect(
             borderRadius: radius,
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-              child: Stack(
-                children: [
-                  _SearchButtonChrome(
-                    background: background,
-                    border: border,
-                    primary: primary,
-                    dashboardChrome: dashboardChrome,
-                    showIcon: false,
-                  ),
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          borderRadius: radius,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xFFFFFFFF).withValues(alpha: 0.34),
-                              background.withValues(alpha: 0.04),
-                              primary.withValues(
-                                alpha: dashboardChrome ? 0.18 : 0.12,
-                              ),
-                            ],
-                          ),
+            child: Stack(
+              children: [
+                _SearchButtonChrome(
+                  background: background,
+                  border: border,
+                  primary: primary,
+                  dashboardChrome: dashboardChrome,
+                  showIcon: false,
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: radius,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            const Color(0xFFFFFFFF).withValues(alpha: 0.34),
+                            background.withValues(alpha: 0.04),
+                            primary.withValues(
+                              alpha: dashboardChrome ? 0.18 : 0.12,
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                  Positioned(
-                    left: 13,
-                    right: 13,
-                    top: 8,
-                    height: 1,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFFFFF).withValues(alpha: 0.62),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
+                ),
+                Positioned(
+                  left: 13,
+                  right: 13,
+                  top: 8,
+                  height: 1,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFFFF).withValues(alpha: 0.62),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
-                  Positioned(
-                    right: 12,
-                    top: 12,
-                    width: 6,
-                    height: 6,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFFFFF).withValues(alpha: 0.36),
-                        shape: BoxShape.circle,
-                      ),
+                ),
+                Positioned(
+                  right: 12,
+                  top: 12,
+                  width: 6,
+                  height: 6,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFFFF).withValues(alpha: 0.36),
+                      shape: BoxShape.circle,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -1190,60 +1167,57 @@ class _SearchPressLiquidLayer extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: radius,
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            border: Border.all(
-              color: primary.withValues(alpha: dashboardChrome ? 0.34 : 0.24),
-              width: 0.8,
-            ),
-            gradient: RadialGradient(
-              center: const Alignment(-0.35, -0.45),
-              radius: 1.05,
-              colors: [
-                const Color(0xFFFFFFFF).withValues(alpha: 0.42),
-                primary.withValues(alpha: dashboardChrome ? 0.20 : 0.14),
-                background.withValues(alpha: 0.04),
-              ],
-              stops: const [0.0, 0.48, 1.0],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: primary.withValues(alpha: dashboardChrome ? 0.24 : 0.16),
-                blurRadius: 18,
-              ),
-            ],
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          border: Border.all(
+            color: primary.withValues(alpha: dashboardChrome ? 0.34 : 0.24),
+            width: 0.8,
           ),
-          child: Stack(
-            children: [
-              Positioned(
-                left: 12,
-                right: 12,
-                top: 7,
-                height: 1.2,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFFFF).withValues(alpha: 0.68),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
+          gradient: RadialGradient(
+            center: const Alignment(-0.35, -0.45),
+            radius: 1.05,
+            colors: [
+              const Color(0xFFFFFFFF).withValues(alpha: 0.42),
+              primary.withValues(alpha: dashboardChrome ? 0.20 : 0.14),
+              background.withValues(alpha: 0.04),
+            ],
+            stops: const [0.0, 0.48, 1.0],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: primary.withValues(alpha: dashboardChrome ? 0.24 : 0.16),
+              blurRadius: 18,
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              left: 12,
+              right: 12,
+              top: 7,
+              height: 1.2,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFFFF).withValues(alpha: 0.68),
+                  borderRadius: BorderRadius.circular(999),
                 ),
               ),
-              Positioned(
-                right: 10,
-                top: 10,
-                width: 8,
-                height: 8,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFFFF).withValues(alpha: 0.50),
-                    shape: BoxShape.circle,
-                  ),
+            ),
+            Positioned(
+              right: 10,
+              top: 10,
+              width: 8,
+              height: 8,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFFFF).withValues(alpha: 0.50),
+                  shape: BoxShape.circle,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

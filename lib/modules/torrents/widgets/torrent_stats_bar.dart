@@ -82,12 +82,10 @@ class StatsBar extends ConsumerWidget {
     final modeText = '${slowMode ? '龟速' : '极速'} · ${limited ? '限速' : '不限速'}';
     final freeSpace = liveInfo?.freeSpace ?? 0;
 
-    final surfaceOpacity = (shadcn.Theme.of(context).surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: cs.background.withValues(alpha: surfaceOpacity),
+        color: cs.background,
         border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
       ),
       child: SizedBox(

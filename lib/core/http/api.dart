@@ -18,9 +18,6 @@ class API {
   static const String ADMIN_RESET_TOKEN = "/api/auth/admin/reset/token";
   static const String ADMIN_RESET_INVITE = "/api/auth/admin/reset/invite/";
   static const String QINIU_UPLOAD_FILES = "/api/source/qiniu/upload_files";
-  static const String IMAGEBED_UPLOAD = "/api/imagebed/upload";
-  static const String IMAGEBED_REMOTE = "/api/imagebed/remote";
-  static const String IMAGEBED_IMAGES = "/api/imagebed/images";
 
   // 我的站点列表增删改查
   static const String DASHBOARD_DATA = "/api/mysite/dashboard";

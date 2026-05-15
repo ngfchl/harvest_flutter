@@ -43,8 +43,7 @@ class SiteTimelinePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
-    final pageBackground = cs.background.withValues(alpha: surfaceOpacity);
+    final pageBackground = cs.background;
 
     return EscapeBackScope(
       onBack: () => Navigator.of(context).pop(),
@@ -91,7 +90,8 @@ class SiteTimelineContent extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<SiteTimelineContent> createState() => _SiteTimelineContentState();
+  ConsumerState<SiteTimelineContent> createState() =>
+      _SiteTimelineContentState();
 }
 
 class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
@@ -105,9 +105,13 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
   @override
   void initState() {
     super.initState();
-    _showDurationOnTitle = HiveManager.get<bool>(StorageKeys.siteTimelineTitleShowDuration) ?? false;
+    _showDurationOnTitle =
+        HiveManager.get<bool>(StorageKeys.siteTimelineTitleShowDuration) ??
+        false;
     _visibleFields = _defaultVisibleFields();
-    final savedVisibleFields = HiveManager.get<Map>(StorageKeys.siteTimelineVisibleFields);
+    final savedVisibleFields = HiveManager.get<Map>(
+      StorageKeys.siteTimelineVisibleFields,
+    );
     if (savedVisibleFields != null) {
       for (final entry in savedVisibleFields.entries) {
         final key = entry.key.toString();
@@ -158,7 +162,9 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
       for (final entry in displayList)
         shadcn.TimelineData(
           color: entry.isOwned
-              ? (entry.isDisabled ? cs.mutedForeground.withValues(alpha: 0.72) : cs.primary)
+              ? (entry.isDisabled
+                    ? cs.mutedForeground.withValues(alpha: 0.72)
+                    : cs.primary)
               : cs.mutedForeground.withValues(alpha: 0.42),
           time: const SizedBox.shrink(),
           title: const SizedBox.shrink(),
@@ -239,7 +245,10 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
                     label: '标题显示：注册日期',
                     onPressed: () => setState(() {
                       _showDurationOnTitle = false;
-                      HiveManager.set(StorageKeys.siteTimelineTitleShowDuration, _showDurationOnTitle);
+                      HiveManager.set(
+                        StorageKeys.siteTimelineTitleShowDuration,
+                        _showDurationOnTitle,
+                      );
                     }),
                   ),
                   _timelineMenuButton(
@@ -247,7 +256,10 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
                     label: '标题显示：注册时长',
                     onPressed: () => setState(() {
                       _showDurationOnTitle = true;
-                      HiveManager.set(StorageKeys.siteTimelineTitleShowDuration, _showDurationOnTitle);
+                      HiveManager.set(
+                        StorageKeys.siteTimelineTitleShowDuration,
+                        _showDurationOnTitle,
+                      );
                     }),
                   ),
                   const shadcn.MenuDivider(),
@@ -265,8 +277,12 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
                       selected: _visibleFields[item.$1] ?? true,
                       label: item.$2,
                       onPressed: () => setState(() {
-                        _visibleFields[item.$1] = !(_visibleFields[item.$1] ?? true);
-                        HiveManager.set(StorageKeys.siteTimelineVisibleFields, _visibleFields);
+                        _visibleFields[item.$1] =
+                            !(_visibleFields[item.$1] ?? true);
+                        HiveManager.set(
+                          StorageKeys.siteTimelineVisibleFields,
+                          _visibleFields,
+                        );
                       }),
                     ),
                 ],
@@ -280,7 +296,9 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
               ? Center(
                   child: Text(
                     '没有符合条件的站点',
-                    style: theme.typography.small.copyWith(color: cs.mutedForeground),
+                    style: theme.typography.small.copyWith(
+                      color: cs.mutedForeground,
+                    ),
                   ),
                 )
               : shadcn.ComponentTheme(
@@ -317,9 +335,7 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
             alignment: Alignment.topRight,
             offset: const Offset(0, 8),
             consumeOutsideTaps: false,
-            builder: (_) => AppDropdownMenu(
-              children: children,
-            ),
+            builder: (_) => AppDropdownMenu(children: children),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -354,7 +370,10 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
     );
   }
 
-  List<_SiteTimelineEntry> _buildEntries(List<WebSite> websites, List<SiteInfo> mySites) {
+  List<_SiteTimelineEntry> _buildEntries(
+    List<WebSite> websites,
+    List<SiteInfo> mySites,
+  ) {
     final byName = <String, SiteInfo>{};
     for (final site in mySites) {
       byName[site.site.trim().toLowerCase()] = site;
@@ -380,11 +399,15 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
     }
 
     bool matches(_SiteTimelineEntry entry) {
-      if (_ownership == _TimelineOwnership.ownedOnly && !entry.isOwned) return false;
-      if (_ownership == _TimelineOwnership.unownedOnly && entry.isOwned) return false;
+      if (_ownership == _TimelineOwnership.ownedOnly && !entry.isOwned)
+        return false;
+      if (_ownership == _TimelineOwnership.unownedOnly && entry.isOwned)
+        return false;
       final invites = entry.invitationCount;
-      if (_inviteFilter == _TimelineInviteFilter.has && invites <= 0) return false;
-      if (_inviteFilter == _TimelineInviteFilter.none && invites > 0) return false;
+      if (_inviteFilter == _TimelineInviteFilter.has && invites <= 0)
+        return false;
+      if (_inviteFilter == _TimelineInviteFilter.none && invites > 0)
+        return false;
       return true;
     }
 
@@ -396,15 +419,18 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
       }
       final at = a.registeredAt;
       final bt = b.registeredAt;
-      if (at == null && bt == null) return a.displayName.compareTo(b.displayName);
+      if (at == null && bt == null)
+        return a.displayName.compareTo(b.displayName);
       if (at == null) return 1;
       if (bt == null) return -1;
       final cmp = at.compareTo(bt);
       return _ascending ? cmp : -cmp;
     }
 
-    final filteredEnabledOwned = enabledOwnedEntries.where(matches).toList()..sort(sortEntries);
-    final filteredDisabledOwned = disabledOwnedEntries.where(matches).toList()..sort(sortEntries);
+    final filteredEnabledOwned = enabledOwnedEntries.where(matches).toList()
+      ..sort(sortEntries);
+    final filteredDisabledOwned = disabledOwnedEntries.where(matches).toList()
+      ..sort(sortEntries);
     final filteredUnowned = unownedEntries.where(matches).toList()
       ..sort((a, b) => a.displayName.compareTo(b.displayName));
     return [
@@ -523,14 +549,21 @@ class _SiteUrlSelectDialog extends StatelessWidget {
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(urls[i]),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 9,
+                      ),
                       decoration: BoxDecoration(
                         color: cs.muted.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         children: [
-                          Icon(shadcn.LucideIcons.globe, size: 15, color: cs.mutedForeground),
+                          Icon(
+                            shadcn.LucideIcons.globe,
+                            size: 15,
+                            color: cs.mutedForeground,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Column(
@@ -548,14 +581,20 @@ class _SiteUrlSelectDialog extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                   urls[i],
-                                  style: typo.xSmall.copyWith(color: cs.mutedForeground),
+                                  style: typo.xSmall.copyWith(
+                                    color: cs.mutedForeground,
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
                           ),
-                          Icon(shadcn.LucideIcons.chevronRight, size: 15, color: cs.mutedForeground),
+                          Icon(
+                            shadcn.LucideIcons.chevronRight,
+                            size: 15,
+                            color: cs.mutedForeground,
+                          ),
                         ],
                       ),
                     ),
@@ -587,8 +626,9 @@ Widget _siteTimelineRow({
 }) {
   final theme = shadcn.Theme.of(context);
   final cs = theme.colorScheme;
-  final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
-  final titleTime = showDurationOnTitle ? entry.durationText : entry.registeredAtText;
+  final titleTime = showDurationOnTitle
+      ? entry.durationText
+      : entry.registeredAtText;
   final showStates = entry.isDisabled || !entry.isOwned;
   final items = <_TimelineMetric>[
     if (visibleFields['uploaded'] == true)
@@ -626,7 +666,7 @@ Widget _siteTimelineRow({
   return Container(
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: cs.card.withValues(alpha: surfaceOpacity),
+      color: cs.card,
       borderRadius: BorderRadius.circular(12),
       border: Border.all(color: cs.border.withValues(alpha: 0.82)),
       boxShadow: [
@@ -658,14 +698,21 @@ Widget _siteTimelineRow({
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (visibleFields['invitation'] == true) ...[
-                  _timelineInvitationBadge(context, count: entry.invitationCount),
+                  _timelineInvitationBadge(
+                    context,
+                    count: entry.invitationCount,
+                  ),
                   const SizedBox(width: 6),
                 ],
                 _timelineTitleMeta(
                   context,
-                  icon: showDurationOnTitle ? shadcn.LucideIcons.clock : shadcn.LucideIcons.calendar,
+                  icon: showDurationOnTitle
+                      ? shadcn.LucideIcons.clock
+                      : shadcn.LucideIcons.calendar,
                   text: titleTime,
-                  tooltip: showDurationOnTitle ? '注册时长：$titleTime' : '注册时间：$titleTime',
+                  tooltip: showDurationOnTitle
+                      ? '注册时长：$titleTime'
+                      : '注册时间：$titleTime',
                 ),
                 const SizedBox(width: 6),
                 _timelineLinksIndicator(
@@ -706,7 +753,9 @@ Widget _siteTimelineRow({
                 Expanded(child: _timelineMetricTile(context, items[i])),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: i + 1 < items.length ? _timelineMetricTile(context, items[i + 1]) : const SizedBox.shrink(),
+                  child: i + 1 < items.length
+                      ? _timelineMetricTile(context, items[i + 1])
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),
@@ -726,8 +775,13 @@ Widget _timelineLinksIndicator(
 }) {
   final theme = shadcn.Theme.of(context);
   final cs = theme.colorScheme;
-  final fallbackUrls = urls.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-  final ownedTargets = entry.mySite == null ? const <SiteBrowseTarget>[] : buildSiteBrowseTargets(entry.mySite!, entry.website);
+  final fallbackUrls = urls
+      .map((e) => e.trim())
+      .where((e) => e.isNotEmpty)
+      .toList();
+  final ownedTargets = entry.mySite == null
+      ? const <SiteBrowseTarget>[]
+      : buildSiteBrowseTargets(entry.mySite!, entry.website);
   final targets = ownedTargets.isNotEmpty
       ? ownedTargets
       : [
@@ -774,7 +828,9 @@ Widget _timelineLinksBadge(BuildContext context, bool hasTargets) {
         Icon(
           hasTargets ? shadcn.LucideIcons.globe : shadcn.LucideIcons.globeLock,
           size: 12,
-          color: hasTargets ? cs.primary : cs.mutedForeground.withValues(alpha: 0.58),
+          color: hasTargets
+              ? cs.primary
+              : cs.mutedForeground.withValues(alpha: 0.58),
         ),
         if (hasTargets) ...[
           const SizedBox(width: 3),
@@ -806,10 +862,7 @@ Widget _timelineInvitationBadge(BuildContext context, {required int count}) {
     ),
   );
 
-  return shadcn.Tooltip(
-    tooltip: (_) => Text('邀请数：$count'),
-    child: child,
-  );
+  return shadcn.Tooltip(tooltip: (_) => Text('邀请数：$count'), child: child);
 }
 
 Widget _timelineTitleMeta(
@@ -848,10 +901,7 @@ Widget _timelineTitleMeta(
     ),
   );
 
-  return shadcn.Tooltip(
-    tooltip: (_) => Text(tooltip),
-    child: child,
-  );
+  return shadcn.Tooltip(tooltip: (_) => Text(tooltip), child: child);
 }
 
 class _TimelineMetric {
@@ -923,10 +973,7 @@ Widget _timelineMetricTile(BuildContext context, _TimelineMetric metric) {
     ),
   );
 
-  return shadcn.Tooltip(
-    tooltip: (_) => Text(metric.tooltip),
-    child: tile,
-  );
+  return shadcn.Tooltip(tooltip: (_) => Text(metric.tooltip), child: tile);
 }
 
 Widget _timelineStateTag(BuildContext context, String text) {
@@ -1019,13 +1066,19 @@ class _SiteTimelineEntry {
 
   int get invitationCount => mySite?.latestStatus?.invitation ?? 0;
 
-  String get uploadedText => uploadedBytes > 0 ? formatBytes(uploadedBytes) : '-';
+  String get uploadedText =>
+      uploadedBytes > 0 ? formatBytes(uploadedBytes) : '-';
 
-  String get downloadedText => downloadedBytes > 0 ? formatBytes(downloadedBytes) : '-';
+  String get downloadedText =>
+      downloadedBytes > 0 ? formatBytes(downloadedBytes) : '-';
 
-  String get usernameText => mySite?.username?.trim().isNotEmpty == true ? mySite!.username!.trim() : '-';
+  String get usernameText => mySite?.username?.trim().isNotEmpty == true
+      ? mySite!.username!.trim()
+      : '-';
 
-  String get emailText => mySite?.email?.trim().isNotEmpty == true ? mySite!.email!.trim() : '-';
+  String get emailText =>
+      mySite?.email?.trim().isNotEmpty == true ? mySite!.email!.trim() : '-';
 
-  String get uidText => mySite?.userId?.trim().isNotEmpty == true ? mySite!.userId!.trim() : '-';
+  String get uidText =>
+      mySite?.userId?.trim().isNotEmpty == true ? mySite!.userId!.trim() : '-';
 }

@@ -15,7 +15,6 @@ class DownloaderLiveInfo extends StatelessWidget {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     final primary = cs.primary;
     final destructive = cs.destructive;
     final warning = Color.lerp(cs.primary, cs.destructive, 0.45)!;
@@ -25,7 +24,7 @@ class DownloaderLiveInfo extends StatelessWidget {
       child: shadcn.Card(
         padding: EdgeInsets.zero,
         filled: true,
-        fillColor: cs.muted.withValues(alpha: 0.28 * surfaceOpacity),
+        fillColor: cs.muted.withValues(alpha: 0.28),
         child: Column(
           children: [
             // ── 速度 + 版本 ──

@@ -4,10 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:harvest/core/theme/background_image_picker_page.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/admin_user/admin_user_page.dart';
-import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/news/provider/media_info_settings_provider.dart';
 import 'package:harvest/modules/option/widgets/option_page.dart';
 import 'package:harvest/modules/option/widgets/update_page.dart';
@@ -30,7 +28,8 @@ class GlobalDrawerSwipeArea extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<GlobalDrawerSwipeArea> createState() => _GlobalDrawerSwipeAreaState();
+  ConsumerState<GlobalDrawerSwipeArea> createState() =>
+      _GlobalDrawerSwipeAreaState();
 }
 
 class _GlobalDrawerSwipeAreaState extends ConsumerState<GlobalDrawerSwipeArea> {
@@ -52,9 +51,11 @@ class _GlobalDrawerSwipeAreaState extends ConsumerState<GlobalDrawerSwipeArea> {
     if (_dragDistance > widget.openThreshold) {
       _dragDistance = 0;
       _opening = true;
-      unawaited(showGlobalDrawer(context, ref).whenComplete(() {
-        if (mounted) _opening = false;
-      }));
+      unawaited(
+        showGlobalDrawer(context, ref).whenComplete(() {
+          if (mounted) _opening = false;
+        }),
+      );
     }
   }
 
@@ -105,10 +106,7 @@ Future<void> showGlobalDrawer(BuildContext context, WidgetRef ref) async {
       widthFactor: 1,
       child: SizedBox(
         width: width,
-        child: _GlobalDrawerPanel(
-          drawerContext: drawerContext,
-          ref: ref,
-        ),
+        child: _GlobalDrawerPanel(drawerContext: drawerContext, ref: ref),
       ),
     ),
   );
@@ -119,14 +117,13 @@ class _GlobalDrawerPanel extends StatelessWidget {
   final BuildContext drawerContext;
   final WidgetRef ref;
 
-  const _GlobalDrawerPanel({
-    required this.drawerContext,
-    required this.ref,
-  });
+  const _GlobalDrawerPanel({required this.drawerContext, required this.ref});
 
   Future<void> _close() => shadcn.closeDrawer<void>(drawerContext);
 
-  void _afterClose(void Function(NavigatorState nav, BuildContext context) action) {
+  void _afterClose(
+    void Function(NavigatorState nav, BuildContext context) action,
+  ) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final nav = navigatorKey.currentState;
       final context = navigatorKey.currentContext;
@@ -164,11 +161,6 @@ class _GlobalDrawerPanel extends StatelessWidget {
     _afterClose((_, context) => LogOverlayManager.toggle(context));
   }
 
-  Future<void> _openBackgroundManager() async {
-    await _close();
-    _afterClose((_, context) => showBackgroundImageDialog(context));
-  }
-
   @override
   Widget build(BuildContext context) {
     final tokens = _GlobalDrawerTokens.of(context);
@@ -179,17 +171,16 @@ class _GlobalDrawerPanel extends StatelessWidget {
     final showAdminUser = _authInfoEmail(authInfo) == 'ngfchl@126.com';
     final showNews = ref.watch(mediaInfoSettingsProvider).enabled;
     final currentPath = _currentPath(context);
-    final surfaceOpacity = ((theme.surfaceOpacity ?? 1.0) + 0.2).clamp(0.0, 1.0).toDouble();
 
     return SizedBox.expand(
       child: Material(
-        color: cs.background.withValues(alpha: surfaceOpacity),
+        color: cs.background,
         child: SafeArea(
           right: false,
           child: Container(
             margin: tokens.edgeOnly(top: 6, right: 6, bottom: 6),
             decoration: BoxDecoration(
-              color: cs.background.withValues(alpha: surfaceOpacity),
+              color: cs.background,
               border: Border.all(
                 color: cs.border.withValues(alpha: 0.7),
                 width: 0.8,
@@ -206,7 +197,12 @@ class _GlobalDrawerPanel extends StatelessWidget {
             child: Column(
               children: [
                 Padding(
-                  padding: tokens.edgeOnly(left: 14, top: 10, right: 8, bottom: 8),
+                  padding: tokens.edgeOnly(
+                    left: 14,
+                    top: 10,
+                    right: 8,
+                    bottom: 8,
+                  ),
                   child: Row(
                     children: [
                       Expanded(
@@ -223,7 +219,9 @@ class _GlobalDrawerPanel extends StatelessWidget {
                             SizedBox(height: tokens.size(1)),
                             Text(
                               '左侧快速访问应用页面与工具',
-                              style: typo.xSmall.copyWith(color: cs.mutedForeground),
+                              style: typo.xSmall.copyWith(
+                                color: cs.mutedForeground,
+                              ),
                             ),
                           ],
                         ),
@@ -247,7 +245,12 @@ class _GlobalDrawerPanel extends StatelessWidget {
                 ),
                 Expanded(
                   child: ListView(
-                    padding: tokens.edgeOnly(left: 8, top: 8, right: 8, bottom: 12),
+                    padding: tokens.edgeOnly(
+                      left: 8,
+                      top: 8,
+                      right: 8,
+                      bottom: 12,
+                    ),
                     children: [
                       _DrawerGroup(
                         title: '主要页面',
@@ -321,11 +324,6 @@ class _GlobalDrawerPanel extends StatelessWidget {
                             icon: shadcn.LucideIcons.arrowUpFromLine,
                             onTap: () => _push(const UpdatePage()),
                           ),
-                          _DrawerTile(
-                            label: '背景图管理',
-                            icon: shadcn.LucideIcons.image,
-                            onTap: _openBackgroundManager,
-                          ),
                           if (!kIsWeb)
                             _DrawerTile(
                               label: 'APP升级',
@@ -366,7 +364,11 @@ class _GlobalDrawerTokens {
 
   factory _GlobalDrawerTokens.of(BuildContext context) {
     final theme = shadcn.Theme.of(context);
-    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.58, 1.18);
+    final densityScale =
+        ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(
+          0.58,
+          1.18,
+        );
     final textScale = theme.scaling.clamp(0.86, 1.22);
     return _GlobalDrawerTokens._(
       theme: theme,
@@ -380,17 +382,23 @@ class _GlobalDrawerTokens {
 
   double font(num value) => value * textScale;
 
-  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) => EdgeInsets.only(
+  EdgeInsets edgeOnly({
+    num left = 0,
+    num top = 0,
+    num right = 0,
+    num bottom = 0,
+  }) => EdgeInsets.only(
     left: size(left),
     top: size(top),
     right: size(right),
     bottom: size(bottom),
   );
 
-  EdgeInsets symmetric({num horizontal = 0, num vertical = 0}) => EdgeInsets.symmetric(
-    horizontal: size(horizontal),
-    vertical: size(vertical),
-  );
+  EdgeInsets symmetric({num horizontal = 0, num vertical = 0}) =>
+      EdgeInsets.symmetric(
+        horizontal: size(horizontal),
+        vertical: size(vertical),
+      );
 }
 
 class _DrawerGroup extends StatelessWidget {
@@ -458,10 +466,14 @@ class _DrawerTile extends StatelessWidget {
             width: double.infinity,
             padding: tokens.symmetric(horizontal: 10, vertical: 7),
             decoration: BoxDecoration(
-              color: selected ? cs.primary.withValues(alpha: 0.1) : cs.background.withValues(alpha: 0),
+              color: selected
+                  ? cs.primary.withValues(alpha: 0.1)
+                  : cs.background.withValues(alpha: 0),
               borderRadius: BorderRadius.circular(theme.radiusMd),
               border: Border.all(
-                color: selected ? cs.primary.withValues(alpha: 0.26) : cs.background.withValues(alpha: 0),
+                color: selected
+                    ? cs.primary.withValues(alpha: 0.26)
+                    : cs.background.withValues(alpha: 0),
                 width: 0.8,
               ),
             ),

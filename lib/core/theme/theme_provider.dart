@@ -17,10 +17,7 @@ class ThemeNotifier extends _$ThemeNotifier {
   Future<void> _persist() => ThemeStorage.saveState(state);
 
   void setTheme(AppTheme theme) {
-    state = state.copyWith(
-      baseScheme: theme.baseScheme,
-      accent: theme.accent,
-    );
+    state = state.copyWith(baseScheme: theme.baseScheme, accent: theme.accent);
     _persist();
   }
 
@@ -30,7 +27,9 @@ class ThemeNotifier extends _$ThemeNotifier {
   }
 
   void setBaseScheme(String baseScheme) {
-    state = state.copyWith(baseScheme: AppThemeOptions.normalizeBase(baseScheme));
+    state = state.copyWith(
+      baseScheme: AppThemeOptions.normalizeBase(baseScheme),
+    );
     _persist();
   }
 
@@ -53,42 +52,6 @@ class ThemeNotifier extends _$ThemeNotifier {
     state = state.copyWith(scaling: scaling);
     _persist();
   }
-
-  void setSurfaceOpacity(double surfaceOpacity) {
-    state = state.copyWith(surfaceOpacity: surfaceOpacity);
-    _persist();
-  }
-
-  void setSurfaceBlur(double surfaceBlur) {
-    state = state.copyWith(surfaceBlur: surfaceBlur);
-    _persist();
-  }
-
-  void setUseBackground(bool useBackground) {
-    state = state.copyWith(useBackground: useBackground);
-    _persist();
-  }
-
-  void setManageBackgroundImages(bool manageBackgroundImages) {
-    state = state.copyWith(manageBackgroundImages: manageBackgroundImages);
-    _persist();
-  }
-
-  void setBackgroundMode(String backgroundMode) {
-    state = state.copyWith(backgroundMode: backgroundMode);
-    _persist();
-  }
-
-  void setBackgroundImage(String backgroundImage) {
-    state = state.copyWith(backgroundImage: backgroundImage);
-    _persist();
-  }
-
-  void setUseImageProxy(bool useImageProxy) {
-    state = state.copyWith(useImageProxy: useImageProxy);
-    _persist();
-  }
-
 
   void reset() {
     state = const ThemeState();

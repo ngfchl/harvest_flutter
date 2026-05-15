@@ -14,7 +14,8 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'model/admin_user_model.dart';
 import 'provider/admin_user_provider.dart';
 
-shadcn.ColorScheme _adminColors(BuildContext context) => shadcn.Theme.of(context).colorScheme;
+shadcn.ColorScheme _adminColors(BuildContext context) =>
+    shadcn.Theme.of(context).colorScheme;
 
 BorderRadius _adminRadius(BuildContext context, {String size = 'md'}) {
   final theme = shadcn.Theme.of(context);
@@ -43,13 +44,22 @@ Color _adminTone(
       .withValues(alpha: alpha);
 }
 
-Color _adminInfo(BuildContext context, {double alpha = 1}) => _adminColors(context).primary.withValues(alpha: alpha);
+Color _adminInfo(BuildContext context, {double alpha = 1}) =>
+    _adminColors(context).primary.withValues(alpha: alpha);
 
-Color _adminSuccess(BuildContext context, {double alpha = 1}) =>
-    _adminTone(_adminColors(context).primary, hueShift: 86, saturationScale: 0.82, alpha: alpha);
+Color _adminSuccess(BuildContext context, {double alpha = 1}) => _adminTone(
+  _adminColors(context).primary,
+  hueShift: 86,
+  saturationScale: 0.82,
+  alpha: alpha,
+);
 
-Color _adminWarning(BuildContext context, {double alpha = 1}) =>
-    _adminTone(_adminColors(context).primary, hueShift: 42, lightnessDelta: 0.04, alpha: alpha);
+Color _adminWarning(BuildContext context, {double alpha = 1}) => _adminTone(
+  _adminColors(context).primary,
+  hueShift: 42,
+  lightnessDelta: 0.04,
+  alpha: alpha,
+);
 
 Color _adminDanger(BuildContext context, {double alpha = 1}) =>
     _adminColors(context).destructive.withValues(alpha: alpha);
@@ -81,7 +91,18 @@ class AdminUserPage extends ConsumerStatefulWidget {
 class _AdminUserPageState extends ConsumerState<AdminUserPage> {
   static const int _defaultPay = 168;
   static const int _defaultExpire = 366 * 100;
-  static const List<double> _discounts = [5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5];
+  static const List<double> _discounts = [
+    5,
+    5.5,
+    6,
+    6.5,
+    7,
+    7.5,
+    8,
+    8.5,
+    9,
+    9.5,
+  ];
 
   final _searchCtrl = TextEditingController();
   String _keyword = '';
@@ -110,23 +131,28 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                   bottom: false,
                   child: _Header(
                     onBack: () => Navigator.of(context).pop(),
-                    onRefresh: () => ref.read(adminUserListProvider.notifier).refresh(),
+                    onRefresh: () =>
+                        ref.read(adminUserListProvider.notifier).refresh(),
                   ),
                 ),
                 Expanded(
                   child: EasyRefresh(
-                    onRefresh: () => ref.read(adminUserListProvider.notifier).refresh(),
+                    onRefresh: () =>
+                        ref.read(adminUserListProvider.notifier).refresh(),
                     header: appRefreshHeader(context),
                     child: ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
                       children: [
                         usersAsync.when(
-                          loading: () => const _AdminLoadingBlock(label: '授权用户加载中...'),
+                          loading: () =>
+                              const _AdminLoadingBlock(label: '授权用户加载中...'),
                           error: (error, _) => _AdminErrorBlock(
                             title: '授权用户加载失败',
                             error: error,
-                            onRetry: () => ref.read(adminUserListProvider.notifier).refresh(),
+                            onRetry: () => ref
+                                .read(adminUserListProvider.notifier)
+                                .refresh(),
                           ),
                           data: _buildContent,
                         ),
@@ -144,7 +170,11 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
 
   Widget _buildContent(List<AdminUser> users) {
     final sorted = [...users]
-      ..sort((a, b) => parseDateTimeOrEpoch(b.updatedAt).compareTo(parseDateTimeOrEpoch(a.updatedAt)));
+      ..sort(
+        (a, b) => parseDateTimeOrEpoch(
+          b.updatedAt,
+        ).compareTo(parseDateTimeOrEpoch(a.updatedAt)),
+      );
     final keyword = _keyword.trim().toLowerCase();
     final filtered = keyword.isEmpty
         ? sorted
@@ -161,7 +191,8 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
         _AdminUserAnalytics(
           users: users,
           chartsExpanded: _chartsExpanded,
-          onToggleCharts: () => setState(() => _chartsExpanded = !_chartsExpanded),
+          onToggleCharts: () =>
+              setState(() => _chartsExpanded = !_chartsExpanded),
         ),
         const SizedBox(height: 12),
         _AdminUserToolbar(
@@ -211,7 +242,8 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                     controller: emailCtrl,
                     autofocus: true,
                     hintText: '邮箱',
-                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                    onSubmitted: (_) =>
+                        FocusManager.instance.primaryFocus?.unfocus(),
                   ),
                   const SizedBox(height: 16),
                   _DialogActions(
@@ -227,7 +259,9 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                       }
                       setDialogState(() => saving = true);
                       try {
-                        await ref.read(adminUserListProvider.notifier).createUser(email);
+                        await ref
+                            .read(adminUserListProvider.notifier)
+                            .createUser(email);
                         if (ctx.mounted) Navigator.of(ctx).pop();
                         Toast.success('授权用户已添加');
                       } catch (_) {
@@ -245,8 +279,12 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
   }
 
   void _openRenewDialog(AdminUser user) {
-    final payCtrl = TextEditingController(text: (user.pay == 0 ? _defaultPay : user.pay).toString());
-    final expireCtrl = TextEditingController(text: (user.expire == 0 ? _defaultExpire : user.expire).toString());
+    final payCtrl = TextEditingController(
+      text: (user.pay == 0 ? _defaultPay : user.pay).toString(),
+    );
+    final expireCtrl = TextEditingController(
+      text: (user.expire == 0 ? _defaultExpire : user.expire).toString(),
+    );
     var saving = false;
     var tryUser = false;
     shadcn.showDialog(
@@ -268,7 +306,14 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
             try {
               await ref
                   .read(adminUserListProvider.notifier)
-                  .resetToken(user.id, AdminUserResetTokenPayload(expire: expire, pay: pay, tryUser: tryUser));
+                  .resetToken(
+                    user.id,
+                    AdminUserResetTokenPayload(
+                      expire: expire,
+                      pay: pay,
+                      tryUser: tryUser,
+                    ),
+                  );
               if (ctx.mounted) Navigator.of(ctx).pop();
               Toast.success('授权已重置');
             } catch (_) {
@@ -292,7 +337,8 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                     ShadTextField(
                       controller: payCtrl,
                       hintText: '支付金额',
-                      onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                      onSubmitted: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                     const SizedBox(height: 8),
                     Wrap(
@@ -305,7 +351,10 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                               onPressed: saving
                                   ? null
                                   : () {
-                                      payCtrl.text = (_defaultPay * discount / 10).round().toString();
+                                      payCtrl.text =
+                                          (_defaultPay * discount / 10)
+                                              .round()
+                                              .toString();
                                       setDialogState(() {});
                                     },
                             ),
@@ -316,14 +365,17 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                     ShadTextField(
                       controller: expireCtrl,
                       hintText: '过期时间',
-                      onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                      onSubmitted: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                     const SizedBox(height: 10),
                     _PanelTile(
                       title: const Text('试用授权'),
                       trailing: shadcn.Switch(
                         value: tryUser,
-                        onChanged: saving ? null : (value) => setDialogState(() => tryUser = value),
+                        onChanged: saving
+                            ? null
+                            : (value) => setDialogState(() => tryUser = value),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -365,7 +417,8 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                     controller: countCtrl,
                     autofocus: true,
                     hintText: '邀请数量',
-                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                    onSubmitted: (_) =>
+                        FocusManager.instance.primaryFocus?.unfocus(),
                   ),
                   const SizedBox(height: 16),
                   _DialogActions(
@@ -381,7 +434,9 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                       }
                       setDialogState(() => saving = true);
                       try {
-                        await ref.read(adminUserListProvider.notifier).resetInvite(count);
+                        await ref
+                            .read(adminUserListProvider.notifier)
+                            .resetInvite(count);
                         if (ctx.mounted) Navigator.of(ctx).pop();
                         Toast.success('全部用户邀请数已重置');
                       } catch (_) {
@@ -415,7 +470,13 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
             try {
               await ref
                   .read(adminUserListProvider.notifier)
-                  .updateUser(AdminUserEditPayload(id: user.id, email: user.email, invite: count));
+                  .updateUser(
+                    AdminUserEditPayload(
+                      id: user.id,
+                      email: user.email,
+                      invite: count,
+                    ),
+                  );
               if (ctx.mounted) Navigator.of(ctx).pop();
               Toast.success('邀请数量已重置');
             } catch (_) {
@@ -440,7 +501,8 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                       controller: countCtrl,
                       autofocus: true,
                       hintText: '邀请数量',
-                      onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                      onSubmitted: (_) =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                     const SizedBox(height: 8),
                     Wrap(
@@ -506,7 +568,9 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                   children: [
                     Expanded(
                       child: shadcn.Button.outline(
-                        onPressed: saving ? null : () => Navigator.of(ctx).pop(),
+                        onPressed: saving
+                            ? null
+                            : () => Navigator.of(ctx).pop(),
                         child: const Text('取消'),
                       ),
                     ),
@@ -518,18 +582,23 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                             : () async {
                                 setDialogState(() => saving = true);
                                 try {
-                                  await ref.read(adminUserListProvider.notifier).deleteUser(user.id);
+                                  await ref
+                                      .read(adminUserListProvider.notifier)
+                                      .deleteUser(user.id);
                                   if (ctx.mounted) Navigator.of(ctx).pop();
                                   Toast.success('授权用户已删除');
                                 } catch (_) {
-                                  if (ctx.mounted) setDialogState(() => saving = false);
+                                  if (ctx.mounted)
+                                    setDialogState(() => saving = false);
                                 }
                               },
                         child: saving
                             ? const SizedBox(
                                 width: 16,
                                 height: 16,
-                                child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+                                child: shadcn.CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text('删除'),
                       ),
@@ -544,7 +613,8 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
     );
   }
 
-  String _discountLabel(double value) => value % 1 == 0 ? '${value.toInt()}折' : '$value折';
+  String _discountLabel(double value) =>
+      value % 1 == 0 ? '${value.toInt()}折' : '$value折';
 }
 
 class _Header extends StatelessWidget {
@@ -559,16 +629,23 @@ class _Header extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
       child: Row(
         children: [
-          shadcn.IconButton.ghost(icon: const Icon(shadcn.LucideIcons.chevronLeft), onPressed: onBack),
+          shadcn.IconButton.ghost(
+            icon: const Icon(shadcn.LucideIcons.chevronLeft),
+            onPressed: onBack,
+          ),
           Expanded(
             child: Text(
               '授权管理',
-              style: shadcn.Theme.of(
-                context,
-              ).typography.large.copyWith(fontWeight: FontWeight.w700, color: _adminColors(context).foreground),
+              style: shadcn.Theme.of(context).typography.large.copyWith(
+                fontWeight: FontWeight.w700,
+                color: _adminColors(context).foreground,
+              ),
             ),
           ),
-          shadcn.IconButton.ghost(icon: const Icon(shadcn.LucideIcons.refreshCw), onPressed: onRefresh),
+          shadcn.IconButton.ghost(
+            icon: const Icon(shadcn.LucideIcons.refreshCw),
+            onPressed: onRefresh,
+          ),
         ],
       ),
     );
@@ -590,9 +667,17 @@ class _AdminUserAnalytics extends StatelessWidget {
   Widget build(BuildContext context) {
     final expired = users.where(_isExpired).length;
     final active = users.length - expired;
-    final validTryUsers = users.where((user) => user.tryUser && !_isExpired(user)).length;
+    final validTryUsers = users
+        .where((user) => user.tryUser && !_isExpired(user))
+        .length;
     final recent = users
-        .where((user) => DateTime.now().difference(parseDateTimeOrEpoch(user.updatedAt)).inDays <= 7)
+        .where(
+          (user) =>
+              DateTime.now()
+                  .difference(parseDateTimeOrEpoch(user.updatedAt))
+                  .inDays <=
+              7,
+        )
         .length;
     final isMobile = context.isMobile;
     final chartHeader = _AnalyticsChartHeader(
@@ -618,7 +703,9 @@ class _AdminUserAnalytics extends StatelessWidget {
                   _ChartItem(
                     '更早',
                     users.length - recent,
-                    _adminColors(context).mutedForeground.withValues(alpha: 0.72),
+                    _adminColors(
+                      context,
+                    ).mutedForeground.withValues(alpha: 0.72),
                   ),
                 ],
               ),
@@ -644,7 +731,9 @@ class _AdminUserAnalytics extends StatelessWidget {
                     _ChartItem(
                       '更早',
                       users.length - recent,
-                      _adminColors(context).mutedForeground.withValues(alpha: 0.72),
+                      _adminColors(
+                        context,
+                      ).mutedForeground.withValues(alpha: 0.72),
                     ),
                   ],
                 ),
@@ -686,7 +775,9 @@ class _AdminUserAnalytics extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: cards.map((card) {
-                final width = isMobile ? (constraints.maxWidth - 8) / 2 : (constraints.maxWidth - 24) / 4;
+                final width = isMobile
+                    ? (constraints.maxWidth - 8) / 2
+                    : (constraints.maxWidth - 24) / 4;
                 return SizedBox(width: width, height: 76, child: card);
               }).toList(),
             );
@@ -700,7 +791,9 @@ class _AdminUserAnalytics extends StatelessWidget {
             padding: const EdgeInsets.only(top: 8),
             child: charts,
           ),
-          crossFadeState: chartsExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          crossFadeState: chartsExpanded
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 180),
           sizeCurve: Curves.easeOutCubic,
         ),
@@ -713,10 +806,7 @@ class _AnalyticsChartHeader extends StatelessWidget {
   final bool expanded;
   final VoidCallback onToggle;
 
-  const _AnalyticsChartHeader({
-    required this.expanded,
-    required this.onToggle,
-  });
+  const _AnalyticsChartHeader({required this.expanded, required this.onToggle});
 
   @override
   Widget build(BuildContext context) {
@@ -735,12 +825,19 @@ class _AnalyticsChartHeader extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(shadcn.LucideIcons.chartPie, size: 16, color: cs.mutedForeground),
+              Icon(
+                shadcn.LucideIcons.chartPie,
+                size: 16,
+                color: cs.mutedForeground,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   '图表分析',
-                  style: typo.small.copyWith(fontWeight: FontWeight.w600, color: cs.foreground),
+                  style: typo.small.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: cs.foreground,
+                  ),
                 ),
               ),
               Text(
@@ -751,7 +848,11 @@ class _AnalyticsChartHeader extends StatelessWidget {
               AnimatedRotation(
                 turns: expanded ? 0.5 : 0,
                 duration: const Duration(milliseconds: 180),
-                child: Icon(shadcn.LucideIcons.chevronDown, size: 16, color: cs.mutedForeground),
+                child: Icon(
+                  shadcn.LucideIcons.chevronDown,
+                  size: 16,
+                  color: cs.mutedForeground,
+                ),
               ),
             ],
           ),
@@ -795,22 +896,32 @@ class _AdminUserToolbar extends StatelessWidget {
                 controller: controller,
                 onChanged: onSearch,
                 hintText: '搜索邮箱、用户名或授权状态',
-                onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                onSubmitted: (_) =>
+                    FocusManager.instance.primaryFocus?.unfocus(),
               ),
             ),
             if (controller.text.isNotEmpty) ...[
               const SizedBox(width: 6),
-              shadcn.IconButton.ghost(onPressed: onClear, icon: const Icon(shadcn.LucideIcons.x, size: 14)),
+              shadcn.IconButton.ghost(
+                onPressed: onClear,
+                icon: const Icon(shadcn.LucideIcons.x, size: 14),
+              ),
             ],
             const SizedBox(width: 6),
-            Text('$current / $total', style: typo.small.copyWith(color: cs.mutedForeground)),
+            Text(
+              '$current / $total',
+              style: typo.small.copyWith(color: cs.mutedForeground),
+            ),
             const SizedBox(width: 8),
             shadcn.IconButton.primary(
               onPressed: onResetAllInvite,
               icon: const Icon(shadcn.LucideIcons.rotateCcw, size: 18),
             ),
             const SizedBox(width: 6),
-            shadcn.IconButton.primary(onPressed: onAdd, icon: const Icon(shadcn.LucideIcons.userPlus, size: 18)),
+            shadcn.IconButton.primary(
+              onPressed: onAdd,
+              icon: const Icon(shadcn.LucideIcons.userPlus, size: 18),
+            ),
           ],
         ),
       ],
@@ -840,7 +951,11 @@ class _AdminUserList extends StatelessWidget {
         const gap = 10.0;
         final columns = constraints.maxWidth < kMobileBreakpoint
             ? 1
-            : _adaptiveColumns(constraints.maxWidth, minWidth: 300, maxColumns: 6);
+            : _adaptiveColumns(
+                constraints.maxWidth,
+                minWidth: 300,
+                maxColumns: 6,
+              );
         final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
         return Wrap(
           spacing: gap,
@@ -865,7 +980,11 @@ class _AdminUserList extends StatelessWidget {
   }
 }
 
-int _adaptiveColumns(double width, {required double minWidth, required int maxColumns}) {
+int _adaptiveColumns(
+  double width, {
+  required double minWidth,
+  required int maxColumns,
+}) {
   final columns = (width / minWidth).floor();
   if (columns < 2) return 2;
   if (columns > maxColumns) return maxColumns;
@@ -889,14 +1008,12 @@ class _AdminUserTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
     final cs = _adminColors(context);
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     final expired = _isExpired(user);
     final tile = Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       decoration: BoxDecoration(
-        color: cs.background.withValues(alpha: surfaceOpacity),
+        color: cs.background,
         borderRadius: _adminRadius(context),
         border: Border.all(color: cs.border.withValues(alpha: 0.8), width: 0.8),
         boxShadow: [
@@ -937,9 +1054,24 @@ class _AdminUserTile extends StatelessWidget {
   List<shadcn.MenuItem> _menuItems(BuildContext context) {
     final cs = _adminColors(context);
     return [
-      _menuItem(context: context, icon: shadcn.LucideIcons.refreshCw, title: '重新授权', onPressed: onRenew),
-      _menuItem(context: context, icon: shadcn.LucideIcons.ticketPlus, title: '重置邀请', onPressed: onResetInvite),
-      _menuItem(context: context, icon: shadcn.LucideIcons.send, title: '发送邮件', onPressed: onSendEmail),
+      _menuItem(
+        context: context,
+        icon: shadcn.LucideIcons.refreshCw,
+        title: '重新授权',
+        onPressed: onRenew,
+      ),
+      _menuItem(
+        context: context,
+        icon: shadcn.LucideIcons.ticketPlus,
+        title: '重置邀请',
+        onPressed: onResetInvite,
+      ),
+      _menuItem(
+        context: context,
+        icon: shadcn.LucideIcons.send,
+        title: '发送邮件',
+        onPressed: onSendEmail,
+      ),
       const shadcn.MenuDivider(),
       _menuItem(
         context: context,
@@ -958,14 +1090,15 @@ class _AdminUserTile extends StatelessWidget {
     required VoidCallback onPressed,
     Color? color,
   }) {
-    final style = color == null ? null : shadcn.Theme.of(context).typography.small.copyWith(color: color);
+    final style = color == null
+        ? null
+        : shadcn.Theme.of(context).typography.small.copyWith(color: color);
     return shadcn.MenuButton(
       leading: Icon(icon, size: 16, color: color),
       onPressed: (_) => onPressed(),
       child: Text(title, style: style),
     );
   }
-
 }
 
 class _AdminUserTitle extends StatelessWidget {
@@ -978,7 +1111,9 @@ class _AdminUserTitle extends StatelessWidget {
     final title = user.email.isEmpty ? (user.username ?? '未命名授权') : user.email;
     return Row(
       children: [
-        Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis)),
+        Expanded(
+          child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
         const SizedBox(width: 10),
         _AdminInfoText(label: '邀请', value: user.invite.toString()),
       ],
@@ -998,7 +1133,9 @@ class _AdminUserSubtitle extends StatelessWidget {
     final updateText = Text(
       '更新于${_displayTime(user.updatedAt)}',
       textAlign: TextAlign.right,
-      style: shadcn.Theme.of(context).typography.xSmall.copyWith(color: cs.mutedForeground, fontSize: 9),
+      style: shadcn.Theme.of(
+        context,
+      ).typography.xSmall.copyWith(color: cs.mutedForeground, fontSize: 9),
     );
     return Padding(
       padding: const EdgeInsets.only(top: 6),
@@ -1013,7 +1150,11 @@ class _AdminUserSubtitle extends StatelessWidget {
                 if (expired)
                   const _AdminPill(text: '过期', destructive: true, dense: true)
                 else ...[
-                  if (user.timeExpire.isNotEmpty) _AdminPill(text: _displayDate(user.timeExpire), dense: true),
+                  if (user.timeExpire.isNotEmpty)
+                    _AdminPill(
+                      text: _displayDate(user.timeExpire),
+                      dense: true,
+                    ),
                   if (user.tryUser) const _AdminPill(text: '试用', dense: true),
                 ],
               ],
@@ -1038,7 +1179,10 @@ class _StatusDot extends StatelessWidget {
     return Container(
       width: 8,
       height: 8,
-      decoration: BoxDecoration(color: expired ? cs.destructive : cs.primary, shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: expired ? cs.destructive : cs.primary,
+        shape: BoxShape.circle,
+      ),
     );
   }
 }
@@ -1056,14 +1200,17 @@ class _AdminInfoText extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       text: TextSpan(
-        style: shadcn.Theme.of(context).typography.xSmall.copyWith(color: cs.mutedForeground),
+        style: shadcn.Theme.of(
+          context,
+        ).typography.xSmall.copyWith(color: cs.mutedForeground),
         children: [
           TextSpan(text: '$label '),
           TextSpan(
             text: value,
-            style: shadcn.Theme.of(
-              context,
-            ).typography.xSmall.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
+            style: shadcn.Theme.of(context).typography.xSmall.copyWith(
+              color: cs.foreground,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -1077,18 +1224,22 @@ class _StatCard extends StatelessWidget {
   final IconData icon;
   final Color color;
 
-  const _StatCard({required this.label, required this.value, required this.icon, required this.color});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: cs.background.withValues(alpha: surfaceOpacity),
+        color: cs.background,
         borderRadius: _adminRadius(context),
         border: Border.all(color: cs.border.withValues(alpha: 0.8), width: 0.8),
       ),
@@ -1098,7 +1249,10 @@ class _StatCard extends StatelessWidget {
             width: 34,
             height: 34,
             alignment: Alignment.center,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: _adminRadius(context)),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: _adminRadius(context),
+            ),
             child: Icon(icon, size: 18, color: color),
           ),
           const SizedBox(width: 10),
@@ -1109,9 +1263,15 @@ class _StatCard extends StatelessWidget {
               children: [
                 Text(
                   value,
-                  style: typo.large.copyWith(fontWeight: FontWeight.w700, color: cs.foreground),
+                  style: typo.large.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: cs.foreground,
+                  ),
                 ),
-                Text(label, style: typo.xSmall.copyWith(color: cs.mutedForeground)),
+                Text(
+                  label,
+                  style: typo.xSmall.copyWith(color: cs.mutedForeground),
+                ),
               ],
             ),
           ),
@@ -1132,13 +1292,12 @@ class _DonutChartBlock extends StatelessWidget {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
     final total = items.fold<int>(0, (sum, item) => sum + item.value);
     return Container(
       height: 128,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: cs.background.withValues(alpha: surfaceOpacity),
+        color: cs.background,
         borderRadius: _adminRadius(context),
         border: Border.all(color: cs.border.withValues(alpha: 0.8), width: 0.8),
       ),
@@ -1147,7 +1306,10 @@ class _DonutChartBlock extends StatelessWidget {
         children: [
           Text(
             title,
-            style: typo.small.copyWith(fontWeight: FontWeight.w600, color: cs.foreground),
+            style: typo.small.copyWith(
+              fontWeight: FontWeight.w600,
+              color: cs.foreground,
+            ),
           ),
           const SizedBox(height: 10),
           Expanded(
@@ -1160,17 +1322,30 @@ class _DonutChartBlock extends StatelessWidget {
                     children: [
                       CustomPaint(
                         size: const Size.square(72),
-                        painter: _DonutChartPainter(items: items, backgroundColor: cs.secondary),
+                        painter: _DonutChartPainter(
+                          items: items,
+                          backgroundColor: cs.secondary,
+                        ),
                       ),
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             total.toString(),
-                            style: typo.small.copyWith(fontWeight: FontWeight.w700, color: cs.foreground, height: 1),
+                            style: typo.small.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: cs.foreground,
+                              height: 1,
+                            ),
                           ),
                           const SizedBox(height: 2),
-                          Text('总计', style: typo.xSmall.copyWith(color: cs.mutedForeground, height: 1)),
+                          Text(
+                            '总计',
+                            style: typo.xSmall.copyWith(
+                              color: cs.mutedForeground,
+                              height: 1,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -1181,7 +1356,9 @@ class _DonutChartBlock extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: items.map((item) {
-                      final percent = total > 0 ? item.value / total * 100 : 0.0;
+                      final percent = total > 0
+                          ? item.value / total * 100
+                          : 0.0;
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 3),
                         child: Row(
@@ -1189,7 +1366,10 @@ class _DonutChartBlock extends StatelessWidget {
                             Container(
                               width: 8,
                               height: 8,
-                              decoration: BoxDecoration(color: item.color, shape: BoxShape.circle),
+                              decoration: BoxDecoration(
+                                color: item.color,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                             const SizedBox(width: 7),
                             Expanded(
@@ -1197,12 +1377,17 @@ class _DonutChartBlock extends StatelessWidget {
                                 item.label,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: typo.xSmall.copyWith(color: cs.mutedForeground),
+                                style: typo.xSmall.copyWith(
+                                  color: cs.mutedForeground,
+                                ),
                               ),
                             ),
                             Text(
                               item.value.toString(),
-                              style: typo.xSmall.copyWith(fontWeight: FontWeight.w700, color: cs.foreground),
+                              style: typo.xSmall.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: cs.foreground,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             SizedBox(
@@ -1210,7 +1395,9 @@ class _DonutChartBlock extends StatelessWidget {
                               child: Text(
                                 '${percent.toStringAsFixed(0)}%',
                                 textAlign: TextAlign.right,
-                                style: typo.xSmall.copyWith(color: cs.mutedForeground),
+                                style: typo.xSmall.copyWith(
+                                  color: cs.mutedForeground,
+                                ),
                               ),
                             ),
                           ],
@@ -1232,7 +1419,10 @@ class _DonutChartPainter extends CustomPainter {
   final List<_ChartItem> items;
   final Color backgroundColor;
 
-  const _DonutChartPainter({required this.items, required this.backgroundColor});
+  const _DonutChartPainter({
+    required this.items,
+    required this.backgroundColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1264,7 +1454,8 @@ class _DonutChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DonutChartPainter oldDelegate) {
-    return oldDelegate.items != items || oldDelegate.backgroundColor != backgroundColor;
+    return oldDelegate.items != items ||
+        oldDelegate.backgroundColor != backgroundColor;
   }
 }
 
@@ -1296,9 +1487,15 @@ class _ReadOnlyField extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: theme.typography.xSmall.copyWith(color: cs.mutedForeground)),
+          Text(
+            label,
+            style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+          ),
           const SizedBox(height: 2),
-          Text(value.isEmpty ? '-' : value, style: theme.typography.small.copyWith(color: cs.foreground)),
+          Text(
+            value.isEmpty ? '-' : value,
+            style: theme.typography.small.copyWith(color: cs.foreground),
+          ),
         ],
       ),
     );
@@ -1318,7 +1515,11 @@ class _DiscountButton extends StatelessWidget {
       height: 28,
       child: shadcn.Button.outline(
         onPressed: onPressed,
-        child: Text(label, maxLines: 1, style: shadcn.Theme.of(context).typography.xSmall.copyWith(height: 1)),
+        child: Text(
+          label,
+          maxLines: 1,
+          style: shadcn.Theme.of(context).typography.xSmall.copyWith(height: 1),
+        ),
       ),
     );
   }
@@ -1329,14 +1530,21 @@ class _AdminPill extends StatelessWidget {
   final bool destructive;
   final bool dense;
 
-  const _AdminPill({required this.text, this.destructive = false, this.dense = false});
+  const _AdminPill({
+    required this.text,
+    this.destructive = false,
+    this.dense = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = _adminColors(context);
     final color = destructive ? cs.destructive : cs.primary;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: dense ? 6 : 7, vertical: dense ? 1 : 2),
+      padding: EdgeInsets.symmetric(
+        horizontal: dense ? 6 : 7,
+        vertical: dense ? 1 : 2,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: _adminRadius(context, size: 'xs'),
@@ -1344,9 +1552,11 @@ class _AdminPill extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: shadcn.Theme.of(
-          context,
-        ).typography.xSmall.copyWith(height: 1.2, color: color, fontWeight: FontWeight.w700),
+        style: shadcn.Theme.of(context).typography.xSmall.copyWith(
+          height: 1.2,
+          color: color,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -1372,7 +1582,12 @@ class _AdminLoadingBlock extends StatelessWidget {
         children: [
           const shadcn.CircularProgressIndicator(strokeWidth: 2),
           const SizedBox(height: 10),
-          Text(label, style: shadcn.Theme.of(context).typography.small.copyWith(color: cs.mutedForeground)),
+          Text(
+            label,
+            style: shadcn.Theme.of(
+              context,
+            ).typography.small.copyWith(color: cs.mutedForeground),
+          ),
         ],
       ),
     );
@@ -1384,7 +1599,11 @@ class _AdminErrorBlock extends StatelessWidget {
   final Object error;
   final VoidCallback onRetry;
 
-  const _AdminErrorBlock({required this.title, required this.error, required this.onRetry});
+  const _AdminErrorBlock({
+    required this.title,
+    required this.error,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1393,7 +1612,10 @@ class _AdminErrorBlock extends StatelessWidget {
       leading: Icon(shadcn.LucideIcons.circleAlert, color: cs.destructive),
       title: Text(title),
       subtitle: Text('$error'),
-      trailing: shadcn.Button.outline(onPressed: onRetry, child: const Text('重试')),
+      trailing: shadcn.Button.outline(
+        onPressed: onRetry,
+        child: const Text('重试'),
+      ),
     );
   }
 }
@@ -1413,7 +1635,12 @@ class _AdminEmptyBlock extends StatelessWidget {
         border: Border.all(color: cs.border.withValues(alpha: 0.5), width: 0.5),
         borderRadius: _adminRadius(context),
       ),
-      child: Text(text, style: shadcn.Theme.of(context).typography.small.copyWith(color: cs.mutedForeground)),
+      child: Text(
+        text,
+        style: shadcn.Theme.of(
+          context,
+        ).typography.small.copyWith(color: cs.mutedForeground),
+      ),
     );
   }
 }
@@ -1424,7 +1651,12 @@ class _PanelTile extends StatelessWidget {
   final Widget? subtitle;
   final Widget? trailing;
 
-  const _PanelTile({this.leading, required this.title, this.subtitle, this.trailing});
+  const _PanelTile({
+    this.leading,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1446,7 +1678,9 @@ class _PanelTile extends StatelessWidget {
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
                   DefaultTextStyle.merge(
-                    style: shadcn.Theme.of(context).typography.small.copyWith(color: cs.mutedForeground),
+                    style: shadcn.Theme.of(
+                      context,
+                    ).typography.small.copyWith(color: cs.mutedForeground),
                     child: subtitle!,
                   ),
                 ],
@@ -1493,7 +1727,9 @@ class _DialogActions extends StatelessWidget {
                 ? const SizedBox(
                     width: 16,
                     height: 16,
-                    child: Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
+                    child: Center(
+                      child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+                    ),
                   )
                 : Center(child: Text(submitLabel)),
           ),

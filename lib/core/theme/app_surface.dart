@@ -1,20 +1,7 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
-import 'app_background_image.dart';
-import 'theme_provider.dart';
-
-double appSurfaceOpacity(BuildContext context) =>
-    (shadcn.Theme.of(context).surfaceOpacity ?? 1.0).clamp(0.0, 1.0).toDouble();
-
-Color appSurfaceColor(BuildContext context, Color color) =>
-    color.withValues(alpha: appSurfaceOpacity(context));
-
-double appSurfaceBlur(BuildContext context) =>
-    (shadcn.Theme.of(context).surfaceBlur ?? 0.0).clamp(0.0, 40.0).toDouble();
+Color appSurfaceColor(BuildContext context, Color color) => color;
 
 Color appSurfaceBorderColor(BuildContext context, [double alpha = 0.62]) =>
     shadcn.Theme.of(context).colorScheme.border.withValues(alpha: alpha);
@@ -52,7 +39,6 @@ class AppSurfaceContainer extends StatelessWidget {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final radius = borderRadius ?? theme.borderRadiusMd;
-    final blur = appSurfaceBlur(context);
     Widget content = DecoratedBox(
       decoration: BoxDecoration(
         color: color ?? appSurfaceColor(context, cs.card),
@@ -65,15 +51,10 @@ class AppSurfaceContainer extends StatelessWidget {
       child: padding == null ? child : Padding(padding: padding!, child: child),
     );
 
-    if (clip || blur > 0) {
+    if (clip) {
       content = ClipRRect(
         borderRadius: radius.resolve(Directionality.of(context)),
-        child: blur > 0
-            ? BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                child: content,
-              )
-            : content,
+        child: content,
       );
     }
 
@@ -117,33 +98,14 @@ class AppSurfaceCard extends StatelessWidget {
   }
 }
 
-class AppBackground extends ConsumerWidget {
+class AppBackground extends StatelessWidget {
   final Widget child;
-  final double? overlayOpacity;
 
-  const AppBackground({
-    super.key,
-    required this.child,
-    this.overlayOpacity,
-  });
+  const AppBackground({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final themeState = ref.watch(themeNotifierProvider);
+  Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
-    Widget background = ColoredBox(color: cs.background);
-    if (themeState.useBackground) {
-      final effectiveOverlayOpacity =
-          overlayOpacity ?? (1.0 - themeState.surfaceOpacity).clamp(0.0, 1.0).toDouble();
-      background = Stack(
-        fit: StackFit.expand,
-        children: [
-          background,
-          appThemeBackgroundImage(themeState),
-          ColoredBox(color: cs.background.withValues(alpha: effectiveOverlayOpacity)),
-        ],
-      );
-    }
-    return Stack(fit: StackFit.expand, children: [background, child]);
+    return ColoredBox(color: cs.background, child: child);
   }
 }

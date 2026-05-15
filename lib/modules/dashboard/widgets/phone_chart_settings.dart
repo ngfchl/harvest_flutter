@@ -17,11 +17,8 @@ class ChartSettingsDialog extends StatefulWidget {
   final bool allowReorder;
   final bool showSizingControls;
   final bool showTreemapCountControl;
-  final bool showDesktopDynamicBackgroundControl;
-  final bool desktopDynamicBackgroundEnabled;
   final String title;
   final void Function(int count)? onTreemapCountSaved;
-  final ValueChanged<bool>? onDesktopDynamicBackgroundSaved;
 
   final void Function(
     List<String> order,
@@ -43,11 +40,8 @@ class ChartSettingsDialog extends StatefulWidget {
     this.allowReorder = true,
     this.showSizingControls = true,
     this.showTreemapCountControl = false,
-    this.showDesktopDynamicBackgroundControl = false,
-    this.desktopDynamicBackgroundEnabled = DashboardChartConfig.defaultDesktopDynamicBackground,
     this.title = '仪表盘卡片设置',
     this.onTreemapCountSaved,
-    this.onDesktopDynamicBackgroundSaved,
   });
 
   @override
@@ -63,15 +57,17 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
   late int _serverResourceDuration;
   late bool _serverResourceAutoStart;
   late int _phoneTrendDays;
-  late bool _desktopDynamicBackgroundEnabled;
 
   static const _tMin = DashboardChartConfig.minTreemapCount;
   static const _tMax = DashboardChartConfig.maxTreemapCount;
   static const _tRange = _tMax - _tMin;
 
-  bool get _showPhoneTrendDefaultControl => widget.order.contains('phoneTrend') || widget.order.contains('phoneToday');
+  bool get _showPhoneTrendDefaultControl =>
+      widget.order.contains('phoneTrend') ||
+      widget.order.contains('phoneToday');
 
-  bool get _showTreemapCountControl => widget.showSizingControls || widget.showTreemapCountControl;
+  bool get _showTreemapCountControl =>
+      widget.showSizingControls || widget.showTreemapCountControl;
 
   @override
   void initState() {
@@ -81,13 +77,15 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
     _chartHeight = widget.chartHeight;
     _treemapCount = widget.treemapCount;
     _serverResourceInterval =
-        HiveManager.get<int>(StorageKeys.serverResourceInterval) ?? kDefaultServerResourceInterval;
+        HiveManager.get<int>(StorageKeys.serverResourceInterval) ??
+        kDefaultServerResourceInterval;
     _serverResourceDuration =
-        HiveManager.get<int>(StorageKeys.serverResourceDuration) ?? kDefaultServerResourceDuration;
+        HiveManager.get<int>(StorageKeys.serverResourceDuration) ??
+        kDefaultServerResourceDuration;
     _serverResourceAutoStart =
-        HiveManager.get<bool>(StorageKeys.serverResourceAutoStart) ?? kDefaultServerResourceAutoStart;
+        HiveManager.get<bool>(StorageKeys.serverResourceAutoStart) ??
+        kDefaultServerResourceAutoStart;
     _phoneTrendDays = DashboardChartConfig.getPhoneTrendDays();
-    _desktopDynamicBackgroundEnabled = widget.desktopDynamicBackgroundEnabled;
   }
 
   @override
@@ -121,7 +119,10 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
           Expanded(
             child: Text(
               title,
-              style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
+              style: theme.typography.small.copyWith(
+                color: cs.foreground,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           tokens.hGap(10),
@@ -135,7 +136,10 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
               child: shadcn.SecondaryBadge(
                 child: Text(
                   value,
-                  style: theme.typography.xSmall.copyWith(color: cs.primary, fontWeight: FontWeight.w700),
+                  style: theme.typography.xSmall.copyWith(
+                    color: cs.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -170,15 +174,26 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
     if (_showPhoneTrendDefaultControl) {
       DashboardChartConfig.savePhoneTrendDays(_phoneTrendDays);
     }
-    if (widget.showDesktopDynamicBackgroundControl) {
-      DashboardChartConfig.saveDesktopDynamicBackgroundEnabled(_desktopDynamicBackgroundEnabled);
-      widget.onDesktopDynamicBackgroundSaved?.call(_desktopDynamicBackgroundEnabled);
-    }
-    HiveManager.set(StorageKeys.serverResourceInterval, _serverResourceInterval);
-    HiveManager.set(StorageKeys.serverResourceDuration, _serverResourceDuration);
-    HiveManager.set(StorageKeys.serverResourceAutoStart, _serverResourceAutoStart);
+    HiveManager.set(
+      StorageKeys.serverResourceInterval,
+      _serverResourceInterval,
+    );
+    HiveManager.set(
+      StorageKeys.serverResourceDuration,
+      _serverResourceDuration,
+    );
+    HiveManager.set(
+      StorageKeys.serverResourceAutoStart,
+      _serverResourceAutoStart,
+    );
 
-    widget.onSaved(_order, _visibility, _chartHeight, _treemapCount, _phoneTrendDays);
+    widget.onSaved(
+      _order,
+      _visibility,
+      _chartHeight,
+      _treemapCount,
+      _phoneTrendDays,
+    );
     shadcn.closeOverlay(context);
   }
 
@@ -193,7 +208,6 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
       _serverResourceDuration = kDefaultServerResourceDuration;
       _serverResourceAutoStart = kDefaultServerResourceAutoStart;
       _phoneTrendDays = DashboardChartConfig.defaultPhoneTrendDays;
-      _desktopDynamicBackgroundEnabled = DashboardChartConfig.defaultDesktopDynamicBackground;
       if (_showTreemapCountControl) {
         _treemapCount = widget.defaultTreemapCount;
       }
@@ -211,7 +225,9 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
     final popoverWidth = math
         .min(mediaSize.width - tokens.size(32), tokens.size(460))
         .clamp(tokens.size(320), tokens.size(520));
-    final maxHeight = (mediaSize.height * 0.76).clamp(tokens.size(400), tokens.size(680)).toDouble();
+    final maxHeight = (mediaSize.height * 0.76)
+        .clamp(tokens.size(400), tokens.size(680))
+        .toDouble();
 
     return shadcn.ModalContainer(
       padding: tokens.all(16),
@@ -226,11 +242,19 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(widget.title, style: theme.typography.large.copyWith(fontWeight: FontWeight.w700)),
+                    child: Text(
+                      widget.title,
+                      style: theme.typography.large.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                   shadcn.IconButton.ghost(
                     onPressed: _reset,
-                    icon: Icon(shadcn.LucideIcons.rotateCcw, size: tokens.iconMd),
+                    icon: Icon(
+                      shadcn.LucideIcons.rotateCcw,
+                      size: tokens.iconMd,
+                    ),
                   ),
                   shadcn.IconButton.ghost(
                     onPressed: () => shadcn.closeOverlay(context),
@@ -255,7 +279,9 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                                 Expanded(
                                   child: Text(
                                     '显示站点数量',
-                                    style: theme.typography.small.copyWith(fontWeight: FontWeight.w700),
+                                    style: theme.typography.small.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                 ),
                                 shadcn.SecondaryBadge(
@@ -271,9 +297,15 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                             ),
                             tokens.vGap(14),
                             shadcn.Slider(
-                              value: shadcn.SliderValue.single(_toTPercent(_treemapCount)),
+                              value: shadcn.SliderValue.single(
+                                _toTPercent(_treemapCount),
+                              ),
                               onChanged: (value) {
-                                setState(() => _treemapCount = _fromTPercent(value.value));
+                                setState(
+                                  () => _treemapCount = _fromTPercent(
+                                    value.value,
+                                  ),
+                                );
                               },
                             ),
                             tokens.vGap(10),
@@ -282,32 +314,17 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                               children: [
                                 Text(
                                   '${DashboardChartConfig.minTreemapCount}',
-                                  style: theme.typography.xSmall.copyWith(color: theme.colorScheme.mutedForeground),
+                                  style: theme.typography.xSmall.copyWith(
+                                    color: theme.colorScheme.mutedForeground,
+                                  ),
                                 ),
                                 Text(
                                   '${DashboardChartConfig.maxTreemapCount}',
-                                  style: theme.typography.xSmall.copyWith(color: theme.colorScheme.mutedForeground),
+                                  style: theme.typography.xSmall.copyWith(
+                                    color: theme.colorScheme.mutedForeground,
+                                  ),
                                 ),
                               ],
-                            ),
-                          ],
-                        ),
-                        tokens.vGap(16),
-                      ],
-                      if (widget.showDesktopDynamicBackgroundControl) ...[
-                        _SettingsSection(
-                          icon: shadcn.LucideIcons.activity,
-                          title: '桌面视觉效果',
-                          description: '控制桌面看板背景动画，关闭后保留静态背景并降低持续动画开销。',
-                          children: [
-                            _SettingsTile(
-                              leading: Icon(shadcn.LucideIcons.monitorCog, size: tokens.iconSm),
-                              title: '动态背景',
-                              subtitle: _desktopDynamicBackgroundEnabled ? '数字流、网格与线路背景保持动态' : '背景动画已关闭',
-                              trailing: shadcn.Switch(
-                                value: _desktopDynamicBackgroundEnabled,
-                                onChanged: (value) => setState(() => _desktopDynamicBackgroundEnabled = value),
-                              ),
                             ),
                           ],
                         ),
@@ -319,12 +336,17 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                         description: '统一管理服务器状态与后台服务状态的刷新行为。',
                         children: [
                           _SettingsTile(
-                            leading: Icon(shadcn.LucideIcons.activity, size: tokens.iconSm),
+                            leading: Icon(
+                              shadcn.LucideIcons.activity,
+                              size: tokens.iconSm,
+                            ),
                             title: '自动刷新',
                             subtitle: '开启后持续刷新服务器与服务状态，关闭时仅获取一次',
                             trailing: shadcn.Switch(
                               value: _serverResourceAutoStart,
-                              onChanged: (value) => setState(() => _serverResourceAutoStart = value),
+                              onChanged: (value) => setState(
+                                () => _serverResourceAutoStart = value,
+                              ),
                             ),
                           ),
                           tokens.vGap(12),
@@ -334,14 +356,22 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                             title: '刷新间隔',
                             value: '${_serverResourceInterval}s',
                             onMinus: () => setState(
-                              () => _serverResourceInterval = (_serverResourceInterval - 1)
-                                  .clamp(kMinServerResourceInterval, kMaxServerResourceInterval)
-                                  .toInt(),
+                              () => _serverResourceInterval =
+                                  (_serverResourceInterval - 1)
+                                      .clamp(
+                                        kMinServerResourceInterval,
+                                        kMaxServerResourceInterval,
+                                      )
+                                      .toInt(),
                             ),
                             onPlus: () => setState(
-                              () => _serverResourceInterval = (_serverResourceInterval + 1)
-                                  .clamp(kMinServerResourceInterval, kMaxServerResourceInterval)
-                                  .toInt(),
+                              () => _serverResourceInterval =
+                                  (_serverResourceInterval + 1)
+                                      .clamp(
+                                        kMinServerResourceInterval,
+                                        kMaxServerResourceInterval,
+                                      )
+                                      .toInt(),
                             ),
                           ),
                         ],
@@ -350,16 +380,22 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                       _SettingsSection(
                         icon: shadcn.LucideIcons.layoutGrid,
                         title: '看板开关列表',
-                        description: widget.allowReorder ? '拖动左侧手柄调整顺序，开关控制模块显示。' : '控制桌面看板模块是否显示。',
+                        description: widget.allowReorder
+                            ? '拖动左侧手柄调整顺序，开关控制模块显示。'
+                            : '控制桌面看板模块是否显示。',
                         children: [
                           if (_showPhoneTrendDefaultControl) ...[
                             _SettingsTile(
-                              leading: Icon(shadcn.LucideIcons.calendarRange, size: tokens.iconSm),
+                              leading: Icon(
+                                shadcn.LucideIcons.calendarRange,
+                                size: tokens.iconSm,
+                              ),
                               title: '增量趋势默认间隔',
                               subtitle: '进入仪表盘时默认显示的时间范围',
                               trailing: _RangeSegmentedControl(
                                 value: _phoneTrendDays,
-                                onChanged: (value) => setState(() => _phoneTrendDays = value),
+                                onChanged: (value) =>
+                                    setState(() => _phoneTrendDays = value),
                               ),
                             ),
                             tokens.vGap(12),
@@ -380,7 +416,8 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                               },
                               itemBuilder: (context, index) {
                                 final id = _order[index];
-                                final name = DashboardChartConfig.names[id] ?? id;
+                                final name =
+                                    DashboardChartConfig.names[id] ?? id;
                                 final visible = _visibility[id] ?? true;
 
                                 return Padding(
@@ -389,13 +426,18 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                                   child: _SettingsTile(
                                     leading: ReorderableDragStartListener(
                                       index: index,
-                                      child: Icon(shadcn.LucideIcons.gripVertical, size: tokens.iconSm),
+                                      child: Icon(
+                                        shadcn.LucideIcons.gripVertical,
+                                        size: tokens.iconSm,
+                                      ),
                                     ),
                                     title: name,
                                     subtitle: visible ? null : '已隐藏',
                                     trailing: shadcn.Switch(
                                       value: visible,
-                                      onChanged: (value) => setState(() => _visibility[id] = value),
+                                      onChanged: (value) => setState(
+                                        () => _visibility[id] = value,
+                                      ),
                                     ),
                                   ),
                                 );
@@ -409,12 +451,20 @@ class _ChartSettingsDialogState extends State<ChartSettingsDialog> {
                                     key: ValueKey(id),
                                     padding: tokens.only(bottom: 10),
                                     child: _SettingsTile(
-                                      leading: Icon(shadcn.LucideIcons.eye, size: tokens.iconSm),
-                                      title: DashboardChartConfig.names[id] ?? id,
-                                      subtitle: (_visibility[id] ?? true) ? null : '已隐藏',
+                                      leading: Icon(
+                                        shadcn.LucideIcons.eye,
+                                        size: tokens.iconSm,
+                                      ),
+                                      title:
+                                          DashboardChartConfig.names[id] ?? id,
+                                      subtitle: (_visibility[id] ?? true)
+                                          ? null
+                                          : '已隐藏',
                                       trailing: shadcn.Switch(
                                         value: _visibility[id] ?? true,
-                                        onChanged: (value) => setState(() => _visibility[id] = value),
+                                        onChanged: (value) => setState(
+                                          () => _visibility[id] = value,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -459,18 +509,22 @@ class _SettingsSection extends StatelessWidget {
   final String description;
   final List<Widget> children;
 
-  const _SettingsSection({required this.icon, required this.title, required this.description, required this.children});
+  const _SettingsSection({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.children,
+  });
 
   @override
   Widget build(BuildContext context) {
     final tokens = _SettingsThemeTokens.of(context);
     final theme = tokens.theme;
     final cs = theme.colorScheme;
-    final surfaceOpacity = (theme.surfaceOpacity ?? 1.0).clamp(0.82, 1.0).toDouble();
 
     return shadcn.Card(
       filled: true,
-      fillColor: cs.card.withValues(alpha: surfaceOpacity),
+      fillColor: cs.card,
       borderColor: cs.border.withValues(alpha: 0.72),
       padding: tokens.fromLTRB(18, 16, 18, 18),
       child: Column(
@@ -499,10 +553,19 @@ class _SettingsSection extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w800),
+                      style: theme.typography.small.copyWith(
+                        color: cs.foreground,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     tokens.vGap(3),
-                    Text(description, style: theme.typography.xSmall.copyWith(color: cs.mutedForeground, height: 1.35)),
+                    Text(
+                      description,
+                      style: theme.typography.xSmall.copyWith(
+                        color: cs.mutedForeground,
+                        height: 1.35,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -522,7 +585,12 @@ class _SettingsTile extends StatelessWidget {
   final String? subtitle;
   final Widget trailing;
 
-  const _SettingsTile({required this.leading, required this.title, required this.trailing, this.subtitle});
+  const _SettingsTile({
+    required this.leading,
+    required this.title,
+    required this.trailing,
+    this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -537,12 +605,14 @@ class _SettingsTile extends StatelessWidget {
       padding: tokens.symmetric(horizontal: 14, vertical: 13),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final compact = constraints.maxWidth < tokens.size(300);
           final label = Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconTheme(
-                data: IconThemeData(color: cs.mutedForeground, size: tokens.iconSm),
+                data: IconThemeData(
+                  color: cs.mutedForeground,
+                  size: tokens.iconSm,
+                ),
                 child: leading,
               ),
               tokens.hGap(10),
@@ -552,14 +622,20 @@ class _SettingsTile extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
+                      style: theme.typography.small.copyWith(
+                        color: cs.foreground,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     if (subtitle != null)
                       Padding(
                         padding: tokens.only(top: 4),
                         child: Text(
                           subtitle!,
-                          style: theme.typography.xSmall.copyWith(color: cs.mutedForeground, height: 1.35),
+                          style: theme.typography.xSmall.copyWith(
+                            color: cs.mutedForeground,
+                            height: 1.35,
+                          ),
                         ),
                       ),
                   ],
@@ -598,7 +674,11 @@ class _RangeSegmentedControl extends StatelessWidget {
 
   const _RangeSegmentedControl({required this.value, required this.onChanged});
 
-  static const _items = [MapEntry(1, '今日'), MapEntry(7, '本周'), MapEntry(30, '本月')];
+  static const _items = [
+    MapEntry(1, '今日'),
+    MapEntry(7, '本周'),
+    MapEntry(30, '本月'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -620,14 +700,20 @@ class _RangeSegmentedControl extends StatelessWidget {
                     onPressed: () => onChanged(item.key),
                     child: Text(
                       item.value,
-                      style: theme.typography.xSmall.copyWith(color: cs.primaryForeground, fontWeight: FontWeight.w800),
+                      style: theme.typography.xSmall.copyWith(
+                        color: cs.primaryForeground,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   )
                 : shadcn.Button.ghost(
                     onPressed: () => onChanged(item.key),
                     child: Text(
                       item.value,
-                      style: theme.typography.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w800),
+                      style: theme.typography.xSmall.copyWith(
+                        color: cs.mutedForeground,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
         ],
@@ -641,13 +727,25 @@ class _SettingsThemeTokens {
   final double densityScale;
   final double textScale;
 
-  _SettingsThemeTokens._({required this.theme, required this.densityScale, required this.textScale});
+  _SettingsThemeTokens._({
+    required this.theme,
+    required this.densityScale,
+    required this.textScale,
+  });
 
   factory _SettingsThemeTokens.of(BuildContext context) {
     final theme = shadcn.Theme.of(context);
-    final densityScale = ((theme.density.baseContainerPadding / 16.0) * theme.scaling).clamp(0.90, 1.72);
+    final densityScale =
+        ((theme.density.baseContainerPadding / 16.0) * theme.scaling).clamp(
+          0.90,
+          1.72,
+        );
     final textScale = theme.scaling.clamp(0.92, 1.34);
-    return _SettingsThemeTokens._(theme: theme, densityScale: densityScale.toDouble(), textScale: textScale.toDouble());
+    return _SettingsThemeTokens._(
+      theme: theme,
+      densityScale: densityScale.toDouble(),
+      textScale: textScale.toDouble(),
+    );
   }
 
   double size(num value) => value * densityScale;
@@ -661,13 +759,21 @@ class _SettingsThemeTokens {
   EdgeInsets all(num value) => EdgeInsets.all(size(value));
 
   EdgeInsets symmetric({num horizontal = 0, num vertical = 0}) =>
-      EdgeInsets.symmetric(horizontal: size(horizontal), vertical: size(vertical));
+      EdgeInsets.symmetric(
+        horizontal: size(horizontal),
+        vertical: size(vertical),
+      );
 
   EdgeInsets fromLTRB(num left, num top, num right, num bottom) =>
       EdgeInsets.fromLTRB(size(left), size(top), size(right), size(bottom));
 
   EdgeInsets only({num left = 0, num top = 0, num right = 0, num bottom = 0}) =>
-      EdgeInsets.only(left: size(left), top: size(top), right: size(right), bottom: size(bottom));
+      EdgeInsets.only(
+        left: size(left),
+        top: size(top),
+        right: size(right),
+        bottom: size(bottom),
+      );
 
   SizedBox hGap(num value) => SizedBox(width: size(value));
 
