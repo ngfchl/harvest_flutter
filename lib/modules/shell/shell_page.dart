@@ -212,12 +212,22 @@ class _ShellPageState extends ConsumerState<ShellPage> {
     );
     _exitDialogOpen = false;
     if (ok == true) {
-      try {
-        await ServicesBinding.instance.exitApplication(ui.AppExitType.required);
-      } catch (_) {
-        await SystemNavigator.pop();
-      }
+      await _exitApp();
     }
+  }
+
+  Future<void> _exitApp() async {
+    try {
+      await ServicesBinding.instance.exitApplication(ui.AppExitType.required);
+    } catch (_) {
+      // Continue with the platform fallbacks below.
+    }
+
+    if (PlatformTool.isIOS()) {
+      PlatformTool.exitProcess();
+    }
+
+    await SystemNavigator.pop(animated: true);
   }
 
   // ── 抽屉 ──
@@ -304,147 +314,154 @@ class _ShellPageState extends ConsumerState<ShellPage> {
       });
     }
 
-    return EscapeBackScope(
-      onBack: () => _confirmExitApp(),
-      child: shadcn.DrawerOverlay(
-        child: Stack(
-          children: [
-            // ── 主体 ──
-            ShellScaffold(
-              index: currentIndex,
-              onChange: _onTap,
-              dashboardChrome: false,
-              showNews: showNews,
-              header: _ShellHeader(
-                title: _pageTitles[currentIndex],
-                subtitle: _pageSubtitles[currentIndex],
-                unreadNotices: unread,
-                onOpenNotices: () => Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (_, __, ___) => const NoticeHistoryPage(),
-                  ),
-                ),
-                onOpenDrawer: _openDrawer,
-                hasAppUpgrade: hasAppUpgrade,
-                onAppUpgrade: _openAppUpgradeFromHeader,
-                updateState: updateState,
-                avatar: _AccountMenuButton(
-                  user: user,
-                  showAdminUser: showAdminUser,
-                  showAccountSwitcher:
-                      ref.watch(loginHistoryProvider).length >= 2,
-                  hasAppUpgrade: hasAppUpgrade,
-                  updateState: updateState,
-                  onScreenshot: _takeScreenshot,
-                  appUpgradeController: _appUpgradeController,
-                ),
-              ),
-              child: Stack(
-                children: [
-                  RepaintBoundary(
-                    key: _screenshotKey,
-                    child: PageView(
-                      controller: _pageController,
-                      onPageChanged: _onPageChanged,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: _pages,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        unawaited(_confirmExitApp());
+      },
+      child: EscapeBackScope(
+        onBack: () => unawaited(_confirmExitApp()),
+        child: shadcn.DrawerOverlay(
+          child: Stack(
+            children: [
+              // ── 主体 ──
+              ShellScaffold(
+                index: currentIndex,
+                onChange: _onTap,
+                dashboardChrome: false,
+                showNews: showNews,
+                header: _ShellHeader(
+                  title: _pageTitles[currentIndex],
+                  subtitle: _pageSubtitles[currentIndex],
+                  unreadNotices: unread,
+                  onOpenNotices: () => Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (_, __, ___) => const NoticeHistoryPage(),
                     ),
                   ),
-                  if (!kIsWeb)
-                    IgnorePointer(
-                      child: Align(
-                        alignment: Alignment.topLeft,
-                        child: AppUpgradePage(
-                          controller: _appUpgradeController,
-                          child: const SizedBox.shrink(),
-                        ),
+                  onOpenDrawer: _openDrawer,
+                  hasAppUpgrade: hasAppUpgrade,
+                  onAppUpgrade: _openAppUpgradeFromHeader,
+                  updateState: updateState,
+                  avatar: _AccountMenuButton(
+                    user: user,
+                    showAdminUser: showAdminUser,
+                    showAccountSwitcher:
+                        ref.watch(loginHistoryProvider).length >= 2,
+                    hasAppUpgrade: hasAppUpgrade,
+                    updateState: updateState,
+                    onScreenshot: _takeScreenshot,
+                    appUpgradeController: _appUpgradeController,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    RepaintBoundary(
+                      key: _screenshotKey,
+                      child: PageView(
+                        controller: _pageController,
+                        onPageChanged: _onPageChanged,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: _pages,
                       ),
                     ),
-                  if (_capturing)
-                    Positioned.fill(
-                      child: ColoredBox(
-                        color: colors.foreground.withValues(alpha: 0.08),
-                        child: const Center(
-                          child: shadcn.CircularProgressIndicator(
-                            strokeWidth: 2,
+                    if (!kIsWeb)
+                      IgnorePointer(
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: AppUpgradePage(
+                            controller: _appUpgradeController,
+                            child: const SizedBox.shrink(),
                           ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-            ),
-
-            // ── 边缘滑动热区 ──
-            if (!_drawerOpen)
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 32,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onHorizontalDragStart: _startDrawerEdgeDrag,
-                  onHorizontalDragUpdate: _handleDrawerEdgeDrag,
-                  onHorizontalDragEnd: _endDrawerEdgeDrag,
-                  onHorizontalDragCancel: () => _drawerEdgeDragDistance = 0,
+                    if (_capturing)
+                      Positioned.fill(
+                        child: ColoredBox(
+                          color: colors.foreground.withValues(alpha: 0.08),
+                          child: const Center(
+                            child: shadcn.CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
 
-            // ── 抽屉遮罩 + 面板 ──
-            if (_drawerOpen) ...[
-              Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: _closeDrawer,
-                  child: ColoredBox(
-                    color: colors.foreground.withValues(alpha: 0.12),
+              // ── 边缘滑动热区 ──
+              if (!_drawerOpen)
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 32,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragStart: _startDrawerEdgeDrag,
+                    onHorizontalDragUpdate: _handleDrawerEdgeDrag,
+                    onHorizontalDragEnd: _endDrawerEdgeDrag,
+                    onHorizontalDragCancel: () => _drawerEdgeDragDistance = 0,
                   ),
                 ),
-              ),
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOutCubic,
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: drawerWidth,
-                child: _ShellDrawerPanel(
-                  currentIndex: currentIndex,
-                  showAdminUser: showAdminUser,
-                  showNews: showNews,
-                  onClose: _closeDrawer,
-                  onDashboard: () => _openDrawerTab(2),
-                  onNews: () => _openDrawerTab(0),
-                  onSites: () => _openDrawerTab(1),
-                  onSiteTimeline: () =>
-                      _openDrawerPage(const SiteTimelinePage()),
-                  onDownloads: () => _openDrawerTab(3),
-                  onTasks: () => _openDrawerTab(4),
-                  onOptions: () => _openDrawerPage(const OptionPage()),
-                  onUsers: () => _openDrawerPage(const UserManagementPage()),
-                  onAdminUsers: () {
-                    if (!showAdminUser) {
-                      _closeDrawer();
-                      Toast.warning('当前账号无授权管理权限');
-                      return;
-                    }
-                    _openDrawerPage(const AdminUserPage());
-                  },
-                  onUpdate: () => _openDrawerPage(const UpdatePage()),
-                  onAppUpgrade: () {
-                    _closeDrawer();
-                    context.push('/app-upgrade');
-                  },
-                  onLogs: () {
-                    _closeDrawer();
-                    LogOverlayManager.toggle(context);
-                  },
+
+              // ── 抽屉遮罩 + 面板 ──
+              if (_drawerOpen) ...[
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _closeDrawer,
+                    child: ColoredBox(
+                      color: colors.foreground.withValues(alpha: 0.12),
+                    ),
+                  ),
                 ),
-              ),
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: drawerWidth,
+                  child: _ShellDrawerPanel(
+                    currentIndex: currentIndex,
+                    showAdminUser: showAdminUser,
+                    showNews: showNews,
+                    onClose: _closeDrawer,
+                    onDashboard: () => _openDrawerTab(2),
+                    onNews: () => _openDrawerTab(0),
+                    onSites: () => _openDrawerTab(1),
+                    onSiteTimeline: () =>
+                        _openDrawerPage(const SiteTimelinePage()),
+                    onDownloads: () => _openDrawerTab(3),
+                    onTasks: () => _openDrawerTab(4),
+                    onOptions: () => _openDrawerPage(const OptionPage()),
+                    onUsers: () => _openDrawerPage(const UserManagementPage()),
+                    onAdminUsers: () {
+                      if (!showAdminUser) {
+                        _closeDrawer();
+                        Toast.warning('当前账号无授权管理权限');
+                        return;
+                      }
+                      _openDrawerPage(const AdminUserPage());
+                    },
+                    onUpdate: () => _openDrawerPage(const UpdatePage()),
+                    onAppUpgrade: () {
+                      _closeDrawer();
+                      context.push('/app-upgrade');
+                    },
+                    onLogs: () {
+                      _closeDrawer();
+                      LogOverlayManager.toggle(context);
+                    },
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

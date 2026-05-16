@@ -4,6 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class PlatformTool {
+  static Never exitProcess([int code = 0]) {
+    exit(code);
+  }
+
   static bool isIOS() {
     try {
       return Platform.isIOS;
