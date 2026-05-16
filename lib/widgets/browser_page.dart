@@ -14,6 +14,7 @@ import 'package:harvest/modules/site/model/site_config.dart';
 import 'package:harvest/modules/site/model/site_info.dart';
 import 'package:harvest/modules/site/provider/site_provider.dart';
 import 'package:harvest/modules/site/widgets/site_browser.dart';
+import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -526,7 +527,13 @@ class _BrowserPageState extends State<BrowserPage> {
 
   Widget _buildTopBar(shadcn.ColorScheme cs) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: appHeaderPadding(
+        context,
+        left: 12,
+        top: 8,
+        right: 12,
+        bottom: 8,
+      ),
       decoration: BoxDecoration(
         color: appSurfaceColor(context, cs.background),
         border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
