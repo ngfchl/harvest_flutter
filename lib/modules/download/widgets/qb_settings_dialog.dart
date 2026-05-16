@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/downloader.dart';
@@ -12,7 +13,11 @@ class QbSettingsDialog extends ConsumerStatefulWidget {
   final Downloader downloader;
   final int initialIndex;
 
-  const QbSettingsDialog({super.key, required this.downloader, this.initialIndex = 0});
+  const QbSettingsDialog({
+    super.key,
+    required this.downloader,
+    this.initialIndex = 0,
+  });
 
   @override
   ConsumerState<QbSettingsDialog> createState() => _QbSettingsDialogState();
@@ -31,7 +36,9 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
   // ── 行为 ──
   String _locale = "zh_CN";
   bool _confirmTorrentDeletion = true, _confirmTorrentRecheck = true;
-  bool _fileLogEnabled = true, _fileLogBackupEnabled = true, _fileLogDeleteOld = true;
+  bool _fileLogEnabled = true,
+      _fileLogBackupEnabled = true,
+      _fileLogDeleteOld = true;
   final _fileLogPathCtrl = TextEditingController(),
       _fileLogMaxSizeCtrl = TextEditingController(),
       _fileLogAgeCtrl = TextEditingController();
@@ -40,40 +47,63 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
 
   // ── 下载 ──
   String _torrentContentLayout = 'Original', _torrentStopCondition = 'None';
-  bool _addToTopOfQueue = false, _addStoppedEnabled = false, _mergeTrackers = false;
-  bool _preallocateAll = false, _incompleteFilesExt = false, _useUnwantedFolder = false;
-  bool _autoTmmEnabled = false, _categoryChangedTmmEnabled = true, _savePathChangedTmmEnabled = true;
-  bool _torrentChangedTmmEnabled = true, _useSubcategories = false, _useCategoryPathsInManualMode = false;
-  final _savePathCtrl = TextEditingController(), _tempPathCtrl = TextEditingController();
+  bool _addToTopOfQueue = false,
+      _addStoppedEnabled = false,
+      _mergeTrackers = false;
+  bool _preallocateAll = false,
+      _incompleteFilesExt = false,
+      _useUnwantedFolder = false;
+  bool _autoTmmEnabled = false,
+      _categoryChangedTmmEnabled = true,
+      _savePathChangedTmmEnabled = true;
+  bool _torrentChangedTmmEnabled = true,
+      _useSubcategories = false,
+      _useCategoryPathsInManualMode = false;
+  final _savePathCtrl = TextEditingController(),
+      _tempPathCtrl = TextEditingController();
   bool _tempPathEnabled = false;
-  final _exportDirCtrl = TextEditingController(), _exportDirFinCtrl = TextEditingController();
+  final _exportDirCtrl = TextEditingController(),
+      _exportDirFinCtrl = TextEditingController();
   bool _excludedFileNamesEnabled = false;
   final _excludedFileNamesCtrl = TextEditingController();
   bool _mailNotificationEnabled = false, _mailNotificationSslEnabled = false;
-  final _mailNotificationEmailCtrl = TextEditingController(), _mailNotificationSmtpCtrl = TextEditingController();
+  final _mailNotificationEmailCtrl = TextEditingController(),
+      _mailNotificationSmtpCtrl = TextEditingController();
   final _mailNotificationUsernameCtrl = TextEditingController(),
       _mailNotificationPasswordCtrl = TextEditingController();
   bool _autorunEnabled = false, _autorunOnTorrentAddedEnabled = false;
-  final _autorunProgramCtrl = TextEditingController(), _autorunOnTorrentAddedProgramCtrl = TextEditingController();
+  final _autorunProgramCtrl = TextEditingController(),
+      _autorunOnTorrentAddedProgramCtrl = TextEditingController();
 
   // ── 连接 ──
   final _listenPortCtrl = TextEditingController();
   bool _upnp = false, _randomPort = false;
-  final _maxConnecCtrl = TextEditingController(), _maxConnecPerTorrentCtrl = TextEditingController();
-  final _maxUploadsCtrl = TextEditingController(), _maxUploadsPerTorrentCtrl = TextEditingController();
-  final _outgoingPortsMinCtrl = TextEditingController(), _outgoingPortsMaxCtrl = TextEditingController();
+  final _maxConnecCtrl = TextEditingController(),
+      _maxConnecPerTorrentCtrl = TextEditingController();
+  final _maxUploadsCtrl = TextEditingController(),
+      _maxUploadsPerTorrentCtrl = TextEditingController();
+  final _outgoingPortsMinCtrl = TextEditingController(),
+      _outgoingPortsMaxCtrl = TextEditingController();
   String _proxyType = 'None';
-  final _proxyIpCtrl = TextEditingController(), _proxyPortCtrl = TextEditingController();
-  bool _proxyAuthEnabled = false, _proxyPeerConnections = false, _proxyHostnameLookup = false;
+  final _proxyIpCtrl = TextEditingController(),
+      _proxyPortCtrl = TextEditingController();
+  bool _proxyAuthEnabled = false,
+      _proxyPeerConnections = false,
+      _proxyHostnameLookup = false;
   bool _proxyBittorrent = true, _proxyRss = true, _proxyMisc = true;
-  final _proxyUsernameCtrl = TextEditingController(), _proxyPasswordCtrl = TextEditingController();
+  final _proxyUsernameCtrl = TextEditingController(),
+      _proxyPasswordCtrl = TextEditingController();
 
   // ── 速度 ──
-  final _dlLimitCtrl = TextEditingController(), _upLimitCtrl = TextEditingController();
-  final _altDlLimitCtrl = TextEditingController(), _altUpLimitCtrl = TextEditingController();
+  final _dlLimitCtrl = TextEditingController(),
+      _upLimitCtrl = TextEditingController();
+  final _altDlLimitCtrl = TextEditingController(),
+      _altUpLimitCtrl = TextEditingController();
   bool _schedulerEnabled = false;
-  final _scheduleFromHourCtrl = TextEditingController(), _scheduleFromMinCtrl = TextEditingController();
-  final _scheduleToHourCtrl = TextEditingController(), _scheduleToMinCtrl = TextEditingController();
+  final _scheduleFromHourCtrl = TextEditingController(),
+      _scheduleFromMinCtrl = TextEditingController();
+  final _scheduleToHourCtrl = TextEditingController(),
+      _scheduleToMinCtrl = TextEditingController();
   int _schedulerDays = 0;
   bool _limitUtpRate = false, _limitTcpOverhead = false, _limitLanPeers = false;
 
@@ -87,27 +117,35 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
   final _slowTorrentDlRateThresholdCtrl = TextEditingController(),
       _slowTorrentUlRateThresholdCtrl = TextEditingController(),
       _slowTorrentInactiveTimerCtrl = TextEditingController();
-  bool _maxRatioEnabled = false, _maxSeedingTimeEnabled = false, _maxInactiveSeedingTimeEnabled = false;
+  bool _maxRatioEnabled = false,
+      _maxSeedingTimeEnabled = false,
+      _maxInactiveSeedingTimeEnabled = false;
   final _maxRatioCtrl = TextEditingController(),
       _maxSeedingTimeCtrl = TextEditingController(),
       _maxInactiveSeedingTimeCtrl = TextEditingController();
   bool _addTrackersEnabled = false, _addTrackersFromUrlEnabled = false;
-  final _addTrackersCtrl = TextEditingController(), _addTrackersUrlCtrl = TextEditingController();
+  final _addTrackersCtrl = TextEditingController(),
+      _addTrackersUrlCtrl = TextEditingController();
   bool _enableEmbeddedTracker = false, _embeddedTrackerPortForwarding = false;
   final _embeddedTrackerPortCtrl = TextEditingController();
 
   // ── RSS ──
-  bool _rssProcessingEnabled = false, _rssAutoDownloadingEnabled = false, _rssDownloadRepackProperEpisodes = false;
+  bool _rssProcessingEnabled = false,
+      _rssAutoDownloadingEnabled = false,
+      _rssDownloadRepackProperEpisodes = false;
   final _rssRefreshIntervalCtrl = TextEditingController(),
       _rssFetchDelayCtrl = TextEditingController(),
       _rssMaxArticlesPerFeedCtrl = TextEditingController(),
       _rssSmartEpisodeFiltersCtrl = TextEditingController();
 
   // ── WebUI ──
-  final _webUiAddressCtrl = TextEditingController(), _webUiPortCtrl = TextEditingController();
+  final _webUiAddressCtrl = TextEditingController(),
+      _webUiPortCtrl = TextEditingController();
   bool _webUiUpnp = false, _useHttps = false;
-  final _webUiHttpsCertPathCtrl = TextEditingController(), _webUiHttpsKeyPathCtrl = TextEditingController();
-  final _webUiUsernameCtrl = TextEditingController(), _webUiPasswordCtrl = TextEditingController();
+  final _webUiHttpsCertPathCtrl = TextEditingController(),
+      _webUiHttpsKeyPathCtrl = TextEditingController();
+  final _webUiUsernameCtrl = TextEditingController(),
+      _webUiPasswordCtrl = TextEditingController();
   bool _bypassLocalAuth = false, _bypassAuthSubnetWhitelistEnabled = false;
   final _bypassAuthSubnetWhitelistCtrl = TextEditingController();
   final _webUiMaxAuthFailCountCtrl = TextEditingController(),
@@ -115,8 +153,10 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       _webUiSessionTimeoutCtrl = TextEditingController();
   bool _alternativeWebuiEnabled = false;
   final _alternativeWebuiPathCtrl = TextEditingController();
-  bool _webUiClickjackingProtectionEnabled = false, _webUiCsrfProtectionEnabled = false;
-  bool _webUiSecureCookieEnabled = false, _webUiHostHeaderValidationEnabled = false;
+  bool _webUiClickjackingProtectionEnabled = false,
+      _webUiCsrfProtectionEnabled = false;
+  bool _webUiSecureCookieEnabled = false,
+      _webUiHostHeaderValidationEnabled = false;
   final _webUiDomainListCtrl = TextEditingController();
   bool _webUiUseCustomHttpHeadersEnabled = false;
   final _webUiCustomHttpHeadersCtrl = TextEditingController();
@@ -129,20 +169,25 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       _dyndnsPasswordCtrl = TextEditingController();
 
   // ── 高级 ──
-  String _resumeDataStorageType = 'Legacy', _torrentContentRemoveOption = 'Delete';
+  String _resumeDataStorageType = 'Legacy',
+      _torrentContentRemoveOption = 'Delete';
   final _memoryWorkingSetLimitCtrl = TextEditingController();
   final _saveResumeDataIntervalCtrl = TextEditingController(),
       _saveStatisticsIntervalCtrl = TextEditingController(),
       _torrentFileSizeLimitCtrl = TextEditingController();
-  bool _resolvePeerCountries = false, _reannounceWhenAddressChanged = false, _ignoreSslErrors = false;
+  bool _resolvePeerCountries = false,
+      _reannounceWhenAddressChanged = false,
+      _ignoreSslErrors = false;
   final _pythonExecutablePathCtrl = TextEditingController(),
       _refreshIntervalCtrl = TextEditingController(),
       _appInstanceNameCtrl = TextEditingController();
-  final _bdecodeDepthLimitCtrl = TextEditingController(), _bdecodeTokenLimitCtrl = TextEditingController();
+  final _bdecodeDepthLimitCtrl = TextEditingController(),
+      _bdecodeTokenLimitCtrl = TextEditingController();
   final _asyncIoThreadsCtrl = TextEditingController(),
       _hashingThreadsCtrl = TextEditingController(),
       _filePoolSizeCtrl = TextEditingController();
-  final _checkingMemoryUseCtrl = TextEditingController(), _diskQueueSizeCtrl = TextEditingController();
+  final _checkingMemoryUseCtrl = TextEditingController(),
+      _diskQueueSizeCtrl = TextEditingController();
   int _diskIoType = 0, _diskIoReadMode = 0, _diskIoWriteMode = 0;
   bool _enableCoalesceReadWrite = false, _enableUploadSuggestions = false;
   final _sendBufferWatermarkCtrl = TextEditingController(),
@@ -152,22 +197,32 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       _socketSendBufferSizeCtrl = TextEditingController(),
       _socketReceiveBufferSizeCtrl = TextEditingController(),
       _socketBacklogSizeCtrl = TextEditingController();
-  final _upnpLeaseDurationCtrl = TextEditingController(), _peerTosCtrl = TextEditingController();
-  int _utpTcpMixedMode = 0, _uploadChokingAlgorithm = 0, _uploadSlotsBehavior = 0;
-  bool _idnSupportEnabled = false, _enableMultiConnectionsFromSameIp = false, _validateHttpsTrackerCertificate = false;
+  final _upnpLeaseDurationCtrl = TextEditingController(),
+      _peerTosCtrl = TextEditingController();
+  int _utpTcpMixedMode = 0,
+      _uploadChokingAlgorithm = 0,
+      _uploadSlotsBehavior = 0;
+  bool _idnSupportEnabled = false,
+      _enableMultiConnectionsFromSameIp = false,
+      _validateHttpsTrackerCertificate = false;
   bool _ssrfMitigation = false, _blockPeersOnPrivilegedPorts = false;
   bool _announceToAllTrackers = false, _announceToAllTiers = false;
-  final _announceIpCtrl = TextEditingController(), _announcePortCtrl = TextEditingController();
-  final _maxConcurrentHttpAnnouncesCtrl = TextEditingController(), _stopTrackerTimeoutCtrl = TextEditingController();
+  final _announceIpCtrl = TextEditingController(),
+      _announcePortCtrl = TextEditingController();
+  final _maxConcurrentHttpAnnouncesCtrl = TextEditingController(),
+      _stopTrackerTimeoutCtrl = TextEditingController();
   final _peerTurnoverCtrl = TextEditingController(),
       _peerTurnoverCutoffCtrl = TextEditingController(),
       _peerTurnoverIntervalCtrl = TextEditingController(),
       _requestQueueSizeCtrl = TextEditingController();
   final _dhtBootstrapNodesCtrl = TextEditingController();
   bool _i2pEnabled = false, _i2pMixedMode = false;
-  final _i2pAddressCtrl = TextEditingController(), _i2pPortCtrl = TextEditingController();
-  final _i2pInboundQuantityCtrl = TextEditingController(), _i2pOutboundQuantityCtrl = TextEditingController();
-  final _i2pInboundLengthCtrl = TextEditingController(), _i2pOutboundLengthCtrl = TextEditingController();
+  final _i2pAddressCtrl = TextEditingController(),
+      _i2pPortCtrl = TextEditingController();
+  final _i2pInboundQuantityCtrl = TextEditingController(),
+      _i2pOutboundQuantityCtrl = TextEditingController();
+  final _i2pInboundLengthCtrl = TextEditingController(),
+      _i2pOutboundLengthCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -397,8 +452,10 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     _maxActiveDownloadsCtrl.text = p.maxActiveDownloads.toString();
     _maxActiveUploadsCtrl.text = p.maxActiveUploads.toString();
     _maxActiveTorrentsCtrl.text = p.maxActiveTorrents.toString();
-    _slowTorrentDlRateThresholdCtrl.text = p.slowTorrentDlRateThreshold.toString();
-    _slowTorrentUlRateThresholdCtrl.text = p.slowTorrentUlRateThreshold.toString();
+    _slowTorrentDlRateThresholdCtrl.text = p.slowTorrentDlRateThreshold
+        .toString();
+    _slowTorrentUlRateThresholdCtrl.text = p.slowTorrentUlRateThreshold
+        .toString();
     _slowTorrentInactiveTimerCtrl.text = p.slowTorrentInactiveTimer.toString();
     _maxRatioEnabled = p.maxRatioEnabled;
     _maxRatioCtrl.text = p.maxRatio.toString();
@@ -476,7 +533,8 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     _enableUploadSuggestions = p.enableUploadSuggestions;
     _sendBufferWatermarkCtrl.text = p.sendBufferWatermark.toString();
     _sendBufferLowWatermarkCtrl.text = p.sendBufferLowWatermark.toString();
-    _sendBufferWatermarkFactorCtrl.text = p.sendBufferWatermarkFactor.toString();
+    _sendBufferWatermarkFactorCtrl.text = p.sendBufferWatermarkFactor
+        .toString();
     _connectionSpeedCtrl.text = p.connectionSpeed.toString();
     _socketSendBufferSizeCtrl.text = p.socketSendBufferSize.toString();
     _socketReceiveBufferSizeCtrl.text = p.socketReceiveBufferSize.toString();
@@ -495,7 +553,8 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     _announceToAllTiers = p.announceToAllTiers;
     _announceIpCtrl.text = p.announceIp;
     _announcePortCtrl.text = p.announcePort.toString();
-    _maxConcurrentHttpAnnouncesCtrl.text = p.maxConcurrentHttpAnnounces.toString();
+    _maxConcurrentHttpAnnouncesCtrl.text = p.maxConcurrentHttpAnnounces
+        .toString();
     _stopTrackerTimeoutCtrl.text = p.stopTrackerTimeout.toString();
     _peerTurnoverCtrl.text = p.peerTurnover.toString();
     _peerTurnoverCutoffCtrl.text = p.peerTurnoverCutoff.toString();
@@ -517,7 +576,10 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     padding: const EdgeInsets.only(top: 14, bottom: 6),
     child: Text(
       s,
-      style: t.typography.small.copyWith(fontWeight: FontWeight.w700, color: t.colorScheme.primary),
+      style: t.typography.small.copyWith(
+        fontWeight: FontWeight.w700,
+        color: t.colorScheme.primary,
+      ),
     ),
   );
 
@@ -542,18 +604,30 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     },
   );
 
-  Widget _tf(TextEditingController c, String l, {String? h, TextInputType? k, List<TextInputFormatter>? f}) => Padding(
+  Widget _tf(
+    TextEditingController c,
+    String l, {
+    String? h,
+    TextInputType? k,
+    List<TextInputFormatter>? f,
+  }) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
-    child: TextFormField(
+    child: ShadTextField(
       controller: c,
-      decoration: InputDecoration(labelText: l, hintText: h),
+      labelText: l,
+      hintText: h,
       keyboardType: k,
       inputFormatters: f,
     ),
   );
 
-  Widget _num(TextEditingController c, String l, {String? h}) =>
-      _tf(c, l, h: h, k: TextInputType.number, f: [FilteringTextInputFormatter.digitsOnly]);
+  Widget _num(TextEditingController c, String l, {String? h}) => _tf(
+    c,
+    l,
+    h: h,
+    k: TextInputType.number,
+    f: [FilteringTextInputFormatter.digitsOnly],
+  );
 
   Widget _row(Widget a, Widget b) => Row(
     children: [
@@ -563,24 +637,35 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     ],
   );
 
-  Widget _sel(String l, String v, List<String> opts, ValueChanged<String?> fn) => Padding(
+  Widget _sel(
+    String l,
+    String v,
+    List<String> opts,
+    ValueChanged<String?> fn,
+  ) => Padding(
     padding: const EdgeInsets.only(bottom: 8),
     child: DropdownButtonFormField<String>(
-      value: opts.contains(v) ? v : null,
+      initialValue: opts.contains(v) ? v : null,
       hint: Text(""),
-      items: opts.map((o) => DropdownMenuItem<String>(value: o, child: Text(o))).toList(),
+      items: opts
+          .map((o) => DropdownMenuItem<String>(value: o, child: Text(o)))
+          .toList(),
       onChanged: fn,
     ),
   );
 
   Widget _note(shadcn.ThemeData t, String s) => Padding(
     padding: const EdgeInsets.only(bottom: 8, left: 2),
-    child: Text(s, style: t.typography.xSmall.copyWith(color: t.colorScheme.mutedForeground)),
+    child: Text(
+      s,
+      style: t.typography.xSmall.copyWith(color: t.colorScheme.mutedForeground),
+    ),
   );
 
   int _pi(TextEditingController c, int d) => int.tryParse(c.text.trim()) ?? d;
 
-  double _pd(TextEditingController c, double d) => double.tryParse(c.text.trim()) ?? d;
+  double _pd(TextEditingController c, double d) =>
+      double.tryParse(c.text.trim()) ?? d;
 
   String _ps(TextEditingController c) => c.text.trim();
 
@@ -589,20 +674,49 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       _sec(t, '语言'),
-      _sel('用户界面语言', _locale, ['zh_CN', 'en', 'ja', 'ko'], (v) => setState(() => _locale = v ?? _locale)),
+      _sel('用户界面语言', _locale, [
+        'zh_CN',
+        'en',
+        'ja',
+        'ko',
+      ], (v) => setState(() => _locale = v ?? _locale)),
       // _sec(t, '界面'),
       // _sel('配色方案', _colorScheme, ['自动', '浅色', '深色'],
       _sec(t, '传输列表'),
-      _sw('删除 Torrent 时提示确认', _confirmTorrentDeletion, (v) => setState(() => _confirmTorrentDeletion = v)),
-      _sw('Torrent 重新校验确认', _confirmTorrentRecheck, (v) => setState(() => _confirmTorrentRecheck = v)),
-      _sw('在状态栏展示外部 IP', _statusBarExternalIp, (v) => setState(() => _statusBarExternalIp = v)),
-      _sw('记录性能警报', _performanceWarning, (v) => setState(() => _performanceWarning = v)),
+      _sw(
+        '删除 Torrent 时提示确认',
+        _confirmTorrentDeletion,
+        (v) => setState(() => _confirmTorrentDeletion = v),
+      ),
+      _sw(
+        'Torrent 重新校验确认',
+        _confirmTorrentRecheck,
+        (v) => setState(() => _confirmTorrentRecheck = v),
+      ),
+      _sw(
+        '在状态栏展示外部 IP',
+        _statusBarExternalIp,
+        (v) => setState(() => _statusBarExternalIp = v),
+      ),
+      _sw(
+        '记录性能警报',
+        _performanceWarning,
+        (v) => setState(() => _performanceWarning = v),
+      ),
       _sec(t, '日志文件'),
-      _sw('启用日志文件', _fileLogEnabled, (v) => setState(() => _fileLogEnabled = v)),
+      _sw(
+        '启用日志文件',
+        _fileLogEnabled,
+        (v) => setState(() => _fileLogEnabled = v),
+      ),
       if (_fileLogEnabled) ...[
         _tf(_fileLogPathCtrl, '保存路径', h: '/config/qBittorrent/logs'),
         _num(_fileLogMaxSizeCtrl, '当大于指定大小时备份日志文件 (KiB)', h: '65'),
-        _sw('删除旧的备份日志', _fileLogDeleteOld, (v) => setState(() => _fileLogDeleteOld = v)),
+        _sw(
+          '删除旧的备份日志',
+          _fileLogDeleteOld,
+          (v) => setState(() => _fileLogDeleteOld = v),
+        ),
         if (_fileLogDeleteOld) ...[
           _num(_fileLogAgeCtrl, '删除早于指定时间的备份', h: '1'),
           _sel(
@@ -622,7 +736,11 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
             ),
           ),
         ],
-        _sw('启用日志文件备份', _fileLogBackupEnabled, (v) => setState(() => _fileLogBackupEnabled = v)),
+        _sw(
+          '启用日志文件备份',
+          _fileLogBackupEnabled,
+          (v) => setState(() => _fileLogBackupEnabled = v),
+        ),
       ],
     ],
   );
@@ -632,28 +750,58 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       _sec(t, '添加 Torrent 时'),
-      _sel('Torrent 内容布局', _torrentContentLayout, [
-        'Original',
-        'Subfolder',
-        'NoSubfolder',
-      ], (v) => setState(() => _torrentContentLayout = v ?? _torrentContentLayout)),
-      _sw('添加到队列顶部', _addToTopOfQueue, (v) => setState(() => _addToTopOfQueue = v)),
-      _sw('不要自动开始下载', _addStoppedEnabled, (v) => setState(() => _addStoppedEnabled = v)),
-      _sel('Torrent 停止条件', _torrentStopCondition, [
-        'None',
-        'MetadataReceived',
-        'FilesChecked',
-      ], (v) => setState(() => _torrentStopCondition = v ?? _torrentStopCondition)),
+      _sel(
+        'Torrent 内容布局',
+        _torrentContentLayout,
+        ['Original', 'Subfolder', 'NoSubfolder'],
+        (v) =>
+            setState(() => _torrentContentLayout = v ?? _torrentContentLayout),
+      ),
+      _sw(
+        '添加到队列顶部',
+        _addToTopOfQueue,
+        (v) => setState(() => _addToTopOfQueue = v),
+      ),
+      _sw(
+        '不要自动开始下载',
+        _addStoppedEnabled,
+        (v) => setState(() => _addStoppedEnabled = v),
+      ),
+      _sel(
+        'Torrent 停止条件',
+        _torrentStopCondition,
+        ['None', 'MetadataReceived', 'FilesChecked'],
+        (v) =>
+            setState(() => _torrentStopCondition = v ?? _torrentStopCondition),
+      ),
       _sec(t, '当添加重复的 Torrent 时'),
-      _sw('合并 tracker 到现有 torrent', _mergeTrackers, (v) => setState(() => _mergeTrackers = v)),
-      _sw('为所有文件预分配磁盘空间', _preallocateAll, (v) => setState(() => _preallocateAll = v)),
-      _sw('为不完整的文件添加扩展名 .!qB', _incompleteFilesExt, (v) => setState(() => _incompleteFilesExt = v)),
-      _sw('将未选中的文件保留在 .unwanted 文件夹中', _useUnwantedFolder, (v) => setState(() => _useUnwantedFolder = v)),
+      _sw(
+        '合并 tracker 到现有 torrent',
+        _mergeTrackers,
+        (v) => setState(() => _mergeTrackers = v),
+      ),
+      _sw(
+        '为所有文件预分配磁盘空间',
+        _preallocateAll,
+        (v) => setState(() => _preallocateAll = v),
+      ),
+      _sw(
+        '为不完整的文件添加扩展名 .!qB',
+        _incompleteFilesExt,
+        (v) => setState(() => _incompleteFilesExt = v),
+      ),
+      _sw(
+        '将未选中的文件保留在 .unwanted 文件夹中',
+        _useUnwantedFolder,
+        (v) => setState(() => _useUnwantedFolder = v),
+      ),
       _sec(t, '保存管理'),
-      _sel('默认 Torrent 管理模式', _autoTmmEnabled ? '自动' : '手动', [
-        '自动',
-        '手动',
-      ], (v) => setState(() => _autoTmmEnabled = v == '自动')),
+      _sel(
+        '默认 Torrent 管理模式',
+        _autoTmmEnabled ? '自动' : '手动',
+        ['自动', '手动'],
+        (v) => setState(() => _autoTmmEnabled = v == '自动'),
+      ),
       _sel(
         '当 Torrent 分类修改时',
         _categoryChangedTmmEnabled ? '重新定位 Torrent' : '不操作',
@@ -664,38 +812,76 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
         '当默认保存路径修改时',
         _savePathChangedTmmEnabled ? '重新定位受影响的 Torrent' : '不操作',
         ['重新定位受影响的 Torrent', '不操作'],
-        (v) => setState(() => _savePathChangedTmmEnabled = v == '重新定位受影响的 Torrent'),
+        (v) => setState(
+          () => _savePathChangedTmmEnabled = v == '重新定位受影响的 Torrent',
+        ),
       ),
       _sel(
         '当分类保存路径修改时',
         _torrentChangedTmmEnabled ? '重新定位受影响的 Torrent' : '不操作',
         ['重新定位受影响的 Torrent', '不操作'],
-        (v) => setState(() => _torrentChangedTmmEnabled = v == '重新定位受影响的 Torrent'),
+        (v) =>
+            setState(() => _torrentChangedTmmEnabled = v == '重新定位受影响的 Torrent'),
       ),
-      _sw('启用子分类', _useSubcategories, (v) => setState(() => _useSubcategories = v)),
-      _sw('在手动模式下使用分类路径', _useCategoryPathsInManualMode, (v) => setState(() => _useCategoryPathsInManualMode = v)),
+      _sw(
+        '启用子分类',
+        _useSubcategories,
+        (v) => setState(() => _useSubcategories = v),
+      ),
+      _sw(
+        '在手动模式下使用分类路径',
+        _useCategoryPathsInManualMode,
+        (v) => setState(() => _useCategoryPathsInManualMode = v),
+      ),
       const SizedBox(height: 8),
       _tf(_savePathCtrl, '默认保存路径', h: '/downloads'),
-      _sw('保存未完成的 torrent 到', _tempPathEnabled, (v) => setState(() => _tempPathEnabled = v)),
-      if (_tempPathEnabled) _tf(_tempPathCtrl, '临时路径', h: '/downloads/incomplete'),
+      _sw(
+        '保存未完成的 torrent 到',
+        _tempPathEnabled,
+        (v) => setState(() => _tempPathEnabled = v),
+      ),
+      if (_tempPathEnabled)
+        _tf(_tempPathCtrl, '临时路径', h: '/downloads/incomplete'),
       _tf(_exportDirCtrl, '复制 .torrent 文件到'),
       _tf(_exportDirFinCtrl, '复制下载完成的 .torrent 文件到'),
       _sec(t, '排除文件名'),
-      _sw('启用排除文件名', _excludedFileNamesEnabled, (v) => setState(() => _excludedFileNamesEnabled = v)),
-      if (_excludedFileNamesEnabled) _tf(_excludedFileNamesCtrl, '排除的文件名模式', h: '每行一个'),
+      _sw(
+        '启用排除文件名',
+        _excludedFileNamesEnabled,
+        (v) => setState(() => _excludedFileNamesEnabled = v),
+      ),
+      if (_excludedFileNamesEnabled)
+        _tf(_excludedFileNamesCtrl, '排除的文件名模式', h: '每行一个'),
       _sec(t, '邮件通知'),
-      _sw('下载完成时发送电子邮件通知', _mailNotificationEnabled, (v) => setState(() => _mailNotificationEnabled = v)),
+      _sw(
+        '下载完成时发送电子邮件通知',
+        _mailNotificationEnabled,
+        (v) => setState(() => _mailNotificationEnabled = v),
+      ),
       if (_mailNotificationEnabled) ...[
         _tf(_mailNotificationEmailCtrl, '收件人'),
         _tf(_mailNotificationSmtpCtrl, 'SMTP 服务器'),
-        _sw('该服务器需要安全链接 (SSL)', _mailNotificationSslEnabled, (v) => setState(() => _mailNotificationSslEnabled = v)),
+        _sw(
+          '该服务器需要安全链接 (SSL)',
+          _mailNotificationSslEnabled,
+          (v) => setState(() => _mailNotificationSslEnabled = v),
+        ),
         _tf(_mailNotificationUsernameCtrl, '用户名'),
         _tf(_mailNotificationPasswordCtrl, '密码'),
       ],
       _sec(t, '运行外部程序'),
-      _sw('新增 Torrent 时运行', _autorunOnTorrentAddedEnabled, (v) => setState(() => _autorunOnTorrentAddedEnabled = v)),
-      if (_autorunOnTorrentAddedEnabled) _tf(_autorunOnTorrentAddedProgramCtrl, '程序路径'),
-      _sw('Torrent 完成时运行', _autorunEnabled, (v) => setState(() => _autorunEnabled = v)),
+      _sw(
+        '新增 Torrent 时运行',
+        _autorunOnTorrentAddedEnabled,
+        (v) => setState(() => _autorunOnTorrentAddedEnabled = v),
+      ),
+      if (_autorunOnTorrentAddedEnabled)
+        _tf(_autorunOnTorrentAddedProgramCtrl, '程序路径'),
+      _sw(
+        'Torrent 完成时运行',
+        _autorunEnabled,
+        (v) => setState(() => _autorunEnabled = v),
+      ),
       if (_autorunEnabled) _tf(_autorunProgramCtrl, '程序路径'),
       _sec(t, '支持的参数 (区分大小写)'),
       _note(
@@ -714,20 +900,53 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       _sw('使用 UPnP / NAT-PMP 转发端口', _upnp, (v) => setState(() => _upnp = v)),
       _sw('使用随机端口', _randomPort, (v) => setState(() => _randomPort = v)),
       _sec(t, '连接限制'),
-      _row(_num(_maxConnecCtrl, '全局最大连接数', h: '500'), _num(_maxConnecPerTorrentCtrl, '每 Torrent 最大连接', h: '100')),
-      _row(_num(_maxUploadsCtrl, '全局最大上传数', h: '20'), _num(_maxUploadsPerTorrentCtrl, '每 Torrent 最大上传', h: '10')),
+      _row(
+        _num(_maxConnecCtrl, '全局最大连接数', h: '500'),
+        _num(_maxConnecPerTorrentCtrl, '每 Torrent 最大连接', h: '100'),
+      ),
+      _row(
+        _num(_maxUploadsCtrl, '全局最大上传数', h: '20'),
+        _num(_maxUploadsPerTorrentCtrl, '每 Torrent 最大上传', h: '10'),
+      ),
       _sec(t, '传出端口'),
-      _row(_num(_outgoingPortsMinCtrl, '下限 [0: 禁用]', h: '0'), _num(_outgoingPortsMaxCtrl, '上限 [0: 禁用]', h: '0')),
+      _row(
+        _num(_outgoingPortsMinCtrl, '下限 [0: 禁用]', h: '0'),
+        _num(_outgoingPortsMaxCtrl, '上限 [0: 禁用]', h: '0'),
+      ),
       _sec(t, '代理服务器'),
-      _sel('类型', _proxyType, ['None', 'SOCKS4', 'SOCKS5', 'HTTP'], (v) => setState(() => _proxyType = v ?? _proxyType)),
+      _sel('类型', _proxyType, [
+        'None',
+        'SOCKS4',
+        'SOCKS5',
+        'HTTP',
+      ], (v) => setState(() => _proxyType = v ?? _proxyType)),
       if (_proxyType != 'None') ...[
         _tf(_proxyIpCtrl, 'IP 地址', h: '127.0.0.1'),
         _num(_proxyPortCtrl, '端口', h: '8080'),
-        _sw('认证', _proxyAuthEnabled, (v) => setState(() => _proxyAuthEnabled = v)),
-        if (_proxyAuthEnabled) ...[_tf(_proxyUsernameCtrl, '用户名'), _tf(_proxyPasswordCtrl, '密码')],
-        _sw('对 Peer 连接使用代理', _proxyPeerConnections, (v) => setState(() => _proxyPeerConnections = v)),
-        _sw('使用代理进行主机名查询', _proxyHostnameLookup, (v) => setState(() => _proxyHostnameLookup = v)),
-        _sw('对 BitTorrent 使用代理', _proxyBittorrent, (v) => setState(() => _proxyBittorrent = v)),
+        _sw(
+          '认证',
+          _proxyAuthEnabled,
+          (v) => setState(() => _proxyAuthEnabled = v),
+        ),
+        if (_proxyAuthEnabled) ...[
+          _tf(_proxyUsernameCtrl, '用户名'),
+          _tf(_proxyPasswordCtrl, '密码'),
+        ],
+        _sw(
+          '对 Peer 连接使用代理',
+          _proxyPeerConnections,
+          (v) => setState(() => _proxyPeerConnections = v),
+        ),
+        _sw(
+          '使用代理进行主机名查询',
+          _proxyHostnameLookup,
+          (v) => setState(() => _proxyHostnameLookup = v),
+        ),
+        _sw(
+          '对 BitTorrent 使用代理',
+          _proxyBittorrent,
+          (v) => setState(() => _proxyBittorrent = v),
+        ),
         _sw('对 RSS 使用代理', _proxyRss, (v) => setState(() => _proxyRss = v)),
         _sw('对其他请求使用代理', _proxyMisc, (v) => setState(() => _proxyMisc = v)),
       ],
@@ -742,11 +961,20 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       _row(_num(_upLimitCtrl, '上传 (KiB/s)'), _num(_dlLimitCtrl, '下载 (KiB/s)')),
       _note(t, '0 为无限制'),
       _sec(t, '备用速度限制'),
-      _row(_num(_altUpLimitCtrl, '上传 (KiB/s)'), _num(_altDlLimitCtrl, '下载 (KiB/s)')),
+      _row(
+        _num(_altUpLimitCtrl, '上传 (KiB/s)'),
+        _num(_altDlLimitCtrl, '下载 (KiB/s)'),
+      ),
       _note(t, '0 为无限制'),
       _sec(t, '计划备用速度限制的启用时间'),
-      _row(_num(_scheduleFromHourCtrl, '从 (时)', h: '08'), _num(_scheduleFromMinCtrl, '从 (分)', h: '00')),
-      _row(_num(_scheduleToHourCtrl, '到 (时)', h: '20'), _num(_scheduleToMinCtrl, '到 (分)', h: '00')),
+      _row(
+        _num(_scheduleFromHourCtrl, '从 (时)', h: '08'),
+        _num(_scheduleFromMinCtrl, '从 (分)', h: '00'),
+      ),
+      _row(
+        _num(_scheduleToHourCtrl, '到 (时)', h: '20'),
+        _num(_scheduleToMinCtrl, '到 (分)', h: '00'),
+      ),
       _sel(
         '时间',
         _schedulerDays == 0 ? '每天' : '自定义',
@@ -759,11 +987,27 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
               : 0,
         ),
       ),
-      _sw('启用计划', _schedulerEnabled, (v) => setState(() => _schedulerEnabled = v)),
+      _sw(
+        '启用计划',
+        _schedulerEnabled,
+        (v) => setState(() => _schedulerEnabled = v),
+      ),
       _sec(t, '设置速度限制'),
-      _sw('对 µTP 协议进行速度限制', _limitUtpRate, (v) => setState(() => _limitUtpRate = v)),
-      _sw('对传送总开销进行速度限制', _limitTcpOverhead, (v) => setState(() => _limitTcpOverhead = v)),
-      _sw('对本地网络用户进行速度限制', _limitLanPeers, (v) => setState(() => _limitLanPeers = v)),
+      _sw(
+        '对 µTP 协议进行速度限制',
+        _limitUtpRate,
+        (v) => setState(() => _limitUtpRate = v),
+      ),
+      _sw(
+        '对传送总开销进行速度限制',
+        _limitTcpOverhead,
+        (v) => setState(() => _limitTcpOverhead = v),
+      ),
+      _sw(
+        '对本地网络用户进行速度限制',
+        _limitLanPeers,
+        (v) => setState(() => _limitLanPeers = v),
+      ),
     ],
   );
 
@@ -789,9 +1033,16 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       ),
       _sw('启用匿名模式', _anonymousMode, (v) => setState(() => _anonymousMode = v)),
       const SizedBox(height: 8),
-      _num(TextEditingController(text: _maxActiveCheckingTorrents.toString()), '最大活跃检查 Torrent 数'),
+      _num(
+        TextEditingController(text: _maxActiveCheckingTorrents.toString()),
+        '最大活跃检查 Torrent 数',
+      ),
       _sec(t, 'Torrent 排队'),
-      _sw('启用队列管理', _queueingEnabled, (v) => setState(() => _queueingEnabled = v)),
+      _sw(
+        '启用队列管理',
+        _queueingEnabled,
+        (v) => setState(() => _queueingEnabled = v),
+      ),
       _num(_maxActiveDownloadsCtrl, '最大活动的下载数', h: '3'),
       _num(_maxActiveUploadsCtrl, '最大活动的上传数', h: '3'),
       _num(_maxActiveTorrentsCtrl, '最大活动的 torrent 数', h: '5'),
@@ -802,24 +1053,58 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       ),
       _num(_slowTorrentInactiveTimerCtrl, 'Torrent 非活动计时器 (秒)', h: '60'),
       _sec(t, '做种限制'),
-      _sw('当分享率达到', _maxRatioEnabled, (v) => setState(() => _maxRatioEnabled = v)),
-      if (_maxRatioEnabled) _tf(_maxRatioCtrl, '分享率', h: '1', k: const TextInputType.numberWithOptions(decimal: true)),
-      _sw('达到总做种时间时', _maxSeedingTimeEnabled, (v) => setState(() => _maxSeedingTimeEnabled = v)),
-      if (_maxSeedingTimeEnabled) _num(_maxSeedingTimeCtrl, '做种时间 (分钟)', h: '1440'),
-      _sw('达到不活跃做种时间时', _maxInactiveSeedingTimeEnabled, (v) => setState(() => _maxInactiveSeedingTimeEnabled = v)),
-      if (_maxInactiveSeedingTimeEnabled) _num(_maxInactiveSeedingTimeCtrl, '不活跃做种时间 (分钟)', h: '1440'),
-      _sel('然后', _maxRatioAct == 0 ? '停止 torrent' : '删除 torrent', [
-        '停止 torrent',
-        '删除 torrent',
-      ], (v) => setState(() => _maxRatioAct = v == '删除 torrent' ? 1 : 0)),
+      _sw(
+        '当分享率达到',
+        _maxRatioEnabled,
+        (v) => setState(() => _maxRatioEnabled = v),
+      ),
+      if (_maxRatioEnabled)
+        _tf(
+          _maxRatioCtrl,
+          '分享率',
+          h: '1',
+          k: const TextInputType.numberWithOptions(decimal: true),
+        ),
+      _sw(
+        '达到总做种时间时',
+        _maxSeedingTimeEnabled,
+        (v) => setState(() => _maxSeedingTimeEnabled = v),
+      ),
+      if (_maxSeedingTimeEnabled)
+        _num(_maxSeedingTimeCtrl, '做种时间 (分钟)', h: '1440'),
+      _sw(
+        '达到不活跃做种时间时',
+        _maxInactiveSeedingTimeEnabled,
+        (v) => setState(() => _maxInactiveSeedingTimeEnabled = v),
+      ),
+      if (_maxInactiveSeedingTimeEnabled)
+        _num(_maxInactiveSeedingTimeCtrl, '不活跃做种时间 (分钟)', h: '1440'),
+      _sel(
+        '然后',
+        _maxRatioAct == 0 ? '停止 torrent' : '删除 torrent',
+        ['停止 torrent', '删除 torrent'],
+        (v) => setState(() => _maxRatioAct = v == '删除 torrent' ? 1 : 0),
+      ),
       _sec(t, '自动附加这些 tracker 到新下载'),
-      _sw('启用', _addTrackersEnabled, (v) => setState(() => _addTrackersEnabled = v)),
+      _sw(
+        '启用',
+        _addTrackersEnabled,
+        (v) => setState(() => _addTrackersEnabled = v),
+      ),
       if (_addTrackersEnabled) _tf(_addTrackersCtrl, 'Tracker 列表', h: '每行一个'),
       _sec(t, '自动附加 URL 的 trackers 到新的下载'),
-      _sw('启用', _addTrackersFromUrlEnabled, (v) => setState(() => _addTrackersFromUrlEnabled = v)),
+      _sw(
+        '启用',
+        _addTrackersFromUrlEnabled,
+        (v) => setState(() => _addTrackersFromUrlEnabled = v),
+      ),
       if (_addTrackersFromUrlEnabled) _tf(_addTrackersUrlCtrl, 'Tracker URL'),
       _sec(t, '获取 tracker'),
-      _sw('启用内置 Tracker', _enableEmbeddedTracker, (v) => setState(() => _enableEmbeddedTracker = v)),
+      _sw(
+        '启用内置 Tracker',
+        _enableEmbeddedTracker,
+        (v) => setState(() => _enableEmbeddedTracker = v),
+      ),
       if (_enableEmbeddedTracker) ...[
         _num(_embeddedTrackerPortCtrl, '内置 tracker 端口', h: '9000'),
         _sw(
@@ -836,14 +1121,22 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       _sec(t, 'RSS 阅读器'),
-      _sw('启用获取 RSS 订阅', _rssProcessingEnabled, (v) => setState(() => _rssProcessingEnabled = v)),
+      _sw(
+        '启用获取 RSS 订阅',
+        _rssProcessingEnabled,
+        (v) => setState(() => _rssProcessingEnabled = v),
+      ),
       if (_rssProcessingEnabled) ...[
         _num(_rssRefreshIntervalCtrl, 'RSS 订阅源更新间隔 (分钟)', h: '30'),
         _num(_rssFetchDelayCtrl, '相同的主机请求延迟 (秒)', h: '2'),
         _num(_rssMaxArticlesPerFeedCtrl, '每个订阅源文章数目最大值', h: '50'),
       ],
       _sec(t, 'RSS Torrent 自动下载器'),
-      _sw('启用 RSS Torrent 自动下载', _rssAutoDownloadingEnabled, (v) => setState(() => _rssAutoDownloadingEnabled = v)),
+      _sw(
+        '启用 RSS Torrent 自动下载',
+        _rssAutoDownloadingEnabled,
+        (v) => setState(() => _rssAutoDownloadingEnabled = v),
+      ),
       _sec(t, 'RSS 智能剧集过滤器'),
       _sw(
         '下载 REPACK / PROPER 版剧集',
@@ -861,24 +1154,43 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       _sec(t, 'Web 用户界面 (远程控制)'),
       _tf(_webUiAddressCtrl, 'IP 地址', h: '*'),
       _num(_webUiPortCtrl, '端口', h: '8999'),
-      _sw('使用 UPnP / NAT-PMP 功能来转发端口', _webUiUpnp, (v) => setState(() => _webUiUpnp = v)),
+      _sw(
+        '使用 UPnP / NAT-PMP 功能来转发端口',
+        _webUiUpnp,
+        (v) => setState(() => _webUiUpnp = v),
+      ),
       _sec(t, 'HTTPS'),
       _sw('使用 HTTPS 而不是 HTTP', _useHttps, (v) => setState(() => _useHttps = v)),
-      if (_useHttps) ...[_tf(_webUiHttpsCertPathCtrl, '证书路径'), _tf(_webUiHttpsKeyPathCtrl, '密钥路径')],
+      if (_useHttps) ...[
+        _tf(_webUiHttpsCertPathCtrl, '证书路径'),
+        _tf(_webUiHttpsKeyPathCtrl, '密钥路径'),
+      ],
       _sec(t, '认证'),
       _tf(_webUiUsernameCtrl, '用户名'),
       _tf(_webUiPasswordCtrl, '密码'),
-      _sw('对本地主机上的客户端跳过身份验证', _bypassLocalAuth, (v) => setState(() => _bypassLocalAuth = v)),
+      _sw(
+        '对本地主机上的客户端跳过身份验证',
+        _bypassLocalAuth,
+        (v) => setState(() => _bypassLocalAuth = v),
+      ),
       _sw(
         '对 IP 子网白名单中的客户端跳过身份验证',
         _bypassAuthSubnetWhitelistEnabled,
         (v) => setState(() => _bypassAuthSubnetWhitelistEnabled = v),
       ),
-      if (_bypassAuthSubnetWhitelistEnabled) _tf(_bypassAuthSubnetWhitelistCtrl, '子网白名单', h: '每行一个'),
-      _row(_num(_webUiMaxAuthFailCountCtrl, '连续失败后禁止客户端', h: '5'), _num(_webUiBanDurationCtrl, '禁止 (秒)', h: '3600')),
+      if (_bypassAuthSubnetWhitelistEnabled)
+        _tf(_bypassAuthSubnetWhitelistCtrl, '子网白名单', h: '每行一个'),
+      _row(
+        _num(_webUiMaxAuthFailCountCtrl, '连续失败后禁止客户端', h: '5'),
+        _num(_webUiBanDurationCtrl, '禁止 (秒)', h: '3600'),
+      ),
       _num(_webUiSessionTimeoutCtrl, '会话超时 (秒)', h: '3600'),
       _sec(t, '备选 WebUI'),
-      _sw('使用备选 WebUI', _alternativeWebuiEnabled, (v) => setState(() => _alternativeWebuiEnabled = v)),
+      _sw(
+        '使用备选 WebUI',
+        _alternativeWebuiEnabled,
+        (v) => setState(() => _alternativeWebuiEnabled = v),
+      ),
       if (_alternativeWebuiEnabled) _tf(_alternativeWebuiPathCtrl, '文件路径'),
       _sec(t, '安全'),
       _sw(
@@ -886,7 +1198,11 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
         _webUiClickjackingProtectionEnabled,
         (v) => setState(() => _webUiClickjackingProtectionEnabled = v),
       ),
-      _sw('启用跨站请求伪造 (CSRF) 保护', _webUiCsrfProtectionEnabled, (v) => setState(() => _webUiCsrfProtectionEnabled = v)),
+      _sw(
+        '启用跨站请求伪造 (CSRF) 保护',
+        _webUiCsrfProtectionEnabled,
+        (v) => setState(() => _webUiCsrfProtectionEnabled = v),
+      ),
       _sw(
         '启用 cookie 安全标志 (需要 HTTPS 或本地连接)',
         _webUiSecureCookieEnabled,
@@ -897,23 +1213,36 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
         _webUiHostHeaderValidationEnabled,
         (v) => setState(() => _webUiHostHeaderValidationEnabled = v),
       ),
-      if (_webUiHostHeaderValidationEnabled) _tf(_webUiDomainListCtrl, '服务器域名', h: '*'),
+      if (_webUiHostHeaderValidationEnabled)
+        _tf(_webUiDomainListCtrl, '服务器域名', h: '*'),
       _sw(
         '添加自定义 HTTP headers',
         _webUiUseCustomHttpHeadersEnabled,
         (v) => setState(() => _webUiUseCustomHttpHeadersEnabled = v),
       ),
-      if (_webUiUseCustomHttpHeadersEnabled) _tf(_webUiCustomHttpHeadersCtrl, 'Header: value', h: '每行一个'),
+      if (_webUiUseCustomHttpHeadersEnabled)
+        _tf(_webUiCustomHttpHeadersCtrl, 'Header: value', h: '每行一个'),
       _sec(t, '反向代理'),
-      _sw('启用反向代理支持', _webUiReverseProxyEnabled, (v) => setState(() => _webUiReverseProxyEnabled = v)),
-      if (_webUiReverseProxyEnabled) _tf(_webUiReverseProxiesListCtrl, '受信任的代理列表'),
+      _sw(
+        '启用反向代理支持',
+        _webUiReverseProxyEnabled,
+        (v) => setState(() => _webUiReverseProxyEnabled = v),
+      ),
+      if (_webUiReverseProxyEnabled)
+        _tf(_webUiReverseProxiesListCtrl, '受信任的代理列表'),
       _sec(t, '动态域名 (DynDNS)'),
-      _sw('更新我的动态域名', _dyndnsEnabled, (v) => setState(() => _dyndnsEnabled = v)),
+      _sw(
+        '更新我的动态域名',
+        _dyndnsEnabled,
+        (v) => setState(() => _dyndnsEnabled = v),
+      ),
       if (_dyndnsEnabled) ...[
-        _sel('服务商', _dyndnsService == 0 ? 'DynDNS' : 'NoIP', [
-          'DynDNS',
-          'NoIP',
-        ], (v) => setState(() => _dyndnsService = v == 'NoIP' ? 1 : 0)),
+        _sel(
+          '服务商',
+          _dyndnsService == 0 ? 'DynDNS' : 'NoIP',
+          ['DynDNS', 'NoIP'],
+          (v) => setState(() => _dyndnsService = v == 'NoIP' ? 1 : 0),
+        ),
         _tf(_dyndnsDomainCtrl, '域名', h: 'changeme.dyndns.org'),
         _tf(_dyndnsUsernameCtrl, '用户名'),
         _tf(_dyndnsPasswordCtrl, '密码'),
@@ -926,27 +1255,41 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       _sec(t, 'qBittorrent 相关'),
-      _sel('恢复数据存储类型', _resumeDataStorageType, [
-        'Legacy',
-        'SQLite',
-      ], (v) => setState(() => _resumeDataStorageType = v ?? _resumeDataStorageType)),
+      _sel(
+        '恢复数据存储类型',
+        _resumeDataStorageType,
+        ['Legacy', 'SQLite'],
+        (v) => setState(
+          () => _resumeDataStorageType = v ?? _resumeDataStorageType,
+        ),
+      ),
       _sel(
         'Torrent 内容删除模式',
         _torrentContentRemoveOption,
         ['Delete', 'MoveToTrash'],
-        (v) => setState(() => _torrentContentRemoveOption = v ?? _torrentContentRemoveOption),
+        (v) => setState(
+          () => _torrentContentRemoveOption = v ?? _torrentContentRemoveOption,
+        ),
       ),
       _num(_memoryWorkingSetLimitCtrl, '物理内存 (RAM) 使用限制 (MiB)', h: '4096'),
       _num(_saveResumeDataIntervalCtrl, '保存恢复数据间隔 (分钟)', h: '60'),
       _num(_saveStatisticsIntervalCtrl, '保存统计数据间隔 (分钟)', h: '15'),
       _num(_torrentFileSizeLimitCtrl, '.torrent 文件大小限制 (MiB)', h: '100'),
-      _sw('解析用户所在国家', _resolvePeerCountries, (v) => setState(() => _resolvePeerCountries = v)),
+      _sw(
+        '解析用户所在国家',
+        _resolvePeerCountries,
+        (v) => setState(() => _resolvePeerCountries = v),
+      ),
       _sw(
         '当 IP 或端口更改时重新通知所有 trackers',
         _reannounceWhenAddressChanged,
         (v) => setState(() => _reannounceWhenAddressChanged = v),
       ),
-      _sw('忽略 SSL 错误', _ignoreSslErrors, (v) => setState(() => _ignoreSslErrors = v)),
+      _sw(
+        '忽略 SSL 错误',
+        _ignoreSslErrors,
+        (v) => setState(() => _ignoreSslErrors = v),
+      ),
       _tf(_pythonExecutablePathCtrl, 'Python 可执行文件路径', h: '假如为空，自动检测'),
       _tf(_appInstanceNameCtrl, '定制程序实例名'),
       _num(_refreshIntervalCtrl, '刷新间隔 (毫秒)', h: '1500'),
@@ -959,20 +1302,34 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       _num(_checkingMemoryUseCtrl, '校验时内存使用扩增量 (MiB)', h: '32'),
       _num(_diskQueueSizeCtrl, '磁盘队列大小 (KiB)', h: '1024'),
       _sec(t, '磁盘 IO'),
-      _sel('磁盘 IO 类型', ['默认', 'mmap'][_diskIoType], [
-        '默认',
-        'mmap',
-      ], (v) => setState(() => _diskIoType = v == 'mmap' ? 1 : 0)),
-      _sel('磁盘 IO 读取模式', ['禁用 OS 缓存', '启用 OS 缓存'][_diskIoReadMode], [
-        '禁用 OS 缓存',
-        '启用 OS 缓存',
-      ], (v) => setState(() => _diskIoReadMode = v == '启用 OS 缓存' ? 1 : 0)),
-      _sel('磁盘 IO 写入模式', ['禁用 OS 缓存', '启用 OS 缓存'][_diskIoWriteMode], [
-        '禁用 OS 缓存',
-        '启用 OS 缓存',
-      ], (v) => setState(() => _diskIoWriteMode = v == '启用 OS 缓存' ? 1 : 0)),
-      _sw('启用相连文件块下载模式', _enableCoalesceReadWrite, (v) => setState(() => _enableCoalesceReadWrite = v)),
-      _sw('发送分块上传建议', _enableUploadSuggestions, (v) => setState(() => _enableUploadSuggestions = v)),
+      _sel(
+        '磁盘 IO 类型',
+        ['默认', 'mmap'][_diskIoType],
+        ['默认', 'mmap'],
+        (v) => setState(() => _diskIoType = v == 'mmap' ? 1 : 0),
+      ),
+      _sel(
+        '磁盘 IO 读取模式',
+        ['禁用 OS 缓存', '启用 OS 缓存'][_diskIoReadMode],
+        ['禁用 OS 缓存', '启用 OS 缓存'],
+        (v) => setState(() => _diskIoReadMode = v == '启用 OS 缓存' ? 1 : 0),
+      ),
+      _sel(
+        '磁盘 IO 写入模式',
+        ['禁用 OS 缓存', '启用 OS 缓存'][_diskIoWriteMode],
+        ['禁用 OS 缓存', '启用 OS 缓存'],
+        (v) => setState(() => _diskIoWriteMode = v == '启用 OS 缓存' ? 1 : 0),
+      ),
+      _sw(
+        '启用相连文件块下载模式',
+        _enableCoalesceReadWrite,
+        (v) => setState(() => _enableCoalesceReadWrite = v),
+      ),
+      _sw(
+        '发送分块上传建议',
+        _enableUploadSuggestions,
+        (v) => setState(() => _enableUploadSuggestions = v),
+      ),
       _sec(t, '缓冲区'),
       _row(
         _num(_sendBufferWatermarkCtrl, '发送缓冲上限 (KiB)', h: '500'),
@@ -1001,7 +1358,11 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
               : 0,
         ),
       ),
-      _sw('支持国际化域名 (IDN)', _idnSupportEnabled, (v) => setState(() => _idnSupportEnabled = v)),
+      _sw(
+        '支持国际化域名 (IDN)',
+        _idnSupportEnabled,
+        (v) => setState(() => _idnSupportEnabled = v),
+      ),
       _sw(
         '允许来自同一 IP 地址的多个连接',
         _enableMultiConnectionsFromSameIp,
@@ -1012,32 +1373,66 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
         _validateHttpsTrackerCertificate,
         (v) => setState(() => _validateHttpsTrackerCertificate = v),
       ),
-      _sw('服务器端请求伪造 (SSRF) 攻击缓解', _ssrfMitigation, (v) => setState(() => _ssrfMitigation = v)),
-      _sw('禁止连接到特权端口上的 Peer', _blockPeersOnPrivilegedPorts, (v) => setState(() => _blockPeersOnPrivilegedPorts = v)),
+      _sw(
+        '服务器端请求伪造 (SSRF) 攻击缓解',
+        _ssrfMitigation,
+        (v) => setState(() => _ssrfMitigation = v),
+      ),
+      _sw(
+        '禁止连接到特权端口上的 Peer',
+        _blockPeersOnPrivilegedPorts,
+        (v) => setState(() => _blockPeersOnPrivilegedPorts = v),
+      ),
       _num(_requestQueueSizeCtrl, '单一 peer 的最大未完成请求', h: '500'),
       _sec(t, '上传窗口策略'),
-      _sel('策略', ['固定窗口数', '反阻塞'][_uploadChokingAlgorithm], [
-        '固定窗口数',
-        '反阻塞',
-      ], (v) => setState(() => _uploadChokingAlgorithm = v == '反阻塞' ? 1 : 0)),
-      _sw('总是向同级的所有 Tracker 汇报', _announceToAllTrackers, (v) => setState(() => _announceToAllTrackers = v)),
-      _sw('总是向所有等级的 Tracker 汇报', _announceToAllTiers, (v) => setState(() => _announceToAllTiers = v)),
+      _sel(
+        '策略',
+        ['固定窗口数', '反阻塞'][_uploadChokingAlgorithm],
+        ['固定窗口数', '反阻塞'],
+        (v) => setState(() => _uploadChokingAlgorithm = v == '反阻塞' ? 1 : 0),
+      ),
+      _sw(
+        '总是向同级的所有 Tracker 汇报',
+        _announceToAllTrackers,
+        (v) => setState(() => _announceToAllTrackers = v),
+      ),
+      _sw(
+        '总是向所有等级的 Tracker 汇报',
+        _announceToAllTiers,
+        (v) => setState(() => _announceToAllTiers = v),
+      ),
       _tf(_announceIpCtrl, 'IP 地址已报告给 Trackers', h: '需要重启'),
       _num(_announcePortCtrl, '报告给 trackers 的端口 [0:监听端口]', h: '0'),
       _num(_maxConcurrentHttpAnnouncesCtrl, '最大并行 HTTP 汇报', h: '50'),
       _num(_stopTrackerTimeoutCtrl, '停止 tracker 超时 [0:禁用] (秒)', h: '2'),
       _sec(t, 'Peer 进出'),
-      _row(_num(_peerTurnoverCtrl, '断开百分比 (%)', h: '4'), _num(_peerTurnoverCutoffCtrl, '阈值百分比 (%)', h: '90')),
+      _row(
+        _num(_peerTurnoverCtrl, '断开百分比 (%)', h: '4'),
+        _num(_peerTurnoverCutoffCtrl, '阈值百分比 (%)', h: '90'),
+      ),
       _num(_peerTurnoverIntervalCtrl, '断开间隔 (秒)', h: '300'),
       _sec(t, 'DHT'),
       _tf(_dhtBootstrapNodesCtrl, 'DHT Bootstrap 节点'),
       _sec(t, 'I2P'),
       _sw('启用 I2P', _i2pEnabled, (v) => setState(() => _i2pEnabled = v)),
       if (_i2pEnabled) ...[
-        _row(_tf(_i2pAddressCtrl, 'I2P 地址', h: '127.0.0.1'), _num(_i2pPortCtrl, 'I2P 端口', h: '7656')),
-        _row(_num(_i2pInboundQuantityCtrl, 'I2P 传入量', h: '3'), _num(_i2pOutboundQuantityCtrl, 'I2P 传出量', h: '3')),
-        _row(_num(_i2pInboundLengthCtrl, 'I2P 传入长度', h: '3'), _num(_i2pOutboundLengthCtrl, 'I2P 传出长度', h: '3')),
-        _sw('I2P 混合模式', _i2pMixedMode, (v) => setState(() => _i2pMixedMode = v)),
+        _row(
+          _tf(_i2pAddressCtrl, 'I2P 地址', h: '127.0.0.1'),
+          _num(_i2pPortCtrl, 'I2P 端口', h: '7656'),
+        ),
+        _row(
+          _num(_i2pInboundQuantityCtrl, 'I2P 传入量', h: '3'),
+          _num(_i2pOutboundQuantityCtrl, 'I2P 传出量', h: '3'),
+        ),
+        _row(
+          _num(_i2pInboundLengthCtrl, 'I2P 传入长度', h: '3'),
+          _num(_i2pOutboundLengthCtrl, 'I2P 传出长度', h: '3'),
+        ),
+        _sw(
+          'I2P 混合模式',
+          _i2pMixedMode,
+          (v) => setState(() => _i2pMixedMode = v),
+        ),
       ],
     ],
   );
@@ -1047,11 +1442,14 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
   Widget build(BuildContext context) {
     final t = shadcn.Theme.of(context);
     return Dialog(
-      insetPadding: _isMobile ? const EdgeInsets.all(8) : const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+      insetPadding: _isMobile
+          ? const EdgeInsets.all(8)
+          : const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * (_isMobile ? 0.95 : 0.9),
+          maxHeight:
+              MediaQuery.of(context).size.height * (_isMobile ? 0.95 : 0.9),
           maxWidth: _isMobile ? double.infinity : 640,
         ),
         child: Column(
@@ -1068,13 +1466,19 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                       color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Icon(shadcn.LucideIcons.download, size: 14, color: Color(0xFF3B82F6)),
+                    child: const Icon(
+                      shadcn.LucideIcons.download,
+                      size: 14,
+                      color: Color(0xFF3B82F6),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '${d.name} · Qbittorrent',
-                      style: t.typography.small.copyWith(fontWeight: FontWeight.w700),
+                      style: t.typography.small.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   shadcn.IconButton.ghost(
@@ -1087,7 +1491,9 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
             Divider(height: 1, color: t.colorScheme.border),
             Expanded(
               child: _loading
-                  ? const Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2))
+                  ? const Center(
+                      child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : _error != null
                   ? Center(
                       child: Column(
@@ -1096,10 +1502,17 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                           Icon(
                             shadcn.LucideIcons.circleAlert,
                             size: 32,
-                            color: t.colorScheme.mutedForeground.withValues(alpha: 0.3),
+                            color: t.colorScheme.mutedForeground.withValues(
+                              alpha: 0.3,
+                            ),
                           ),
                           const SizedBox(height: 8),
-                          Text(_error!, style: t.typography.small.copyWith(color: t.colorScheme.mutedForeground)),
+                          Text(
+                            _error!,
+                            style: t.typography.small.copyWith(
+                              color: t.colorScheme.mutedForeground,
+                            ),
+                          ),
                         ],
                       ),
                     )
@@ -1130,7 +1543,10 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                               ? const SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: shadcn.CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  child: shadcn.CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 )
                               : const Center(child: Text('保存')),
                         ),
@@ -1150,7 +1566,9 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       final availableHeight = constraints.maxHeight.isFinite
           ? constraints.maxHeight
           : MediaQuery.of(context).size.height * 0.7;
-      final bodyHeight = (availableHeight - 76).clamp(120.0, double.infinity).toDouble();
+      final bodyHeight = (availableHeight - 76)
+          .clamp(120.0, double.infinity)
+          .toDouble();
 
       final pages = [
         _scroll(_behaviorContent(t), bodyHeight),
@@ -1395,7 +1813,8 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     'web_ui_session_timeout': _pi(_webUiSessionTimeoutCtrl, 3600),
     'alternative_webui_enabled': _alternativeWebuiEnabled,
     'alternative_webui_path': _ps(_alternativeWebuiPathCtrl),
-    'web_ui_clickjacking_protection_enabled': _webUiClickjackingProtectionEnabled,
+    'web_ui_clickjacking_protection_enabled':
+        _webUiClickjackingProtectionEnabled,
     'web_ui_csrf_protection_enabled': _webUiCsrfProtectionEnabled,
     'web_ui_secure_cookie_enabled': _webUiSecureCookieEnabled,
     'web_ui_host_header_validation_enabled': _webUiHostHeaderValidationEnabled,

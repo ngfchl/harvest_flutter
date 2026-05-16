@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/downloader.dart';
@@ -336,7 +337,8 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * (_isMobile ? 0.95 : 0.9),
+          maxHeight:
+              MediaQuery.of(context).size.height * (_isMobile ? 0.95 : 0.9),
           maxWidth: _isMobile ? double.infinity : 560,
         ),
         child: Column(
@@ -346,7 +348,9 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
             Divider(height: 1, color: theme.colorScheme.border),
             Expanded(
               child: _loading
-                  ? const Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2))
+                  ? const Center(
+                      child: shadcn.CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : _error != null
                   ? _buildError(theme)
                   : _buildTabbedBody(theme),
@@ -382,7 +386,9 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
           Expanded(
             child: Text(
               '${d.name} · 参数设置',
-              style: theme.typography.small.copyWith(fontWeight: FontWeight.w700),
+              style: theme.typography.small.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           shadcn.IconButton.ghost(
@@ -510,12 +516,26 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         final availableHeight = constraints.maxHeight.isFinite
             ? constraints.maxHeight
             : MediaQuery.of(context).size.height * 0.7;
-        final bodyHeight = (availableHeight - 76).clamp(120.0, double.infinity).toDouble();
+        final bodyHeight = (availableHeight - 76)
+            .clamp(120.0, double.infinity)
+            .toDouble();
         final pages = [
-          _ScrollableSection(height: bodyHeight, child: _buildDownloadSection(theme)),
-          _ScrollableSection(height: bodyHeight, child: _buildBandwidthSection(theme)),
-          _ScrollableSection(height: bodyHeight, child: _buildNetworkSection(theme)),
-          _ScrollableSection(height: bodyHeight, child: _buildQueueSection(theme)),
+          _ScrollableSection(
+            height: bodyHeight,
+            child: _buildDownloadSection(theme),
+          ),
+          _ScrollableSection(
+            height: bodyHeight,
+            child: _buildBandwidthSection(theme),
+          ),
+          _ScrollableSection(
+            height: bodyHeight,
+            child: _buildNetworkSection(theme),
+          ),
+          _ScrollableSection(
+            height: bodyHeight,
+            child: _buildQueueSection(theme),
+          ),
         ];
 
         return Padding(
@@ -529,8 +549,8 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
                 children: const [
                   shadcn.TabItem(child: Text('下载设置')),
                   shadcn.TabItem(child: Text('带宽设置')),
-                  shadcn. TabItem(child: Text('网络设置')),
-                  shadcn. TabItem(child: Text('队列设置')),
+                  shadcn.TabItem(child: Text('网络设置')),
+                  shadcn.TabItem(child: Text('队列设置')),
                 ],
               ),
               const SizedBox(height: 8),
@@ -992,7 +1012,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
       suffix: SizedBox(
         width: 132,
         child: DropdownButtonFormField<String>(
-          value: _encryption,
+          initialValue: _encryption,
           decoration: const InputDecoration(isDense: true),
           items: const [
             DropdownMenuItem(value: 'tolerated', child: Text('允许明文')),
@@ -1071,18 +1091,13 @@ class _DialogTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return ShadTextField(
       controller: controller,
+      label: label,
+      hintText: hint,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       textInputAction: TextInputAction.done,
-      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-      onFieldSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-      onEditingComplete: () => FocusManager.instance.primaryFocus?.unfocus(),
-      decoration: InputDecoration(
-        label: label,
-        hintText: hint,
-      ),
     );
   }
 }
@@ -1092,11 +1107,7 @@ class _SettingTile extends StatelessWidget {
   final Widget title;
   final Widget? suffix;
 
-  const _SettingTile({
-    this.prefix,
-    required this.title,
-    this.suffix,
-  });
+  const _SettingTile({this.prefix, required this.title, this.suffix});
 
   @override
   Widget build(BuildContext context) {
@@ -1110,15 +1121,14 @@ class _SettingTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          if (prefix != null) ...[
-            prefix!,
-            const SizedBox(width: 10),
-          ],
-          Expanded(child: DefaultTextStyle.merge(style: const TextStyle(fontSize: 13), child: title)),
-          if (suffix != null) ...[
-            const SizedBox(width: 12),
-            suffix!,
-          ],
+          if (prefix != null) ...[prefix!, const SizedBox(width: 10)],
+          Expanded(
+            child: DefaultTextStyle.merge(
+              style: const TextStyle(fontSize: 13),
+              child: title,
+            ),
+          ),
+          if (suffix != null) ...[const SizedBox(width: 12), suffix!],
         ],
       ),
     );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
+import 'shad_text_field.dart';
+
 class AppTextField extends StatelessWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
@@ -43,7 +45,7 @@ class AppTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return shadcn.TextField(
+    return ShadTextField(
       controller: controller,
       focusNode: focusNode,
       placeholder: placeholder,
@@ -59,12 +61,8 @@ class AppTextField extends StatelessWidget {
       style: style,
       features: features ?? [],
       onChanged: onChanged,
-      onSubmitted: (value) {
-        onSubmitted?.call(value);
-        if (autoUnfocusOnSubmitted) {
-          FocusManager.instance.primaryFocus?.unfocus();
-        }
-      },
+      onSubmitted: onSubmitted,
+      autoUnfocusOnSubmitted: autoUnfocusOnSubmitted,
     );
   }
 }

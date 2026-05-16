@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/ui/ui.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/downloader.dart';
@@ -10,13 +11,19 @@ class DownloaderEditorDialog extends ConsumerStatefulWidget {
   final Downloader? downloader;
   final void Function(Downloader) onSaved;
 
-  const DownloaderEditorDialog({super.key, this.downloader, required this.onSaved});
+  const DownloaderEditorDialog({
+    super.key,
+    this.downloader,
+    required this.onSaved,
+  });
 
   @override
-  ConsumerState<DownloaderEditorDialog> createState() => _DownloaderEditorDialogState();
+  ConsumerState<DownloaderEditorDialog> createState() =>
+      _DownloaderEditorDialogState();
 }
 
-class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog> {
+class _DownloaderEditorDialogState
+    extends ConsumerState<DownloaderEditorDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameCtrl;
   late final TextEditingController _hostCtrl;
@@ -43,9 +50,7 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
     _portCtrl = TextEditingController(text: d?.port.toString() ?? '');
     _usernameCtrl = TextEditingController(text: d?.username ?? '');
     _passwordCtrl = TextEditingController(text: d?.password ?? '');
-    _externalHostCtrl = TextEditingController(
-      text: d?.externalHost ?? '',
-    );
+    _externalHostCtrl = TextEditingController(text: d?.externalHost ?? '');
     _category = d?.category ?? 'Qb';
     _protocol = d?.protocol ?? 'http';
     _path = d?.torrentPath;
@@ -123,180 +128,203 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
             vertical: isMobile ? 6 : 24,
           ),
           child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * (isMobile ? 0.92 : 0.8),
-            maxWidth: isMobile ? double.infinity : 420,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(10, isMobile ? 8 : 12, 10, 0),
-              child: Row(
-                children: [
-                  shadcn.IconButton.ghost(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 16),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      _isEdit ? '编辑下载器' : '添加下载器',
-                      style: theme.typography.large.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ],
-              ),
+            constraints: BoxConstraints(
+              maxHeight:
+                  MediaQuery.of(context).size.height * (isMobile ? 0.92 : 0.8),
+              maxWidth: isMobile ? double.infinity : 420,
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(10, isMobile ? 8 : 12, 10, 0),
+                  child: Row(
                     children: [
-                      _textField(
-                        controller: _nameCtrl,
-                        label: '名称',
-                        hintText: '例如: QB8999',
-                        validator: (v) => _validateRequired(v, '名称'),
-                      ),
-                      const SizedBox(height: 8),
-                      _dropdown(
-                        label: '客户端类型',
-                        value: _category,
-                        items: const {'Qb': 'Qbittorrent', 'Tr': 'Transmission'},
-                        onChanged: (v) => setState(() => _category = v ?? 'Qb'),
-                      ),
-                      const SizedBox(height: 8),
-                      _dropdown(
-                        label: '协议',
-                        value: _protocol,
-                        items: const {'http': 'HTTP', 'https': 'HTTPS'},
-                        onChanged: (v) => setState(() => _protocol = v ?? 'http'),
-                      ),
-                      const SizedBox(height: 8),
-                      _textField(
-                        controller: _hostCtrl,
-                        label: '主机',
-                        hintText: '192.168.123.100',
-                        validator: (v) => _validateRequired(v, '主机'),
-                      ),
-                      const SizedBox(height: 8),
-                      _textField(
-                        controller: _portCtrl,
-                        label: '端口',
-                        hintText: '8999',
-                        keyboardType: TextInputType.number,
-                        validator: _validatePort,
-                      ),
-                      const SizedBox(height: 8),
-                      _textField(
-                        controller: _usernameCtrl,
-                        label: '用户名',
-                        validator: (v) => _validateRequired(v, '用户名'),
-                      ),
-                      const SizedBox(height: 8),
-                      _textField(
-                        controller: _passwordCtrl,
-                        label: '密码',
-                        obscureText: true,
-                        validator: (v) => _validateRequired(v, '密码'),
-                      ),
-                      const SizedBox(height: 8),
-                      _textField(
-                        controller: _externalHostCtrl,
-                        label: 'External Host',
-                        hintText: 'http://127.0.0.1:8999',
-                      ),
-                      const SizedBox(height: 8),
-                      pathsAsync.when(
-                        loading: () => _textField(
-                          controller: TextEditingController(text: widget.downloader?.torrentPath ?? ''),
-                          label: '种子路径',
-                          hintText: '加载中...',
-                          enabled: false,
+                      shadcn.IconButton.ghost(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(
+                          shadcn.LucideIcons.arrowLeft,
+                          size: 16,
                         ),
-                        error: (e, _) {
-                          _path ??= widget.downloader?.torrentPath;
-                          final items = widget.downloader != null && widget.downloader!.torrentPath.isNotEmpty
-                              ? <String>[widget.downloader!.torrentPath]
-                              : <String>[];
-                          return _pathDropdown(items);
-                        },
-                        data: (paths) {
-                          if (widget.downloader != null &&
-                              widget.downloader!.torrentPath.isNotEmpty &&
-                              !paths.contains(widget.downloader!.torrentPath)) {
-                            paths = [widget.downloader!.torrentPath, ...paths];
-                          }
-                          _path ??= paths.contains(widget.downloader?.torrentPath)
-                              ? widget.downloader!.torrentPath
-                              : (paths.isNotEmpty ? paths.first : null);
-                          return _pathDropdown(paths);
-                        },
                       ),
-                      const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: cs.border),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _switchRow(
-                                icon: shadcn.LucideIcons.power,
-                                title: '启用',
-                                value: _isActive,
-                                onChanged: (v) => setState(() => _isActive = v),
-                              ),
-                            ),
-                            Container(
-                              width: 1,
-                              height: 56,
-                              color: cs.border,
-                            ),
-                            Expanded(
-                              child: _switchRow(
-                                icon: shadcn.LucideIcons.zap,
-                                title: '辅种',
-                                value: !_brush,
-                                onChanged: (v) => setState(() => _brush = !v),
-                              ),
-                            ),
-                          ],
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _isEdit ? '编辑下载器' : '添加下载器',
+                          style: theme.typography.large.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: shadcn.Button.outline(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Center(child: Text('取消')),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _textField(
+                            controller: _nameCtrl,
+                            label: '名称',
+                            hintText: '例如: QB8999',
+                            validator: (v) => _validateRequired(v, '名称'),
+                          ),
+                          const SizedBox(height: 8),
+                          _dropdown(
+                            label: '客户端类型',
+                            value: _category,
+                            items: const {
+                              'Qb': 'Qbittorrent',
+                              'Tr': 'Transmission',
+                            },
+                            onChanged: (v) =>
+                                setState(() => _category = v ?? 'Qb'),
+                          ),
+                          const SizedBox(height: 8),
+                          _dropdown(
+                            label: '协议',
+                            value: _protocol,
+                            items: const {'http': 'HTTP', 'https': 'HTTPS'},
+                            onChanged: (v) =>
+                                setState(() => _protocol = v ?? 'http'),
+                          ),
+                          const SizedBox(height: 8),
+                          _textField(
+                            controller: _hostCtrl,
+                            label: '主机',
+                            hintText: '192.168.123.100',
+                            validator: (v) => _validateRequired(v, '主机'),
+                          ),
+                          const SizedBox(height: 8),
+                          _textField(
+                            controller: _portCtrl,
+                            label: '端口',
+                            hintText: '8999',
+                            keyboardType: TextInputType.number,
+                            validator: _validatePort,
+                          ),
+                          const SizedBox(height: 8),
+                          _textField(
+                            controller: _usernameCtrl,
+                            label: '用户名',
+                            validator: (v) => _validateRequired(v, '用户名'),
+                          ),
+                          const SizedBox(height: 8),
+                          _textField(
+                            controller: _passwordCtrl,
+                            label: '密码',
+                            obscureText: true,
+                            validator: (v) => _validateRequired(v, '密码'),
+                          ),
+                          const SizedBox(height: 8),
+                          _textField(
+                            controller: _externalHostCtrl,
+                            label: 'External Host',
+                            hintText: 'http://127.0.0.1:8999',
+                          ),
+                          const SizedBox(height: 8),
+                          pathsAsync.when(
+                            loading: () => _textField(
+                              controller: TextEditingController(
+                                text: widget.downloader?.torrentPath ?? '',
+                              ),
+                              label: '种子路径',
+                              hintText: '加载中...',
+                              enabled: false,
+                            ),
+                            error: (e, _) {
+                              _path ??= widget.downloader?.torrentPath;
+                              final items =
+                                  widget.downloader != null &&
+                                      widget.downloader!.torrentPath.isNotEmpty
+                                  ? <String>[widget.downloader!.torrentPath]
+                                  : <String>[];
+                              return _pathDropdown(items);
+                            },
+                            data: (paths) {
+                              if (widget.downloader != null &&
+                                  widget.downloader!.torrentPath.isNotEmpty &&
+                                  !paths.contains(
+                                    widget.downloader!.torrentPath,
+                                  )) {
+                                paths = [
+                                  widget.downloader!.torrentPath,
+                                  ...paths,
+                                ];
+                              }
+                              _path ??=
+                                  paths.contains(widget.downloader?.torrentPath)
+                                  ? widget.downloader!.torrentPath
+                                  : (paths.isNotEmpty ? paths.first : null);
+                              return _pathDropdown(paths);
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: cs.border),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _switchRow(
+                                    icon: shadcn.LucideIcons.power,
+                                    title: '启用',
+                                    value: _isActive,
+                                    onChanged: (v) =>
+                                        setState(() => _isActive = v),
+                                  ),
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 56,
+                                  color: cs.border,
+                                ),
+                                Expanded(
+                                  child: _switchRow(
+                                    icon: shadcn.LucideIcons.zap,
+                                    title: '辅种',
+                                    value: !_brush,
+                                    onChanged: (v) =>
+                                        setState(() => _brush = !v),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: shadcn.Button.primary(
-                      onPressed: _save,
-                      child: Center(child: Text(_isEdit ? '保存' : '添加')),
-                    ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: shadcn.Button.outline(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Center(child: Text('取消')),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: shadcn.Button.primary(
+                          onPressed: _save,
+                          child: Center(child: Text(_isEdit ? '保存' : '添加')),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            ],
-          ),
           ),
         ),
       ),
@@ -312,14 +340,14 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
     bool enabled = true,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
+    return ShadTextField(
       controller: controller,
+      labelText: label,
+      hintText: hintText,
       keyboardType: keyboardType,
       obscureText: obscureText,
       enabled: enabled,
       validator: validator,
-      onFieldSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-      decoration: InputDecoration(labelText: label, hintText: hintText),
     );
   }
 
@@ -432,9 +460,7 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
         children: [
           Icon(icon, size: 14),
           const SizedBox(width: 10),
-          Expanded(
-            child: Text(title),
-          ),
+          Expanded(child: Text(title)),
           Switch(value: value, onChanged: onChanged),
         ],
       ),

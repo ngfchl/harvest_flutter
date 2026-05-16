@@ -193,16 +193,28 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   }
 }
 
-class _GlobalKeyboardDismiss extends StatelessWidget {
+class _GlobalKeyboardDismiss extends StatefulWidget {
   final Widget child;
 
   const _GlobalKeyboardDismiss({required this.child});
 
   @override
+  State<_GlobalKeyboardDismiss> createState() => _GlobalKeyboardDismissState();
+}
+
+class _GlobalKeyboardDismissState extends State<_GlobalKeyboardDismiss> {
+  Offset? _lastTapDownPosition;
+
+  @override
   Widget build(BuildContext context) {
-    return Listener(
+    return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onPointerDown: (event) {
+      onTapDown: (details) => _lastTapDownPosition = details.globalPosition,
+      onTap: () {
+        final position = _lastTapDownPosition;
+        _lastTapDownPosition = null;
+        if (position == null) return;
+
         final focus = FocusManager.instance.primaryFocus;
         if (focus == null) return;
         final focusedContext = focus.context;
@@ -215,18 +227,18 @@ class _GlobalKeyboardDismiss extends StatelessWidget {
           _unfocusAfterGesture(focus);
           return;
         }
-        final local = render.globalToLocal(event.position);
+        final local = render.globalToLocal(position);
         if (!render.size.contains(local)) {
           _unfocusAfterGesture(focus);
         }
       },
-      child: child,
+      child: widget.child,
     );
   }
 
   void _unfocusAfterGesture(FocusNode focus) {
     unawaited(
-      Future<void>.delayed(const Duration(milliseconds: 80), () {
+      Future<void>.delayed(const Duration(milliseconds: 120), () {
         if (FocusManager.instance.primaryFocus == focus && focus.hasFocus) {
           focus.unfocus();
         }

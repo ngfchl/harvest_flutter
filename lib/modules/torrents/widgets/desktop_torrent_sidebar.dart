@@ -9,6 +9,7 @@ import 'package:harvest/modules/download/model/downloader_category.dart';
 import 'package:harvest/modules/download/provider/downloader_provider.dart'
     as download_providers;
 import 'package:harvest/modules/download/service/downloader_service.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/torrent_model.dart';
@@ -230,12 +231,14 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            child: TextField(
+            child: ShadTextField(
               controller: _searchCtrl,
-              decoration: const InputDecoration(
-                hintText: '搜索种子名称...',
-                prefixIcon: Icon(shadcn.LucideIcons.search, size: 14),
-              ),
+              hintText: '搜索种子名称...',
+              features: const [
+                shadcn.InputFeature.leading(
+                  Icon(shadcn.LucideIcons.search, size: 14),
+                ),
+              ],
               onChanged: (v) =>
                   ref.read(torrentSearchProvider.notifier).state = v,
             ),

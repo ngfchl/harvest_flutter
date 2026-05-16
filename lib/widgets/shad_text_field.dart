@@ -5,6 +5,8 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 class ShadTextField extends StatelessWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
+  final Widget? label;
+  final String? labelText;
   final Widget? placeholder;
   final String? hintText;
   final bool enabled;
@@ -18,6 +20,9 @@ class ShadTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final TextStyle? style;
   final List<shadcn.InputFeature> features;
+  final String? Function(String?)? validator;
+  final AutovalidateMode? autovalidateMode;
+  final EditableTextContextMenuBuilder? contextMenuBuilder;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final bool autoUnfocusOnSubmitted;
@@ -26,6 +31,8 @@ class ShadTextField extends StatelessWidget {
     super.key,
     this.controller,
     this.focusNode,
+    this.label,
+    this.labelText,
     this.placeholder,
     this.hintText,
     this.enabled = true,
@@ -39,6 +46,9 @@ class ShadTextField extends StatelessWidget {
     this.inputFormatters,
     this.style,
     this.features = const [],
+    this.validator,
+    this.autovalidateMode,
+    this.contextMenuBuilder,
     this.onChanged,
     this.onSubmitted,
     this.autoUnfocusOnSubmitted = true,
@@ -46,6 +56,76 @@ class ShadTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (validator != null) {
+      return FormField<String>(
+        initialValue: controller?.text ?? '',
+        validator: validator,
+        autovalidateMode: autovalidateMode,
+        builder: (field) {
+          return _withChrome(
+            context,
+            field: _field(
+              onChangedOverride: (value) {
+                field.didChange(value);
+                onChanged?.call(value);
+              },
+            ),
+            errorText: field.errorText,
+          );
+        },
+      );
+    }
+
+    return _withChrome(context, field: _field());
+  }
+
+  Widget _withChrome(
+    BuildContext context, {
+    required Widget field,
+    String? errorText,
+  }) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+    final labelWidget =
+        label ??
+        (labelText == null
+            ? null
+            : Text(
+                labelText!,
+                style: theme.typography.small.copyWith(
+                  color: cs.foreground,
+                  fontWeight: FontWeight.w600,
+                ),
+              ));
+
+    if (labelWidget == null && errorText == null) return field;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (labelWidget != null) ...[
+          DefaultTextStyle.merge(
+            style: theme.typography.small.copyWith(
+              color: cs.foreground,
+              fontWeight: FontWeight.w600,
+            ),
+            child: labelWidget,
+          ),
+          const SizedBox(height: 6),
+        ],
+        field,
+        if (errorText != null) ...[
+          const SizedBox(height: 5),
+          Text(
+            errorText,
+            style: theme.typography.xSmall.copyWith(color: cs.destructive),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _field({ValueChanged<String>? onChangedOverride}) {
     return shadcn.TextField(
       controller: controller,
       focusNode: focusNode,
@@ -62,7 +142,9 @@ class ShadTextField extends StatelessWidget {
       inputFormatters: inputFormatters,
       style: style,
       features: features,
-      onChanged: onChanged,
+      contextMenuBuilder:
+          contextMenuBuilder ?? shadcn.TextField.defaultContextMenuBuilder,
+      onChanged: onChangedOverride ?? onChanged,
       onSubmitted: (value) {
         onSubmitted?.call(value);
         if (autoUnfocusOnSubmitted) {
