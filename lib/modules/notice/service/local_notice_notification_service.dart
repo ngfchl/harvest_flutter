@@ -83,6 +83,7 @@ class LocalNoticeNotificationService {
             .where((notice) => !notice.isRead && notice.id > lastNotifiedId)
             .toList()
           ..sort((a, b) => a.id.compareTo(b.id));
+    final unreadCount = notices.where((notice) => !notice.isRead).length;
 
     if (newUnreadNotices.isEmpty) {
       if (maxNoticeId > lastNotifiedId) {
@@ -96,13 +97,14 @@ class LocalNoticeNotificationService {
 
     await initialize();
     for (final notice in newUnreadNotices) {
-      await _showNotice(notice);
+      await _showNotice(notice, badgeCount: unreadCount);
     }
 
     await HiveManager.set(StorageKeys.localNoticeLastNotifiedId, maxNoticeId);
   }
 
-  Future<void> _showNotice(NoticeHistory notice) {
+  Future<void> _showNotice(NoticeHistory notice, {required int badgeCount}) {
+    final effectiveBadgeCount = badgeCount < 0 ? 0 : badgeCount;
     return _plugin.show(
       id: notice.id,
       title: notice.title.isEmpty ? 'Harvest 通知' : notice.title,
@@ -115,9 +117,16 @@ class LocalNoticeNotificationService {
           importance: Importance.high,
           priority: Priority.high,
           styleInformation: BigTextStyleInformation(notice.content),
+          number: effectiveBadgeCount,
         ),
-        iOS: const DarwinNotificationDetails(),
-        macOS: const DarwinNotificationDetails(),
+        iOS: DarwinNotificationDetails(
+          presentBadge: true,
+          badgeNumber: effectiveBadgeCount,
+        ),
+        macOS: DarwinNotificationDetails(
+          presentBadge: true,
+          badgeNumber: effectiveBadgeCount,
+        ),
         windows: const WindowsNotificationDetails(),
       ),
       payload: '${notice.id}',

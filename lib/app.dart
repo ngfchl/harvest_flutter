@@ -207,20 +207,30 @@ class _GlobalKeyboardDismiss extends StatelessWidget {
         if (focus == null) return;
         final focusedContext = focus.context;
         if (focusedContext == null) {
-          focus.unfocus();
+          _unfocusAfterGesture(focus);
           return;
         }
         final render = focusedContext.findRenderObject();
         if (render is! RenderBox) {
-          focus.unfocus();
+          _unfocusAfterGesture(focus);
           return;
         }
         final local = render.globalToLocal(event.position);
         if (!render.size.contains(local)) {
-          focus.unfocus();
+          _unfocusAfterGesture(focus);
         }
       },
       child: child,
+    );
+  }
+
+  void _unfocusAfterGesture(FocusNode focus) {
+    unawaited(
+      Future<void>.delayed(const Duration(milliseconds: 80), () {
+        if (FocusManager.instance.primaryFocus == focus && focus.hasFocus) {
+          focus.unfocus();
+        }
+      }),
     );
   }
 }
