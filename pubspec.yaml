@@ -48,6 +48,7 @@ dependencies:
   device_info_plus: ^12.4.0
   shadcn_flutter: ^0.0.52
   flutter_local_notifications: ^20.1.0
+  window_manager: ^0.5.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

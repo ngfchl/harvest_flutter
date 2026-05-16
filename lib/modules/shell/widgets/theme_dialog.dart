@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/storage/hive_manager.dart';
+import 'package:harvest/core/utils/platform/platform_tool.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:window_manager/window_manager.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/theme_presets.dart';
@@ -18,11 +21,32 @@ class ThemeDialog extends ConsumerStatefulWidget {
 }
 
 class _ThemeDialogState extends ConsumerState<ThemeDialog> {
+  static const _windowPresets = <_WindowPreset>[
+    _WindowPreset('800 × 600', 800, 600),
+    _WindowPreset('1024 × 768', 1024, 768),
+    _WindowPreset('1200 × 800', 1200, 800),
+    _WindowPreset('1440 × 900', 1440, 900),
+    _WindowPreset('1600 × 900', 1660, 900),
+    _WindowPreset('1680 × 945', 1680, 945),
+    _WindowPreset('1920 × 1080', 1920, 1080),
+    _WindowPreset('2560 × 1440', 2560, 1440),
+  ];
+
+  Future<void> _applyWindowSize(double width, double height) async {
+    await windowManager.setSize(Size(width, height));
+    await windowManager.focus();
+    HiveManager.set('ScreenSizeWidth', width.toInt());
+    HiveManager.set('ScreenSizeHeight', height.toInt());
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final current = ref.watch(themeNotifierProvider);
     final notifier = ref.read(themeNotifierProvider.notifier);
     final tokens = _ThemeDialogTokens.of(context);
+    final currentWidth = HiveManager.get('ScreenSizeWidth')?.toDouble() ?? 1440;
+    final currentHeight = HiveManager.get('ScreenSizeHeight')?.toDouble() ?? 900;
 
     return shadcn.AlertDialog(
       padding: EdgeInsets.symmetric(horizontal: tokens.panelHorizontalPadding, vertical: tokens.panelVerticalPadding),
@@ -97,6 +121,7 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
                               ),
                             ),
                           ),
+
                           SizedBox(
                             width: maxWidth,
                             child: _section(
@@ -193,7 +218,6 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
                                     onChanged: notifier.setScaling,
                                   ),
                                   tokens.vGap(10),
-
                                   _fieldLabel(context, '圆角'),
                                   tokens.vGap(6),
                                   _themeSlider(
@@ -208,7 +232,21 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
                               ),
                             ),
                           ),
-
+                          if (PlatformTool.isDesktopOS())
+                            SizedBox(
+                              width: sectionWidth,
+                              child: _section(
+                                context,
+                                icon: shadcn.LucideIcons.monitor,
+                                title: '窗口尺寸',
+                                child: _windowSizeGrid(
+                                  context,
+                                  currentWidth: currentWidth.toDouble(),
+                                  currentHeight: currentHeight.toDouble(),
+                                  tokens: tokens,
+                                ),
+                              ),
+                            ),
                         ],
                       );
                     },
@@ -218,6 +256,79 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
               tokens.vGap(12),
               _dialogFooter(context, notifier),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _windowSizeGrid(
+    BuildContext context, {
+    required double currentWidth,
+    required double currentHeight,
+    required _ThemeDialogTokens tokens,
+  }) {
+    final gap = tokens.size(6);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth;
+        final columns = maxWidth < 320 ? 2 : 3;
+        final rows = <List<_WindowPreset>>[];
+        for (var i = 0; i < _windowPresets.length; i += columns) {
+          rows.add(_windowPresets.sublist(i, (i + columns).clamp(0, _windowPresets.length)));
+        }
+
+        return Column(
+          spacing: gap,
+          children: [
+            for (var r = 0; r < rows.length; r++) ...[
+              Row(
+                children: [
+                  for (var c = 0; c < rows[r].length; c++) ...[
+                    Expanded(
+                      child: _windowSizeButton(
+                        context,
+                        preset: rows[r][c],
+                        selected: currentWidth == rows[r][c].width && currentHeight == rows[r][c].height,
+                      ),
+                    ),
+                    if (c != rows[r].length - 1) SizedBox(width: gap),
+                  ],
+                ],
+              ),
+              if (r != rows.length - 1) SizedBox(height: gap),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _windowSizeButton(BuildContext context, {required _WindowPreset preset, required bool selected}) {
+    final tokens = _ThemeDialogTokens.of(context);
+    final theme = tokens.theme;
+    final cs = tokens.cs;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _applyWindowSize(preset.width, preset.height),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 140),
+        height: tokens.size(30),
+        alignment: Alignment.center,
+        padding: EdgeInsets.symmetric(horizontal: tokens.size(6)),
+        decoration: BoxDecoration(
+          color: selected ? cs.primary : cs.secondary,
+          borderRadius: BorderRadius.circular(tokens.sectionRadius),
+          border: Border.all(color: selected ? cs.primary : cs.border, width: tokens.hairline),
+        ),
+        child: Text(
+          preset.label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.typography.xSmall.copyWith(
+            color: selected ? cs.primaryForeground : cs.foreground,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ),
@@ -700,6 +811,14 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
       ),
     );
   }
+}
+
+class _WindowPreset {
+  final String label;
+  final double width;
+  final double height;
+
+  const _WindowPreset(this.label, this.width, this.height);
 }
 
 class _ThemeDialogTokens {
