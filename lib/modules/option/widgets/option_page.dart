@@ -13,6 +13,7 @@ import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/news/provider/media_info_settings_provider.dart';
 import 'package:harvest/modules/option/widgets/app_upgrade_page.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
+import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
@@ -507,36 +508,42 @@ class OptionPage extends ConsumerWidget {
             children: [
               SafeArea(
                 bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
-                  child: Row(
-                    children: [
-                      shadcn.IconButton.ghost(
-                        icon: const Icon(
-                          shadcn.LucideIcons.arrowLeft,
-                          size: 20,
+                child: SizedBox(
+                  height: kAppHeaderHeight,
+                  child: Padding(
+                    padding: appHeaderPadding(context, top: 6, bottom: 6),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        shadcn.IconButton.ghost(
+                          icon: const Icon(
+                            shadcn.LucideIcons.arrowLeft,
+                            size: 20,
+                          ),
+                          onPressed: () => Navigator.of(context).pop(),
                         ),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                      Expanded(
-                        child: Text(
-                          '选项设置',
-                          style: typo.large.copyWith(
-                            color: cs.foreground,
-                            fontWeight: FontWeight.w700,
+                        Expanded(
+                          child: Text(
+                            '选项设置',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: typo.large.copyWith(
+                              color: cs.foreground,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
-                      const DebugThemeButton.shadcn(),
-                      shadcn.IconButton.ghost(
-                        icon: const Icon(
-                          shadcn.LucideIcons.refreshCw,
-                          size: 18,
+                        const DebugThemeButton.shadcn(),
+                        shadcn.IconButton.ghost(
+                          icon: const Icon(
+                            shadcn.LucideIcons.refreshCw,
+                            size: 18,
+                          ),
+                          onPressed: () =>
+                              ref.read(optionProvider.notifier).fetchOptions(),
                         ),
-                        onPressed: () =>
-                            ref.read(optionProvider.notifier).fetchOptions(),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
+import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -27,6 +28,8 @@ class UpdatePage extends ConsumerWidget {
             backgroundColor: pageBackground,
             headers: [
               shadcn.AppBar(
+                height: kAppHeaderHeight - 12,
+                padding: appHeaderPadding(context),
                 backgroundColor: pageBackground,
                 title: Text(
                   '程序更新',
@@ -37,7 +40,10 @@ class UpdatePage extends ConsumerWidget {
                 ),
                 leading: [
                   shadcn.IconButton.ghost(
-                    icon: Icon(shadcn.LucideIcons.arrowLeft, size: tokens.iconSm),
+                    icon: Icon(
+                      shadcn.LucideIcons.arrowLeft,
+                      size: tokens.iconSm,
+                    ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],

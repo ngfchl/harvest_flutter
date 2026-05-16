@@ -4,6 +4,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/browser_page.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -60,13 +61,16 @@ class _NoticePageHeader extends StatelessWidget {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final top = MediaQuery.paddingOf(context).top;
+    final leadingInset = appHeaderLeadingInset(context);
 
     return AppSurfaceContainer(
-      padding: EdgeInsets.fromLTRB(8, top + 6, 16, 8),
+      height: top + kAppHeaderHeight,
+      padding: EdgeInsets.fromLTRB(8 + leadingInset, top + 6, 16, 6),
       borderRadius: BorderRadius.zero,
       color: appSurfaceColor(context, cs.background),
       borderColor: cs.border.withValues(alpha: 0.5),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           shadcn.IconButton.ghost(
             icon: const Icon(shadcn.LucideIcons.chevronLeft),

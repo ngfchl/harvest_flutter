@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_menu.dart';
+import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
@@ -588,8 +589,9 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
                                   if (ctx.mounted) Navigator.of(ctx).pop();
                                   Toast.success('授权用户已删除');
                                 } catch (_) {
-                                  if (ctx.mounted)
+                                  if (ctx.mounted) {
                                     setDialogState(() => saving = false);
+                                  }
                                 }
                               },
                         child: saving
@@ -625,28 +627,34 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
-      child: Row(
-        children: [
-          shadcn.IconButton.ghost(
-            icon: const Icon(shadcn.LucideIcons.chevronLeft),
-            onPressed: onBack,
-          ),
-          Expanded(
-            child: Text(
-              '授权管理',
-              style: shadcn.Theme.of(context).typography.large.copyWith(
-                fontWeight: FontWeight.w700,
-                color: _adminColors(context).foreground,
+    return SizedBox(
+      height: kAppHeaderHeight,
+      child: Padding(
+        padding: appHeaderPadding(context, top: 6, bottom: 6),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            shadcn.IconButton.ghost(
+              icon: const Icon(shadcn.LucideIcons.chevronLeft),
+              onPressed: onBack,
+            ),
+            Expanded(
+              child: Text(
+                '授权管理',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: shadcn.Theme.of(context).typography.large.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: _adminColors(context).foreground,
+                ),
               ),
             ),
-          ),
-          shadcn.IconButton.ghost(
-            icon: const Icon(shadcn.LucideIcons.refreshCw),
-            onPressed: onRefresh,
-          ),
-        ],
+            shadcn.IconButton.ghost(
+              icon: const Icon(shadcn.LucideIcons.refreshCw),
+              onPressed: onRefresh,
+            ),
+          ],
+        ),
       ),
     );
   }

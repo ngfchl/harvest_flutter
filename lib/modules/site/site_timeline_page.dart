@@ -8,6 +8,7 @@ import 'package:harvest/modules/site/model/site_info.dart';
 import 'package:harvest/modules/site/provider/site_provider.dart';
 import 'package:harvest/modules/site/widgets/site_browser.dart';
 import 'package:harvest/widgets/app_menu.dart';
+import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/browser_page.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
@@ -53,6 +54,8 @@ class SiteTimelinePage extends ConsumerWidget {
           headerBackgroundColor: pageBackground,
           headers: [
             shadcn.AppBar(
+              height: kAppHeaderHeight - 12,
+              padding: appHeaderPadding(context),
               backgroundColor: pageBackground,
               title: Text(
                 '站点时间轴',
@@ -399,15 +402,19 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
     }
 
     bool matches(_SiteTimelineEntry entry) {
-      if (_ownership == _TimelineOwnership.ownedOnly && !entry.isOwned)
+      if (_ownership == _TimelineOwnership.ownedOnly && !entry.isOwned) {
         return false;
-      if (_ownership == _TimelineOwnership.unownedOnly && entry.isOwned)
+      }
+      if (_ownership == _TimelineOwnership.unownedOnly && entry.isOwned) {
         return false;
+      }
       final invites = entry.invitationCount;
-      if (_inviteFilter == _TimelineInviteFilter.has && invites <= 0)
+      if (_inviteFilter == _TimelineInviteFilter.has && invites <= 0) {
         return false;
-      if (_inviteFilter == _TimelineInviteFilter.none && invites > 0)
+      }
+      if (_inviteFilter == _TimelineInviteFilter.none && invites > 0) {
         return false;
+      }
       return true;
     }
 
@@ -419,8 +426,9 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
       }
       final at = a.registeredAt;
       final bt = b.registeredAt;
-      if (at == null && bt == null)
+      if (at == null && bt == null) {
         return a.displayName.compareTo(b.displayName);
+      }
       if (at == null) return 1;
       if (bt == null) return -1;
       final cmp = at.compareTo(bt);
@@ -467,9 +475,9 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
       Toast.warning('该站点未配置可用 URL');
       return;
     }
-    final openContext = widget.openContext ?? context;
     if (urls.length == 1) {
       if (!mounted) return;
+      final openContext = widget.openContext ?? context;
       if (widget.closeContainerOnOpen) Navigator.of(context).pop();
       BrowserPage.open(
         openContext,
@@ -485,6 +493,8 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
       builder: (ctx) => _SiteUrlSelectDialog(urls: urls),
     );
     if (selected == null || selected.isEmpty || !mounted) return;
+    final openContext = widget.openContext ?? context;
+    if (!openContext.mounted) return;
     if (widget.closeContainerOnOpen) Navigator.of(context).pop();
     BrowserPage.open(
       openContext,

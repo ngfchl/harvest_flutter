@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -59,7 +60,9 @@ class _AccountSwitcherState extends ConsumerState<AccountSwitcher> {
                       : Align(
                           alignment: Alignment.topCenter,
                           child: ConstrainedBox(
-                            constraints: BoxConstraints(maxWidth: tokens.contentWidth),
+                            constraints: BoxConstraints(
+                              maxWidth: tokens.contentWidth,
+                            ),
                             child: ListView.separated(
                               padding: tokens.edgeFromLTRB(16, 16, 16, 24),
                               itemCount: groups.length + 1,
@@ -71,7 +74,9 @@ class _AccountSwitcherState extends ConsumerState<AccountSwitcher> {
                                     accountCount: history.length,
                                   );
                                 }
-                                final entry = groups.entries.elementAt(index - 1);
+                                final entry = groups.entries.elementAt(
+                                  index - 1,
+                                );
                                 return _ServerGroup(
                                   server: entry.key,
                                   records: entry.value,
@@ -114,15 +119,18 @@ class _HistoryHeader extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: cs.background,
-        border: Border(bottom: BorderSide(color: cs.border, width: tokens.hairline)),
+        border: Border(
+          bottom: BorderSide(color: cs.border, width: tokens.hairline),
+        ),
       ),
       child: SafeArea(
         bottom: false,
         child: SizedBox(
           height: tokens.headerHeight,
           child: Padding(
-            padding: tokens.edgeSymmetric(horizontal: 8),
+            padding: appHeaderPadding(context, top: 0, bottom: 0),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 shadcn.IconButton.ghost(
                   onPressed: onBack,
@@ -132,6 +140,8 @@ class _HistoryHeader extends StatelessWidget {
                 Expanded(
                   child: Text(
                     '登录历史',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.typography.large.copyWith(
                       color: cs.foreground,
                       fontWeight: FontWeight.w700,
@@ -185,7 +195,9 @@ class _HistoryOverview extends StatelessWidget {
                 tokens.vGap(2),
                 Text(
                   '$serverCount 台服务器，$accountCount 个账号',
-                  style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+                  style: theme.typography.xSmall.copyWith(
+                    color: cs.mutedForeground,
+                  ),
                 ),
               ],
             ),
@@ -221,7 +233,11 @@ class _ServerGroup extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildServerHeader(context),
-          Divider(height: tokens.hairline, thickness: tokens.hairline, color: cs.border),
+          Divider(
+            height: tokens.hairline,
+            thickness: tokens.hairline,
+            color: cs.border,
+          ),
           _buildAccountSection(context, ref),
         ],
       ),
@@ -237,7 +253,11 @@ class _ServerGroup extends ConsumerWidget {
       padding: tokens.edgeFromLTRB(14, 12, 14, 10),
       child: Row(
         children: [
-          Icon(shadcn.LucideIcons.server, size: tokens.iconMd, color: cs.mutedForeground),
+          Icon(
+            shadcn.LucideIcons.server,
+            size: tokens.iconMd,
+            color: cs.mutedForeground,
+          ),
           tokens.hGap(10),
           Expanded(
             child: Column(
@@ -257,7 +277,9 @@ class _ServerGroup extends ConsumerWidget {
                   server,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+                  style: theme.typography.xSmall.copyWith(
+                    color: cs.mutedForeground,
+                  ),
                 ),
               ],
             ),
@@ -283,7 +305,11 @@ class _ServerGroup extends ConsumerWidget {
             if (i != records.length - 1)
               Padding(
                 padding: tokens.edgeSymmetric(horizontal: 8),
-                child: Divider(height: tokens.size(6), thickness: tokens.hairline, color: cs.border),
+                child: Divider(
+                  height: tokens.size(6),
+                  thickness: tokens.hairline,
+                  color: cs.border,
+                ),
               ),
           ],
         ],
@@ -317,7 +343,9 @@ class _ServerGroup extends ConsumerWidget {
               onPressed: enabled ? () => onLogin(record) : null,
               alignment: Alignment.centerLeft,
               leading: Icon(
-                recordLoggingIn ? shadcn.LucideIcons.loaderCircle : shadcn.LucideIcons.user,
+                recordLoggingIn
+                    ? shadcn.LucideIcons.loaderCircle
+                    : shadcn.LucideIcons.user,
                 size: tokens.iconMd,
               ),
               child: SizedBox(
@@ -330,13 +358,18 @@ class _ServerGroup extends ConsumerWidget {
                       record.username,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.typography.small.copyWith(fontWeight: FontWeight.w600),
+                      style: theme.typography.small.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     tokens.vGap(4),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: shadcn.OutlineBadge(
-                        leading: Icon(shadcn.LucideIcons.clock, size: tokens.iconSm),
+                        leading: Icon(
+                          shadcn.LucideIcons.clock,
+                          size: tokens.iconSm,
+                        ),
                         child: Text('最后登录时间 ${_formatTime(record.timestamp)}'),
                       ),
                     ),
@@ -357,16 +390,31 @@ class _ServerGroup extends ConsumerWidget {
                       ? SizedBox(
                           width: tokens.iconSm,
                           height: tokens.iconSm,
-                          child: shadcn.CircularProgressIndicator(strokeWidth: tokens.size(2), color: cs.primary),
+                          child: shadcn.CircularProgressIndicator(
+                            strokeWidth: tokens.size(2),
+                            color: cs.primary,
+                          ),
                         )
-                      : Icon(shadcn.LucideIcons.logIn, size: tokens.iconSm, color: cs.mutedForeground),
+                      : Icon(
+                          shadcn.LucideIcons.logIn,
+                          size: tokens.iconSm,
+                          color: cs.mutedForeground,
+                        ),
                 ),
               ),
               shadcn.IconButton.ghost(
-                onPressed: busy ? null : () => ref.read(loginHistoryProvider.notifier).remove(record),
+                onPressed: busy
+                    ? null
+                    : () => ref
+                          .read(loginHistoryProvider.notifier)
+                          .remove(record),
                 icon: shadcn.Tooltip(
                   tooltip: (_) => const Text('删除记录'),
-                  child: Icon(shadcn.LucideIcons.trash2, size: tokens.iconSm, color: cs.destructive),
+                  child: Icon(
+                    shadcn.LucideIcons.trash2,
+                    size: tokens.iconSm,
+                    color: cs.destructive,
+                  ),
                 ),
               ),
             ],
@@ -395,7 +443,11 @@ class _EmptyHistory extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(shadcn.LucideIcons.history, size: tokens.emptyIconSize, color: cs.mutedForeground),
+          Icon(
+            shadcn.LucideIcons.history,
+            size: tokens.emptyIconSize,
+            color: cs.mutedForeground,
+          ),
           tokens.vGap(10),
           Text(
             '暂无登录历史',
@@ -434,7 +486,11 @@ class _AccountSwitcherThemeTokens {
   factory _AccountSwitcherThemeTokens.of(BuildContext context) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
-    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.55, 1.45);
+    final densityScale =
+        ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(
+          0.55,
+          1.45,
+        );
     final textScale = theme.scaling.clamp(0.86, 1.30);
     return _AccountSwitcherThemeTokens._(
       theme: theme,
@@ -465,7 +521,10 @@ class _AccountSwitcherThemeTokens {
   EdgeInsets edgeAll(num value) => EdgeInsets.all(size(value));
 
   EdgeInsets edgeSymmetric({num horizontal = 0, num vertical = 0}) =>
-      EdgeInsets.symmetric(horizontal: size(horizontal), vertical: size(vertical));
+      EdgeInsets.symmetric(
+        horizontal: size(horizontal),
+        vertical: size(vertical),
+      );
 
   EdgeInsets edgeFromLTRB(num left, num top, num right, num bottom) =>
       EdgeInsets.fromLTRB(size(left), size(top), size(right), size(bottom));

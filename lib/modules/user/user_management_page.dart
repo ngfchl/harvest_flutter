@@ -5,6 +5,7 @@ import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/auth/user_model.dart';
+import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
@@ -68,7 +69,8 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                               .read(managedUserListProvider.notifier)
                               .refresh(),
                         ),
-                        data: (items) => _buildUserManagement(items, currentUser),
+                        data: (items) =>
+                            _buildUserManagement(items, currentUser),
                       ),
                     ],
                   ),
@@ -325,28 +327,38 @@ class _Header extends StatelessWidget {
     final theme = tokens.theme;
     final cs = tokens.cs;
 
-    return Padding(
-      padding: tokens.edgeFromLTRB(8, 8, 8, 4),
-      child: Row(
-        children: [
-          shadcn.IconButton.ghost(
-            icon: Icon(shadcn.LucideIcons.chevronLeft, size: tokens.iconLg),
-            onPressed: onBack,
-          ),
-          Expanded(
-            child: Text(
-              title,
-              style: theme.typography.large.copyWith(
-                color: cs.foreground,
-                fontWeight: FontWeight.w700,
+    return SizedBox(
+      height: kAppHeaderHeight,
+      child: Padding(
+        padding: appHeaderPadding(
+          context,
+          top: tokens.size(6),
+          bottom: tokens.size(6),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            shadcn.IconButton.ghost(
+              icon: Icon(shadcn.LucideIcons.chevronLeft, size: tokens.iconLg),
+              onPressed: onBack,
+            ),
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.typography.large.copyWith(
+                  color: cs.foreground,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-          ),
-          shadcn.IconButton.ghost(
-            icon: Icon(shadcn.LucideIcons.refreshCw, size: tokens.iconMd),
-            onPressed: onRefresh,
-          ),
-        ],
+            shadcn.IconButton.ghost(
+              icon: Icon(shadcn.LucideIcons.refreshCw, size: tokens.iconMd),
+              onPressed: onRefresh,
+            ),
+          ],
+        ),
       ),
     );
   }

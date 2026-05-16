@@ -13,6 +13,7 @@ import 'package:harvest/modules/download/widgets/qb_category_tag_manager.dart';
 import 'package:harvest/modules/download/widgets/qb_settings_dialog.dart';
 import 'package:harvest/modules/download/widgets/tr_settings_dialog.dart';
 import 'package:harvest/widgets/app_sheet.dart';
+import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -129,20 +130,28 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage>
             SafeArea(
               bottom: false,
               child: SizedBox(
-                height: 52,
+                height: kAppHeaderHeight,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: shadcn.IconButton.ghost(
-                        icon: const Icon(shadcn.LucideIcons.chevronLeft),
-                        onPressed: () => closeAppSheet(context),
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: appHeaderLeadingInset(context),
+                        ),
+                        child: shadcn.IconButton.ghost(
+                          icon: const Icon(shadcn.LucideIcons.chevronLeft),
+                          onPressed: () => closeAppSheet(context),
+                        ),
                       ),
                     ),
                     Center(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 52),
+                        padding: EdgeInsets.only(
+                          left: 52 + appHeaderLeadingInset(context),
+                          right: 52,
+                        ),
                         child: DownloaderTitleSelector(
                           downloaders: downloaders ?? const <Downloader>[],
                           currentDownloaderId: _currentDownloaderId,
