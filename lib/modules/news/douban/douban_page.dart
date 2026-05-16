@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 
 import '../widgets/news_bottom_padding.dart';
+import '../provider/media_info_settings_provider.dart';
 import 'provider/douban_provider.dart';
 import 'widgets/douban_card.dart';
 import 'widgets/douban_detail_sheet.dart';
@@ -16,6 +17,11 @@ class DoubanPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final enabled = ref.watch(
+      mediaInfoSettingsProvider.select((settings) => settings.doubanEnabled),
+    );
+    if (!enabled) return const SizedBox.shrink();
+
     return EasyRefresh(
       onRefresh: () => refreshAll(ref),
       header: appRefreshHeader(context),
@@ -131,6 +137,8 @@ class DoubanPage extends ConsumerWidget {
   }
 
   static Future<void> refreshAll(WidgetRef ref) async {
+    if (!ref.read(mediaInfoSettingsProvider).doubanEnabled) return;
+
     ref.read(doubanForceRefreshProvider.notifier).state = const {
       doubanHotMoviesCacheKey,
       doubanHotTvsCacheKey,

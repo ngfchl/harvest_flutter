@@ -5,6 +5,7 @@ import 'package:harvest/core/utils/utils.dart';
 
 import '../widgets/news_bottom_padding.dart';
 import 'model/search_results.dart';
+import '../provider/media_info_settings_provider.dart';
 import 'provider/tmdb_provider.dart';
 import 'widgets/media_section.dart';
 import 'widgets/tmdb_detail_sheet.dart';
@@ -16,6 +17,11 @@ class TmdbPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final enabled = ref.watch(
+      mediaInfoSettingsProvider.select((settings) => settings.tmdbEnabled),
+    );
+    if (!enabled) return const SizedBox.shrink();
+
     return EasyRefresh(
       onRefresh: () => refreshAll(ref),
       header: appRefreshHeader(context),
@@ -52,6 +58,8 @@ class TmdbPage extends ConsumerWidget {
   }
 
   static Future<void> refreshAll(WidgetRef ref) async {
+    if (!ref.read(mediaInfoSettingsProvider).tmdbEnabled) return;
+
     ref.read(tmdbForceRefreshProvider.notifier).state = const {
       tmdbPlayingMoviesCacheKey,
       tmdbPopularMoviesCacheKey,

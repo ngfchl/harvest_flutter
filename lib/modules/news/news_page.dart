@@ -90,11 +90,17 @@ class _NewsPageState extends ConsumerState<NewsPage> {
   Widget build(BuildContext context) {
     final mobile = context.isMobile;
     final settings = ref.watch(mediaInfoSettingsProvider);
-    final effectiveTabIndex = settings.tmdbEnabled ? 0 : 1;
-    final currentTabIndex = settings.tmdbEnabled && settings.doubanEnabled
-        ? _tabIndex
-        : effectiveTabIndex;
-    final cacheInfo = currentTabIndex == 0
+    final bothEnabled = settings.tmdbEnabled && settings.doubanEnabled;
+    final currentTabIndex = bothEnabled
+        ? _tabIndex.clamp(0, 1).toInt()
+        : settings.tmdbEnabled
+        ? 0
+        : settings.doubanEnabled
+        ? 1
+        : 0;
+    final cacheInfo = !settings.enabled
+        ? const DataCacheInfo.none()
+        : currentTabIndex == 0
         ? _combinedCacheInfo(ref.watch(tmdbCacheInfoProvider), const {
             tmdbPlayingMoviesCacheKey,
             tmdbPopularMoviesCacheKey,
@@ -111,7 +117,9 @@ class _NewsPageState extends ConsumerState<NewsPage> {
             doubanTop250CacheKey,
             doubanRankMoviesCacheKey,
           });
-    _refreshCachedTabOnce(cacheInfo);
+    if (settings.enabled) {
+      _refreshCachedTabOnce(cacheInfo, currentTabIndex);
+    }
 
     final cs = shadcn.Theme.of(context).colorScheme;
     final pageBackground = appSurfaceColor(context, cs.background);
@@ -130,17 +138,32 @@ class _NewsPageState extends ConsumerState<NewsPage> {
             onTabChanged: (index) => setState(() => _tabIndex = index),
           ),
         ],
-        child: IndexedStack(
-          index: currentTabIndex,
-          children: [
-            TmdbPage(
-              scrollController: currentTabIndex == 0 ? _scrollController : null,
-            ),
-            DoubanPage(
-              scrollController: currentTabIndex == 1 ? _scrollController : null,
-            ),
-          ],
-        ),
+        child: settings.enabled
+            ? shadcn.Switcher(
+                index: bothEnabled ? currentTabIndex : 0,
+                direction: AxisDirection.left,
+                onIndexChanged: bothEnabled
+                    ? (index) {
+                        if (_tabIndex == index) return;
+                        setState(() => _tabIndex = index);
+                      }
+                    : null,
+                children: [
+                  if (settings.tmdbEnabled)
+                    TmdbPage(
+                      scrollController: currentTabIndex == 0
+                          ? _scrollController
+                          : null,
+                    ),
+                  if (settings.doubanEnabled)
+                    DoubanPage(
+                      scrollController: currentTabIndex == 1
+                          ? _scrollController
+                          : null,
+                    ),
+                ],
+              )
+            : const SizedBox.shrink(),
       ),
     );
   }
@@ -163,10 +186,9 @@ class _NewsPageState extends ConsumerState<NewsPage> {
         : DataCacheInfo.cached(latest);
   }
 
-  void _refreshCachedTabOnce(DataCacheInfo cacheInfo) {
+  void _refreshCachedTabOnce(DataCacheInfo cacheInfo, int tabIndex) {
     if (!cacheInfo.isCached) return;
 
-    final tabIndex = _tabIndex;
     if (tabIndex == 0) {
       if (_tmdbAutoRefreshStarted) return;
       _tmdbAutoRefreshStarted = true;

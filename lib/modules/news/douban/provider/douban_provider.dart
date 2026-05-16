@@ -6,6 +6,7 @@ import '../model/hot_media.dart';
 import '../model/rank_movie.dart';
 import '../model/top_movie.dart';
 import '../service/douban_service.dart';
+import '../../provider/media_info_settings_provider.dart';
 
 const doubanHotMoviesCacheKey = 'news.douban.hot.movies';
 const doubanHotTvsCacheKey = 'news.douban.hot.tvs';
@@ -86,6 +87,14 @@ Future<List<T>> _cachedList<T>(
   Future<List<T>> Function() loader,
   T Function(Map<String, dynamic>) fromJson,
 ) async {
+  final enabled = ref.watch(
+    mediaInfoSettingsProvider.select((settings) => settings.doubanEnabled),
+  );
+  if (!enabled) {
+    _clearDoubanForceRefresh(ref, cacheKey);
+    return <T>[];
+  }
+
   if (!HiveManager.hasAccessToken) return <T>[];
 
   final forceRefresh = ref.read(doubanForceRefreshProvider).contains(cacheKey);

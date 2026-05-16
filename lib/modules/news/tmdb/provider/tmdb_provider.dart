@@ -7,6 +7,7 @@ import '../model/person.dart';
 import '../model/search_results.dart';
 import '../model/tv_show_detail.dart';
 import '../service/tmdb_service.dart';
+import '../../provider/media_info_settings_provider.dart';
 
 const tmdbPlayingMoviesCacheKey = 'news.tmdb.playing.movies';
 const tmdbPopularMoviesCacheKey = 'news.tmdb.popular.movies';
@@ -120,6 +121,14 @@ Future<SearchResults> _cachedSearchResults(
   String cacheKey,
   Future<SearchResults> Function() loader,
 ) async {
+  final enabled = ref.watch(
+    mediaInfoSettingsProvider.select((settings) => settings.tmdbEnabled),
+  );
+  if (!enabled) {
+    _clearTmdbForceRefresh(ref, cacheKey);
+    return const SearchResults();
+  }
+
   if (!HiveManager.hasAccessToken) return const SearchResults();
 
   final forceRefresh = ref.read(tmdbForceRefreshProvider).contains(cacheKey);
