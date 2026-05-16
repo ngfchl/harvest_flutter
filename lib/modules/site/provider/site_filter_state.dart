@@ -59,9 +59,13 @@ enum SortField {
 }
 
 class SiteFilterState extends ChangeNotifier {
-  SiteAvailabilityFilter _availability = SiteAvailabilityFilter.all;
+  static const _defaultAvailability = SiteAvailabilityFilter.alive;
+  static const _defaultCondition = FilterCondition.all;
+  static const _defaultSortField = SortField.updatedAt;
+
+  SiteAvailabilityFilter _availability = _defaultAvailability;
   FilterCondition _condition = FilterCondition.all;
-  SortField _sortField = SortField.sortId;
+  SortField _sortField = _defaultSortField;
   bool _sortAscending = true;
   final Set<String> _selectedTags = {};
   String _siteNameQuery = '';
@@ -83,12 +87,12 @@ class SiteFilterState extends ChangeNotifier {
 
   String get siteNameQuery => _siteNameQuery;
 
-  /// 全部 + 排序 ID 正序 是默认值，不算"额外"筛选
+  /// 存活 + 更新时间正序 是默认值，不算"额外"筛选
   bool get hasActiveFilters =>
-      _availability != SiteAvailabilityFilter.all ||
-      _condition != FilterCondition.all ||
+      _availability != _defaultAvailability ||
+      _condition != _defaultCondition ||
       _selectedTags.isNotEmpty ||
-      _sortField != SortField.sortId ||
+      _sortField != _defaultSortField ||
       _sortAscending != _defaultSortAscending(_sortField) ||
       _siteNameQuery.isNotEmpty;
 
@@ -118,7 +122,7 @@ class SiteFilterState extends ChangeNotifier {
       _sortField = SortField.values[si];
     }
     final asc = HiveManager.get<bool>(StorageKeys.siteFilterSortAscending);
-    if (asc != null) _sortAscending = asc;
+    _sortAscending = asc ?? _defaultSortAscending(_sortField);
   }
 
   void setAvailability(SiteAvailabilityFilter value) {
@@ -189,9 +193,9 @@ class SiteFilterState extends ChangeNotifier {
 
   void clearAll() {
     _debounce?.cancel();
-    _availability = SiteAvailabilityFilter.all;
-    _condition = FilterCondition.all;
-    _sortField = SortField.sortId;
+    _availability = _defaultAvailability;
+    _condition = _defaultCondition;
+    _sortField = _defaultSortField;
     _sortAscending = _defaultSortAscending(_sortField);
     _selectedTags.clear();
     _siteNameQuery = '';
@@ -209,6 +213,6 @@ class SiteFilterState extends ChangeNotifier {
   }
 
   static bool _defaultSortAscending(SortField field) {
-    return field == SortField.sortId;
+    return field == SortField.updatedAt || field == SortField.sortId;
   }
 }

@@ -32,18 +32,11 @@ class SiteFilterPanel extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 12, 12, 0),
             child: Row(
               children: [
-                Icon(
-                  shadcn.LucideIcons.slidersHorizontal,
-                  size: 15,
-                  color: cs.mutedForeground,
-                ),
+                Icon(shadcn.LucideIcons.slidersHorizontal, size: 15, color: cs.mutedForeground),
                 const SizedBox(width: 6),
                 Text(
                   '筛选与排序',
-                  style: typo.small.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: cs.foreground,
-                  ),
+                  style: typo.small.copyWith(fontWeight: FontWeight.w600, color: cs.foreground),
                 ),
                 const Spacer(),
                 if (filter.hasActiveFilters)
@@ -54,18 +47,9 @@ class SiteFilterPanel extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            shadcn.LucideIcons.x,
-                            size: 12,
-                            color: cs.mutedForeground,
-                          ),
+                          Icon(shadcn.LucideIcons.x, size: 12, color: cs.mutedForeground),
                           const SizedBox(width: 3),
-                          Text(
-                            '清除全部',
-                            style: typo.xSmall.copyWith(
-                              color: cs.mutedForeground,
-                            ),
-                          ),
+                          Text('清除全部', style: typo.xSmall.copyWith(color: cs.mutedForeground)),
                         ],
                       ),
                     ),
@@ -74,11 +58,7 @@ class SiteFilterPanel extends ConsumerWidget {
                   const SizedBox(width: 8),
                   shadcn.IconButton.ghost(
                     onPressed: onClose,
-                    icon: Icon(
-                      shadcn.LucideIcons.panelTopClose,
-                      size: 15,
-                      color: cs.mutedForeground,
-                    ),
+                    icon: Icon(shadcn.LucideIcons.panelTopClose, size: 15, color: cs.mutedForeground),
                   ),
                 ],
               ],
@@ -92,36 +72,26 @@ class SiteFilterPanel extends ConsumerWidget {
             Wrap(
               spacing: 8,
               runSpacing: 4,
-              children:
-                  [
-                    SiteAvailabilityFilter.all,
-                    SiteAvailabilityFilter.alive,
-                    SiteAvailabilityFilter.dead,
-                  ].map((value) {
-                    final active = filter.availability == value;
-                    return FilterChip(
-                      label: Text(
-                        _availabilityLabel(value),
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      selected: active,
-                      showCheckmark: false,
-                      onSelected: (_) => filter.setAvailability(value),
-                      selectedColor: cs.primary.withValues(alpha: 0.15),
-                      side: BorderSide(
-                        color: active
-                            ? cs.primary
-                            : cs.border.withValues(alpha: 0.5),
-                      ),
-                      labelStyle: TextStyle(
-                        fontSize: 12,
-                        color: active ? cs.primary : cs.foreground,
-                        fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      visualDensity: VisualDensity.compact,
-                    );
-                  }).toList(),
+              children: [SiteAvailabilityFilter.all, SiteAvailabilityFilter.alive, SiteAvailabilityFilter.dead].map((
+                value,
+              ) {
+                final active = filter.availability == value;
+                return FilterChip(
+                  label: Text(_availabilityLabel(value), style: const TextStyle(fontSize: 12)),
+                  selected: active,
+                  showCheckmark: false,
+                  onSelected: (_) => filter.setAvailability(value),
+                  selectedColor: cs.primary.withValues(alpha: 0.15),
+                  side: BorderSide(color: active ? cs.primary : cs.border.withValues(alpha: 0.5)),
+                  labelStyle: TextStyle(
+                    fontSize: 12,
+                    color: active ? cs.primary : cs.foreground,
+                    fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  visualDensity: VisualDensity.compact,
+                );
+              }).toList(),
             ),
           ),
 
@@ -136,34 +106,20 @@ class SiteFilterPanel extends ConsumerWidget {
                   [
                     FilterCondition.all,
                     ...FilterCondition.values.where(
-                      (c) =>
-                          c != FilterCondition.all &&
-                          c != FilterCondition.alive &&
-                          c != FilterCondition.dead,
+                      (c) => c != FilterCondition.all && c != FilterCondition.alive && c != FilterCondition.dead,
                     ),
                   ].map((c) {
                     return FilterChip(
-                      label: Text(
-                        _conditionLabel(c),
-                        style: const TextStyle(fontSize: 12),
-                      ),
+                      label: Text(_conditionLabel(c), style: const TextStyle(fontSize: 12)),
                       selected: filter.condition == c,
                       showCheckmark: false,
                       onSelected: (_) => filter.setCondition(c),
                       selectedColor: cs.primary.withValues(alpha: 0.15),
-                      side: BorderSide(
-                        color: filter.condition == c
-                            ? cs.primary
-                            : cs.border.withValues(alpha: 0.5),
-                      ),
+                      side: BorderSide(color: filter.condition == c ? cs.primary : cs.border.withValues(alpha: 0.5)),
                       labelStyle: TextStyle(
                         fontSize: 12,
-                        color: filter.condition == c
-                            ? cs.primary
-                            : cs.foreground,
-                        fontWeight: filter.condition == c
-                            ? FontWeight.w600
-                            : FontWeight.w400,
+                        color: filter.condition == c ? cs.primary : cs.foreground,
+                        fontWeight: filter.condition == c ? FontWeight.w600 : FontWeight.w400,
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 2),
                       visualDensity: VisualDensity.compact,
@@ -179,50 +135,37 @@ class SiteFilterPanel extends ConsumerWidget {
             Wrap(
               spacing: 8,
               runSpacing: 4,
-              children:
-                  [
-                    SortField.sortId,
-                    ...SortField.values.where((f) => f != SortField.sortId),
-                  ].map((f) {
-                    final active = filter.sortField == f;
-                    return FilterChip(
-                      label: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _sortFieldLabel(f),
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          if (active) ...[
-                            const SizedBox(width: 3),
-                            Icon(
-                              filter.sortAscending
-                                  ? shadcn.LucideIcons.arrowUp
-                                  : shadcn.LucideIcons.arrowDown,
-                              size: 11,
-                              color: cs.primary,
-                            ),
-                          ],
-                        ],
-                      ),
-                      selected: active,
-                      showCheckmark: false,
-                      onSelected: (_) => filter.setSortField(f),
-                      selectedColor: cs.primary.withValues(alpha: 0.15),
-                      side: BorderSide(
-                        color: active
-                            ? cs.primary
-                            : cs.border.withValues(alpha: 0.5),
-                      ),
-                      labelStyle: TextStyle(
-                        fontSize: 12,
-                        color: active ? cs.primary : cs.foreground,
-                        fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      visualDensity: VisualDensity.compact,
-                    );
-                  }).toList(),
+              children: SortField.values.map((f) {
+                final active = filter.sortField == f;
+                return FilterChip(
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_sortFieldLabel(f), style: const TextStyle(fontSize: 12)),
+                      if (active) ...[
+                        const SizedBox(width: 3),
+                        Icon(
+                          filter.sortAscending ? shadcn.LucideIcons.arrowUp : shadcn.LucideIcons.arrowDown,
+                          size: 11,
+                          color: cs.primary,
+                        ),
+                      ],
+                    ],
+                  ),
+                  selected: active,
+                  showCheckmark: false,
+                  onSelected: (_) => filter.setSortField(f),
+                  selectedColor: cs.primary.withValues(alpha: 0.15),
+                  side: BorderSide(color: active ? cs.primary : cs.border.withValues(alpha: 0.5)),
+                  labelStyle: TextStyle(
+                    fontSize: 12,
+                    color: active ? cs.primary : cs.foreground,
+                    fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  visualDensity: VisualDensity.compact,
+                );
+              }).toList(),
             ),
           ),
 
@@ -242,18 +185,12 @@ class SiteFilterPanel extends ConsumerWidget {
                     onSelected: (_) => filter.clearTags(),
                     selectedColor: cs.primary.withValues(alpha: 0.15),
                     side: BorderSide(
-                      color: filter.selectedTags.isEmpty
-                          ? cs.primary
-                          : cs.border.withValues(alpha: 0.5),
+                      color: filter.selectedTags.isEmpty ? cs.primary : cs.border.withValues(alpha: 0.5),
                     ),
                     labelStyle: TextStyle(
                       fontSize: 12,
-                      color: filter.selectedTags.isEmpty
-                          ? cs.primary
-                          : cs.foreground,
-                      fontWeight: filter.selectedTags.isEmpty
-                          ? FontWeight.w600
-                          : FontWeight.w400,
+                      color: filter.selectedTags.isEmpty ? cs.primary : cs.foreground,
+                      fontWeight: filter.selectedTags.isEmpty ? FontWeight.w600 : FontWeight.w400,
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 2),
                     visualDensity: VisualDensity.compact,
@@ -261,19 +198,12 @@ class SiteFilterPanel extends ConsumerWidget {
                   ...tags.map((tag) {
                     final active = filter.selectedTags.contains(tag);
                     return FilterChip(
-                      label: Text(
-                        '#$tag',
-                        style: const TextStyle(fontSize: 12),
-                      ),
+                      label: Text('#$tag', style: const TextStyle(fontSize: 12)),
                       selected: active,
                       showCheckmark: false,
                       onSelected: (_) => filter.toggleTag(tag),
                       selectedColor: cs.primary.withValues(alpha: 0.15),
-                      side: BorderSide(
-                        color: active
-                            ? cs.primary
-                            : cs.border.withValues(alpha: 0.5),
-                      ),
+                      side: BorderSide(color: active ? cs.primary : cs.border.withValues(alpha: 0.5)),
                       labelStyle: TextStyle(
                         fontSize: 12,
                         color: active ? cs.primary : cs.foreground,
