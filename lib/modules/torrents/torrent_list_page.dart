@@ -150,7 +150,7 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage>
                       child: Padding(
                         padding: EdgeInsets.only(
                           left: 52 + appHeaderLeadingInset(context),
-                          right: 52,
+                          right: 52 + appHeaderTrailingInset(context),
                         ),
                         child: DownloaderTitleSelector(
                           downloaders: downloaders ?? const <Downloader>[],
@@ -162,45 +162,52 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage>
                     ),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: DownloaderHeaderMenu(
-                        downloaderType: currentDownloaderType,
-                        downloader: downloader,
-                        currentCount: currentCount,
-                        onRefresh: _refreshTorrentList,
-                        onStart: () => _runBatchAction(
-                          label: '开始',
-                          qbAction: 'resume',
-                          trAction: 'start_torrent',
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: appHeaderTrailingInset(context),
                         ),
-                        onPause: () => _runBatchAction(
-                          label: '暂停',
-                          qbAction: 'pause',
-                          trAction: 'stop_torrent',
+                        child: DownloaderHeaderMenu(
+                          downloaderType: currentDownloaderType,
+                          downloader: downloader,
+                          currentCount: currentCount,
+                          onRefresh: _refreshTorrentList,
+                          onStart: () => _runBatchAction(
+                            label: '开始',
+                            qbAction: 'resume',
+                            trAction: 'start_torrent',
+                          ),
+                          onPause: () => _runBatchAction(
+                            label: '暂停',
+                            qbAction: 'pause',
+                            trAction: 'stop_torrent',
+                          ),
+                          onReannounce: () => _runBatchAction(
+                            label: '重新汇报',
+                            qbAction: 'reannounce',
+                            trAction: 'reannounce_torrent',
+                          ),
+                          onRecheck: _confirmRecheckCurrentList,
+                          onCategoryManagement: downloader == null
+                              ? null
+                              : () => _showQbCategoryManager(downloader),
+                          onTagManagement: downloader == null
+                              ? null
+                              : () => _showQbTagManager(downloader),
+                          onSpeedLimitSettings: downloader == null
+                              ? null
+                              : () => _showDownloaderSpeedLimitSettings(
+                                  downloader,
+                                ),
+                          onReplaceTrackers:
+                              currentDownloaderType ==
+                                  DownloaderType.qbittorrent
+                              ? () => _showTrackerReplaceDialogForDownloader(
+                                  context,
+                                  ref,
+                                  _currentDownloaderId,
+                                )
+                              : null,
                         ),
-                        onReannounce: () => _runBatchAction(
-                          label: '重新汇报',
-                          qbAction: 'reannounce',
-                          trAction: 'reannounce_torrent',
-                        ),
-                        onRecheck: _confirmRecheckCurrentList,
-                        onCategoryManagement: downloader == null
-                            ? null
-                            : () => _showQbCategoryManager(downloader),
-                        onTagManagement: downloader == null
-                            ? null
-                            : () => _showQbTagManager(downloader),
-                        onSpeedLimitSettings: downloader == null
-                            ? null
-                            : () =>
-                                  _showDownloaderSpeedLimitSettings(downloader),
-                        onReplaceTrackers:
-                            currentDownloaderType == DownloaderType.qbittorrent
-                            ? () => _showTrackerReplaceDialogForDownloader(
-                                context,
-                                ref,
-                                _currentDownloaderId,
-                              )
-                            : null,
                       ),
                     ),
                   ],

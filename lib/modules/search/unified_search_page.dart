@@ -451,6 +451,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
         resourceState.searching;
 
     final pageBackground = appSurfaceColor(context, cs.background);
+    final headerTrailingInset = appHeaderTrailingInset(context);
 
     return EscapeBackScope(
       onBack: () => closeAppSheet(context),
@@ -509,6 +510,8 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                         onPressed: _showSearchSettings,
                       ),
                     ),
+                  if (headerTrailingInset > 0)
+                    SizedBox(width: headerTrailingInset),
                 ],
               ),
               body: Column(

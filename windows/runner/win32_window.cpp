@@ -2,6 +2,7 @@
 
 #include <dwmapi.h>
 #include <flutter_windows.h>
+#include <windowsx.h>
 
 #include "resource.h"
 
@@ -25,6 +26,9 @@ constexpr const wchar_t kWindowClassName[] = L"FLUTTER_RUNNER_WIN32_WINDOW";
 constexpr const wchar_t kGetPreferredBrightnessRegKey[] =
   L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
 constexpr const wchar_t kGetPreferredBrightnessRegValue[] = L"AppsUseLightTheme";
+constexpr int kWindowsTitlebarHeight = 52;
+constexpr int kWindowsResizeBorderWidth = 8;
+constexpr int kWindowsTopDragHeight = 8;
 
 // The number of Win32Window objects that currently exist.
 static int g_active_window_count = 0;
@@ -51,6 +55,58 @@ void EnableFullDpiSupportIfAvailable(HWND hwnd) {
     enable_non_client_dpi_scaling(hwnd);
   }
   FreeLibrary(user32_module);
+}
+
+bool IsWindowMaximized(HWND hwnd) {
+  WINDOWPLACEMENT placement{};
+  placement.length = sizeof(WINDOWPLACEMENT);
+  return GetWindowPlacement(hwnd, &placement) &&
+         placement.showCmd == SW_SHOWMAXIMIZED;
+}
+
+void ExtendContentIntoTitlebar(HWND hwnd) {
+  const UINT dpi = FlutterDesktopGetDpiForHWND(hwnd);
+  const double scale_factor = dpi / 96.0;
+  const MARGINS margins = {
+      0, 0, Scale(kWindowsTitlebarHeight, scale_factor), 0};
+  DwmExtendFrameIntoClientArea(hwnd, &margins);
+}
+
+LRESULT HitTestCustomFrame(HWND hwnd, LPARAM lparam) {
+  POINT point = {GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)};
+  RECT frame;
+  GetWindowRect(hwnd, &frame);
+
+  const UINT dpi = FlutterDesktopGetDpiForHWND(hwnd);
+  const double scale_factor = dpi / 96.0;
+  const LONG border = Scale(kWindowsResizeBorderWidth, scale_factor);
+  const bool maximized = IsWindowMaximized(hwnd);
+
+  if (!maximized) {
+    const bool on_left = point.x >= frame.left && point.x < frame.left + border;
+    const bool on_right =
+        point.x < frame.right && point.x >= frame.right - border;
+    const bool on_top = point.y >= frame.top && point.y < frame.top + border;
+    const bool on_bottom =
+        point.y < frame.bottom && point.y >= frame.bottom - border;
+
+    if (on_top && on_left) return HTTOPLEFT;
+    if (on_top && on_right) return HTTOPRIGHT;
+    if (on_bottom && on_left) return HTBOTTOMLEFT;
+    if (on_bottom && on_right) return HTBOTTOMRIGHT;
+    if (on_left) return HTLEFT;
+    if (on_right) return HTRIGHT;
+    if (on_top) return HTTOP;
+    if (on_bottom) return HTBOTTOM;
+  }
+
+  const LONG drag_height = Scale(kWindowsTopDragHeight, scale_factor);
+  const LONG drag_top = frame.top + (maximized ? 0 : border);
+  if (point.y >= drag_top && point.y < drag_top + drag_height) {
+    return HTCAPTION;
+  }
+
+  return HTCLIENT;
 }
 
 }  // namespace
@@ -145,6 +201,10 @@ bool Win32Window::Create(const std::wstring& title,
   }
 
   UpdateTheme(window);
+  ExtendContentIntoTitlebar(window);
+  SetWindowPos(window, nullptr, 0, 0, 0, 0,
+               SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                   SWP_NOACTIVATE);
 
   return OnCreate();
 }
@@ -178,7 +238,30 @@ Win32Window::MessageHandler(HWND hwnd,
                             UINT const message,
                             WPARAM const wparam,
                             LPARAM const lparam) noexcept {
+  LRESULT result = 0;
+  if (DwmDefWindowProc(hwnd, message, wparam, lparam, &result)) {
+    return result;
+  }
+
   switch (message) {
+    case WM_NCCALCSIZE:
+      if (wparam == TRUE) {
+        auto params = reinterpret_cast<NCCALCSIZE_PARAMS*>(lparam);
+        if (IsWindowMaximized(hwnd)) {
+          HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+          MONITORINFO monitor_info{};
+          monitor_info.cbSize = sizeof(MONITORINFO);
+          if (GetMonitorInfo(monitor, &monitor_info)) {
+            params->rgrc[0] = monitor_info.rcWork;
+          }
+        }
+        return 0;
+      }
+      break;
+
+    case WM_NCHITTEST:
+      return HitTestCustomFrame(hwnd, lparam);
+
     case WM_DESTROY:
       window_handle_ = nullptr;
       Destroy();
@@ -194,6 +277,7 @@ Win32Window::MessageHandler(HWND hwnd,
 
       SetWindowPos(hwnd, nullptr, newRectSize->left, newRectSize->top, newWidth,
                    newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+      ExtendContentIntoTitlebar(hwnd);
 
       return 0;
     }
@@ -215,6 +299,7 @@ Win32Window::MessageHandler(HWND hwnd,
 
     case WM_DWMCOLORIZATIONCOLORCHANGED:
       UpdateTheme(hwnd);
+      ExtendContentIntoTitlebar(hwnd);
       return 0;
   }
 

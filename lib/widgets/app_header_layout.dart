@@ -3,10 +3,18 @@ import 'package:harvest/core/utils/utils.dart';
 
 const double kAppHeaderHeight = 52;
 const double kMacosWindowControlInset = 63;
+const double kWindowsWindowControlInset = 138;
 
 double appHeaderLeadingInset(BuildContext context) {
   if (PlatformTool.isMacOS() && !context.isMobile) {
     return kMacosWindowControlInset;
+  }
+  return 0;
+}
+
+double appHeaderTrailingInset(BuildContext context) {
+  if (PlatformTool.isWindows() && !context.isMobile) {
+    return kWindowsWindowControlInset;
   }
   return 0;
 }
@@ -21,7 +29,7 @@ EdgeInsets appHeaderPadding(
   return EdgeInsets.fromLTRB(
     left + appHeaderLeadingInset(context),
     top,
-    right,
+    right + appHeaderTrailingInset(context),
     bottom,
   );
 }

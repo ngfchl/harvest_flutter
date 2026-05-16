@@ -62,10 +62,16 @@ class _NoticePageHeader extends StatelessWidget {
     final cs = theme.colorScheme;
     final top = MediaQuery.paddingOf(context).top;
     final leadingInset = appHeaderLeadingInset(context);
+    final trailingInset = appHeaderTrailingInset(context);
 
     return AppSurfaceContainer(
       height: top + kAppHeaderHeight,
-      padding: EdgeInsets.fromLTRB(8 + leadingInset, top + 6, 16, 6),
+      padding: EdgeInsets.fromLTRB(
+        8 + leadingInset,
+        top + 6,
+        16 + trailingInset,
+        6,
+      ),
       borderRadius: BorderRadius.zero,
       color: appSurfaceColor(context, cs.background),
       borderColor: cs.border.withValues(alpha: 0.5),
