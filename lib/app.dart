@@ -203,37 +203,67 @@ class _GlobalKeyboardDismiss extends StatefulWidget {
 }
 
 class _GlobalKeyboardDismissState extends State<_GlobalKeyboardDismiss> {
-  Offset? _lastTapDownPosition;
+  static const _tapSlop = 18.0;
+  static const _longPressGuard = Duration(milliseconds: 420);
+
+  int? _tapPointer;
+  Offset? _tapDownPosition;
+  DateTime? _tapDownAt;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Listener(
       behavior: HitTestBehavior.translucent,
-      onTapDown: (details) => _lastTapDownPosition = details.globalPosition,
-      onTap: () {
-        final position = _lastTapDownPosition;
-        _lastTapDownPosition = null;
-        if (position == null) return;
-
-        final focus = FocusManager.instance.primaryFocus;
-        if (focus == null) return;
-        final focusedContext = focus.context;
-        if (focusedContext == null) {
-          _unfocusAfterGesture(focus);
-          return;
+      onPointerDown: (event) {
+        _tapPointer = event.pointer;
+        _tapDownPosition = event.position;
+        _tapDownAt = DateTime.now();
+      },
+      onPointerMove: (event) {
+        if (_tapPointer != event.pointer) return;
+        final down = _tapDownPosition;
+        if (down != null && (event.position - down).distance > _tapSlop) {
+          _clearTapCandidate();
         }
-        final render = focusedContext.findRenderObject();
-        if (render is! RenderBox) {
-          _unfocusAfterGesture(focus);
-          return;
-        }
-        final local = render.globalToLocal(position);
-        if (!render.size.contains(local)) {
-          _unfocusAfterGesture(focus);
-        }
+      },
+      onPointerCancel: (_) => _clearTapCandidate(),
+      onPointerUp: (event) {
+        if (_tapPointer != event.pointer) return;
+        final down = _tapDownPosition;
+        final downAt = _tapDownAt;
+        _clearTapCandidate();
+        if (down == null || downAt == null) return;
+        if ((event.position - down).distance > _tapSlop) return;
+        if (DateTime.now().difference(downAt) >= _longPressGuard) return;
+        _dismissForTap(event.position);
       },
       child: widget.child,
     );
+  }
+
+  void _clearTapCandidate() {
+    _tapPointer = null;
+    _tapDownPosition = null;
+    _tapDownAt = null;
+  }
+
+  void _dismissForTap(Offset position) {
+    final focus = FocusManager.instance.primaryFocus;
+    if (focus == null) return;
+    final focusedContext = focus.context;
+    if (focusedContext == null) {
+      _unfocusAfterGesture(focus);
+      return;
+    }
+    final render = focusedContext.findRenderObject();
+    if (render is! RenderBox) {
+      _unfocusAfterGesture(focus);
+      return;
+    }
+    final local = render.globalToLocal(position);
+    if (!render.size.contains(local)) {
+      _unfocusAfterGesture(focus);
+    }
   }
 
   void _unfocusAfterGesture(FocusNode focus) {

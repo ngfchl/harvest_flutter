@@ -39,6 +39,44 @@ BorderRadius _optionRadius(BuildContext context, {String size = 'md'}) {
   };
 }
 
+class _ButtonText extends StatelessWidget {
+  final String text;
+
+  const _ButtonText(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(child: Text(text, textAlign: TextAlign.center));
+  }
+}
+
+class _ActionButtonFrame extends StatelessWidget {
+  final Widget child;
+  final double minWidth;
+  final double maxWidth;
+
+  const _ActionButtonFrame({
+    required this.child,
+    this.minWidth = 160,
+    this.maxWidth = 260,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (context.isMobile) {
+      return SizedBox(width: double.infinity, child: child);
+    }
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minWidth: minWidth, maxWidth: maxWidth),
+        child: child,
+      ),
+    );
+  }
+}
+
 // ══════════════════════════════════════════════════════════
 //  表单配置表
 // ══════════════════════════════════════════════════════════
@@ -50,29 +88,54 @@ final _formConfigs = <String, FormConfig>{
     textFields: [FormFieldDef('token', '令牌', (v) => v?.token)],
     extraBuilder: (c) => Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: shadcn.Button.destructive(
-              onPressed: () {
-                c['token']!.text = _randomString(8);
-                Clipboard.setData(ClipboardData(text: c['token']!.text));
-                Toast.success('已复制到剪贴板');
-              },
-              child: const Text('随机Token'),
+      child: Builder(
+        builder: (context) {
+          final randomButton = shadcn.Button.destructive(
+            onPressed: () {
+              c['token']!.text = _randomString(8);
+              Clipboard.setData(ClipboardData(text: c['token']!.text));
+              Toast.success('已复制到剪贴板');
+            },
+            alignment: Alignment.center,
+            child: const _ButtonText('随机Token'),
+          );
+          final copyButton = shadcn.Button.outline(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: c['token']!.text));
+              Toast.success('已复制到剪贴板');
+            },
+            alignment: Alignment.center,
+            child: const _ButtonText('复制Token'),
+          );
+
+          if (context.isMobile) {
+            return Row(
+              children: [
+                Expanded(child: randomButton),
+                const SizedBox(width: 8),
+                Expanded(child: copyButton),
+              ],
+            );
+          }
+
+          return Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 128),
+                  child: randomButton,
+                ),
+                const SizedBox(width: 8),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 128),
+                  child: copyButton,
+                ),
+              ],
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: shadcn.Button.outline(
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: c['token']!.text));
-                Toast.success('已复制到剪贴板');
-              },
-              child: const Text('复制Token'),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     ),
     buildValue: (c, _, v) => v.copyWith(token: c['token']!.text),
@@ -223,7 +286,6 @@ final _formConfigs = <String, FormConfig>{
       welfare: s['welfare'],
     ),
   ),
-
   'baidu_ocr': FormConfig(
     title: '百度 OCR',
     icon: shadcn.LucideIcons.scanLine,
@@ -565,14 +627,17 @@ class OptionPage extends ConsumerWidget {
               onPressed: () => Navigator.of(
                 context,
               ).push(MaterialPageRoute(builder: (_) => const UpdatePage())),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(shadcn.LucideIcons.externalLink, size: 15),
-                  SizedBox(width: 6),
-                  Text('打开完整更新页面'),
-                ],
+              alignment: Alignment.center,
+              child: const Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(shadcn.LucideIcons.externalLink, size: 15),
+                    SizedBox(width: 6),
+                    Text('打开完整更新页面'),
+                  ],
+                ),
               ),
             ),
           ),
@@ -621,8 +686,7 @@ class OptionPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
+            _ActionButtonFrame(
               child: shadcn.Button.destructive(
                 onPressed: () async {
                   final raw = urlCtrl.text.trim();
@@ -703,7 +767,8 @@ class OptionPage extends ConsumerWidget {
                     Toast.error('设置失败');
                   }
                 },
-                child: const Text('保存'),
+                alignment: Alignment.center,
+                child: const _ButtonText('保存'),
               ),
             ),
           ],
@@ -1196,13 +1261,15 @@ class _AppAutoRefreshIntervalCardState
                   onPressed: minutes == preset
                       ? null
                       : () => _setMinutes(preset),
-                  child: Text('$preset 分钟'),
+                  alignment: Alignment.center,
+                  child: _ButtonText('$preset 分钟'),
                 ),
               shadcn.Button.outline(
                 onPressed: minutes == kDefaultAppAutoRefreshMinutes
                     ? null
                     : () => _setMinutes(kDefaultAppAutoRefreshMinutes),
-                child: const Text('恢复默认'),
+                alignment: Alignment.center,
+                child: const _ButtonText('恢复默认'),
               ),
             ],
           ),
@@ -1295,28 +1362,32 @@ class _BulkUpgradeCardState extends ConsumerState<_BulkUpgradeCard> {
             onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           ),
           const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
+          _ActionButtonFrame(
+            minWidth: 210,
+            maxWidth: 260,
             child: shadcn.Button.destructive(
               onPressed: _submitting ? null : _submit,
-              child: _submitting
-                  ? SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: shadcn.CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: cs.primaryForeground,
+              alignment: Alignment.center,
+              child: Center(
+                child: _submitting
+                    ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: shadcn.CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: cs.primaryForeground,
+                        ),
+                      )
+                    : const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(shadcn.LucideIcons.replace, size: 15),
+                          SizedBox(width: 6),
+                          Text('提交批量替换'),
+                        ],
                       ),
-                    )
-                  : const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(shadcn.LucideIcons.replace, size: 15),
-                        SizedBox(width: 6),
-                        Text('提交批量替换'),
-                      ],
-                    ),
+              ),
             ),
           ),
         ],
@@ -1386,8 +1457,7 @@ class _SpeedTestActionState extends State<_SpeedTestAction> {
           ),
         ),
         const SizedBox(height: 10),
-        SizedBox(
-          width: double.infinity,
+        _ActionButtonFrame(
           child: shadcn.Button.primary(
             onPressed: _running
                 ? null
@@ -1399,24 +1469,27 @@ class _SpeedTestActionState extends State<_SpeedTestAction> {
                       if (mounted) setState(() => _running = false);
                     }
                   },
-            child: _running
-                ? SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: shadcn.CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: _optionColors(context).primaryForeground,
+            alignment: Alignment.center,
+            child: Center(
+              child: _running
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: shadcn.CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _optionColors(context).primaryForeground,
+                      ),
+                    )
+                  : const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(shadcn.LucideIcons.gauge, size: 15),
+                        SizedBox(width: 6),
+                        Text('开始测速'),
+                      ],
                     ),
-                  )
-                : const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(shadcn.LucideIcons.gauge, size: 15),
-                      SizedBox(width: 6),
-                      Text('开始测速'),
-                    ],
-                  ),
+            ),
           ),
         ),
       ],
@@ -1471,8 +1544,7 @@ class _TestNoticeFormState extends State<_TestNoticeForm> {
           onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         ),
         const SizedBox(height: 10),
-        SizedBox(
-          width: double.infinity,
+        _ActionButtonFrame(
           child: shadcn.Button.destructive(
             onPressed: _sending
                 ? null
@@ -1481,16 +1553,19 @@ class _TestNoticeFormState extends State<_TestNoticeForm> {
                     widget.onSend();
                     if (mounted) setState(() => _sending = false);
                   },
-            child: _sending
-                ? SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: shadcn.CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: _optionColors(context).primaryForeground,
-                    ),
-                  )
-                : const Text('发送'),
+            alignment: Alignment.center,
+            child: Center(
+              child: _sending
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: shadcn.CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _optionColors(context).primaryForeground,
+                      ),
+                    )
+                  : const _ButtonText('发送'),
+            ),
           ),
         ),
       ],
@@ -1637,7 +1712,8 @@ class _VersionCardState extends State<_VersionCard> {
         actions: [
           shadcn.Button.primary(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('确定'),
+            alignment: Alignment.center,
+            child: const _ButtonText('确定'),
           ),
         ],
       ),

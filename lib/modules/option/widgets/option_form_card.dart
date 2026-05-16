@@ -76,6 +76,27 @@ BorderRadius _optionCardRadius(BuildContext context, {String size = 'md'}) {
   };
 }
 
+class _ActionButtonFrame extends StatelessWidget {
+  final Widget child;
+
+  const _ActionButtonFrame({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    if (context.isMobile) {
+      return SizedBox(width: double.infinity, child: child);
+    }
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 160, maxWidth: 260),
+        child: child,
+      ),
+    );
+  }
+}
+
 class OptionFormCard extends StatefulWidget {
   final String title;
   final String optionName;
@@ -305,20 +326,22 @@ class _OptionFormCardState extends State<OptionFormCard> {
           if (widget.extraBuilder != null) widget.extraBuilder!(_ctrls),
           // ── 保存按钮 ──
           const SizedBox(height: 6),
-          SizedBox(
-            width: double.infinity,
+          _ActionButtonFrame(
             child: shadcn.Button.primary(
               onPressed: _saving ? null : _handleSave,
-              child: _saving
-                  ? SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: shadcn.CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: cs.primaryForeground,
-                      ),
-                    )
-                  : const Text('保存'),
+              alignment: Alignment.center,
+              child: Center(
+                child: _saving
+                    ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: shadcn.CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: cs.primaryForeground,
+                        ),
+                      )
+                    : const Text('保存', textAlign: TextAlign.center),
+              ),
             ),
           ),
         ],
