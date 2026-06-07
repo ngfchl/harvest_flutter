@@ -1227,55 +1227,6 @@ class _BrowserPageState extends State<BrowserPage> {
     }
   }
 
-  Future<void> _showCopyMenu() async {
-    if (!mounted) return;
-
-    shadcn.showDropdown<void>(
-      context: context,
-      alignment: Alignment.bottomCenter,
-      offset: const Offset(0, -8),
-      widthConstraint: shadcn.PopoverConstraint.intrinsic,
-      heightConstraint: shadcn.PopoverConstraint.intrinsic,
-      consumeOutsideTaps: true,
-      builder: (_) => AppDropdownMenu(
-        children: [
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.link),
-            onPressed: (itemContext) {
-              shadcn.closeOverlay(itemContext);
-              Clipboard.setData(ClipboardData(text: _currentUrl));
-              Toast.success('链接已复制');
-            },
-            child: const Text('复制链接'),
-          ),
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.cookie),
-            onPressed: (itemContext) async {
-              shadcn.closeOverlay(itemContext);
-              final cookie = await _cookieHeaderFor(_currentUrl);
-              if (cookie != null && cookie.isNotEmpty) {
-                Clipboard.setData(ClipboardData(text: cookie));
-                Toast.success('Cookie 已复制 (${cookie.length} 字符)');
-              } else {
-                Toast.warning('未检测到 Cookie');
-              }
-            },
-            child: const Text('复制 Cookie'),
-          ),
-          const shadcn.MenuDivider(),
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.clipboardList),
-            onPressed: (itemContext) {
-              shadcn.closeOverlay(itemContext);
-              unawaited(_copyBrowserStorageClipboardJson());
-            },
-            child: const Text('复制授权信息'),
-          ),
-        ],
-      ),
-    );
-  }
-
   // ── 底部工具栏 ──
 
   Widget _buildBottomBar(shadcn.ColorScheme cs) {
@@ -1311,13 +1262,6 @@ class _BrowserPageState extends State<BrowserPage> {
           ),
           _bottomBtn(
             cs,
-            shadcn.LucideIcons.copy,
-            '复制',
-            true,
-            () => _showCopyMenu(),
-          ),
-          _bottomBtn(
-            cs,
             shadcn.LucideIcons.globe,
             'UA',
             true,
@@ -1348,11 +1292,20 @@ class _BrowserPageState extends State<BrowserPage> {
       builder: (_) => AppDropdownMenu(
         children: [
           shadcn.MenuButton(
+            leading: const Icon(shadcn.LucideIcons.link),
+            onPressed: (itemContext) {
+              shadcn.closeOverlay(itemContext);
+              Clipboard.setData(ClipboardData(text: _accessUrlText()));
+              Toast.success('链接已复制');
+            },
+            child: const Text('复制链接'),
+          ),
+          shadcn.MenuButton(
             leading: const Icon(shadcn.LucideIcons.share2),
             onPressed: (itemContext) {
               shadcn.closeOverlay(itemContext);
               SharePlus.instance.share(
-                ShareParams(text: _currentUrl, subject: _currentTitle),
+                ShareParams(text: _accessUrlText(), subject: _currentTitle),
               );
             },
             child: const Text('分享链接'),
@@ -1424,7 +1377,7 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   Future<void> _openCurrentUrlExternally() async {
-    final uri = Uri.tryParse(_currentUrl.trim());
+    final uri = Uri.tryParse(_accessUrlText());
     if (uri == null || !uri.hasScheme) {
       Toast.warning('当前链接无效');
       return;
@@ -5090,7 +5043,13 @@ JSON.stringify({
   }
 
   String _displayUrl(String url) {
-    return _browserDisplayUrl(url);
+    return _accessUrlText();
+  }
+
+  String _accessUrlText() {
+    final current = _currentUrl.trim();
+    if (current.isNotEmpty) return current;
+    return widget.url.trim();
   }
 
   Future<void> _showSiteTimeline() async {
