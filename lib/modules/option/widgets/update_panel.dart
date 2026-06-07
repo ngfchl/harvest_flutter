@@ -198,8 +198,12 @@ class _UpdateTargetCard extends ConsumerWidget {
     final current = info;
     final action = target.upgradeAction;
     final isUpdating = state.updatingAction == action;
-    final canUpdate =
-        current?.needsUpdate == true && !isLoading && !state.isUpdating;
+    final canAction = current != null && !isLoading && !state.isUpdating;
+    final actionLabel = current == null
+        ? '更新'
+        : current.needsUpdate
+        ? '更新'
+        : '重装';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -287,7 +291,7 @@ class _UpdateTargetCard extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: shadcn.Button.primary(
-                    onPressed: canUpdate
+                    onPressed: canAction
                         ? () => _runUpgrade(context, ref, action)
                         : null,
                     child: isUpdating
@@ -298,11 +302,7 @@ class _UpdateTargetCard extends ConsumerWidget {
                           )
                         : _ButtonContent(
                             icon: shadcn.LucideIcons.download,
-                            label: current == null
-                                ? '更新'
-                                : current.needsUpdate
-                                ? '更新'
-                                : '已最新',
+                            label: actionLabel,
                           ),
                   ),
                 ),

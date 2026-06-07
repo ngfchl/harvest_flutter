@@ -285,9 +285,11 @@ class UpdateLogInfo {
   }
 
   int get currentCommitIndex {
-    final hash = localLog?.hash;
-    if (hash == null || hash.isEmpty) return -1;
-    return commits.indexWhere((commit) => _sameCommitHash(commit.hash, hash));
+    final version = _effectiveLocalVersion;
+    if (version == null || version.isEmpty) return -1;
+    return commits.indexWhere(
+      (commit) => _sameReleaseVersion(commit.hash, version),
+    );
   }
 
   int get pendingUpdateCount {
@@ -316,13 +318,11 @@ class UpdateLogInfo {
   String get detailText {
     final parts = <String>[];
     if (branch != null && branch!.isNotEmpty) parts.add(branch!);
-    if (localLog != null && localLog!.shortHash.isNotEmpty) {
-      parts.add('本地 ${localLog!.shortHash}');
-    } else if (localVersion != null && localVersion!.isNotEmpty) {
-      parts.add('本地 ${_shortVersion(localVersion!)}');
+    if (_effectiveLocalVersion case final local? when local.isNotEmpty) {
+      parts.add('本地 $local');
     }
     if (remoteVersion != null && remoteVersion!.isNotEmpty) {
-      parts.add('远端 ${_shortVersion(remoteVersion!)}');
+      parts.add('远端 ${remoteVersion!.trim()}');
     }
     if (parts.isNotEmpty) return parts.join(' · ');
     if (message != null && message!.isNotEmpty) return message!;
@@ -330,6 +330,14 @@ class UpdateLogInfo {
       return rawText!.trim();
     }
     return '最近检查 ${_formatClock(checkedAt)}';
+  }
+
+  String? get _effectiveLocalVersion {
+    final local = localVersion?.trim();
+    if (local != null && local.isNotEmpty) return local;
+    final fallback = localLog?.hash?.trim();
+    if (fallback != null && fallback.isNotEmpty) return fallback;
+    return null;
   }
 }
 
@@ -476,9 +484,9 @@ bool _looksLikeNoUpdateText(String text) {
       text.contains('已经是最新');
 }
 
-bool _sameCommitHash(String? a, String b) {
+bool _sameReleaseVersion(String? a, String b) {
   if (a == null || a.isEmpty) return false;
-  return a == b || a.startsWith(b) || b.startsWith(a);
+  return a.trim().toLowerCase() == b.trim().toLowerCase();
 }
 
 String? _firstString(Map<String, dynamic> json, List<String> keys) {
@@ -523,11 +531,6 @@ int? _firstInt(Map<String, dynamic> json, List<String> keys) {
     }
   }
   return null;
-}
-
-String _shortVersion(String value) {
-  final trimmed = value.trim();
-  return trimmed.length <= 10 ? trimmed : trimmed.substring(0, 10);
 }
 
 String _formatClock(DateTime time) {
