@@ -693,10 +693,10 @@ jobs:
             ${{ steps.changelog.outputs.changelog }}
 
       - name: 清理 APP 版本缓存
-        if: ${{ secrets.HARVEST_TOKEN != '' && secrets.HARVEST_EMAIL != '' }}
         env:
           AUTHORIZATION: ${{ secrets.HARVEST_TOKEN }}
           EMAIL: ${{ secrets.HARVEST_EMAIL }}
+        if: ${{ env.AUTHORIZATION != '' && env.EMAIL != '' }}
         run: |
           HTTP_CODE=$(curl --silent --show-error \
             -X POST "https://repeat.ptools.fun/api/app/version/cache/clear" \
