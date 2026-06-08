@@ -825,23 +825,46 @@ class _TemplateSelectField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    shadcn.SelectItemList buildItems(String? searchQuery) {
+      final keyword = searchQuery?.trim().toLowerCase() ?? '';
+      final filtered = keyword.isEmpty
+          ? configs
+          : configs
+                .where((config) {
+                  final values = [
+                    config.name,
+                    config.nickname,
+                    ...config.url,
+                  ].map((value) => value.trim().toLowerCase());
+                  return values.any((value) => value.contains(keyword));
+                })
+                .toList(growable: false);
+
+      return shadcn.SelectItemList(
+        children: [
+          for (final config in filtered)
+            shadcn.SelectItemButton<String>(
+              value: config.name,
+              child: Text(
+                config.name == 'NP模板' ? '${config.name}（默认）' : config.name,
+              ),
+            ),
+        ],
+      );
+    }
+
     return shadcn.Select<String>(
       key: ValueKey(templateName),
       value: templateName,
       placeholder: const Text('模板'),
       itemBuilder: (_, value) => Text(value),
-      popup: shadcn.SelectPopup<String>(
-        items: shadcn.SelectItemList(
-          children: [
-            for (final config in configs)
-              shadcn.SelectItemButton<String>(
-                value: config.name,
-                child: Text(
-                  config.name == 'NP模板' ? '${config.name}（默认）' : config.name,
-                ),
-              ),
-          ],
+      popup: shadcn.SelectPopup<String>.builder(
+        searchPlaceholder: const Text('搜索模板'),
+        emptyBuilder: (_) => const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+          child: Center(child: Text('未找到匹配模板')),
         ),
+        builder: (_, searchQuery) => buildItems(searchQuery),
       ).call,
       onChanged: (value) {
         if (loading || value == null) return;
@@ -1877,6 +1900,7 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
   final _scrollController = ScrollController();
 
   bool _hasDuplicateLevelId(String value) {
+    if (int.tryParse(value) == 0) return false;
     for (final level in widget.template.levels) {
       if (identical(level, widget.level)) continue;
       final current = level.fields['level_id']?.controller.text.trim() ?? '';
@@ -1964,7 +1988,7 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
           _DialogHeroCard(
             icon: shadcn.LucideIcons.medal,
             title: widget.level.displayName,
-            subtitle: '* 为必填项，等级 ID 必须唯一且为数字',
+            subtitle: '* 为必填项，非 0 等级 ID 必须唯一且为数字',
             titleTrailing: _HeaderIdMark(label: levelIdLabel),
           ),
           const SizedBox(height: 12),
