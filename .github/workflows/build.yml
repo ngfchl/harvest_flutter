@@ -691,3 +691,19 @@ jobs:
           body: |
             ## 📌 更新日志
             ${{ steps.changelog.outputs.changelog }}
+
+      - name: 清理 APP 版本缓存
+        if: ${{ secrets.HARVEST_TOKEN != '' && secrets.HARVEST_EMAIL != '' }}
+        env:
+          AUTHORIZATION: ${{ secrets.HARVEST_TOKEN }}
+          EMAIL: ${{ secrets.HARVEST_EMAIL }}
+        run: |
+          HTTP_CODE=$(curl --silent --show-error \
+            -X POST "https://repeat.ptools.fun/api/app/version/cache/clear" \
+            -H "Authorization: ${AUTHORIZATION}" \
+            -H "EMAIL: ${EMAIL}" \
+            -w "\n%{http_code}")
+          STATUS=$(printf '%s' "$HTTP_CODE" | tail -n 1)
+          BODY=$(printf '%s' "$HTTP_CODE" | sed '$d')
+          echo "cache clear status: ${STATUS}"
+          echo "cache clear response: ${BODY}"
