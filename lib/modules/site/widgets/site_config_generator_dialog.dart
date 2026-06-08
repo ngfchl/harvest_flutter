@@ -26,14 +26,18 @@ void showSiteConfigGenerator(BuildContext context) {
       context: context,
       isScrollControlled: true,
       backgroundColor: siteTransparent(context),
-      builder: (ctx) => SizedBox(height: MediaQuery.sizeOf(ctx).height * 0.92, child: dialog),
+      builder: (ctx) =>
+          SizedBox(height: MediaQuery.sizeOf(ctx).height * 0.92, child: dialog),
     );
   } else {
     shadcn.showDialog(
       context: context,
       builder: (_) => shadcn.AlertDialog(
         content: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 920, maxHeight: MediaQuery.sizeOf(context).height * 0.92),
+          constraints: BoxConstraints(
+            maxWidth: 920,
+            maxHeight: MediaQuery.sizeOf(context).height * 0.92,
+          ),
           child: SiteConfigGeneratorDialog(),
         ),
       ),
@@ -45,10 +49,12 @@ class SiteConfigGeneratorDialog extends ConsumerStatefulWidget {
   const SiteConfigGeneratorDialog({super.key});
 
   @override
-  ConsumerState<SiteConfigGeneratorDialog> createState() => _SiteConfigGeneratorDialogState();
+  ConsumerState<SiteConfigGeneratorDialog> createState() =>
+      _SiteConfigGeneratorDialogState();
 }
 
-class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorDialog> {
+class _SiteConfigGeneratorDialogState
+    extends ConsumerState<SiteConfigGeneratorDialog> {
   final _scrollController = ScrollController();
   final _configNameController = TextEditingController();
   String? _templateName;
@@ -109,7 +115,9 @@ class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorD
       final content = _extractTemplateContent(raw) ?? _webSiteToToml(config);
       final next = _TomlTemplate.parse(content);
       _syncConfigNameFromTemplate(next, config.name);
-      AppLogger.info('站点配置模板解析完成: ${config.name}, fields=${next.fields.length}, levels=${next.levels.length}');
+      AppLogger.info(
+        '站点配置模板解析完成: ${config.name}, fields=${next.fields.length}, levels=${next.levels.length}',
+      );
       if (!mounted) return;
       setState(() {
         _disposeTemplate();
@@ -189,7 +197,9 @@ class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorD
       final file = File(p.join(tempDir.path, fileName));
       await file.writeAsBytes(bytes, flush: true);
       AppLogger.info('站点配置分享文件已生成: ${file.path}');
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], text: '站点配置: ${_configName()}'));
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path)], text: '站点配置: ${_configName()}'),
+      );
     } catch (e, st) {
       AppLogger.error('分享站点配置失败', e, st);
       if (mounted) Toast.error('分享站点配置失败');
@@ -208,8 +218,14 @@ class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorD
     try {
       final bytes = _configBytes();
       final fileName = _configFileName();
-      final file = PlatformFile(name: fileName, size: bytes.length, bytes: bytes);
-      await ref.read(siteInfoListProvider.notifier).importCustomSiteToml([file], overwrite: overwrite);
+      final file = PlatformFile(
+        name: fileName,
+        size: bytes.length,
+        bytes: bytes,
+      );
+      await ref.read(siteInfoListProvider.notifier).importCustomSiteToml([
+        file,
+      ], overwrite: overwrite);
       if (!mounted) return;
       Toast.success('站点配置已保存到服务器');
     } catch (e, st) {
@@ -225,11 +241,22 @@ class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorD
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         title: const Text('保存站点配置'),
-        content: Text('将以「${_safeFileName(configName)}.toml」保存到服务器。若存在同名配置，是否覆盖？'),
+        content: Text(
+          '将以「${_safeFileName(configName)}.toml」保存到服务器。若存在同名配置，是否覆盖？',
+        ),
         actions: [
-          shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx, null), child: const Text('取消')),
-          shadcn.Button.outline(onPressed: () => closeAppSheet(ctx, false), child: const Text('不覆盖')),
-          shadcn.Button.primary(onPressed: () => closeAppSheet(ctx, true), child: const Text('覆盖')),
+          shadcn.Button.ghost(
+            onPressed: () => closeAppSheet(ctx, null),
+            child: const Text('取消'),
+          ),
+          shadcn.Button.outline(
+            onPressed: () => closeAppSheet(ctx, false),
+            child: const Text('不覆盖'),
+          ),
+          shadcn.Button.primary(
+            onPressed: () => closeAppSheet(ctx, true),
+            child: const Text('覆盖'),
+          ),
         ],
       ),
     );
@@ -240,7 +267,10 @@ class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorD
     return safe.isEmpty ? 'site' : safe;
   }
 
-  Future<String?> _downloadTomlFile({required String fileName, required Uint8List bytes}) async {
+  Future<String?> _downloadTomlFile({
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
     try {
       final path = await FilePicker.saveFile(
         dialogTitle: '保存站点配置',
@@ -274,13 +304,23 @@ class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorD
       decoration: BoxDecoration(
         color: cs.background,
         borderRadius: mobile
-            ? BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft)
+            ? BorderRadius.vertical(
+                top: siteRadius(context, size: "xl").topLeft,
+              )
             : siteRadius(context, size: "xl"),
       ),
       child: configsAsync.when(
-        loading: () => Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2.4, color: cs.primary)),
-        error: (e, trace) =>
-            _GeneratorError(error: e, trace: trace, onRetry: () => ref.invalidate(websiteListProvider)),
+        loading: () => Center(
+          child: shadcn.CircularProgressIndicator(
+            strokeWidth: 2.4,
+            color: cs.primary,
+          ),
+        ),
+        error: (e, trace) => _GeneratorError(
+          error: e,
+          trace: trace,
+          onRetry: () => ref.invalidate(websiteListProvider),
+        ),
         data: (configs) {
           if (configs.isEmpty) {
             return const Center(child: Text('暂无站点配置模板'));
@@ -302,7 +342,10 @@ class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorD
 
     return Column(
       children: [
-        if (context.isMobile) ...[buildHandle(context), const SizedBox(height: 12)],
+        if (context.isMobile) ...[
+          buildHandle(context),
+          const SizedBox(height: 12),
+        ],
         Row(
           children: [
             Container(
@@ -312,7 +355,11 @@ class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorD
                 color: cs.primary.withValues(alpha: 0.1),
                 borderRadius: siteRadius(context, size: "md"),
               ),
-              child: Icon(shadcn.LucideIcons.fileCode, size: 18, color: cs.primary),
+              child: Icon(
+                shadcn.LucideIcons.fileCode,
+                size: 18,
+                color: cs.primary,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -344,7 +391,8 @@ class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorD
                   controller: _configNameController,
                   placeholder: const Text('配置名称'),
                   hintText: '保存和下载时使用该名称作为文件名',
-                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                  onSubmitted: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
                 ),
               ),
               const SizedBox(width: 10),
@@ -366,7 +414,12 @@ class _SiteConfigGeneratorDialogState extends ConsumerState<SiteConfigGeneratorD
         const SizedBox(height: 12),
         Expanded(
           child: _loadingTemplate || template == null
-              ? Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2.4, color: cs.primary))
+              ? Center(
+                  child: shadcn.CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: cs.primary,
+                  ),
+                )
               : _TomlFieldList(
                   template: template,
                   controller: _scrollController,
@@ -483,22 +536,38 @@ class _FooterActionButton extends StatelessWidget {
           height: 40,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: filled ? effectiveColor : effectiveColor.withValues(alpha: enabled ? 0.12 : 0.06),
+            color: filled
+                ? effectiveColor
+                : effectiveColor.withValues(alpha: enabled ? 0.12 : 0.06),
             borderRadius: siteRadius(context, size: "md"),
-            border: Border.all(color: effectiveColor.withValues(alpha: enabled ? 0.48 : 0.22)),
+            border: Border.all(
+              color: effectiveColor.withValues(alpha: enabled ? 0.48 : 0.22),
+            ),
           ),
           child: loading
-              ? const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(strokeWidth: 2.2))
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: shadcn.CircularProgressIndicator(strokeWidth: 2.2),
+                )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon, size: 15, color: filled ? siteColors(context).background : effectiveColor),
+                    Icon(
+                      icon,
+                      size: 15,
+                      color: filled
+                          ? siteColors(context).background
+                          : effectiveColor,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       label,
                       style: typo.small.copyWith(
-                        color: filled ? siteColors(context).background : effectiveColor,
+                        color: filled
+                            ? siteColors(context).background
+                            : effectiveColor,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -525,8 +594,12 @@ class _TomlFieldList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectFields = [for (final key in _selectFieldKeys) template.ensureField(key)];
-    final switchFields = template.orderedFields.where((field) => field.kind == _TomlValueKind.boolean).toList();
+    final selectFields = [
+      for (final key in _selectFieldKeys) template.ensureField(key),
+    ];
+    final switchFields = template.orderedFields
+        .where((field) => field.kind == _TomlValueKind.boolean)
+        .toList();
     final normalFields = template.orderedFields.where((field) {
       if (field.key == 'name') return false;
       if (field.kind == _TomlValueKind.boolean) return false;
@@ -534,7 +607,8 @@ class _TomlFieldList extends StatelessWidget {
       return true;
     }).toList();
     final sections = <Widget>[
-      if (selectFields.isNotEmpty) _TomlSelectFieldGroup(fields: selectFields, options: selectOptions),
+      if (selectFields.isNotEmpty)
+        _TomlSelectFieldGroup(fields: selectFields, options: selectOptions),
       if (switchFields.isNotEmpty) _TomlSwitchGroup(fields: switchFields),
       for (final field in normalFields) _TomlFieldTile(field: field),
       _TomlLevelListSection(template: template, onChanged: onChanged),
@@ -575,7 +649,9 @@ class _TemplateSelectField extends StatelessWidget {
             for (final config in configs)
               shadcn.SelectItemButton<String>(
                 value: config.name,
-                child: Text(config.name == 'NP模板' ? '${config.name}（默认）' : config.name),
+                child: Text(
+                  config.name == 'NP模板' ? '${config.name}（默认）' : config.name,
+                ),
               ),
           ],
         ),
@@ -594,7 +670,11 @@ class _TomlSelectOptions {
   final List<String> types;
   final List<String> nations;
 
-  const _TomlSelectOptions({required this.structures, required this.types, required this.nations});
+  const _TomlSelectOptions({
+    required this.structures,
+    required this.types,
+    required this.nations,
+  });
 
   factory _TomlSelectOptions.fromConfigs(List<WebSite> configs) {
     List<String> values(String Function(WebSite) getter) {
@@ -637,7 +717,10 @@ class _TomlSelectFieldGroup extends StatelessWidget {
         for (var i = 0; i < fields.length; i++) ...[
           _FieldPanel(
             title: _FieldTitle(field: fields[i]),
-            child: _TomlSelectField(field: fields[i], options: options.optionsFor(fields[i].key)),
+            child: _TomlSelectField(
+              field: fields[i],
+              options: options.optionsFor(fields[i].key),
+            ),
           ),
           if (i != fields.length - 1) const SizedBox(height: 8),
         ],
@@ -673,7 +756,10 @@ class _TomlSelectField extends StatelessWidget {
       itemBuilder: (_, value) => Text(value),
       popup: shadcn.SelectPopup<String>(
         items: shadcn.SelectItemList(
-          children: [for (final value in values) shadcn.SelectItemButton<String>(value: value, child: Text(value))],
+          children: [
+            for (final value in values)
+              shadcn.SelectItemButton<String>(value: value, child: Text(value)),
+          ],
         ),
       ).call,
       onChanged: (value) {
@@ -714,7 +800,9 @@ class _TomlSwitchGroup extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         '${fields[i].key} · ${fields[i].hint}',
-                        style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+                        style: theme.typography.xSmall.copyWith(
+                          color: cs.mutedForeground,
+                        ),
                       ),
                     ],
                   ),
@@ -723,7 +811,10 @@ class _TomlSwitchGroup extends StatelessWidget {
                   valueListenable: fields[i].controller,
                   builder: (_, value, __) {
                     final active = value.text.trim().toLowerCase() == 'true';
-                    return shadcn.Switch(value: active, onChanged: (next) => fields[i].controller.text = '$next');
+                    return shadcn.Switch(
+                      value: active,
+                      onChanged: (next) => fields[i].controller.text = '$next',
+                    );
                   },
                 ),
               ],
@@ -765,7 +856,10 @@ class _TomlLevelListSection extends StatelessWidget {
   final _TomlTemplate template;
   final VoidCallback onChanged;
 
-  const _TomlLevelListSection({required this.template, required this.onChanged});
+  const _TomlLevelListSection({
+    required this.template,
+    required this.onChanged,
+  });
 
   void _addLevel(BuildContext context) {
     final level = _TomlLevel.defaults(template.nextLevelId);
@@ -795,9 +889,15 @@ class _TomlLevelListSection extends StatelessWidget {
             Icon(shadcn.LucideIcons.layers, size: 16, color: cs.primary),
             const SizedBox(width: 6),
             Expanded(
-              child: Text('用户等级', style: typo.small.copyWith(fontWeight: FontWeight.w700)),
+              child: Text(
+                '用户等级',
+                style: typo.small.copyWith(fontWeight: FontWeight.w700),
+              ),
             ),
-            Text('${template.levels.length} 条', style: typo.xSmall.copyWith(color: cs.mutedForeground)),
+            Text(
+              '${template.levels.length} 条',
+              style: typo.xSmall.copyWith(color: cs.mutedForeground),
+            ),
             const SizedBox(width: 8),
             shadcn.IconButton.ghost(
               onPressed: () => _addLevel(context),
@@ -817,7 +917,11 @@ class _TomlLevelListSection extends StatelessWidget {
               for (var i = 0; i < template.levels.length; i++) ...[
                 _LevelListTile(
                   level: template.levels[i],
-                  onOpen: () => _showTomlLevelDetail(context, level: template.levels[i], onChanged: onChanged),
+                  onOpen: () => _showTomlLevelDetail(
+                    context,
+                    level: template.levels[i],
+                    onChanged: onChanged,
+                  ),
                   onRemove: () => _removeLevel(template.levels[i]),
                 ),
                 if (i != template.levels.length - 1) const SizedBox(height: 8),
@@ -834,7 +938,11 @@ class _LevelListTile extends StatelessWidget {
   final VoidCallback onOpen;
   final VoidCallback onRemove;
 
-  const _LevelListTile({required this.level, required this.onOpen, required this.onRemove});
+  const _LevelListTile({
+    required this.level,
+    required this.onOpen,
+    required this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -863,22 +971,34 @@ class _LevelListTile extends StatelessWidget {
                     level.displayName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
+                    style: theme.typography.small.copyWith(
+                      color: cs.foreground,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     level.summary,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+                    style: theme.typography.xSmall.copyWith(
+                      color: cs.mutedForeground,
+                    ),
                   ),
                 ],
               ),
             ),
-            shadcn.IconButton.ghost(onPressed: onOpen, icon: const Icon(shadcn.LucideIcons.pencil, size: 15)),
+            shadcn.IconButton.ghost(
+              onPressed: onOpen,
+              icon: const Icon(shadcn.LucideIcons.pencil, size: 15),
+            ),
             shadcn.IconButton.ghost(
               onPressed: onRemove,
-              icon: Icon(shadcn.LucideIcons.trash2, size: 15, color: cs.destructive),
+              icon: Icon(
+                shadcn.LucideIcons.trash2,
+                size: 15,
+                color: cs.destructive,
+              ),
             ),
           ],
         ),
@@ -896,12 +1016,136 @@ class _TomlFieldTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return _FieldPanel(
       title: _FieldTitle(field: field),
-      child: ShadTextField(
-        controller: field.controller,
-        hintText: '${field.hint} · ${field.key}',
-        maxLines: field.kind == _TomlValueKind.list ? 2 : 1,
-        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-      ),
+      child: field.kind == _TomlValueKind.list
+          ? _TomlListField(field: field)
+          : ShadTextField(
+              controller: field.controller,
+              hintText: '${field.hint} · ${field.key}',
+              maxLines: 1,
+              onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+            ),
+    );
+  }
+}
+
+class _TomlListField extends StatefulWidget {
+  final _TomlField field;
+
+  const _TomlListField({required this.field});
+
+  @override
+  State<_TomlListField> createState() => _TomlListFieldState();
+}
+
+class _TomlListFieldState extends State<_TomlListField> {
+  late final List<TextEditingController> _controllers;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = _parseItems(
+      widget.field.controller.text,
+    ).map((item) => TextEditingController(text: item)).toList();
+    if (_controllers.isEmpty) {
+      _controllers.add(TextEditingController());
+    }
+    for (final controller in _controllers) {
+      controller.addListener(_syncFieldValue);
+    }
+    _syncFieldValue();
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _controllers) {
+      controller.removeListener(_syncFieldValue);
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void _syncFieldValue() {
+    final value = _controllers
+        .map((controller) => controller.text.trim())
+        .where((item) => item.isNotEmpty)
+        .join('\n');
+    if (widget.field.controller.text == value) return;
+    widget.field.controller.text = value;
+  }
+
+  void _addItem() {
+    final controller = TextEditingController();
+    controller.addListener(_syncFieldValue);
+    setState(() {
+      _controllers.add(controller);
+    });
+    _syncFieldValue();
+  }
+
+  void _removeItem(int index) {
+    final controller = _controllers.removeAt(index);
+    controller.removeListener(_syncFieldValue);
+    controller.dispose();
+    if (_controllers.isEmpty) {
+      final next = TextEditingController();
+      next.addListener(_syncFieldValue);
+      _controllers.add(next);
+    }
+    setState(() {});
+    _syncFieldValue();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          widget.field.key == 'url'
+              ? '支持多个地址，一行一个'
+              : '${widget.field.hint}，一行一个',
+          style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+        ),
+        const SizedBox(height: 8),
+        for (var i = 0; i < _controllers.length; i++) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: ShadTextField(
+                  controller: _controllers[i],
+                  hintText: widget.field.key == 'url'
+                      ? 'https://example.com'
+                      : '${widget.field.hint} · ${widget.field.key}',
+                  onSubmitted: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              shadcn.IconButton.ghost(
+                onPressed: () => _removeItem(i),
+                icon: Icon(
+                  shadcn.LucideIcons.trash2,
+                  size: 15,
+                  color: cs.destructive,
+                ),
+              ),
+            ],
+          ),
+          if (i != _controllers.length - 1) const SizedBox(height: 8),
+        ],
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: shadcn.Button.outline(
+            onPressed: _addItem,
+            child: const Text('添加一项'),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -919,7 +1163,9 @@ class _FieldTitle extends StatelessWidget {
     final label = _tomlFieldLabel(field.key);
     return Row(
       children: [
-        Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis)),
+        Flexible(
+          child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
         if (label != field.key) ...[
           const SizedBox(width: 6),
           Flexible(
@@ -936,20 +1182,28 @@ class _FieldTitle extends StatelessWidget {
   }
 }
 
-void _showTomlLevelDetail(BuildContext context, {required _TomlLevel level, required VoidCallback onChanged}) {
+void _showTomlLevelDetail(
+  BuildContext context, {
+  required _TomlLevel level,
+  required VoidCallback onChanged,
+}) {
   final editor = _TomlLevelDetail(level: level, onChanged: onChanged);
   if (context.isMobile) {
     showAppSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: siteTransparent(context),
-      builder: (ctx) => SizedBox(height: MediaQuery.sizeOf(ctx).height * 0.9, child: editor),
+      builder: (ctx) =>
+          SizedBox(height: MediaQuery.sizeOf(ctx).height * 0.9, child: editor),
     );
   } else {
     shadcn.showDialog(
       context: context,
       builder: (_) => shadcn.AlertDialog(
-        content: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 620, maxHeight: 720), child: editor),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 620, maxHeight: 720),
+          child: editor,
+        ),
       ),
     );
   }
@@ -1004,7 +1258,9 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
       decoration: BoxDecoration(
         color: cs.background,
         borderRadius: mobile
-            ? BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft)
+            ? BorderRadius.vertical(
+                top: siteRadius(context, size: "xl").topLeft,
+              )
             : siteRadius(context, size: "xl"),
       ),
       child: Column(
@@ -1019,7 +1275,11 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
                   color: cs.primary.withValues(alpha: 0.1),
                   borderRadius: siteRadius(context, size: "md"),
                 ),
-                child: Icon(shadcn.LucideIcons.medal, size: 18, color: cs.primary),
+                child: Icon(
+                  shadcn.LucideIcons.medal,
+                  size: 18,
+                  color: cs.primary,
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1041,7 +1301,8 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
                   controller: widget.level.sectionController,
                   placeholder: const Text('配置节点名称'),
                   hintText: '例如 User，对应 [level.User]',
-                  onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                  onSubmitted: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
                 ),
                 const SizedBox(height: 10),
                 ...widget.level.orderedFields.map((field) {
@@ -1059,7 +1320,8 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
                         controller: field.controller,
                         hintText: '${field.hint} · ${field.key}',
                         maxLines: field.key == 'rights' ? 3 : 1,
-                        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+                        onSubmitted: (_) =>
+                            FocusManager.instance.primaryFocus?.unfocus(),
                       ),
                     ),
                   );
@@ -1071,7 +1333,10 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              shadcn.Button.primary(onPressed: () => Navigator.of(context).maybePop(), child: const Text('完成')),
+              shadcn.Button.primary(
+                onPressed: () => Navigator.of(context).maybePop(),
+                child: const Text('完成'),
+              ),
             ],
           ),
         ],
@@ -1107,7 +1372,9 @@ class _LevelBooleanField extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   '${field.key} · ${field.hint}',
-                  style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
+                  style: theme.typography.xSmall.copyWith(
+                    color: cs.mutedForeground,
+                  ),
                 ),
               ],
             ),
@@ -1116,7 +1383,10 @@ class _LevelBooleanField extends StatelessWidget {
             valueListenable: field.controller,
             builder: (_, value, __) {
               final active = value.text.trim().toLowerCase() == 'true';
-              return shadcn.Switch(value: active, onChanged: (next) => field.controller.text = '$next');
+              return shadcn.Switch(
+                value: active,
+                onChanged: (next) => field.controller.text = '$next',
+              );
             },
           ),
         ],
@@ -1155,7 +1425,11 @@ class _GeneratorError extends StatelessWidget {
   final Object trace;
   final VoidCallback onRetry;
 
-  const _GeneratorError({required this.error, required this.onRetry, required this.trace});
+  const _GeneratorError({
+    required this.error,
+    required this.onRetry,
+    required this.trace,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1180,7 +1454,12 @@ class _TomlTemplate {
   final List<String> suffixLines;
   final List<_TomlLevel> levels;
 
-  const _TomlTemplate({required this.order, required this.fields, required this.suffixLines, required this.levels});
+  const _TomlTemplate({
+    required this.order,
+    required this.fields,
+    required this.suffixLines,
+    required this.levels,
+  });
 
   List<_TomlField> get orderedFields => [
     for (final key in order)
@@ -1191,7 +1470,11 @@ class _TomlTemplate {
 
   int get nextLevelId {
     final ids = levels
-        .map((level) => int.tryParse(level.fields['level_id']?.controller.text.trim() ?? ''))
+        .map(
+          (level) => int.tryParse(
+            level.fields['level_id']?.controller.text.trim() ?? '',
+          ),
+        )
         .whereType<int>();
     var max = 0;
     for (final id in ids) {
@@ -1270,7 +1553,12 @@ class _TomlTemplate {
       level.ensureDefaults();
     }
 
-    return _TomlTemplate(order: order, fields: fields, suffixLines: suffix, levels: levels);
+    return _TomlTemplate(
+      order: order,
+      fields: fields,
+      suffixLines: suffix,
+      levels: levels,
+    );
   }
 
   String build() {
@@ -1300,7 +1588,11 @@ class _TomlLevel {
   final List<String> order;
   final Map<String, _TomlField> fields;
 
-  _TomlLevel({required this.sectionController, required this.order, required this.fields});
+  _TomlLevel({
+    required this.sectionController,
+    required this.order,
+    required this.fields,
+  });
 
   factory _TomlLevel.empty(String section) => _TomlLevel(
     sectionController: TextEditingController(text: section),
@@ -1312,7 +1604,9 @@ class _TomlLevel {
     final section = 'Level$id';
     final level = _TomlLevel.empty(section);
     for (final key in _levelFieldOrder) {
-      level.addField(_TomlField.fromRaw(key, _defaultLevelRawValue(key, id, section)));
+      level.addField(
+        _TomlField.fromRaw(key, _defaultLevelRawValue(key, id, section)),
+      );
     }
     return level;
   }
@@ -1323,8 +1617,10 @@ class _TomlLevel {
   ];
 
   String get displayName {
+    final displayName = fields['name']?.controller.text.trim();
     final levelName = fields['level']?.controller.text.trim();
     final section = sectionController.text.trim();
+    if (displayName != null && displayName.isNotEmpty) return displayName;
     if (levelName != null && levelName.isNotEmpty) return levelName;
     if (section.isNotEmpty) return section;
     return '未命名等级';
@@ -1353,11 +1649,16 @@ class _TomlLevel {
   }
 
   void ensureDefaults() {
-    final levelId = int.tryParse(fields['level_id']?.controller.text.trim() ?? '') ?? 1;
-    final section = sectionController.text.trim().isEmpty ? 'Level$levelId' : sectionController.text.trim();
+    final levelId =
+        int.tryParse(fields['level_id']?.controller.text.trim() ?? '') ?? 1;
+    final section = sectionController.text.trim().isEmpty
+        ? 'Level$levelId'
+        : sectionController.text.trim();
     for (final key in _levelFieldOrder) {
       if (fields.containsKey(key)) continue;
-      addField(_TomlField.fromRaw(key, _defaultLevelRawValue(key, levelId, section)));
+      addField(
+        _TomlField.fromRaw(key, _defaultLevelRawValue(key, levelId, section)),
+      );
     }
   }
 
@@ -1383,7 +1684,12 @@ class _TomlField {
   final _TomlValueKind kind;
   final TextEditingController controller;
 
-  const _TomlField({required this.key, required this.rawValue, required this.kind, required this.controller});
+  const _TomlField({
+    required this.key,
+    required this.rawValue,
+    required this.kind,
+    required this.controller,
+  });
 
   factory _TomlField.fromRaw(String key, String raw) => _TomlField(
     key: key,
@@ -1428,6 +1734,7 @@ const _ignoredTomlKeys = {'buy_page', 'buy_action'};
 
 String _defaultTopLevelRawValue(String key) {
   return switch (key) {
+    'url' => '[]',
     'structure' => _quoteTomlString(''),
     'type' => _quoteTomlString(''),
     'nation' => _quoteTomlString(''),
@@ -1439,6 +1746,7 @@ String _defaultTopLevelRawValue(String key) {
 const _levelFieldOrder = [
   'level_id',
   'level',
+  'name',
   'days',
   'uploaded',
   'downloaded',
@@ -1457,6 +1765,7 @@ String _defaultLevelRawValue(String key, int id, String section) {
   return switch (key) {
     'level_id' => '$id',
     'level' => _quoteTomlString(section),
+    'name' => _quoteTomlString(section),
     'days' => '0',
     'uploaded' => _quoteTomlString('0'),
     'downloaded' => _quoteTomlString('0'),
@@ -1482,7 +1791,7 @@ String _safeTomlSectionName(String value) {
 String _tomlFieldLabel(String key) {
   const labels = <String, String>{
     'url': '站点地址',
-    'name': '配置名称',
+    'name': '名称',
     'nickname': '站点昵称',
     'logo': '站点图标',
     'tracker': 'Tracker 域名',
@@ -1553,12 +1862,7 @@ String _editableValue(String raw) {
   if (value.startsWith('[') && value.endsWith(']')) {
     final inner = value.substring(1, value.length - 1).trim();
     if (inner.isEmpty) return '';
-    return inner
-        .split(',')
-        .map((item) => item.trim())
-        .where((item) => item.isNotEmpty)
-        .map(_unquoteTomlString)
-        .join(', ');
+    return _parseItems(inner).join('\n');
   }
   return _unquoteTomlString(value);
 }
@@ -1577,14 +1881,17 @@ String _quoteTomlString(String value) {
 }
 
 String _formatTomlList(String value) {
-  final items = value
-      .split(',')
-      .map((item) => item.trim())
-      .where((item) => item.isNotEmpty)
-      .map(_quoteTomlString)
-      .join(', ');
+  final items = _parseItems(value).map(_quoteTomlString).join(', ');
   if (items.isEmpty) return '[]';
   return '[ $items,]';
+}
+
+List<String> _parseItems(String value) {
+  return value
+      .split(RegExp(r'[\n,]+'))
+      .map((item) => _unquoteTomlString(item.trim()))
+      .where((item) => item.isNotEmpty)
+      .toList();
 }
 
 String? _extractTomlContent(Map<String, dynamic> raw) {
@@ -1618,7 +1925,8 @@ String _mapToToml(Map<String, dynamic> map) {
     if (key == 'buy_action') {
       if (value is Map && value.isNotEmpty) {
         buyActionSection = value.map(
-          (entryKey, entryValue) => MapEntry(entryKey.toString(), entryValue?.toString() ?? ''),
+          (entryKey, entryValue) =>
+              MapEntry(entryKey.toString(), entryValue?.toString() ?? ''),
         );
       }
       continue;
@@ -1628,7 +1936,9 @@ String _mapToToml(Map<String, dynamic> map) {
       if (key == 'level') {
         for (final levelEntry in value.entries) {
           if (levelEntry.value is Map) {
-            sections['level.${levelEntry.key}'] = Map<String, dynamic>.from(levelEntry.value as Map);
+            sections['level.${levelEntry.key}'] = Map<String, dynamic>.from(
+              levelEntry.value as Map,
+            );
           }
         }
       } else if (_isTomlSectionMap(value)) {
@@ -1641,7 +1951,8 @@ String _mapToToml(Map<String, dynamic> map) {
         final item = value[i];
         if (item is! Map) continue;
         final levelMap = Map<String, dynamic>.from(item);
-        final section = '${levelMap['level'] ?? levelMap['name'] ?? 'Level${i + 1}'}';
+        final section =
+            '${levelMap['name'] ?? levelMap['level'] ?? 'Level${i + 1}'}';
         sections['level.$section'] = levelMap;
       }
       continue;
@@ -1662,7 +1973,9 @@ String _mapToToml(Map<String, dynamic> map) {
     if (buffer.isNotEmpty) buffer.writeln();
     buffer.writeln('[buy_action]');
     for (final field in section.entries) {
-      buffer.writeln('${_quoteTomlString(field.key)} = ${_quoteTomlString(field.value.toString())}');
+      buffer.writeln(
+        '${_quoteTomlString(field.key)} = ${_quoteTomlString(field.value.toString())}',
+      );
     }
   }
 

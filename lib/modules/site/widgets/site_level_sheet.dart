@@ -98,7 +98,12 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
 
     // ── 定位当前等级 ──
     final currentName = status?.myLevel ?? '';
-    final currentIdx = levels.indexWhere((e) => e.key == currentName);
+    final currentIdx = levels.indexWhere(
+      (e) =>
+          e.key == currentName ||
+          e.value.displayName == currentName ||
+          e.value.level == currentName,
+    );
     final hasNext = currentIdx > 0;
     final nextEntry = hasNext ? levels[currentIdx - 1] : null;
 
@@ -212,7 +217,12 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
     SiteDailyStatus? status,
     MapEntry<String, SiteLevel>? nextEntry,
   ) {
-    final currentIdx = levels.indexWhere((e) => e.key == currentName);
+    final currentIdx = levels.indexWhere(
+      (e) =>
+          e.key == currentName ||
+          e.value.displayName == currentName ||
+          e.value.level == currentName,
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -228,11 +238,16 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
         child: Column(
           children: List.generate(levels.length, (i) {
             final entry = levels[i];
-            final name = entry.key;
+            final name = entry.value.displayName.isNotEmpty
+                ? entry.value.displayName
+                : entry.key;
             final lv = entry.value;
             final isVip = lv.levelId == 0;
-            final isCurrent = name == currentName;
-            final isNext = nextEntry?.key == name;
+            final isCurrent =
+                entry.key == currentName ||
+                lv.displayName == currentName ||
+                lv.level == currentName;
+            final isNext = nextEntry?.key == entry.key;
             final isBelowCurrent = currentIdx >= 0 && i > currentIdx;
             final canShowProgress = status != null && !isVip;
             final isExpanded =
@@ -426,7 +441,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
                       ],
 
                       // ── 下一等级的详细进度（VIP 不显示） ──
-                      if (isExpanded && status != null && !isVip) ...[
+                      if (isExpanded && !isVip) ...[
                         const SizedBox(height: 12),
                         _buildProgressSection(context, status, lv),
                       ],

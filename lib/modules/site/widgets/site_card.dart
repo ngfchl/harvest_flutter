@@ -28,6 +28,24 @@ String _maskSiteName(String name, bool privacy) {
   return '${name[0]}*${name[name.length - 1]}';
 }
 
+String _siteLevelDisplayText(WebSite? config, SiteDailyStatus status) {
+  final current = status.myLevel.trim();
+  if (current.isEmpty) return '';
+  final levels = config?.level;
+  if (levels == null || levels.isEmpty) return current;
+
+  for (final entry in levels.entries) {
+    final level = entry.value;
+    if (entry.key == current ||
+        level.name.trim() == current ||
+        level.level.trim() == current) {
+      final display = level.displayName.trim();
+      if (display.isNotEmpty) return display;
+    }
+  }
+  return current;
+}
+
 class SiteCard extends ConsumerWidget {
   final SiteInfo site;
 
@@ -129,8 +147,10 @@ class SiteCard extends ConsumerWidget {
     bool privacy,
   ) {
     final signStatus = _siteSignStatus(site, config);
-    final hasRight =
-        (status != null && status.myLevel.isNotEmpty) || signStatus != null;
+    final levelText = status == null
+        ? ''
+        : _siteLevelDisplayText(config, status);
+    final hasRight = levelText.isNotEmpty || signStatus != null;
     return Row(
       children: [
         _siteLogo(context, config, privacy),
@@ -166,8 +186,7 @@ class SiteCard extends ConsumerWidget {
         ),
         if (hasRight) ...[
           const SizedBox(width: 6),
-          if (status != null && status.myLevel.isNotEmpty)
-            _levelBadge(context, status.myLevel),
+          if (levelText.isNotEmpty) _levelBadge(context, levelText),
           if (signStatus != null) ...[
             const SizedBox(width: 4),
             _signBadge(context, signStatus),
@@ -1403,6 +1422,7 @@ class SiteCard2 extends ConsumerWidget {
   ) {
     final milestone = _siteLevelMilestone(config, status);
     final signStatus = _siteSignStatus(site, config);
+    final levelText = _siteLevelDisplayText(config, status);
     final hasInvite = status.invitation > 0;
     final hasSecondary = _hasSiteUnread(site) || hasInvite || milestone != null;
 
@@ -1420,9 +1440,9 @@ class SiteCard2 extends ConsumerWidget {
                   _statusDot(context, site.available),
                   const SizedBox(width: 8),
                   Expanded(child: _siteTitle(context)),
-                  if (status.myLevel.isNotEmpty) ...[
+                  if (levelText.isNotEmpty) ...[
                     const SizedBox(width: 6),
-                    _levelPill(context, status.myLevel),
+                    _levelPill(context, levelText),
                   ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 6),
@@ -1967,6 +1987,7 @@ class SiteCard3 extends ConsumerWidget {
   Widget _top(BuildContext context, SiteDailyStatus status, WebSite? config) {
     final milestone = _siteLevelMilestone(config, status);
     final signStatus = _siteSignStatus(site, config);
+    final levelText = _siteLevelDisplayText(config, status);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1979,9 +2000,9 @@ class SiteCard3 extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(child: _title(context)),
-                  if (status.myLevel.isNotEmpty) ...[
+                  if (levelText.isNotEmpty) ...[
                     const SizedBox(width: 6),
-                    _levelPill(context, status.myLevel),
+                    _levelPill(context, levelText),
                   ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 6),
@@ -2678,6 +2699,7 @@ class SiteCard4 extends SiteCard3 {
   Widget _hero(BuildContext context, SiteDailyStatus status, WebSite? config) {
     final signStatus = _siteSignStatus(site, config);
     final milestone = _siteLevelMilestone(config, status);
+    final levelText = _siteLevelDisplayText(config, status);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2692,9 +2714,9 @@ class SiteCard4 extends SiteCard3 {
                 Row(
                   children: [
                     Expanded(child: _title(context)),
-                    if (status.myLevel.isNotEmpty) ...[
+                    if (levelText.isNotEmpty) ...[
                       const SizedBox(width: 6),
-                      _levelPill(context, status.myLevel),
+                      _levelPill(context, levelText),
                     ],
                     if (signStatus != null) ...[
                       const SizedBox(width: 6),

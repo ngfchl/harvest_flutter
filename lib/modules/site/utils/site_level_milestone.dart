@@ -21,7 +21,9 @@ SiteLevelMilestoneType? siteLevelMilestone(
 
   MapEntry<String, SiteLevel>? currentEntry;
   for (final entry in levelMap.entries) {
-    if (entry.key == currentName || entry.value.level == currentName) {
+    if (entry.key == currentName ||
+        entry.value.displayName == currentName ||
+        entry.value.level == currentName) {
       currentEntry = entry;
       break;
     }
