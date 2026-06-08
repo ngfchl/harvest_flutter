@@ -98,7 +98,7 @@ Future<void> _startApp() async {
           height = savedHeight.toDouble().clamp(400, 4096);
         }
         if (savedWidth != null && savedWidth is num && savedWidth > 0) {
-          width = savedWidth.toDouble().clamp(600, 7680);
+          width = savedWidth.toDouble().clamp(360, 7680);
         }
       } catch (e) {
         AppLogger.warn('读取窗口尺寸失败，使用默认值: $e');
@@ -108,7 +108,7 @@ Future<void> _startApp() async {
       WindowOptions windowOptions = WindowOptions(
         size: Size(width, height),
         center: true,
-        minimumSize: const Size(600, 400),
+        minimumSize: const Size(360, 400),
         backgroundColor: isWindows ? Colors.white : Colors.transparent,
         title: 'Harvest',
         titleBarStyle: TitleBarStyle.hidden,
