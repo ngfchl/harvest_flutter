@@ -199,12 +199,26 @@ Future<GithubProxyTestResult> fetchFasterGithubProxy({
 
 String buildGithubProxyUrl(String proxy, String githubUrl) {
   final base = _normalizeProxy(proxy);
-  if (!_isGithubUrl(githubUrl)) return githubUrl;
-  return '$base$githubUrl';
+  final original = unwrapGithubProxyUrl(githubUrl) ?? githubUrl;
+  if (!_isGithubUrl(original)) return githubUrl;
+  return '$base$original';
 }
 
 bool isGithubDownloadUrl(String url) {
-  return _isGithubUrl(url);
+  return _isGithubUrl(unwrapGithubProxyUrl(url) ?? url);
+}
+
+String? unwrapGithubProxyUrl(String url) {
+  final trimmed = url.trim();
+  if (trimmed.isEmpty) return null;
+  if (_isGithubUrl(trimmed)) return trimmed;
+
+  for (final proxy in _uniqueNormalizedProxies(githubProxyCandidates)) {
+    if (!trimmed.startsWith(proxy)) continue;
+    final original = trimmed.substring(proxy.length).trim();
+    if (_isGithubUrl(original)) return original;
+  }
+  return null;
 }
 
 Future<ResponseInfo> _testProxy(Dio dio, String proxy) async {
