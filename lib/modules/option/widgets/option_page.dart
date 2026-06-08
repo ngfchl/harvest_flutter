@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -483,10 +484,14 @@ final _formConfigs = <String, FormConfig>{
   ),
 };
 
-Future<void> _copyOptionToken(String token) async {
+Future<void> _copyOptionToken(
+  String token, {
+  String emptyMessage = 'Token 为空',
+  String logLabel = 'Token',
+}) async {
   final value = token.trim();
   if (value.isEmpty) {
-    Toast.error('Token 为空');
+    Toast.error(emptyMessage);
     return;
   }
 
@@ -498,7 +503,7 @@ Future<void> _copyOptionToken(String token) async {
     }
     Toast.success('已复制到剪贴板');
   } catch (e, st) {
-    AppLogger.error('复制 Token 失败', e, st);
+    AppLogger.error('复制 $logLabel 失败', e, st);
     Toast.error('复制失败，请手动复制');
   }
 }
@@ -507,15 +512,23 @@ Future<void> _copyOptionToken(String token) async {
 //  设置页面
 // ══════════════════════════════════════════════════════════
 
-class OptionPage extends ConsumerWidget {
+class OptionPage extends ConsumerStatefulWidget {
   const OptionPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OptionPage> createState() => _OptionPageState();
+}
+
+class _OptionPageState extends ConsumerState<OptionPage> {
+  int _tabIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(optionProvider);
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
+    final isServerTab = _tabIndex == 0;
 
     return EscapeBackScope(
       onBack: () => Navigator.of(context).pop(),
@@ -551,76 +564,116 @@ class OptionPage extends ConsumerWidget {
                           ),
                         ),
                         const DebugThemeButton.shadcn(),
-                        shadcn.IconButton.ghost(
-                          icon: const Icon(
-                            shadcn.LucideIcons.refreshCw,
-                            size: 18,
+                        if (isServerTab)
+                          shadcn.IconButton.ghost(
+                            icon: const Icon(
+                              shadcn.LucideIcons.refreshCw,
+                              size: 18,
+                            ),
+                            onPressed: () => ref
+                                .read(optionProvider.notifier)
+                                .fetchOptions(),
                           ),
-                          onPressed: () =>
-                              ref.read(optionProvider.notifier).fetchOptions(),
-                        ),
                       ],
                     ),
                   ),
                 ),
               ),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(
+                  context.isMobile ? 12 : 16,
+                  2,
+                  context.isMobile ? 12 : 16,
+                  8,
+                ),
+                decoration: BoxDecoration(
+                  color: appSurfaceColor(context, cs.background),
+                  border: Border(
+                    bottom: BorderSide(color: cs.border, width: 0.5),
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: shadcn.Tabs(
+                    index: _tabIndex,
+                    onChanged: (index) => setState(() => _tabIndex = index),
+                    children: const [
+                      shadcn.TabItem(child: Text('服务器设置')),
+                      shadcn.TabItem(child: Text('常用工具')),
+                    ],
+                  ),
+                ),
+              ),
               Expanded(
-                child: state.isLoading
-                    ? const OptionLoadingState(label: '正在加载设置...')
-                    : EasyRefresh(
-                        onRefresh: () =>
-                            ref.read(optionProvider.notifier).fetchOptions(),
-                        header: appRefreshHeader(context),
-                        child: ListView(
-                          padding: const EdgeInsets.only(top: 8, bottom: 100),
-                          children: [
-                            _buildVersionCard(context),
-                            if (!kIsWeb) _buildAppUpgradeCard(context),
-                            _buildUpdateCard(context),
-                            const _DataImportExportCard(),
-                            const _AppAutoRefreshIntervalCard(),
-                            const _MediaInfoSettingsCard(),
-                            _buildSpeedTest(context, ref),
-                            _buildNoticeTest(context, ref),
-                            const _BulkUpgradeCard(),
-                            _buildTelegramWebhook(context, ref),
-                            ..._formConfigs.entries.map((entry) {
-                              final optionName = entry.key;
-                              final config = entry.value;
-                              final serverOption = state.getOption(optionName);
-
-                              return OptionFormCard(
-                                key: ValueKey(optionName),
-                                title: config.title,
-                                optionName: optionName,
-                                option: serverOption,
-                                icon: config.icon,
-                                textFields: config.textFields,
-                                switchFields: config.switchFields,
-                                extraBuilder: config.extraBuilder,
-                                buildValue: config.buildValue,
-                                onSave: (opt) async {
-                                  return ref
-                                      .read(optionProvider.notifier)
-                                      .saveOption(opt);
-                                },
-                                onToggleActive: serverOption != null
-                                    ? (opt) async {
-                                        await ref
-                                            .read(optionProvider.notifier)
-                                            .saveOption(opt);
-                                      }
-                                    : null,
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
+                child: isServerTab
+                    ? _buildServerSettings(context, state)
+                    : _buildCommonTools(context),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildServerSettings(BuildContext context, OptionState state) {
+    if (state.isLoading) {
+      return const OptionLoadingState(label: '正在加载设置...');
+    }
+
+    return EasyRefresh(
+      onRefresh: () => ref.read(optionProvider.notifier).fetchOptions(),
+      header: appRefreshHeader(context),
+      child: ListView(
+        padding: const EdgeInsets.only(top: 8, bottom: 100),
+        children: [
+          ..._formConfigs.entries.map((entry) {
+            final optionName = entry.key;
+            final config = entry.value;
+            final serverOption = state.getOption(optionName);
+
+            return OptionFormCard(
+              key: ValueKey(optionName),
+              title: config.title,
+              optionName: optionName,
+              option: serverOption,
+              icon: config.icon,
+              textFields: config.textFields,
+              switchFields: config.switchFields,
+              extraBuilder: config.extraBuilder,
+              buildValue: config.buildValue,
+              onSave: (opt) async {
+                return ref.read(optionProvider.notifier).saveOption(opt);
+              },
+              onToggleActive: serverOption != null
+                  ? (opt) async {
+                      await ref.read(optionProvider.notifier).saveOption(opt);
+                    }
+                  : null,
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommonTools(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.only(top: 8, bottom: 100),
+      children: [
+        _buildVersionCard(context),
+        if (!kIsWeb) _buildAppUpgradeCard(context),
+        _buildUpdateCard(context),
+        const _DataImportExportCard(),
+        const _AppAutoRefreshIntervalCard(),
+        const _MediaInfoSettingsCard(),
+        _buildSpeedTest(context, ref),
+        _buildNoticeTest(context, ref),
+        const _BulkUpgradeCard(),
+        _buildTelegramWebhook(context, ref),
+        const _InviteTokenToolCard(),
+      ],
     );
   }
 
@@ -734,6 +787,326 @@ class OptionPage extends ConsumerWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _InviteTokenSite {
+  final String label;
+  final String baseUrl;
+
+  const _InviteTokenSite({required this.label, required this.baseUrl});
+}
+
+const _inviteTokenSites = [
+  _InviteTokenSite(label: '药丸', baseUrl: 'https://www.invites.fun/'),
+  _InviteTokenSite(label: '蜂巢', baseUrl: 'https://pting.club/'),
+];
+
+class _InviteTokenToolCard extends StatefulWidget {
+  const _InviteTokenToolCard();
+
+  @override
+  State<_InviteTokenToolCard> createState() => _InviteTokenToolCardState();
+}
+
+class _InviteTokenToolCardState extends State<_InviteTokenToolCard> {
+  final _usernameCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _dio = Dio();
+
+  _InviteTokenSite _selectedSite = _inviteTokenSites.first;
+  bool _loading = false;
+  String? _token;
+  String? _uid;
+
+  @override
+  void dispose() {
+    _usernameCtrl.dispose();
+    _passwordCtrl.dispose();
+    _dio.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = _optionColors(context);
+    final typo = shadcn.Theme.of(context).typography;
+
+    return ExpandableCard(
+      title: '药丸/蜂巢 Token',
+      icon: shadcn.LucideIcons.keyRound,
+      builder: (_) => OptionLoadingOverlay(
+        loading: _loading,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            shadcn.OverlayManagerLayer(
+              popoverHandler: const shadcn.PopoverOverlayHandler(),
+              tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+              menuHandler: const shadcn.PopoverOverlayHandler(),
+              child: shadcn.Select<String>(
+                value: _selectedSite.baseUrl,
+                placeholder: const Text('选择站点'),
+                itemBuilder: (_, value) => Text(_siteLabel(value)),
+                popup: shadcn.SelectPopup<String>(
+                  items: shadcn.SelectItemList(
+                    children: [
+                      for (final site in _inviteTokenSites)
+                        shadcn.SelectItemButton<String>(
+                          value: site.baseUrl,
+                          child: Text(site.label),
+                        ),
+                    ],
+                  ),
+                ).call,
+                onChanged: _loading
+                    ? null
+                    : (value) {
+                        final next = _inviteTokenSites
+                            .where((site) => site.baseUrl == value)
+                            .firstOrNull;
+                        if (next == null) return;
+                        setState(() => _selectedSite = next);
+                      },
+              ),
+            ),
+            const SizedBox(height: 10),
+            ShadTextField(
+              controller: _usernameCtrl,
+              enabled: !_loading,
+              labelText: '用户名',
+              hintText: '请输入站点用户名',
+              helperText: '用于登录所选站点的用户名或账号',
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 10),
+            ShadTextField(
+              controller: _passwordCtrl,
+              enabled: !_loading,
+              labelText: '密码',
+              hintText: '请输入站点密码',
+              helperText: '用于登录所选站点的密码，仅用于本次请求',
+              obscureText: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _fetchToken(),
+            ),
+            const SizedBox(height: 12),
+            _ActionButtonFrame(
+              child: shadcn.Button.primary(
+                onPressed: _loading ? null : _fetchToken,
+                alignment: Alignment.center,
+                child: const _ButtonText('获取 Token'),
+              ),
+            ),
+            if (_token != null || _uid != null) ...[
+              const SizedBox(height: 12),
+              AppSurfaceContainer(
+                padding: const EdgeInsets.all(12),
+                borderRadius: _optionRadius(context),
+                color: appSurfaceColor(context, cs.card),
+                borderColor: cs.border.withValues(alpha: 0.7),
+                child: Column(
+                  children: [
+                    if (_token != null)
+                      _InviteTokenResultRow(
+                        label: 'Token',
+                        value: _token!,
+                        onCopy: () => _copyOptionToken(_token!),
+                      ),
+                    if (_token != null && _uid != null)
+                      Divider(color: cs.border.withValues(alpha: 0.7)),
+                    if (_uid != null)
+                      _InviteTokenResultRow(
+                        label: 'UID',
+                        value: _uid!,
+                        onCopy: () => _copyOptionToken(
+                          _uid!,
+                          emptyMessage: 'UID 为空',
+                          logLabel: 'UID',
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+            Text(
+              '${_selectedSite.label} 接口: ${_tokenEndpoint(_selectedSite.baseUrl)}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: typo.xSmall.copyWith(color: cs.mutedForeground),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _siteLabel(String? baseUrl) {
+    return _inviteTokenSites
+            .where((site) => site.baseUrl == baseUrl)
+            .map((site) => site.label)
+            .firstOrNull ??
+        '选择站点';
+  }
+
+  Future<void> _fetchToken() async {
+    final username = _usernameCtrl.text.trim();
+    final password = _passwordCtrl.text;
+    if (username.isEmpty) {
+      Toast.error('请输入用户名');
+      return;
+    }
+    if (password.isEmpty) {
+      Toast.error('请输入密码');
+      return;
+    }
+
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _loading = true;
+      _token = null;
+      _uid = null;
+    });
+
+    try {
+      final response = await _dio.post(
+        _tokenEndpoint(_selectedSite.baseUrl),
+        data: {'identification': username, 'password': password, 'remember': 1},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+      final data = _decodeResponseData(response.data);
+      final token = _findValue(data, const [
+        'token',
+        'access_token',
+        'api_token',
+      ]);
+      final uid = _findValue(data, const ['uid', 'userId', 'user_id', 'id']);
+
+      if (token == null && uid == null) {
+        Toast.error('获取成功，但未识别到 Token 或 UID');
+        return;
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _token = token;
+        _uid = uid;
+      });
+      Toast.success('获取成功');
+    } catch (e, st) {
+      AppLogger.error('${_selectedSite.label} Token 获取失败', e, st);
+      Toast.error(_errorMessage(e));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  String _tokenEndpoint(String baseUrl) {
+    return Uri.parse(baseUrl).resolve('/api/token').toString();
+  }
+
+  dynamic _decodeResponseData(dynamic data) {
+    if (data is String) {
+      try {
+        return jsonDecode(data);
+      } catch (_) {
+        return data;
+      }
+    }
+    return data;
+  }
+
+  String? _findValue(dynamic data, List<String> keys) {
+    if (data is Map) {
+      for (final entry in data.entries) {
+        final key = entry.key.toString();
+        if (keys.any(
+          (candidate) => candidate.toLowerCase() == key.toLowerCase(),
+        )) {
+          final value = entry.value;
+          if (value != null && value.toString().trim().isNotEmpty) {
+            return value.toString();
+          }
+        }
+      }
+      for (final value in data.values) {
+        final nested = _findValue(value, keys);
+        if (nested != null) return nested;
+      }
+    } else if (data is List) {
+      for (final item in data) {
+        final nested = _findValue(item, keys);
+        if (nested != null) return nested;
+      }
+    }
+    return null;
+  }
+
+  String _errorMessage(Object error) {
+    if (error is DioException) {
+      final data = _decodeResponseData(error.response?.data);
+      final message = _findValue(data, const ['message', 'msg', 'error']);
+      if (message != null) return message;
+      final statusCode = error.response?.statusCode;
+      if (statusCode != null) return '请求失败: $statusCode';
+    }
+    return 'Token 获取失败';
+  }
+}
+
+class _InviteTokenResultRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final VoidCallback onCopy;
+
+  const _InviteTokenResultRow({
+    required this.label,
+    required this.value,
+    required this.onCopy,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = _optionColors(context);
+    final typo = shadcn.Theme.of(context).typography;
+
+    return Row(
+      children: [
+        SizedBox(
+          width: 56,
+          child: Text(
+            label,
+            style: typo.small.copyWith(
+              color: cs.foreground,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.visible,
+                softWrap: false,
+                style: typo.small.copyWith(color: cs.mutedForeground),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        shadcn.IconButton.outline(
+          icon: const Icon(shadcn.LucideIcons.copy, size: 16),
+          onPressed: onCopy,
+        ),
+      ],
     );
   }
 }
