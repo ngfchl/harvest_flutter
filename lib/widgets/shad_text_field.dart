@@ -148,33 +148,37 @@ class ShadTextField extends StatelessWidget {
     BuildContext context, {
     ValueChanged<String>? onChangedOverride,
   }) {
-    return shadcn.TextField(
-      controller: controller,
-      focusNode: focusNode,
-      placeholder: placeholder,
-      hintText: hintText,
-      enabled: enabled,
-      readOnly: readOnly,
-      obscureText: obscureText,
-      autofocus: autofocus,
-      maxLines: maxLines,
-      minLines: minLines ?? 1,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      inputFormatters: inputFormatters,
-      style: style,
-      decoration: decoration ?? _defaultDecoration(context),
-      padding: padding,
-      features: features,
-      contextMenuBuilder:
-          contextMenuBuilder ?? shadcn.TextField.defaultContextMenuBuilder,
-      onChanged: onChangedOverride ?? onChanged,
-      onSubmitted: (value) {
-        onSubmitted?.call(value);
-        if (autoUnfocusOnSubmitted) {
-          FocusManager.instance.primaryFocus?.unfocus();
-        }
-      },
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {},
+      child: shadcn.TextField(
+        controller: controller,
+        focusNode: focusNode,
+        placeholder: placeholder,
+        hintText: hintText,
+        enabled: enabled,
+        readOnly: readOnly,
+        obscureText: obscureText,
+        autofocus: autofocus,
+        maxLines: maxLines,
+        minLines: minLines ?? 1,
+        keyboardType: keyboardType,
+        textInputAction: textInputAction,
+        inputFormatters: inputFormatters,
+        style: style,
+        decoration: decoration ?? _defaultDecoration(context),
+        padding: padding,
+        features: features,
+        contextMenuBuilder:
+            contextMenuBuilder ?? shadcn.TextField.defaultContextMenuBuilder,
+        onChanged: onChangedOverride ?? onChanged,
+        onSubmitted: (value) {
+          onSubmitted?.call(value);
+          if (autoUnfocusOnSubmitted) {
+            FocusManager.instance.primaryFocus?.unfocus();
+          }
+        },
+      ),
     );
   }
 

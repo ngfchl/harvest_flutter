@@ -39,7 +39,7 @@ class ShellScaffold extends ConsumerWidget {
             data: shadcn.ScaffoldTheme(backgroundColor: cs.background),
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
-              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              onTapDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
               child: Column(
                 children: [
                   header,
