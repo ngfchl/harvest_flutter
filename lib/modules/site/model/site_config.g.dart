@@ -232,6 +232,7 @@ Map<String, dynamic> _$WebSiteToJson(_WebSite instance) => <String, dynamic>{
 _SiteLevel _$SiteLevelFromJson(Map<String, dynamic> json) => _SiteLevel(
   levelId: (json['level_id'] as num?)?.toInt() ?? 0,
   level: json['level'] as String? ?? '',
+  name: json['name'] as String? ?? '',
   days: (json['days'] as num?)?.toInt() ?? 0,
   uploaded: json['uploaded'] as String? ?? '0',
   downloaded: json['downloaded'] as String? ?? '0',
@@ -250,6 +251,7 @@ Map<String, dynamic> _$SiteLevelToJson(_SiteLevel instance) =>
     <String, dynamic>{
       'level_id': instance.levelId,
       'level': instance.level,
+      'name': instance.name,
       'days': instance.days,
       'uploaded': instance.uploaded,
       'downloaded': instance.downloaded,

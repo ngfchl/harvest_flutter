@@ -605,7 +605,7 @@ as Map<String, SiteLevel>,
 /// @nodoc
 mixin _$SiteLevel {
 
-@JsonKey(name: 'level_id') int get levelId; String get level; int get days; String get uploaded; String get downloaded; double get bonus; int get score; double get ratio; int get torrents; int get leeches;@JsonKey(name: 'seeding_delta') double get seedingDelta;@JsonKey(name: 'keep_account') bool get keepAccount; bool get graduation; String get rights;
+@JsonKey(name: 'level_id') int get levelId; String get level; String get name; int get days; String get uploaded; String get downloaded; double get bonus; int get score; double get ratio; int get torrents; int get leeches;@JsonKey(name: 'seeding_delta') double get seedingDelta;@JsonKey(name: 'keep_account') bool get keepAccount; bool get graduation; String get rights;
 /// Create a copy of SiteLevel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -618,16 +618,16 @@ $SiteLevelCopyWith<SiteLevel> get copyWith => _$SiteLevelCopyWithImpl<SiteLevel>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SiteLevel&&(identical(other.levelId, levelId) || other.levelId == levelId)&&(identical(other.level, level) || other.level == level)&&(identical(other.days, days) || other.days == days)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.score, score) || other.score == score)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.torrents, torrents) || other.torrents == torrents)&&(identical(other.leeches, leeches) || other.leeches == leeches)&&(identical(other.seedingDelta, seedingDelta) || other.seedingDelta == seedingDelta)&&(identical(other.keepAccount, keepAccount) || other.keepAccount == keepAccount)&&(identical(other.graduation, graduation) || other.graduation == graduation)&&(identical(other.rights, rights) || other.rights == rights));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SiteLevel&&(identical(other.levelId, levelId) || other.levelId == levelId)&&(identical(other.level, level) || other.level == level)&&(identical(other.name, name) || other.name == name)&&(identical(other.days, days) || other.days == days)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.score, score) || other.score == score)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.torrents, torrents) || other.torrents == torrents)&&(identical(other.leeches, leeches) || other.leeches == leeches)&&(identical(other.seedingDelta, seedingDelta) || other.seedingDelta == seedingDelta)&&(identical(other.keepAccount, keepAccount) || other.keepAccount == keepAccount)&&(identical(other.graduation, graduation) || other.graduation == graduation)&&(identical(other.rights, rights) || other.rights == rights));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,levelId,level,days,uploaded,downloaded,bonus,score,ratio,torrents,leeches,seedingDelta,keepAccount,graduation,rights);
+int get hashCode => Object.hash(runtimeType,levelId,level,name,days,uploaded,downloaded,bonus,score,ratio,torrents,leeches,seedingDelta,keepAccount,graduation,rights);
 
 @override
 String toString() {
-  return 'SiteLevel(levelId: $levelId, level: $level, days: $days, uploaded: $uploaded, downloaded: $downloaded, bonus: $bonus, score: $score, ratio: $ratio, torrents: $torrents, leeches: $leeches, seedingDelta: $seedingDelta, keepAccount: $keepAccount, graduation: $graduation, rights: $rights)';
+  return 'SiteLevel(levelId: $levelId, level: $level, name: $name, days: $days, uploaded: $uploaded, downloaded: $downloaded, bonus: $bonus, score: $score, ratio: $ratio, torrents: $torrents, leeches: $leeches, seedingDelta: $seedingDelta, keepAccount: $keepAccount, graduation: $graduation, rights: $rights)';
 }
 
 
@@ -638,7 +638,7 @@ abstract mixin class $SiteLevelCopyWith<$Res>  {
   factory $SiteLevelCopyWith(SiteLevel value, $Res Function(SiteLevel) _then) = _$SiteLevelCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'level_id') int levelId, String level, int days, String uploaded, String downloaded, double bonus, int score, double ratio, int torrents, int leeches,@JsonKey(name: 'seeding_delta') double seedingDelta,@JsonKey(name: 'keep_account') bool keepAccount, bool graduation, String rights
+@JsonKey(name: 'level_id') int levelId, String level, String name, int days, String uploaded, String downloaded, double bonus, int score, double ratio, int torrents, int leeches,@JsonKey(name: 'seeding_delta') double seedingDelta,@JsonKey(name: 'keep_account') bool keepAccount, bool graduation, String rights
 });
 
 
@@ -655,10 +655,11 @@ class _$SiteLevelCopyWithImpl<$Res>
 
 /// Create a copy of SiteLevel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? levelId = null,Object? level = null,Object? days = null,Object? uploaded = null,Object? downloaded = null,Object? bonus = null,Object? score = null,Object? ratio = null,Object? torrents = null,Object? leeches = null,Object? seedingDelta = null,Object? keepAccount = null,Object? graduation = null,Object? rights = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? levelId = null,Object? level = null,Object? name = null,Object? days = null,Object? uploaded = null,Object? downloaded = null,Object? bonus = null,Object? score = null,Object? ratio = null,Object? torrents = null,Object? leeches = null,Object? seedingDelta = null,Object? keepAccount = null,Object? graduation = null,Object? rights = null,}) {
   return _then(_self.copyWith(
 levelId: null == levelId ? _self.levelId : levelId // ignore: cast_nullable_to_non_nullable
 as int,level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,days: null == days ? _self.days : days // ignore: cast_nullable_to_non_nullable
 as int,uploaded: null == uploaded ? _self.uploaded : uploaded // ignore: cast_nullable_to_non_nullable
 as String,downloaded: null == downloaded ? _self.downloaded : downloaded // ignore: cast_nullable_to_non_nullable
@@ -756,10 +757,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'level_id')  int levelId,  String level,  int days,  String uploaded,  String downloaded,  double bonus,  int score,  double ratio,  int torrents,  int leeches, @JsonKey(name: 'seeding_delta')  double seedingDelta, @JsonKey(name: 'keep_account')  bool keepAccount,  bool graduation,  String rights)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'level_id')  int levelId,  String level,  String name,  int days,  String uploaded,  String downloaded,  double bonus,  int score,  double ratio,  int torrents,  int leeches, @JsonKey(name: 'seeding_delta')  double seedingDelta, @JsonKey(name: 'keep_account')  bool keepAccount,  bool graduation,  String rights)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SiteLevel() when $default != null:
-return $default(_that.levelId,_that.level,_that.days,_that.uploaded,_that.downloaded,_that.bonus,_that.score,_that.ratio,_that.torrents,_that.leeches,_that.seedingDelta,_that.keepAccount,_that.graduation,_that.rights);case _:
+return $default(_that.levelId,_that.level,_that.name,_that.days,_that.uploaded,_that.downloaded,_that.bonus,_that.score,_that.ratio,_that.torrents,_that.leeches,_that.seedingDelta,_that.keepAccount,_that.graduation,_that.rights);case _:
   return orElse();
 
 }
@@ -777,10 +778,10 @@ return $default(_that.levelId,_that.level,_that.days,_that.uploaded,_that.downlo
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'level_id')  int levelId,  String level,  int days,  String uploaded,  String downloaded,  double bonus,  int score,  double ratio,  int torrents,  int leeches, @JsonKey(name: 'seeding_delta')  double seedingDelta, @JsonKey(name: 'keep_account')  bool keepAccount,  bool graduation,  String rights)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'level_id')  int levelId,  String level,  String name,  int days,  String uploaded,  String downloaded,  double bonus,  int score,  double ratio,  int torrents,  int leeches, @JsonKey(name: 'seeding_delta')  double seedingDelta, @JsonKey(name: 'keep_account')  bool keepAccount,  bool graduation,  String rights)  $default,) {final _that = this;
 switch (_that) {
 case _SiteLevel():
-return $default(_that.levelId,_that.level,_that.days,_that.uploaded,_that.downloaded,_that.bonus,_that.score,_that.ratio,_that.torrents,_that.leeches,_that.seedingDelta,_that.keepAccount,_that.graduation,_that.rights);case _:
+return $default(_that.levelId,_that.level,_that.name,_that.days,_that.uploaded,_that.downloaded,_that.bonus,_that.score,_that.ratio,_that.torrents,_that.leeches,_that.seedingDelta,_that.keepAccount,_that.graduation,_that.rights);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -797,10 +798,10 @@ return $default(_that.levelId,_that.level,_that.days,_that.uploaded,_that.downlo
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'level_id')  int levelId,  String level,  int days,  String uploaded,  String downloaded,  double bonus,  int score,  double ratio,  int torrents,  int leeches, @JsonKey(name: 'seeding_delta')  double seedingDelta, @JsonKey(name: 'keep_account')  bool keepAccount,  bool graduation,  String rights)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'level_id')  int levelId,  String level,  String name,  int days,  String uploaded,  String downloaded,  double bonus,  int score,  double ratio,  int torrents,  int leeches, @JsonKey(name: 'seeding_delta')  double seedingDelta, @JsonKey(name: 'keep_account')  bool keepAccount,  bool graduation,  String rights)?  $default,) {final _that = this;
 switch (_that) {
 case _SiteLevel() when $default != null:
-return $default(_that.levelId,_that.level,_that.days,_that.uploaded,_that.downloaded,_that.bonus,_that.score,_that.ratio,_that.torrents,_that.leeches,_that.seedingDelta,_that.keepAccount,_that.graduation,_that.rights);case _:
+return $default(_that.levelId,_that.level,_that.name,_that.days,_that.uploaded,_that.downloaded,_that.bonus,_that.score,_that.ratio,_that.torrents,_that.leeches,_that.seedingDelta,_that.keepAccount,_that.graduation,_that.rights);case _:
   return null;
 
 }
@@ -811,12 +812,13 @@ return $default(_that.levelId,_that.level,_that.days,_that.uploaded,_that.downlo
 /// @nodoc
 @JsonSerializable()
 
-class _SiteLevel implements SiteLevel {
-  const _SiteLevel({@JsonKey(name: 'level_id') this.levelId = 0, this.level = '', this.days = 0, this.uploaded = '0', this.downloaded = '0', this.bonus = 0.0, this.score = 0, this.ratio = 0.0, this.torrents = 0, this.leeches = 0, @JsonKey(name: 'seeding_delta') this.seedingDelta = 0.0, @JsonKey(name: 'keep_account') this.keepAccount = false, this.graduation = false, this.rights = ''});
+class _SiteLevel extends SiteLevel {
+  const _SiteLevel({@JsonKey(name: 'level_id') this.levelId = 0, this.level = '', this.name = '', this.days = 0, this.uploaded = '0', this.downloaded = '0', this.bonus = 0.0, this.score = 0, this.ratio = 0.0, this.torrents = 0, this.leeches = 0, @JsonKey(name: 'seeding_delta') this.seedingDelta = 0.0, @JsonKey(name: 'keep_account') this.keepAccount = false, this.graduation = false, this.rights = ''}): super._();
   factory _SiteLevel.fromJson(Map<String, dynamic> json) => _$SiteLevelFromJson(json);
 
 @override@JsonKey(name: 'level_id') final  int levelId;
 @override@JsonKey() final  String level;
+@override@JsonKey() final  String name;
 @override@JsonKey() final  int days;
 @override@JsonKey() final  String uploaded;
 @override@JsonKey() final  String downloaded;
@@ -843,16 +845,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SiteLevel&&(identical(other.levelId, levelId) || other.levelId == levelId)&&(identical(other.level, level) || other.level == level)&&(identical(other.days, days) || other.days == days)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.score, score) || other.score == score)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.torrents, torrents) || other.torrents == torrents)&&(identical(other.leeches, leeches) || other.leeches == leeches)&&(identical(other.seedingDelta, seedingDelta) || other.seedingDelta == seedingDelta)&&(identical(other.keepAccount, keepAccount) || other.keepAccount == keepAccount)&&(identical(other.graduation, graduation) || other.graduation == graduation)&&(identical(other.rights, rights) || other.rights == rights));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SiteLevel&&(identical(other.levelId, levelId) || other.levelId == levelId)&&(identical(other.level, level) || other.level == level)&&(identical(other.name, name) || other.name == name)&&(identical(other.days, days) || other.days == days)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.score, score) || other.score == score)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.torrents, torrents) || other.torrents == torrents)&&(identical(other.leeches, leeches) || other.leeches == leeches)&&(identical(other.seedingDelta, seedingDelta) || other.seedingDelta == seedingDelta)&&(identical(other.keepAccount, keepAccount) || other.keepAccount == keepAccount)&&(identical(other.graduation, graduation) || other.graduation == graduation)&&(identical(other.rights, rights) || other.rights == rights));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,levelId,level,days,uploaded,downloaded,bonus,score,ratio,torrents,leeches,seedingDelta,keepAccount,graduation,rights);
+int get hashCode => Object.hash(runtimeType,levelId,level,name,days,uploaded,downloaded,bonus,score,ratio,torrents,leeches,seedingDelta,keepAccount,graduation,rights);
 
 @override
 String toString() {
-  return 'SiteLevel(levelId: $levelId, level: $level, days: $days, uploaded: $uploaded, downloaded: $downloaded, bonus: $bonus, score: $score, ratio: $ratio, torrents: $torrents, leeches: $leeches, seedingDelta: $seedingDelta, keepAccount: $keepAccount, graduation: $graduation, rights: $rights)';
+  return 'SiteLevel(levelId: $levelId, level: $level, name: $name, days: $days, uploaded: $uploaded, downloaded: $downloaded, bonus: $bonus, score: $score, ratio: $ratio, torrents: $torrents, leeches: $leeches, seedingDelta: $seedingDelta, keepAccount: $keepAccount, graduation: $graduation, rights: $rights)';
 }
 
 
@@ -863,7 +865,7 @@ abstract mixin class _$SiteLevelCopyWith<$Res> implements $SiteLevelCopyWith<$Re
   factory _$SiteLevelCopyWith(_SiteLevel value, $Res Function(_SiteLevel) _then) = __$SiteLevelCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'level_id') int levelId, String level, int days, String uploaded, String downloaded, double bonus, int score, double ratio, int torrents, int leeches,@JsonKey(name: 'seeding_delta') double seedingDelta,@JsonKey(name: 'keep_account') bool keepAccount, bool graduation, String rights
+@JsonKey(name: 'level_id') int levelId, String level, String name, int days, String uploaded, String downloaded, double bonus, int score, double ratio, int torrents, int leeches,@JsonKey(name: 'seeding_delta') double seedingDelta,@JsonKey(name: 'keep_account') bool keepAccount, bool graduation, String rights
 });
 
 
@@ -880,10 +882,11 @@ class __$SiteLevelCopyWithImpl<$Res>
 
 /// Create a copy of SiteLevel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? levelId = null,Object? level = null,Object? days = null,Object? uploaded = null,Object? downloaded = null,Object? bonus = null,Object? score = null,Object? ratio = null,Object? torrents = null,Object? leeches = null,Object? seedingDelta = null,Object? keepAccount = null,Object? graduation = null,Object? rights = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? levelId = null,Object? level = null,Object? name = null,Object? days = null,Object? uploaded = null,Object? downloaded = null,Object? bonus = null,Object? score = null,Object? ratio = null,Object? torrents = null,Object? leeches = null,Object? seedingDelta = null,Object? keepAccount = null,Object? graduation = null,Object? rights = null,}) {
   return _then(_SiteLevel(
 levelId: null == levelId ? _self.levelId : levelId // ignore: cast_nullable_to_non_nullable
 as int,level: null == level ? _self.level : level // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,days: null == days ? _self.days : days // ignore: cast_nullable_to_non_nullable
 as int,uploaded: null == uploaded ? _self.uploaded : uploaded // ignore: cast_nullable_to_non_nullable
 as String,downloaded: null == downloaded ? _self.downloaded : downloaded // ignore: cast_nullable_to_non_nullable

@@ -206,6 +206,7 @@ abstract class SiteLevel with _$SiteLevel {
   const factory SiteLevel({
     @Default(0) @JsonKey(name: 'level_id') int levelId,
     @Default('') String level,
+    @Default('') String name,
     @Default(0) int days,
     @Default('0') String uploaded,
     @Default('0') String downloaded,
@@ -222,6 +223,16 @@ abstract class SiteLevel with _$SiteLevel {
 
   factory SiteLevel.fromJson(Map<String, dynamic> json) =>
       _$SiteLevelFromJson(_normalizeSiteLevelJson(json));
+
+  const SiteLevel._();
+
+  String get displayName {
+    final display = name.trim();
+    if (display.isNotEmpty) return display;
+    final fallback = level.trim();
+    if (fallback.isNotEmpty) return fallback;
+    return '';
+  }
 }
 
 Map<String, dynamic> _normalizeWebSiteJson(Map<String, dynamic> json) {
@@ -341,12 +352,23 @@ String _firstStringFromJson(Object? value) {
 
 Map<String, dynamic> _normalizeSiteLevelJson(Map<String, dynamic> json) {
   final next = Map<String, dynamic>.from(json);
-  for (final key in const ['level', 'uploaded', 'downloaded', 'rights']) {
-    if (next.containsKey(key)) next[key] = _stringFromJson(next[key]);
+  for (final key in const [
+    'level',
+    'name',
+    'uploaded',
+    'downloaded',
+    'rights',
+  ]) {
+    if (next.containsKey(key)) {
+      next[key] = _stringFromJson(next[key]);
+    }
   }
-  if ((next['uploaded'] as String?)?.isEmpty ?? true) next['uploaded'] = '0';
-  if ((next['downloaded'] as String?)?.isEmpty ?? true)
+  if ((next['uploaded'] as String?)?.isEmpty ?? true) {
+    next['uploaded'] = '0';
+  }
+  if ((next['downloaded'] as String?)?.isEmpty ?? true) {
     next['downloaded'] = '0';
+  }
   return next;
 }
 
@@ -371,8 +393,10 @@ Map<String, dynamic> _siteLevelJsonMapFromJson(Object? value) {
         continue;
       }
       final level = _normalizeSiteLevelJson(Map<String, dynamic>.from(item));
-      final name = _stringFromJson(level['level']);
-      result[name.isEmpty ? 'Level$index' : name] = level;
+      final name = _stringFromJson(level['name']);
+      final levelName = _stringFromJson(level['level']);
+      final key = name.isNotEmpty ? name : levelName;
+      result[key.isEmpty ? 'Level$index' : key] = level;
     }
     return result;
   }
