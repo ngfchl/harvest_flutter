@@ -144,7 +144,7 @@ class _SiteConfigGeneratorDialogState
 
   String _configName() {
     final name = _configNameController.text.trim();
-    return name.isEmpty ? (_templateName ?? 'site') : name;
+    return name.isEmpty ? (_templateName ?? '未命名配置') : name;
   }
 
   void _syncConfigNameFromTemplate(_TomlTemplate template, String fallback) {
@@ -264,7 +264,7 @@ class _SiteConfigGeneratorDialogState
 
   String _safeFileName(String value) {
     final safe = value.trim().replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
-    return safe.isEmpty ? 'site' : safe;
+    return safe.isEmpty ? 'config' : safe;
   }
 
   Future<String?> _downloadTomlFile({
@@ -338,38 +338,50 @@ class _SiteConfigGeneratorDialogState
     final cs = shadcn.Theme.of(context).colorScheme;
     final template = _template;
 
+    Widget buildConfigNamePanel() {
+      return _FieldPanel(
+        title: const _PanelTitleText(label: '配置名称', required: true),
+        child: ShadTextField(
+          controller: _configNameController,
+          placeholder: const Text('配置名称'),
+          hintText: '保存和下载时使用该名称作为文件名',
+          onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        ),
+      );
+    }
+
+    Widget buildTemplatePanel() {
+      return _FieldPanel(
+        title: const _PanelTitleText(label: '配置模板'),
+        child: _TemplateSelectField(
+          templateName: _templateName,
+          loading: _loadingTemplate,
+          configs: configs,
+          onSelected: _loadTemplate,
+        ),
+      );
+    }
+
+    final fieldCount =
+        template?.orderedFields
+            .where((field) => !_hiddenTopLevelFieldKeys.contains(field.key))
+            .length ??
+        0;
+    final heroSubtitle = template == null
+        ? '${_templateName ?? '未选择模板'} · 加载中'
+        : '${_templateName ?? '未选择模板'} · $fieldCount 字段 / ${template.levels.length} 等级';
+
     return Column(
       children: [
-        if (context.isMobile) ...[
-          buildHandle(context),
-          const SizedBox(height: 12),
-        ],
         _DialogHeroCard(
           icon: shadcn.LucideIcons.fileCode,
           title: '生成站点配置',
-          subtitle: '按分区编辑模板字段并直接生成 TOML 配置',
-          trailing: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            alignment: WrapAlignment.end,
-            children: [
-              _InfoChip(
-                icon: shadcn.LucideIcons.layoutTemplate,
-                label: _templateName ?? '未选择模板',
-              ),
-              if (template != null)
-                _InfoChip(
-                  icon: shadcn.LucideIcons.layers,
-                  label:
-                      '${template.orderedFields.length} 字段 / ${template.levels.length} 等级',
-                ),
-            ],
-          ),
+          subtitle: heroSubtitle,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         if (template != null)
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: shadcn.Theme.of(
                 context,
@@ -380,43 +392,27 @@ class _SiteConfigGeneratorDialogState
                 width: 0.8,
               ),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 5,
-                  child: _FieldPanel(
-                    title: const _PanelTitleText(
-                      label: '配置名称',
-                      helper: '保存和下载时使用',
-                      required: true,
-                    ),
-                    child: ShadTextField(
-                      controller: _configNameController,
-                      placeholder: const Text('配置名称'),
-                      hintText: '保存和下载时使用该名称作为文件名',
-                      onSubmitted: (_) =>
-                          FocusManager.instance.primaryFocus?.unfocus(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: 3,
-                  child: _FieldPanel(
-                    title: const _PanelTitleText(
-                      label: '配置模板',
-                      helper: '选择预设站点模板',
-                    ),
-                    child: _TemplateSelectField(
-                      templateName: _templateName,
-                      loading: _loadingTemplate,
-                      configs: configs,
-                      onSelected: _loadTemplate,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final contentWidth = constraints.maxWidth < 420
+                    ? 420.0
+                    : constraints.maxWidth;
+                return FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.topLeft,
+                  child: SizedBox(
+                    width: contentWidth,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: buildConfigNamePanel()),
+                        const SizedBox(width: 8),
+                        Expanded(child: buildTemplatePanel()),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
         if (_error != null) ...[
@@ -428,7 +424,7 @@ class _SiteConfigGeneratorDialogState
             ),
           ),
         ],
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Expanded(
           child: _loadingTemplate || template == null
               ? Center(
@@ -672,11 +668,7 @@ class _TomlFieldList extends StatelessWidget {
         title: '种子列表 XPath',
         icon: shadcn.LucideIcons.listTree,
         description: '种子列表页字段解析规则',
-        fields: _fieldsWhere(
-          (field) =>
-              field.key.startsWith('torrent_') && field.key.endsWith('_rule'),
-          consumedKeys: consumedKeys,
-        ),
+        fields: _torrentListRuleFields(consumedKeys),
       ),
       _buildSection(
         title: '种子详情页 XPath',
@@ -745,15 +737,33 @@ class _TomlFieldList extends StatelessWidget {
   }) {
     final fields = <_TomlField>[];
     for (final field in template.orderedFields) {
+      if (_hiddenTopLevelFieldKeys.contains(field.key)) continue;
       if (!predicate(field) || !consumedKeys.add(field.key)) continue;
       fields.add(field);
     }
     return fields;
   }
 
+  List<_TomlField> _torrentListRuleFields(Set<String> consumedKeys) {
+    final fields = <_TomlField>[];
+    final rowRule = template.fields['torrents_rule'];
+    if (rowRule != null && consumedKeys.add(rowRule.key)) {
+      fields.add(rowRule);
+    }
+    fields.addAll(
+      _fieldsWhere(
+        (field) =>
+            field.key.startsWith('torrent_') && field.key.endsWith('_rule'),
+        consumedKeys: consumedKeys,
+      ),
+    );
+    return fields;
+  }
+
   List<_TomlField> _remainingFields(Set<String> consumedKeys) {
     final fields = <_TomlField>[];
     for (final field in template.orderedFields) {
+      if (_hiddenTopLevelFieldKeys.contains(field.key)) continue;
       if (!consumedKeys.add(field.key)) continue;
       fields.add(field);
     }
@@ -921,6 +931,7 @@ class _TomlLevelAutocompleteOptions {
 }
 
 const _selectFieldKeys = {'structure', 'type', 'nation'};
+const _hiddenTopLevelFieldKeys = {'name'};
 const _baseInfoFieldKeys = [
   'url',
   'nickname',
@@ -972,12 +983,16 @@ class _TomlSelectField extends StatelessWidget {
     return shadcn.Select<String>(
       key: ValueKey('${field.key}-$current-${values.join('|')}'),
       value: current.isEmpty ? values.first : current,
-      itemBuilder: (_, value) => Text(value),
+      itemBuilder: (_, value) =>
+          Text(_tomlSelectDisplayLabel(field.key, value)),
       popup: shadcn.SelectPopup<String>(
         items: shadcn.SelectItemList(
           children: [
             for (final value in values)
-              shadcn.SelectItemButton<String>(value: value, child: Text(value)),
+              shadcn.SelectItemButton<String>(
+                value: value,
+                child: Text(_tomlSelectDisplayLabel(field.key, value)),
+              ),
           ],
         ),
       ).call,
@@ -1171,7 +1186,6 @@ class _TomlLevelListSection extends StatelessWidget {
       template: template,
       autocompleteOptions: autocompleteOptions,
       level: level,
-      isNew: true,
       onChanged: onChanged,
     );
     if (added == true) {
@@ -1237,7 +1251,6 @@ class _TomlLevelListSection extends StatelessWidget {
                     template: template,
                     autocompleteOptions: autocompleteOptions,
                     level: levels[i],
-                    isNew: false,
                     onChanged: onChanged,
                   ),
                   onRemove: () => _removeLevel(levels[i]),
@@ -1318,12 +1331,6 @@ class _LevelListTile extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: 8),
-            _InfoChip(
-              icon: shadcn.LucideIcons.hash,
-              label:
-                  'ID ${level.fields['level_id']?.controller.text.trim() ?? '-'}',
             ),
             const SizedBox(width: 4),
             shadcn.IconButton.ghost(
@@ -1638,19 +1645,13 @@ class _FieldTitle extends StatelessWidget {
 
 class _PanelTitleText extends StatelessWidget {
   final String label;
-  final String? helper;
   final bool required;
 
-  const _PanelTitleText({
-    required this.label,
-    this.helper,
-    this.required = true,
-  });
+  const _PanelTitleText({required this.label, this.required = true});
 
   @override
   Widget build(BuildContext context) {
     final theme = shadcn.Theme.of(context);
-    final cs = theme.colorScheme;
 
     return Row(
       children: [
@@ -1663,19 +1664,6 @@ class _PanelTitleText extends StatelessWidget {
           ),
         ),
         if (required) ...[const SizedBox(width: 6), const _RequiredBadge()],
-        if (helper != null) ...[
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              helper!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.typography.xSmall.copyWith(
-                color: cs.mutedForeground,
-              ),
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -1698,38 +1686,31 @@ class _RequiredBadge extends StatelessWidget {
   }
 }
 
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
+class _HeaderIdMark extends StatelessWidget {
   final String label;
 
-  const _InfoChip({required this.icon, required this.label});
+  const _HeaderIdMark({required this.label});
 
   @override
   Widget build(BuildContext context) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: cs.background.withValues(alpha: 0.76),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: cs.border, width: 0.8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: cs.mutedForeground),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: theme.typography.xSmall.copyWith(
-              color: cs.foreground,
-              fontWeight: FontWeight.w600,
-            ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(shadcn.LucideIcons.hash, size: 13, color: cs.mutedForeground),
+        const SizedBox(width: 2),
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.typography.xSmall.copyWith(
+            color: cs.mutedForeground,
+            fontWeight: FontWeight.w700,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -1738,13 +1719,13 @@ class _DialogHeroCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Widget? trailing;
+  final Widget? titleTrailing;
 
   const _DialogHeroCard({
     required this.icon,
     required this.title,
     required this.subtitle,
-    this.trailing,
+    this.titleTrailing,
   });
 
   @override
@@ -1752,60 +1733,92 @@ class _DialogHeroCard extends StatelessWidget {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            cs.primary.withValues(alpha: 0.14),
-            cs.background.withValues(alpha: 0.94),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: siteRadius(context, size: "lg"),
-        border: Border.all(color: cs.border, width: 0.9),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: cs.primary.withValues(alpha: 0.14),
-              borderRadius: siteRadius(context, size: "md"),
-            ),
-            child: Icon(icon, size: 20, color: cs.primary),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 520;
+        final leading = Container(
+          width: 34,
+          height: 34,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: cs.primary.withValues(alpha: 0.14),
+            borderRadius: siteRadius(context, size: "md"),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: Icon(icon, size: 17, color: cs.primary),
+        );
+        final titleBlock = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.typography.large.copyWith(
-                    fontWeight: FontWeight.w800,
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: compact ? 2 : 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.typography.small.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: theme.typography.xSmall.copyWith(
-                    color: cs.mutedForeground,
-                    height: 1.35,
-                  ),
-                ),
+                if (titleTrailing != null) ...[
+                  const SizedBox(width: 10),
+                  titleTrailing!,
+                ],
               ],
             ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.typography.xSmall.copyWith(
+                color: cs.mutedForeground,
+                height: 1.25,
+              ),
+            ),
+          ],
+        );
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                cs.primary.withValues(alpha: 0.14),
+                cs.background.withValues(alpha: 0.94),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: siteRadius(context, size: "lg"),
+            border: Border.all(color: cs.border, width: 0.9),
           ),
-          if (trailing != null) ...[const SizedBox(width: 12), trailing!],
-        ],
-      ),
+          child: compact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        leading,
+                        const SizedBox(width: 10),
+                        Expanded(child: titleBlock),
+                      ],
+                    ),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    leading,
+                    const SizedBox(width: 10),
+                    Expanded(child: titleBlock),
+                  ],
+                ),
+        );
+      },
     );
   }
 }
@@ -1815,14 +1828,12 @@ Future<bool?> _showTomlLevelDetail(
   required _TomlTemplate template,
   required _TomlLevelAutocompleteOptions autocompleteOptions,
   required _TomlLevel level,
-  required bool isNew,
   required VoidCallback onChanged,
 }) {
   final editor = _TomlLevelDetail(
     template: template,
     autocompleteOptions: autocompleteOptions,
     level: level,
-    isNew: isNew,
     onChanged: onChanged,
   );
   if (context.isMobile) {
@@ -1849,14 +1860,12 @@ class _TomlLevelDetail extends StatefulWidget {
   final _TomlTemplate template;
   final _TomlLevelAutocompleteOptions autocompleteOptions;
   final _TomlLevel level;
-  final bool isNew;
   final VoidCallback onChanged;
 
   const _TomlLevelDetail({
     required this.template,
     required this.autocompleteOptions,
     required this.level,
-    required this.isNew,
     required this.onChanged,
   });
 
@@ -1937,6 +1946,8 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final mobile = context.isMobile;
+    final levelId = widget.level.fields['level_id']?.controller.text.trim();
+    final levelIdLabel = levelId == null || levelId.isEmpty ? '-' : levelId;
 
     return Container(
       padding: EdgeInsets.fromLTRB(16, mobile ? 8 : 16, 16, 16),
@@ -1950,16 +1961,11 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
       ),
       child: Column(
         children: [
-          if (mobile) ...[buildHandle(context), const SizedBox(height: 12)],
           _DialogHeroCard(
             icon: shadcn.LucideIcons.medal,
             title: widget.level.displayName,
-            subtitle: '等级信息全部为必填项，等级 ID 必须唯一且为数字',
-            trailing: _InfoChip(
-              icon: shadcn.LucideIcons.hash,
-              label:
-                  'ID ${widget.level.fields['level_id']?.controller.text.trim().isEmpty ?? true ? '-' : widget.level.fields['level_id']!.controller.text.trim()}',
-            ),
+            subtitle: '* 为必填项，等级 ID 必须唯一且为数字',
+            titleTrailing: _HeaderIdMark(label: levelIdLabel),
           ),
           const SizedBox(height: 12),
           Expanded(
@@ -2018,11 +2024,15 @@ class _TomlLevelDetailState extends State<_TomlLevelDetail> {
           ),
           const SizedBox(height: 12),
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              shadcn.Button.ghost(
+                onPressed: () => Navigator.of(context).maybePop(false),
+                child: const Text('返回'),
+              ),
               shadcn.Button.primary(
                 onPressed: _submit,
-                child: Text(widget.isNew ? '添加' : '完成'),
+                child: const Text('保存'),
               ),
             ],
           ),
@@ -2264,6 +2274,9 @@ class _TomlTemplate {
       level.ensureDefaults();
     }
 
+    fields.remove('site')?.dispose();
+    order.removeWhere((key) => key == 'site');
+
     return _TomlTemplate(
       order: order,
       fields: fields,
@@ -2325,8 +2338,11 @@ class _TomlLevel {
   }
 
   List<_TomlField> get orderedFields => [
-    for (final key in order)
+    for (final key in _levelFieldOrder)
       if (fields[key] case final field?) field,
+    for (final key in order)
+      if (!_levelFieldOrder.contains(key))
+        if (fields[key] case final field?) field,
   ];
 
   int get sortLevelId =>
@@ -2464,6 +2480,64 @@ _TomlField? _parseTomlField(String line) {
 
 const _ignoredTomlKeys = {'buy_page', 'buy_action'};
 
+String _tomlSelectDisplayLabel(String key, String value) {
+  return switch (key) {
+    'nation' => _nationDisplayLabel(value),
+    'type' => _siteTypeDisplayLabel(value),
+    _ => value,
+  };
+}
+
+String _nationDisplayLabel(String value) {
+  final text = value.trim();
+  final normalized = text.toLowerCase().replaceAll(RegExp(r'[\s_-]+'), '');
+  return switch (normalized) {
+    'cn' ||
+    'china' ||
+    'mainland' ||
+    'zhongguo' ||
+    '中国' ||
+    '中国大陆' ||
+    'hk' ||
+    'hongkong' ||
+    '香港' ||
+    '中国香港' ||
+    'mo' ||
+    'macau' ||
+    'macao' ||
+    '澳门' ||
+    '中国澳门' => '中国',
+    'tw' || 'taiwan' || '台湾' || '中国台湾' => '中国台湾',
+    'us' || 'usa' || 'america' || 'unitedstates' || '美国' => '美国',
+    'uk' || 'gb' || 'britain' || 'unitedkingdom' || '英国' => '英国',
+    'jp' || 'japan' || '日本' => '日本',
+    'kr' || 'korea' || 'southkorea' || '韩国' => '韩国',
+    'sg' || 'singapore' || '新加坡' => '新加坡',
+    'my' || 'malaysia' || '马来西亚' => '马来西亚',
+    'th' || 'thailand' || '泰国' => '泰国',
+    'vn' || 'vietnam' || '越南' => '越南',
+    'ca' || 'canada' || '加拿大' => '加拿大',
+    'au' || 'australia' || '澳大利亚' => '澳大利亚',
+    'de' || 'germany' || '德国' => '德国',
+    'fr' || 'france' || '法国' => '法国',
+    'nl' || 'netherlands' || '荷兰' => '荷兰',
+    'ru' || 'russia' || '俄罗斯' => '俄罗斯',
+    'eu' || 'europe' || '欧洲' => '欧洲',
+    'other' || 'foreign' || 'others' || '其他' => '其他',
+    _ => text,
+  };
+}
+
+String _siteTypeDisplayLabel(String value) {
+  final text = value.trim();
+  final normalized = text.toLowerCase().replaceAll(RegExp(r'[\s_-]+'), '');
+  return switch (normalized) {
+    'pt' || 'tracker' || 'torrent' || 'private tracker' || 'pt站点' => 'PT站点',
+    'forum' || 'bbs' || 'discuz' || '论坛' => '论坛',
+    _ => text,
+  };
+}
+
 String _defaultTopLevelRawValue(String key) {
   return switch (key) {
     'url' => '[]',
@@ -2524,6 +2598,7 @@ String _tomlFieldLabel(String key) {
   const labels = <String, String>{
     'url': '站点地址',
     'name': '名称',
+    'torrents_rule': '种子列表行规则',
     'nickname': '站点昵称',
     'logo': '站点图标',
     'tracker': 'Tracker 域名',
@@ -2531,6 +2606,79 @@ String _tomlFieldLabel(String key) {
     'limit_speed': '限速阈值',
     'tags': '站点标签',
     'iyuu': 'IYUU ID',
+    'page_index': '首页',
+    'page_torrents': '种子列表页',
+    'page_sign_in': '签到页',
+    'page_control_panel': '控制面板页',
+    'page_detail': '种子详情页',
+    'page_download': '下载页',
+    'page_user': '用户页',
+    'page_search': '搜索页',
+    'page_message': '消息页',
+    'page_hr': 'HR 页面',
+    'page_leeching': '下载中页面',
+    'page_uploaded': '已发布页面',
+    'page_seeding': '做种页面',
+    'page_completed': '已完成页面',
+    'page_mybonus': '魔力值页面',
+    'page_viewfilelist': '文件列表页',
+    'page_pieces_hash_api': '分片 Hash API',
+    'sign_info_title': '签到标题',
+    'sign_info_content': '签到内容',
+    'my_invitation_rule': '邀请数量规则',
+    'my_time_join_rule': '注册时间规则',
+    'my_latest_active_rule': '最近活动规则',
+    'my_uploaded_rule': '上传量规则',
+    'my_downloaded_rule': '下载量规则',
+    'my_ratio_rule': '分享率规则',
+    'my_bonus_rule': '魔力值规则',
+    'my_per_hour_bonus_rule': '每小时魔力规则',
+    'my_score_rule': '积分规则',
+    'my_level_rule': '用户等级规则',
+    'my_passkey_rule': 'Passkey 规则',
+    'my_uid_rule': '用户 ID 规则',
+    'my_hr_rule': 'HR 规则',
+    'my_leech_rule': '下载任务规则',
+    'my_publish_rule': '发布种子规则',
+    'my_seed_rule': '做种数量规则',
+    'my_seed_vol_rule': '做种体积规则',
+    'my_mailbox_rule': '站内信规则',
+    'my_message_title': '消息标题',
+    'my_notice_rule': '通知规则',
+    'my_notice_title': '通知标题',
+    'my_notice_content': '通知内容',
+    'my_email_rule': '邮箱规则',
+    'my_username_rule': '用户名规则',
+    'torrent_title_rule': '种子标题规则',
+    'torrent_subtitle_rule': '种子副标题规则',
+    'torrent_detail_url_rule': '详情链接规则',
+    'torrent_category_rule': '分类规则',
+    'torrent_poster_rule': '海报规则',
+    'torrent_magnet_url_rule': '磁力链接规则',
+    'torrent_size_rule': '大小规则',
+    'torrent_progress_rule': '进度规则',
+    'torrent_hr_rule': 'HR 标记规则',
+    'torrent_sale_rule': '促销规则',
+    'torrent_sale_expire_rule': '促销到期规则',
+    'torrent_release_rule': '发布时间规则',
+    'torrent_seeders_rule': '做种人数规则',
+    'torrent_leechers_rule': '下载人数规则',
+    'torrent_completers_rule': '完成人数规则',
+    'torrent_tags_rule': '标签规则',
+    'detail_title_rule': '详情页标题规则',
+    'detail_subtitle_rule': '详情页副标题规则',
+    'detail_download_url_rule': '详情页下载链接规则',
+    'detail_size_rule': '详情页大小规则',
+    'detail_category_rule': '详情页分类规则',
+    'detail_count_files_rule': '详情页文件数量规则',
+    'detail_hash_rule': 'Hash 规则',
+    'detail_free_rule': '详情页免费规则',
+    'detail_free_expire_rule': '详情页免费到期规则',
+    'detail_douban_rule': '详情页豆瓣链接规则',
+    'detail_imdb_rule': '详情页 IMDb 链接规则',
+    'detail_poster_rule': '详情页海报规则',
+    'detail_tags_rule': '详情页标签规则',
+    'detail_hr_rule': '详情页 HR 规则',
     'sign_in': '启用签到',
     'get_info': '获取用户信息',
     'repeat_torrents': '辅种识别',
