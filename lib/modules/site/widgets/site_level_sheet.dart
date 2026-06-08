@@ -79,6 +79,28 @@ class _LevelInfoSheet extends ConsumerStatefulWidget {
 class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
   String? _expandedLevelName;
 
+  Color _levelColorForEntry(MapEntry<String, SiteLevel> entry) {
+    final level = entry.value.level.trim();
+    if (level.isNotEmpty) return levelColor(level);
+    return levelColor(entry.key);
+  }
+
+  Color _levelColorForText(
+    String text,
+    List<MapEntry<String, SiteLevel>> levels,
+  ) {
+    final current = text.trim();
+    final entry = levels.firstWhereOrNull(
+      (e) =>
+          e.key == current ||
+          e.value.displayName == current ||
+          e.value.name == current ||
+          e.value.level == current,
+    );
+    if (entry != null) return _levelColorForEntry(entry);
+    return levelColor(current);
+  }
+
   @override
   Widget build(BuildContext context) {
     final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
@@ -108,6 +130,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
     final nextEntry = hasNext ? levels[currentIdx - 1] : null;
 
     final cs = shadcn.Theme.of(context).colorScheme;
+    final currentLevelColor = _levelColorForText(currentName, levels);
 
     // ── Header ──
     final header = Container(
@@ -146,13 +169,13 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: levelColor(status.myLevel).withValues(alpha: 0.12),
+                color: currentLevelColor.withValues(alpha: 0.12),
                 borderRadius: siteRadius(context, size: "xs"),
               ),
               child: Text(
                 status.myLevel,
                 style: TextStyle(
-                  color: levelColor(status.myLevel),
+                  color: currentLevelColor,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
@@ -254,7 +277,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
                 canShowProgress &&
                 (_expandedLevelName == name ||
                     (isNext && _expandedLevelName == null));
-            final color = levelColor(name);
+            final color = _levelColorForEntry(entry);
             final isLast = i == levels.length - 1;
             final nextNewRights = <String>[];
             if (isNext && currentIdx >= 0) {
