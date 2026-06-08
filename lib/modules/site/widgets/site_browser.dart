@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/browser_page.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -12,7 +13,11 @@ class SiteBrowseTarget {
   final String url;
   final IconData icon;
 
-  const SiteBrowseTarget({required this.label, required this.url, required this.icon});
+  const SiteBrowseTarget({
+    required this.label,
+    required this.url,
+    required this.icon,
+  });
 }
 
 List<SiteBrowseTarget> buildSiteBrowseTargets(SiteInfo site, WebSite? website) {
@@ -125,7 +130,7 @@ Future<void> openSiteBrowser(BuildContext context, SiteInfo site) async {
   final url = site.mirror?.trim() ?? '';
   if (url.isEmpty) return;
 
-  if (_isKiswebSite(site)) {
+  if (kIsWeb || _isKiswebSite(site)) {
     await openSiteExternalBrowser(site);
     return;
   }
@@ -133,7 +138,12 @@ Future<void> openSiteBrowser(BuildContext context, SiteInfo site) async {
   await openSiteInternalBrowser(context, site);
 }
 
-Future<void> openSiteInternalBrowser(BuildContext context, SiteInfo site, {String? url, String? title}) async {
+Future<void> openSiteInternalBrowser(
+  BuildContext context,
+  SiteInfo site, {
+  String? url,
+  String? title,
+}) async {
   final targetUrl = _normalizeBrowseUrl((url ?? site.mirror)?.trim() ?? '');
   if (targetUrl.isEmpty) return;
 
@@ -215,7 +225,9 @@ String? _resolveBrowseUrl({
   bool hideApi = false,
 }) {
   var value = rawPath.trim();
-  if (value.isEmpty) return fallbackToBase ? _normalizeBrowseUrl(baseUrl) : null;
+  if (value.isEmpty) {
+    return fallbackToBase ? _normalizeBrowseUrl(baseUrl) : null;
+  }
   if (hideApi && value.toLowerCase().contains('api/')) return null;
   if (value.contains('{}')) {
     final id = userId?.trim() ?? '';
@@ -227,7 +239,9 @@ String? _resolveBrowseUrl({
   }
 
   final absolute = Uri.tryParse(value);
-  if (absolute != null && absolute.hasScheme) return _normalizeBrowseUrl(absolute.toString());
+  if (absolute != null && absolute.hasScheme) {
+    return _normalizeBrowseUrl(absolute.toString());
+  }
 
   final base = Uri.tryParse(_normalizeBrowseUrl(baseUrl));
   if (base == null || !base.hasScheme) return null;
@@ -240,7 +254,9 @@ String _normalizeBrowseUrl(String value) {
   final uri = Uri.tryParse(text);
   if (uri == null || !uri.hasScheme || uri.host.isEmpty) return text;
   final normalizedPath = uri.path.replaceAll(RegExp(r'/+'), '/');
-  return uri.replace(path: normalizedPath.isEmpty ? null : normalizedPath).toString();
+  return uri
+      .replace(path: normalizedPath.isEmpty ? null : normalizedPath)
+      .toString();
 }
 
 String? _hostOf(String? value) {
@@ -255,5 +271,7 @@ bool _isKiswebSite(SiteInfo site) {
   final name = site.site.toLowerCase();
   final nickname = site.nickname.toLowerCase();
   final mirror = (site.mirror ?? '').toLowerCase();
-  return name.contains('kisweb') || nickname.contains('kisweb') || mirror.contains('kisweb');
+  return name.contains('kisweb') ||
+      nickname.contains('kisweb') ||
+      mirror.contains('kisweb');
 }

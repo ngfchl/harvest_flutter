@@ -672,7 +672,7 @@ class _OptionPageState extends ConsumerState<OptionPage> {
         _buildNoticeTest(context, ref),
         const _BulkUpgradeCard(),
         _buildTelegramWebhook(context, ref),
-        const _InviteTokenToolCard(),
+        if (!kIsWeb) const _InviteTokenToolCard(),
       ],
     );
   }
