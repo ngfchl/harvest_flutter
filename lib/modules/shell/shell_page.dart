@@ -1141,8 +1141,14 @@ class _AccountMenuButton extends ConsumerWidget {
               ),
               _item(
                 context,
-                icon: shadcn.LucideIcons.terminal,
+                icon: shadcn.LucideIcons.scrollText,
                 title: '日志中心',
+                onTap: () => context.push('/log-center'),
+              ),
+              _item(
+                context,
+                icon: shadcn.LucideIcons.terminal,
+                title: '日志浮窗',
                 onTap: () => LogOverlayManager.toggle(context),
               ),
             ],

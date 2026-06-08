@@ -8,6 +8,7 @@ import '../modules/auth/auth_provider.dart';
 import '../modules/auth/login_page.dart';
 import '../modules/login/account_switcher.dart';
 import '../modules/option/widgets/app_upgrade_page.dart';
+import '../modules/shell/log_center_page.dart';
 import '../modules/shell/shell_page.dart';
 
 final routerRefreshProvider = Provider((ref) {
@@ -56,6 +57,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         redirect: (_, __) => kIsWeb ? '/dashboard' : null,
         builder: (_, __) => const AppUpgradePage(),
       ),
+      GoRoute(path: '/log-center', builder: (_, __) => const LogCenterPage()),
       GoRoute(
         path: '/:tab',
         pageBuilder: (context, state) => const NoTransitionPage<void>(

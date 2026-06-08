@@ -26,10 +26,16 @@ class GlobalDrawerSwipeArea extends ConsumerStatefulWidget {
   final double edgeWidth;
   final double openThreshold;
 
-  const GlobalDrawerSwipeArea({super.key, required this.child, this.edgeWidth = 32, this.openThreshold = 24});
+  const GlobalDrawerSwipeArea({
+    super.key,
+    required this.child,
+    this.edgeWidth = 32,
+    this.openThreshold = 24,
+  });
 
   @override
-  ConsumerState<GlobalDrawerSwipeArea> createState() => _GlobalDrawerSwipeAreaState();
+  ConsumerState<GlobalDrawerSwipeArea> createState() =>
+      _GlobalDrawerSwipeAreaState();
 }
 
 class _GlobalDrawerSwipeAreaState extends ConsumerState<GlobalDrawerSwipeArea> {
@@ -121,7 +127,9 @@ class _GlobalDrawerPanel extends StatelessWidget {
 
   Future<void> _close() => shadcn.closeDrawer<void>(drawerContext);
 
-  void _afterClose(void Function(NavigatorState nav, BuildContext context) action) {
+  void _afterClose(
+    void Function(NavigatorState nav, BuildContext context) action,
+  ) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final nav = navigatorKey.currentState;
       final context = navigatorKey.currentContext;
@@ -159,6 +167,10 @@ class _GlobalDrawerPanel extends StatelessWidget {
     _afterClose((_, context) => LogOverlayManager.toggle(context));
   }
 
+  Future<void> _openLogCenter() async {
+    await _pushRoute('/log-center');
+  }
+
   Future<void> _restartServer() async {
     await _close();
     _afterClose((_, context) {
@@ -173,8 +185,14 @@ class _GlobalDrawerPanel extends StatelessWidget {
         title: const Text('重启服务器'),
         content: const Text('确定要重启服务器吗？重启期间服务会短暂不可用。'),
         actions: [
-          shadcn.Button.outline(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
-          shadcn.Button.destructive(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('重启')),
+          shadcn.Button.outline(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+          shadcn.Button.destructive(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('重启'),
+          ),
         ],
       ),
     );
@@ -192,7 +210,9 @@ class _GlobalDrawerPanel extends StatelessWidget {
 
   Future<void> _switchAccount() async {
     await _close();
-    ref.read(authNotifierProvider.notifier).logout(redirectTo: '/login-history');
+    ref
+        .read(authNotifierProvider.notifier)
+        .logout(redirectTo: '/login-history');
   }
 
   Future<void> _logout() async {
@@ -222,10 +242,17 @@ class _GlobalDrawerPanel extends StatelessWidget {
             margin: tokens.edgeOnly(top: 6, right: 6, bottom: 6),
             decoration: BoxDecoration(
               color: cs.background,
-              border: Border.all(color: cs.border.withValues(alpha: 0.7), width: 0.8),
+              border: Border.all(
+                color: cs.border.withValues(alpha: 0.7),
+                width: 0.8,
+              ),
               borderRadius: BorderRadius.circular(theme.radiusLg),
               boxShadow: [
-                BoxShadow(color: cs.foreground.withValues(alpha: 0.08), blurRadius: 24, offset: const Offset(8, 0)),
+                BoxShadow(
+                  color: cs.foreground.withValues(alpha: 0.08),
+                  blurRadius: 24,
+                  offset: const Offset(8, 0),
+                ),
               ],
             ),
             child: LayoutBuilder(
@@ -238,13 +265,26 @@ class _GlobalDrawerPanel extends StatelessWidget {
                   labelType: shadcn.NavigationLabelType.expanded,
                   labelPosition: shadcn.NavigationLabelPosition.end,
                   labelSize: shadcn.NavigationLabelSize.large,
-                  padding: tokens.edgeOnly(left: 12, top: 8, right: 12, bottom: 10),
-                  constraints: BoxConstraints.tightFor(width: constraints.maxWidth, height: constraints.maxHeight),
+                  padding: tokens.edgeOnly(
+                    left: 12,
+                    top: 8,
+                    right: 12,
+                    bottom: 10,
+                  ),
+                  constraints: BoxConstraints.tightFor(
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                  ),
                   selectedKey: selectedKey,
                   header: [
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: tokens.edgeOnly(left: 14, top: 22, right: 8, bottom: 4),
+                        padding: tokens.edgeOnly(
+                          left: 14,
+                          top: 22,
+                          right: 8,
+                          bottom: 4,
+                        ),
                         child: _GlobalDrawerAccountHeader(
                           user: user,
                           server: AppConfig.baseUrl,
@@ -253,18 +293,36 @@ class _GlobalDrawerPanel extends StatelessWidget {
                             size: shadcn.ButtonSize.small,
                             density: shadcn.ButtonDensity.iconDense,
                             onPressed: _close,
-                            icon: const SizedBox(width: 32, height: 32, child: Icon(shadcn.LucideIcons.x, size: 20)),
+                            icon: const SizedBox(
+                              width: 32,
+                              height: 32,
+                              child: Icon(shadcn.LucideIcons.x, size: 20),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    shadcn.NavigationDivider(color: cs.border.withValues(alpha: 0.72)),
+                    shadcn.NavigationDivider(
+                      color: cs.border.withValues(alpha: 0.72),
+                    ),
                   ],
                   footer: [
-                    shadcn.NavigationDivider(color: cs.border.withValues(alpha: 0.72)),
-                    _navButton(context, label: '服务重启', icon: shadcn.LucideIcons.serverCog, onPressed: _restartServer),
+                    shadcn.NavigationDivider(
+                      color: cs.border.withValues(alpha: 0.72),
+                    ),
+                    _navButton(
+                      context,
+                      label: '服务重启',
+                      icon: shadcn.LucideIcons.serverCog,
+                      onPressed: _restartServer,
+                    ),
                     if (showAccountSwitcher)
-                      _navButton(context, label: '切换账号', icon: shadcn.LucideIcons.users, onPressed: _switchAccount),
+                      _navButton(
+                        context,
+                        label: '切换账号',
+                        icon: shadcn.LucideIcons.users,
+                        onPressed: _switchAccount,
+                      ),
                     _navButton(
                       context,
                       label: '退出登录',
@@ -349,7 +407,18 @@ class _GlobalDrawerPanel extends StatelessWidget {
                         icon: shadcn.LucideIcons.circleArrowUp,
                         onPressed: () => _pushRoute('/app-upgrade'),
                       ),
-                    _navButton(context, label: '日志中心', icon: shadcn.LucideIcons.terminal, onPressed: _openLogs),
+                    _navButton(
+                      context,
+                      label: '日志中心',
+                      icon: shadcn.LucideIcons.scrollText,
+                      onPressed: _openLogCenter,
+                    ),
+                    _navButton(
+                      context,
+                      label: '日志浮窗',
+                      icon: shadcn.LucideIcons.terminal,
+                      onPressed: _openLogs,
+                    ),
                     _navGap(context, 8),
                     _navSectionLabel(context, '用户权限'),
                     _navButton(
@@ -490,7 +559,11 @@ class _GlobalDrawerTokens {
 
   factory _GlobalDrawerTokens.of(BuildContext context) {
     final theme = shadcn.Theme.of(context);
-    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.72, 1.18);
+    final densityScale =
+        ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(
+          0.72,
+          1.18,
+        );
     final textScale = theme.scaling.clamp(0.86, 1.22);
     return _GlobalDrawerTokens._(
       theme: theme,
@@ -502,8 +575,17 @@ class _GlobalDrawerTokens {
 
   double size(num value) => value * densityScale;
 
-  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) =>
-      EdgeInsets.only(left: size(left), top: size(top), right: size(right), bottom: size(bottom));
+  EdgeInsets edgeOnly({
+    num left = 0,
+    num top = 0,
+    num right = 0,
+    num bottom = 0,
+  }) => EdgeInsets.only(
+    left: size(left),
+    top: size(top),
+    right: size(right),
+    bottom: size(bottom),
+  );
 }
 
 class _GlobalDrawerAccountHeader extends StatelessWidget {
@@ -512,7 +594,12 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
   final Object? authInfo;
   final Widget? trailing;
 
-  const _GlobalDrawerAccountHeader({required this.user, required this.server, required this.authInfo, this.trailing});
+  const _GlobalDrawerAccountHeader({
+    required this.user,
+    required this.server,
+    required this.authInfo,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -522,7 +609,9 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
     final username = _userName(user);
     final authEmail = _authInfoEmail(authInfo, user);
     final authTime = _authInfoTime(authInfo);
-    final initial = username.isNotEmpty ? username.characters.first.toUpperCase() : '?';
+    final initial = username.isNotEmpty
+        ? username.characters.first.toUpperCase()
+        : '?';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -530,7 +619,11 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
       children: [
         Row(
           children: [
-            shadcn.Avatar(initials: initial, size: tokens.size(40), backgroundColor: cs.primary),
+            shadcn.Avatar(
+              initials: initial,
+              size: tokens.size(40),
+              backgroundColor: cs.primary,
+            ),
             SizedBox(width: tokens.size(11)),
             Expanded(
               child: Column(
@@ -540,19 +633,27 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
                     username.isEmpty ? '未登录用户' : username,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.typography.base.copyWith(color: cs.foreground, fontWeight: FontWeight.w800),
+                    style: theme.typography.base.copyWith(
+                      color: cs.foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   SizedBox(height: tokens.size(3)),
                   Text(
                     server,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.typography.small.copyWith(color: cs.mutedForeground),
+                    style: theme.typography.small.copyWith(
+                      color: cs.mutedForeground,
+                    ),
                   ),
                 ],
               ),
             ),
-            if (trailing != null) ...[SizedBox(width: tokens.size(6)), trailing!],
+            if (trailing != null) ...[
+              SizedBox(width: tokens.size(6)),
+              trailing!,
+            ],
           ],
         ),
         SizedBox(height: tokens.size(13)),
@@ -592,7 +693,11 @@ class _GlobalDrawerAuthLine extends StatelessWidget {
   final String label;
   final String value;
 
-  const _GlobalDrawerAuthLine({required this.icon, required this.label, required this.value});
+  const _GlobalDrawerAuthLine({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -608,7 +713,11 @@ class _GlobalDrawerAuthLine extends StatelessWidget {
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: theme.typography.small.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w700, height: 1.1),
+          style: theme.typography.small.copyWith(
+            color: cs.mutedForeground,
+            fontWeight: FontWeight.w700,
+            height: 1.1,
+          ),
         ),
         SizedBox(width: tokens.size(8)),
         Expanded(
@@ -617,7 +726,11 @@ class _GlobalDrawerAuthLine extends StatelessWidget {
             maxLines: 1,
             textAlign: TextAlign.right,
             overflow: TextOverflow.ellipsis,
-            style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w800, height: 1.1),
+            style: theme.typography.small.copyWith(
+              color: cs.foreground,
+              fontWeight: FontWeight.w800,
+              height: 1.1,
+            ),
           ),
         ),
       ],
@@ -650,11 +763,20 @@ String _userEmail(dynamic user) {
 }
 
 String _authInfoEmail(Object? authInfo, dynamic user) {
-  final email = _findAuthInfoValue(authInfo, const ['email', 'mail', 'user_email', 'invite_email']);
+  final email = _findAuthInfoValue(authInfo, const [
+    'email',
+    'mail',
+    'user_email',
+    'invite_email',
+  ]);
   final emailText = _stringValue(email);
   if (emailText.isNotEmpty) return emailText;
 
-  final username = _findAuthInfoValue(authInfo, const ['username', 'user_name', 'name']);
+  final username = _findAuthInfoValue(authInfo, const [
+    'username',
+    'user_name',
+    'name',
+  ]);
   final usernameText = _stringValue(username);
   if (_looksLikeEmail(usernameText)) return usernameText;
 
@@ -731,14 +853,20 @@ String _formatAuthTimestamp(num value) {
   final timestamp = value.toInt();
   if (timestamp <= 0) return '';
   if (timestamp > 100000000000) {
-    return formatDateTimeMinute(DateTime.fromMillisecondsSinceEpoch(timestamp).toLocal());
+    return formatDateTimeMinute(
+      DateTime.fromMillisecondsSinceEpoch(timestamp).toLocal(),
+    );
   }
   if (timestamp > 1000000000) {
-    return formatDateTimeMinute(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal());
+    return formatDateTimeMinute(
+      DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal(),
+    );
   }
   return timestamp.toString();
 }
 
-String _stringValue(dynamic value) => value == null ? '' : value.toString().trim();
+String _stringValue(dynamic value) =>
+    value == null ? '' : value.toString().trim();
 
-bool _looksLikeEmail(String value) => value.contains('@') && value.contains('.');
+bool _looksLikeEmail(String value) =>
+    value.contains('@') && value.contains('.');
