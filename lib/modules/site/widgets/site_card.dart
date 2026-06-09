@@ -930,16 +930,27 @@ String _trimSiteTime(String? text) {
   return value.replaceFirst(RegExp(r'\.(\d+)(?=(?:Z|[+-]\d{2}:?\d{2})?$)'), '');
 }
 
-String _localSiteIconUrl(String siteName) {
+const _localSiteIconExtensions = <String>[
+  'png',
+  'gif',
+  'jpg',
+  'jpeg',
+  'webp',
+  'ico',
+];
+
+List<String> _localSiteIconUrls(String siteName) {
   final name = siteName.trim();
   final base = AppConfig.baseUrl.trim();
-  if (name.isEmpty || base.isEmpty) return '';
+  if (name.isEmpty || base.isEmpty) return const <String>[];
 
   final baseUri = Uri.tryParse(base.endsWith('/') ? base : '$base/');
-  if (baseUri == null || !baseUri.hasScheme) return '';
-  return baseUri
-      .resolve('local/icons/${Uri.encodeComponent(name)}.png')
-      .toString();
+  if (baseUri == null || !baseUri.hasScheme) return const <String>[];
+  final encodedName = Uri.encodeComponent(name);
+  return [
+    for (final ext in _localSiteIconExtensions)
+      baseUri.resolve('local/icons/$encodedName.$ext').toString(),
+  ];
 }
 
 Map<String, String>? _localSiteIconHeaders() {
@@ -980,35 +991,49 @@ class _SiteLogoImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localIcon = _localSiteIconUrl(siteName);
+    final localIcons = _localSiteIconUrls(siteName);
     final siteLogo = _siteLogoUrl(config);
     final fallback = _fallback();
+    final localHeaders = _localSiteIconHeaders();
+    final candidates = [
+      for (final url in localIcons)
+        _LogoCandidate(url: url, headers: localHeaders),
+      if (siteLogo.isNotEmpty) _LogoCandidate(url: siteLogo),
+    ];
 
     return Container(
       width: size,
       height: size,
       decoration: decoration,
       clipBehavior: Clip.antiAlias,
-      child: localIcon.isEmpty
-          ? _cachedImage(siteLogo, fallback: fallback)
-          : CachedNetworkImage(
-              imageUrl: localIcon,
-              httpHeaders: _localSiteIconHeaders(),
-              fit: BoxFit.cover,
-              placeholder: (_, __) => fallback,
-              errorWidget: (_, __, ___) =>
-                  _cachedImage(siteLogo, fallback: fallback),
-            ),
+      child: _cachedImageCandidates(candidates, fallback: fallback),
     );
   }
 
-  Widget _cachedImage(String url, {required Widget fallback}) {
-    if (url.isEmpty) return fallback;
+  Widget _cachedImageCandidates(
+    List<_LogoCandidate> candidates, {
+    required Widget fallback,
+    int index = 0,
+  }) {
+    if (index >= candidates.length) return fallback;
+    final candidate = candidates[index];
+    if (candidate.url.isEmpty) {
+      return _cachedImageCandidates(
+        candidates,
+        fallback: fallback,
+        index: index + 1,
+      );
+    }
     return CachedNetworkImage(
-      imageUrl: url,
+      imageUrl: candidate.url,
+      httpHeaders: candidate.headers,
       fit: BoxFit.cover,
       placeholder: (_, __) => fallback,
-      errorWidget: (_, __, ___) => fallback,
+      errorWidget: (_, __, ___) => _cachedImageCandidates(
+        candidates,
+        fallback: fallback,
+        index: index + 1,
+      ),
     );
   }
 
@@ -1020,6 +1045,13 @@ class _SiteLogoImage extends StatelessWidget {
     final text = name.isEmpty ? '?' : name.substring(0, 1).toUpperCase();
     return Center(child: Text(text, style: fallbackStyle));
   }
+}
+
+class _LogoCandidate {
+  final String url;
+  final Map<String, String>? headers;
+
+  const _LogoCandidate({required this.url, this.headers});
 }
 
 Widget _siteBrowserLogo({
