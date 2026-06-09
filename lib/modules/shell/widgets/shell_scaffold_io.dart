@@ -171,7 +171,7 @@ class ShellScaffold extends ConsumerWidget {
   }
 }
 
-class _CustomShellScaffoldBody extends StatelessWidget {
+class _CustomShellScaffoldBody extends ConsumerWidget {
   final Widget header;
   final Widget child;
   final int selectedIndex;
@@ -195,7 +195,7 @@ class _CustomShellScaffoldBody extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Stack(
       children: [
         const Positioned.fill(child: _ShellBackground()),

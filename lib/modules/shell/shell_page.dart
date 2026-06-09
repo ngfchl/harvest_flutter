@@ -258,6 +258,13 @@ class _ShellPageState extends ConsumerState<ShellPage> {
   // ── 抽屉 ──
 
   void _openDrawer() {
+    if (context.isDesktop) {
+      final notifier = ref.read(
+        desktopNavigationSidebarVisibleProvider.notifier,
+      );
+      notifier.state = !notifier.state;
+      return;
+    }
     if (!mounted || _drawerOpening) return;
     _drawerOpening = true;
     unawaited(
@@ -297,6 +304,9 @@ class _ShellPageState extends ConsumerState<ShellPage> {
         if (!n.isRead) n,
     ];
     final colors = shadcn.Theme.of(context).colorScheme;
+    if (context.isDesktop) {
+      ref.watch(desktopNavigationSidebarVisibleProvider);
+    }
     if (currentIndex < _primaryPageCount) {
       _lastPrimaryIndex = currentIndex;
     }

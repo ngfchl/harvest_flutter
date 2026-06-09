@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/platform/platform_tool.dart';
+import 'package:harvest/core/utils/ui/responsive.dart';
 import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/notice/provider/notice_provider.dart';
@@ -128,13 +129,13 @@ class _MyAppState extends ConsumerState<MyApp>
       }
 
       final size = await windowManager.getSize();
-      
+
       // 验证尺寸有效性
       if (size.width <= 0 || size.height <= 0) {
         debugPrint('窗口尺寸无效: ${size.width}x${size.height}');
         return;
       }
-      
+
       // Windows 下检查尺寸是否合理
       if (PlatformTool.isWindows()) {
         if (size.width < 400 || size.height < 300) {
@@ -253,7 +254,7 @@ class _MyAppState extends ConsumerState<MyApp>
         return _GlobalKeyboardDismiss(
           child: DesktopWindowControlsOverlay(
             child: shadcn.DrawerOverlay(
-              child: loggedIn ? GlobalDrawerSwipeArea(child: content) : content,
+              child: loggedIn ? _LoggedInAppChrome(child: content) : content,
             ),
           ),
         );
@@ -294,6 +295,31 @@ class _MyAppState extends ConsumerState<MyApp>
       return;
     }
     _scheduleBackgroundNoticeRefreshTimer();
+  }
+}
+
+class _LoggedInAppChrome extends ConsumerWidget {
+  final Widget child;
+
+  const _LoggedInAppChrome({required this.child});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!context.isDesktop) {
+      return GlobalDrawerSwipeArea(child: child);
+    }
+    final sidebarVisible = ref.watch(desktopNavigationSidebarVisibleProvider);
+
+    return Row(
+      children: [
+        if (sidebarVisible)
+          SizedBox(
+            width: 260,
+            child: GlobalNavigationSidebar(ref: ref, persistent: true),
+          ),
+        Expanded(child: child),
+      ],
+    );
   }
 }
 

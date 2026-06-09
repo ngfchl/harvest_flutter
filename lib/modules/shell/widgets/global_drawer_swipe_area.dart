@@ -21,6 +21,10 @@ import 'package:harvest/modules/user/provider/user_management_provider.dart';
 import 'package:harvest/modules/user/user_management_page.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
+final desktopNavigationSidebarVisibleProvider = StateProvider<bool>(
+  (_) => true,
+);
+
 class GlobalDrawerSwipeArea extends ConsumerStatefulWidget {
   final Widget child;
   final double edgeWidth;
@@ -112,20 +116,29 @@ Future<void> showGlobalDrawer(BuildContext context, WidgetRef ref) async {
       widthFactor: 1,
       child: SizedBox(
         width: width,
-        child: _GlobalDrawerPanel(drawerContext: drawerContext, ref: ref),
+        child: GlobalNavigationSidebar(drawerContext: drawerContext, ref: ref),
       ),
     ),
   );
   await completer.future;
 }
 
-class _GlobalDrawerPanel extends StatelessWidget {
-  final BuildContext drawerContext;
+class GlobalNavigationSidebar extends StatelessWidget {
+  final BuildContext? drawerContext;
   final WidgetRef ref;
+  final bool persistent;
 
-  const _GlobalDrawerPanel({required this.drawerContext, required this.ref});
+  const GlobalNavigationSidebar({
+    super.key,
+    required this.ref,
+    this.drawerContext,
+    this.persistent = false,
+  });
 
-  Future<void> _close() => shadcn.closeDrawer<void>(drawerContext);
+  Future<void> _close() {
+    if (persistent || drawerContext == null) return Future<void>.value();
+    return shadcn.closeDrawer<void>(drawerContext!);
+  }
 
   void _afterClose(
     void Function(NavigatorState nav, BuildContext context) action,
@@ -281,7 +294,7 @@ class _GlobalDrawerPanel extends StatelessWidget {
                       child: Padding(
                         padding: tokens.edgeOnly(
                           left: 14,
-                          top: 22,
+                          top: persistent ? 46 : 22,
                           right: 8,
                           bottom: 4,
                         ),
@@ -289,16 +302,18 @@ class _GlobalDrawerPanel extends StatelessWidget {
                           user: user,
                           server: AppConfig.baseUrl,
                           authInfo: authInfo,
-                          trailing: shadcn.IconButton.ghost(
-                            size: shadcn.ButtonSize.small,
-                            density: shadcn.ButtonDensity.iconDense,
-                            onPressed: _close,
-                            icon: const SizedBox(
-                              width: 32,
-                              height: 32,
-                              child: Icon(shadcn.LucideIcons.x, size: 20),
-                            ),
-                          ),
+                          trailing: persistent
+                              ? null
+                              : shadcn.IconButton.ghost(
+                                  size: shadcn.ButtonSize.small,
+                                  density: shadcn.ButtonDensity.iconDense,
+                                  onPressed: _close,
+                                  icon: const SizedBox(
+                                    width: 32,
+                                    height: 32,
+                                    child: Icon(shadcn.LucideIcons.x, size: 20),
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -721,15 +736,25 @@ class _GlobalDrawerAuthLine extends StatelessWidget {
         ),
         SizedBox(width: tokens.size(8)),
         Expanded(
-          child: Text(
-            value,
-            maxLines: 1,
-            textAlign: TextAlign.right,
-            overflow: TextOverflow.ellipsis,
-            style: theme.typography.small.copyWith(
-              color: cs.foreground,
-              fontWeight: FontWeight.w800,
-              height: 1.1,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 150),
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  textAlign: TextAlign.right,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.typography.small.copyWith(
+                    color: cs.foreground,
+                    fontWeight: FontWeight.w800,
+                    height: 1.1,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
