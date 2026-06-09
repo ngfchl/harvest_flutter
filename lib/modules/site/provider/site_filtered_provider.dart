@@ -130,11 +130,11 @@ List<SiteInfo> _applyFilter(
 
 List<String> _dashboardIdentityOptions(Iterable<KV> items) {
   final values = items
-      .map((item) => item.name.trim())
+      .map((item) => _normalizeIdentity(item.name))
       .where((value) => value.isNotEmpty)
       .toSet()
       .toList();
-  values.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+  values.sort();
   return values;
 }
 

@@ -418,7 +418,8 @@ class SiteFilterPanel extends ConsumerWidget {
           visualDensity: VisualDensity.compact,
         ),
         ...values.map((value) {
-          final active = selectedValue == value;
+          final active =
+              _normalizeIdentity(selectedValue) == _normalizeIdentity(value);
           return FilterChip(
             label: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: maxLabelWidth),
@@ -448,6 +449,9 @@ class SiteFilterPanel extends ConsumerWidget {
       ],
     );
   }
+
+  static String _normalizeIdentity(String? value) =>
+      value?.trim().toLowerCase() ?? '';
 
   Widget _section(BuildContext context, String label, Widget child) {
     final theme = shadcn.Theme.of(context);

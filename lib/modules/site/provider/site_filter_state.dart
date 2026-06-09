@@ -203,7 +203,11 @@ class SiteFilterState extends ChangeNotifier {
   }
 
   void setUsername(String username) {
-    _selectedUsername = _selectedUsername == username ? null : username;
+    final normalized = _normalizeIdentity(username);
+    if (normalized.isEmpty) return;
+    _selectedUsername = _normalizeIdentity(_selectedUsername) == normalized
+        ? null
+        : normalized;
     notifyListeners();
   }
 
@@ -214,7 +218,11 @@ class SiteFilterState extends ChangeNotifier {
   }
 
   void setEmail(String email) {
-    _selectedEmail = _selectedEmail == email ? null : email;
+    final normalized = _normalizeIdentity(email);
+    if (normalized.isEmpty) return;
+    _selectedEmail = _normalizeIdentity(_selectedEmail) == normalized
+        ? null
+        : normalized;
     notifyListeners();
   }
 
@@ -265,4 +273,7 @@ class SiteFilterState extends ChangeNotifier {
   static bool _defaultSortAscending(SortField field) {
     return field == SortField.updatedAt || field == SortField.sortId;
   }
+
+  static String _normalizeIdentity(String? value) =>
+      value?.trim().toLowerCase() ?? '';
 }
