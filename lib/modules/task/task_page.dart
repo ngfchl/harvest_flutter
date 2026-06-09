@@ -1518,32 +1518,34 @@ List<shadcn.MenuItem> _taskResultMenuItems(
   return [
     item(
       icon: shadcn.LucideIcons.fileText,
-      title: '详情',
+      title: '任务记录详情',
       onPressed: (ctx) async {
         unawaited(shadcn.closeOverlay(ctx));
         _TaskResultDetailDialog.show(context, ref, result);
       },
     ),
-    if (_taskResultCanTerminate(result))
+    if (_taskResultCanCancel(result))
       item(
-        icon: Icons.stop_rounded,
-        title: '终止',
+        icon: shadcn.LucideIcons.circleX,
+        title: '取消当前任务',
         destructive: true,
         onPressed: (ctx) async {
           unawaited(shadcn.closeOverlay(ctx));
-          _TaskResultTerminateDialog.show(context, ref, result);
+          _TaskResultCancelDialog.show(context, ref, result);
         },
       ),
-    const shadcn.MenuDivider(),
-    item(
-      icon: shadcn.LucideIcons.trash2,
-      title: '删除',
-      destructive: true,
-      onPressed: (ctx) async {
-        unawaited(shadcn.closeOverlay(ctx));
-        _TaskResultDeleteDialog.show(context, ref, result);
-      },
-    ),
+    if (_taskResultCanDeleteRecord(result)) ...[
+      const shadcn.MenuDivider(),
+      item(
+        icon: shadcn.LucideIcons.trash2,
+        title: '删除任务记录',
+        destructive: true,
+        onPressed: (ctx) async {
+          unawaited(shadcn.closeOverlay(ctx));
+          _TaskResultDeleteDialog.show(context, ref, result);
+        },
+      ),
+    ],
   ];
 }
 
@@ -1587,20 +1589,20 @@ class _TaskResultDeleteDialog {
   }
 }
 
-class _TaskResultTerminateDialog {
+class _TaskResultCancelDialog {
   static void show(BuildContext context, WidgetRef ref, TaskResult result) {
     final taskId = result.displayId.trim();
     if (taskId.isEmpty) {
-      Toast.warning('缺少任务 ID，无法终止');
+      Toast.warning('缺少任务 ID，无法取消');
       return;
     }
 
     shadcn.showDialog(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
-        leading: const Icon(Icons.stop_rounded),
-        title: const Text('终止任务'),
-        content: Text('确定要终止「${_taskResultDisplayTitle(result)}」吗？'),
+        leading: const Icon(shadcn.LucideIcons.circleX),
+        title: const Text('取消任务'),
+        content: Text('确定要取消「${_taskResultDisplayTitle(result)}」吗？'),
         actions: [
           shadcn.Button.outline(
             onPressed: () => closeAppSheet(ctx),
@@ -1613,13 +1615,13 @@ class _TaskResultTerminateDialog {
                 await ScheduleService.terminateTaskResult(taskId);
                 ref.invalidate(taskResultsProvider);
                 ref.invalidate(taskResultDetailProvider(taskId));
-                Toast.success('已发起终止');
+                Toast.success('已发起取消');
               } catch (e, st) {
-                AppLogger.error('终止任务失败', e, st);
-                Toast.error('终止任务失败');
+                AppLogger.error('取消任务失败', e, st);
+                Toast.error('取消任务失败');
               }
             },
-            child: const Text('终止'),
+            child: const Text('取消任务'),
           ),
         ],
       ),
@@ -1645,9 +1647,38 @@ bool _sameTaskResultText(String a, String b) {
   return left.isNotEmpty && left == right;
 }
 
-bool _taskResultCanTerminate(TaskResult result) {
-  return result.displayId.trim().isNotEmpty &&
-      result.status.trim().toLowerCase() == 'started';
+bool _taskResultCanCancel(TaskResult result) {
+  return result.displayId.trim().isNotEmpty && _taskResultIsActive(result);
+}
+
+bool _taskResultCanDeleteRecord(TaskResult result) {
+  return result.displayId.trim().isNotEmpty && _taskResultIsCompleted(result);
+}
+
+bool _taskResultIsActive(TaskResult result) {
+  return switch (result.status.trim().toLowerCase()) {
+    'started' ||
+    'running' ||
+    'progress' ||
+    'retry' ||
+    'pending' ||
+    'queued' ||
+    'received' => true,
+    _ => false,
+  };
+}
+
+bool _taskResultIsCompleted(TaskResult result) {
+  return switch (result.status.trim().toLowerCase()) {
+    'success' ||
+    'succeeded' ||
+    'done' ||
+    'failure' ||
+    'failed' ||
+    'error' ||
+    'revoked' => true,
+    _ => false,
+  };
 }
 
 String _taskResultMarkdownContent(TaskResult result, TaskResult? fallback) {
