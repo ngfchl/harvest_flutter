@@ -484,24 +484,26 @@ class NoticeDetailPage extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 18),
-                    MarkdownBody(
-                      data: current.content.trim().isEmpty
-                          ? '暂无内容'
-                          : current.content.trim(),
-                      selectable: true,
-                      fitContent: false,
-                      softLineBreak: true,
-                      extensionSet: null,
-                      styleSheet: _markdownStyleSheet(context),
-                      onTapLink: (text, href, title) {
-                        final url = href?.trim();
-                        if (url == null || url.isEmpty) return;
-                        BrowserPage.open(
-                          context,
-                          url: url,
-                          title: text.trim().isEmpty ? null : text.trim(),
-                        );
-                      },
+                    SelectionArea(
+                      child: MarkdownBody(
+                        data: current.content.trim().isEmpty
+                            ? '暂无内容'
+                            : current.content.trim(),
+                        selectable: false,
+                        fitContent: false,
+                        softLineBreak: true,
+                        extensionSet: null,
+                        styleSheet: _markdownStyleSheet(context),
+                        onTapLink: (text, href, title) {
+                          final url = href?.trim();
+                          if (url == null || url.isEmpty) return;
+                          BrowserPage.open(
+                            context,
+                            url: url,
+                            title: text.trim().isEmpty ? null : text.trim(),
+                          );
+                        },
+                      ),
                     ),
                     if (hasUrl) ...[
                       const SizedBox(height: 20),

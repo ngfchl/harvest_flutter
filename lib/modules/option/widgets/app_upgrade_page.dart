@@ -2169,21 +2169,23 @@ class _ChangeLog extends StatelessWidget {
     final data = (text ?? '').trim();
     if (data.isEmpty) return const _MessageBox(message: '暂无更新日志');
 
-    return MarkdownBody(
-      data: data,
-      selectable: true,
-      fitContent: false,
-      softLineBreak: true,
-      styleSheet: _changeLogMarkdownStyleSheet(context, compact: compact),
-      onTapLink: (label, href, title) {
-        final url = href?.trim();
-        if (url == null || url.isEmpty) return;
-        BrowserPage.open(
-          context,
-          url: url,
-          title: label.trim().isEmpty ? null : label.trim(),
-        );
-      },
+    return SelectionArea(
+      child: MarkdownBody(
+        data: data,
+        selectable: false,
+        fitContent: false,
+        softLineBreak: true,
+        styleSheet: _changeLogMarkdownStyleSheet(context, compact: compact),
+        onTapLink: (label, href, title) {
+          final url = href?.trim();
+          if (url == null || url.isEmpty) return;
+          BrowserPage.open(
+            context,
+            url: url,
+            title: label.trim().isEmpty ? null : label.trim(),
+          );
+        },
+      ),
     );
   }
 }

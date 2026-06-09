@@ -1437,13 +1437,15 @@ class _TaskResultDetailContent extends StatelessWidget {
             ),
             borderColor: cs.border.withValues(alpha: 0.64),
             child: SingleChildScrollView(
-              child: MarkdownBody(
-                data: content,
-                selectable: true,
-                fitContent: false,
-                softLineBreak: true,
-                extensionSet: null,
-                styleSheet: _taskResultMarkdownStyleSheet(context),
+              child: SelectionArea(
+                child: MarkdownBody(
+                  data: content,
+                  selectable: false,
+                  fitContent: false,
+                  softLineBreak: true,
+                  extensionSet: null,
+                  styleSheet: _taskResultMarkdownStyleSheet(context),
+                ),
               ),
             ),
           ),

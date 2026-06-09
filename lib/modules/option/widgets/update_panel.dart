@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart' show SelectionArea;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:harvest/core/theme/app_surface.dart';
@@ -580,24 +581,26 @@ class _CommitTimelineContent extends StatelessWidget {
           : highlighted
           ? cs.primary.withValues(alpha: 0.25)
           : null,
-      child: MarkdownBody(
-        data: message.trim().isEmpty ? '暂无更新日志' : message.trim(),
-        selectable: true,
-        fitContent: false,
-        softLineBreak: true,
-        styleSheet: _updateLogMarkdownStyleSheet(
-          context,
-          highlighted: highlighted,
-        ),
-        onTapLink: (text, href, title) {
-          final url = href?.trim();
-          if (url == null || url.isEmpty) return;
-          BrowserPage.open(
+      child: SelectionArea(
+        child: MarkdownBody(
+          data: message.trim().isEmpty ? '暂无更新日志' : message.trim(),
+          selectable: false,
+          fitContent: false,
+          softLineBreak: true,
+          styleSheet: _updateLogMarkdownStyleSheet(
             context,
-            url: url,
-            title: text.trim().isEmpty ? null : text.trim(),
-          );
-        },
+            highlighted: highlighted,
+          ),
+          onTapLink: (text, href, title) {
+            final url = href?.trim();
+            if (url == null || url.isEmpty) return;
+            BrowserPage.open(
+              context,
+              url: url,
+              title: text.trim().isEmpty ? null : text.trim(),
+            );
+          },
+        ),
       ),
     );
   }
@@ -687,21 +690,26 @@ class _RawLogBox extends StatelessWidget {
       width: double.infinity,
       child: AppSurfaceCard(
         padding: const EdgeInsets.all(8),
-        child: MarkdownBody(
-          data: text.trim().isEmpty ? '暂无更新日志' : text.trim(),
-          selectable: true,
-          fitContent: false,
-          softLineBreak: true,
-          styleSheet: _updateLogMarkdownStyleSheet(context, highlighted: false),
-          onTapLink: (label, href, title) {
-            final url = href?.trim();
-            if (url == null || url.isEmpty) return;
-            BrowserPage.open(
+        child: SelectionArea(
+          child: MarkdownBody(
+            data: text.trim().isEmpty ? '暂无更新日志' : text.trim(),
+            selectable: false,
+            fitContent: false,
+            softLineBreak: true,
+            styleSheet: _updateLogMarkdownStyleSheet(
               context,
-              url: url,
-              title: label.trim().isEmpty ? null : label.trim(),
-            );
-          },
+              highlighted: false,
+            ),
+            onTapLink: (label, href, title) {
+              final url = href?.trim();
+              if (url == null || url.isEmpty) return;
+              BrowserPage.open(
+                context,
+                url: url,
+                title: label.trim().isEmpty ? null : label.trim(),
+              );
+            },
+          ),
         ),
       ),
     );
