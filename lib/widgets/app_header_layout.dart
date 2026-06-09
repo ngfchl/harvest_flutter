@@ -9,7 +9,9 @@ const double kDesktopWindowControlsReservedWidth = 102;
 const double kDesktopWindowControlsLeadingReservedWidth = 90;
 
 double appHeaderLeadingInset(BuildContext context) {
-  if ((PlatformTool.isMacOS() || PlatformTool.isLinux()) && !context.isMobile) {
+  if (!PlatformTool.isWeb() &&
+      (PlatformTool.isMacOS() || PlatformTool.isLinux()) &&
+      !context.isMobile) {
     final sidebarVisible = ProviderScope.containerOf(
       context,
       listen: false,
@@ -23,7 +25,7 @@ double appHeaderLeadingInset(BuildContext context) {
 }
 
 double appHeaderTrailingInset(BuildContext context) {
-  if (PlatformTool.isWindows() && !context.isMobile) {
+  if (!PlatformTool.isWeb() && PlatformTool.isWindows() && !context.isMobile) {
     return kDesktopWindowControlsReservedWidth;
   }
   return 0;
