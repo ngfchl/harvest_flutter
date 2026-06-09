@@ -533,6 +533,7 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
   // ── 状态 ──
   bool _following = true;
   _LogSource _source = _LogSource.app;
+  int _selectionEpoch = 0;
 
   // ── 过滤 ──
   _FilterLevel _filter = _FilterLevel.all;
@@ -615,7 +616,10 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
     if (_source == source) return;
     _appTailTimer?.cancel();
     _cancelStream('切换日志源');
-    setState(() => _source = source);
+    setState(() {
+      _source = source;
+      _selectionEpoch++;
+    });
     widget.onSourceChanged?.call(source);
     if (source == _LogSource.app) {
       _startAppTailing();
@@ -631,6 +635,7 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
     _appTailTimer?.cancel();
     if (reset) {
       setState(() {
+        _selectionEpoch++;
         _appLines.clear();
         _appLastFileLength = 0;
         _appLogPath = null;
@@ -677,6 +682,7 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
         ? lines.sublist(lines.length - _streamLimit)
         : lines;
     setState(() {
+      _selectionEpoch++;
       _appLogPath = AppLogger.memoryLogPath;
       _appLastFileLength = lines.length;
       _appLines
@@ -705,6 +711,7 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
           ? lines.sublist(lines.length - _streamLimit)
           : lines;
       setState(() {
+        _selectionEpoch++;
         _appLogPath = file.path;
         _appLastFileLength = stat.size;
         _appLines
@@ -818,6 +825,8 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
         cancelToken: cancelToken,
       );
 
+      _markStreamConnected();
+
       var buffer = '';
       await for (final chunk in responseBody.stream) {
         if (cancelToken.isCancelled) break;
@@ -826,12 +835,7 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
             .replaceAll('\r\n', '\n')
             .replaceAll('\r', '\n');
 
-        while (buffer.contains('\n\n')) {
-          final index = buffer.indexOf('\n\n');
-          final event = buffer.substring(0, index).trim();
-          buffer = buffer.substring(index + 2);
-          _processStreamEvent(event);
-        }
+        buffer = _processStreamBuffer(buffer);
       }
 
       final remaining = buffer.trim();
@@ -845,6 +849,28 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
         _streamCancelToken = null;
       }
     }
+  }
+
+  String _processStreamBuffer(String buffer) {
+    while (buffer.contains('\n\n')) {
+      final index = buffer.indexOf('\n\n');
+      final event = buffer.substring(0, index).trim();
+      buffer = buffer.substring(index + 2);
+      _processStreamEvent(event);
+    }
+
+    if (!buffer.contains('\n')) return buffer;
+
+    final lines = buffer.split('\n');
+    final remaining = lines.removeLast();
+    for (final line in lines) {
+      final event = line.trim();
+      if (event.isEmpty || event.startsWith(':')) continue;
+      if (event.startsWith('data:') || event.startsWith('{')) {
+        _processStreamEvent(event);
+      }
+    }
+    return remaining;
   }
 
   void _cancelStream(String reason) {
@@ -861,38 +887,35 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
     if (jsonText.isEmpty) return;
 
     try {
-      final payload = jsonDecode(jsonText) as Map<String, dynamic>;
-      if (payload['code'] != 0 || payload['data'] is! Map) {
+      final decoded = jsonDecode(jsonText);
+      if (decoded is! Map) return;
+      final payload = Map<String, dynamic>.from(decoded);
+      final data = _streamEventData(payload);
+      if (data == null) {
         final msg = payload['msg']?.toString();
         if (msg != null && msg.isNotEmpty) _markStreamError(msg);
         return;
       }
 
-      final data = Map<String, dynamic>.from(payload['data'] as Map);
-      final type = data['type']?.toString();
-      final connectionId = data['connectionId']?.toString();
+      final type = data['type']?.toString().toLowerCase();
+      final connectionId =
+          data['connectionId']?.toString() ?? data['connection_id']?.toString();
 
-      if (type == 'connected') {
-        setState(() {
-          _connected = true;
-          _streamError = null;
-          _connectionId = connectionId;
-        });
+      if (type == 'connected' || type == 'connect' || type == 'open') {
+        _markStreamConnected(connectionId: connectionId);
         return;
       }
 
       if (type == 'heartbeat') {
-        setState(() {
-          _connected = true;
-          _streamError = null;
-          _connectionId = connectionId ?? _connectionId;
-          _lastHeartbeatAt = DateTime.now();
-        });
+        _markStreamConnected(connectionId: connectionId, heartbeat: true);
         return;
       }
 
       final entries = data['entries'];
-      if (entries is! List) return;
+      if (entries is! List) {
+        _markStreamConnected(connectionId: connectionId);
+        return;
+      }
       final lines = entries
           .whereType<Map>()
           .map((entry) => _entryLine(Map<String, dynamic>.from(entry)))
@@ -905,6 +928,7 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
         _streamError = null;
         _connectionId = connectionId ?? _connectionId;
         if (type == 'snapshot') {
+          _selectionEpoch++;
           _serverLines
             ..clear()
             ..addAll(lines);
@@ -930,6 +954,33 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
       }
     }
     return dataLines.join('\n').trim();
+  }
+
+  Map<String, dynamic>? _streamEventData(Map<String, dynamic> payload) {
+    final code = payload['code'];
+    if (payload.containsKey('data')) {
+      if (code is num && code != 0) return null;
+      final data = payload['data'];
+      if (data is Map) return Map<String, dynamic>.from(data);
+      if (data is List) return <String, dynamic>{'entries': data};
+      return null;
+    }
+    if (payload.containsKey('type') || payload.containsKey('entries')) {
+      return payload;
+    }
+    return null;
+  }
+
+  void _markStreamConnected({String? connectionId, bool heartbeat = false}) {
+    if (!mounted) return;
+    setState(() {
+      _connected = true;
+      _streamError = null;
+      _connectionId = connectionId ?? _connectionId;
+      if (heartbeat) {
+        _lastHeartbeatAt = DateTime.now();
+      }
+    });
   }
 
   String _entryLine(Map<String, dynamic> entry) {
@@ -985,6 +1036,25 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
     });
   }
 
+  void _scrollToTop() {
+    setState(() => _following = false);
+    widget.onFollowingChanged?.call(_following);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.minScrollExtent,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  void _jumpToBottom() {
+    setState(() => _following = true);
+    widget.onFollowingChanged?.call(_following);
+    _scrollToBottom();
+  }
+
   // ────────────────── 过滤后的行 ──────────────────
 
   List<_IndexedLine> get _filteredLines {
@@ -1021,7 +1091,10 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
   // ────────────────── 操作 ──────────────────
 
   void _clearLogs() {
-    setState(() => _lines.clear());
+    setState(() {
+      _selectionEpoch++;
+      _lines.clear();
+    });
     Toast.success('已清空');
   }
 
@@ -1130,6 +1203,9 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
     }
 
     return SelectionArea(
+      key: ValueKey(
+        'log-floating-selection-${_source.name}-${_filter.name}-$_selectionEpoch',
+      ),
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.symmetric(vertical: 4),
@@ -1204,9 +1280,9 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
                 fontSize: _logFontSize,
                 fontFamily: 'monospace',
                 height: 1.4,
+                overflow: TextOverflow.ellipsis,
               ),
               maxLines: 3,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -1243,6 +1319,16 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
                         icon: shadcn.LucideIcons.plus,
                         label: '放大',
                         onTap: () => _changeLogFontSize(1),
+                      ),
+                      _toolBtn(
+                        icon: Icons.vertical_align_top_rounded,
+                        label: '到顶',
+                        onTap: _scrollToTop,
+                      ),
+                      _toolBtn(
+                        icon: Icons.vertical_align_bottom_rounded,
+                        label: '到底',
+                        onTap: _jumpToBottom,
                       ),
                       Container(width: 0.5, height: 14, color: colors.border),
                       const SizedBox(width: 6),

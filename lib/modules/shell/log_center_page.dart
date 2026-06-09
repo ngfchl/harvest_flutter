@@ -43,6 +43,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
   _FilterLevel _filter = _FilterLevel.all;
   bool _following = true;
   double _logFontSize = _defaultLogFontSize;
+  int _selectionEpoch = 0;
 
   bool _loadingInitial = true;
   bool _loadingOlder = false;
@@ -58,6 +59,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
   Timer? _serverPollTimer;
   LogLevel _serverLevel = LogLevel.info;
   List<String> _serverLines = const [];
+  List<String> _serverKeys = const [];
   final Set<String> _serverSeenKeys = <String>{};
   int _serverLoadedCount = 0;
   int _serverTotal = 0;
@@ -120,6 +122,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
         _source = source;
         _loadingInitial = true;
         _error = null;
+        _selectionEpoch++;
       });
     }
     if (source == _LogPageSource.app) {
@@ -285,6 +288,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
       final prepend = _appAllLines.sublist(nextStart, _appVisibleStart);
       if (!mounted) return;
       setState(() {
+        _selectionEpoch++;
         _appVisibleStart = nextStart;
         _appVisibleLines = [...prepend, ..._appVisibleLines];
       });
@@ -302,10 +306,11 @@ class _LogCenterPageState extends State<LogCenterPage> {
       if (!mounted) return;
       setState(() {
         _serverLines = normalized.lines;
+        _serverKeys = normalized.keys;
         _serverSeenKeys
           ..clear()
           ..addAll(normalized.keys);
-        _serverLoadedCount = page.items.length;
+        _serverLoadedCount = normalized.keys.length;
         _serverTotal = page.total;
         _serverLastUpdatedAt = DateTime.now();
         _serverNotice = '服务端日志支持分页读取；页面会自动补最新日志';
@@ -338,18 +343,22 @@ class _LogCenterPageState extends State<LogCenterPage> {
     try {
       final page = await _fetchServerPage(offset: 0);
       final normalized = _normalizeServerBatch(page.items);
-      final overlap = _tailPrefixOverlap(
-        _serverLines.map(_serverLineKey).toList(),
-        normalized.keys,
-      );
-      final appendedLines = normalized.lines.sublist(overlap);
-      final appendedKeys = normalized.keys.sublist(overlap);
+      final overlap = _tailPrefixOverlap(_serverKeys, normalized.keys);
+      final appendedLines = <String>[];
+      final appendedKeys = <String>[];
+      for (var i = overlap; i < normalized.keys.length; i++) {
+        final key = normalized.keys[i];
+        if (_serverSeenKeys.contains(key)) continue;
+        appendedKeys.add(key);
+        appendedLines.add(normalized.lines[i]);
+      }
       if (!mounted) return;
       setState(() {
         if (appendedLines.isNotEmpty) {
           _serverLines = [..._serverLines, ...appendedLines];
+          _serverKeys = [..._serverKeys, ...appendedKeys];
           _serverSeenKeys.addAll(appendedKeys);
-          _serverLoadedCount += appendedLines.length;
+          _serverLoadedCount = _serverKeys.length;
         }
         _serverTotal = page.total;
         _serverLastUpdatedAt = DateTime.now();
@@ -384,17 +393,29 @@ class _LogCenterPageState extends State<LogCenterPage> {
       await _syncLatestServer(silent: true);
       final page = await _fetchServerPage(offset: _serverLoadedCount);
       final normalized = _normalizeServerBatch(page.items);
+      final prependLines = <String>[];
+      final prependKeys = <String>[];
+      for (var i = 0; i < normalized.keys.length; i++) {
+        final key = normalized.keys[i];
+        if (_serverSeenKeys.contains(key)) continue;
+        prependKeys.add(key);
+        prependLines.add(normalized.lines[i]);
+      }
       if (!mounted) return;
       setState(() {
-        _serverLines = [...normalized.lines, ..._serverLines];
-        _serverSeenKeys.addAll(normalized.keys);
-        _serverLoadedCount += page.items.length;
+        if (prependLines.isNotEmpty) _selectionEpoch++;
+        if (prependLines.isNotEmpty) {
+          _serverLines = [...prependLines, ..._serverLines];
+          _serverKeys = [...prependKeys, ..._serverKeys];
+          _serverSeenKeys.addAll(prependKeys);
+        }
+        _serverLoadedCount = _serverKeys.length;
         _serverTotal = page.total;
         _serverLastUpdatedAt = DateTime.now();
         _error = null;
       });
       _restorePrependOffset(previousOffset, previousMaxExtent);
-      Toast.success('加载了 ${normalized.lines.length} 条更早日志');
+      Toast.success('加载了 ${prependLines.length} 条更早日志');
     } catch (e) {
       if (mounted) {
         setState(() => _error = '读取服务端历史日志失败: $e');
@@ -486,6 +507,23 @@ class _LogCenterPageState extends State<LogCenterPage> {
     });
   }
 
+  void _scrollToTop() {
+    setState(() => _following = false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.minScrollExtent,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  void _jumpToBottom() {
+    setState(() => _following = true);
+    _scrollToBottom();
+  }
+
   Future<void> _loadOlder() async {
     if (_source == _LogPageSource.app) {
       await _loadOlderApp();
@@ -535,11 +573,15 @@ class _LogCenterPageState extends State<LogCenterPage> {
   void _clearLogs() {
     setState(() {
       if (_source == _LogPageSource.app) {
+        _selectionEpoch++;
         _appVisibleLines = const [];
         _appVisibleStart = _appAllLines.length;
       } else {
+        _selectionEpoch++;
         _serverLines = const [];
+        _serverKeys = const [];
         _serverSeenKeys.clear();
+        _serverLoadedCount = 0;
       }
     });
     Toast.success('当前视图已清空');
@@ -727,8 +769,8 @@ class _LogCenterPageState extends State<LogCenterPage> {
               children: [
                 Text(
                   _source == _LogPageSource.app
-                      ? '默认显示最新一页，顶部下拉获取更早日志，底部上拉检查最新日志。'
-                      : '默认拉取最新窗口，顶部下拉读取更早分页，底部上拉同步最新写入。',
+                      ? '顶部下拉获取更早日志，底部上拉检查最新日志。'
+                      : '顶部下拉读取更早分页，底部上拉同步最新写入。',
                   style: theme.typography.small.copyWith(
                     color: colors.foreground,
                     fontWeight: FontWeight.w600,
@@ -868,6 +910,9 @@ class _LogCenterPageState extends State<LogCenterPage> {
       );
     }
     return SelectionArea(
+      key: ValueKey(
+        'log-center-selection-${_source.name}-${_filter.name}-$_selectionEpoch',
+      ),
       child: ListView.builder(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
@@ -979,6 +1024,18 @@ class _LogCenterPageState extends State<LogCenterPage> {
                     icon: shadcn.LucideIcons.plus,
                     label: '放大',
                     onTap: () => _changeLogFontSize(1),
+                  ),
+                  _toolBtn(
+                    context,
+                    icon: Icons.vertical_align_top_rounded,
+                    label: '到顶',
+                    onTap: _scrollToTop,
+                  ),
+                  _toolBtn(
+                    context,
+                    icon: Icons.vertical_align_bottom_rounded,
+                    label: '到底',
+                    onTap: _jumpToBottom,
                   ),
                   _toolBtn(
                     context,
@@ -1265,8 +1322,6 @@ class _LogCenterPageState extends State<LogCenterPage> {
         '';
     return '$timestamp|$level|$message';
   }
-
-  String _serverLineKey(String line) => line;
 }
 
 class _IndexedLine {
