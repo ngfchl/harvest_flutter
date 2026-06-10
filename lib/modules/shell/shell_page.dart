@@ -76,7 +76,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
     '检索影视信息与站点资源',
   ];
 
-  final _screenshotKey = GlobalKey();
+  final _bodyScreenshotKey = GlobalKey();
   bool _capturing = false;
   bool _drawerOpening = false;
   bool _exitDialogOpen = false;
@@ -168,10 +168,10 @@ class _ShellPageState extends ConsumerState<ShellPage> {
       final bytes =
           (sc != null && sc.hasClients && sc.position.maxScrollExtent > 0)
           ? await ScreenshotSaver.captureLong(
-              scrollKey: _screenshotKey,
+              scrollKey: _bodyScreenshotKey,
               scrollController: sc,
             )
-          : await ScreenshotSaver.capture(_screenshotKey);
+          : await ScreenshotSaver.capture(_bodyScreenshotKey);
 
       if (!wasPrivacyMode && mounted && ref.read(privacyModeProvider)) {
         ref.read(privacyModeProvider.notifier).toggle();
@@ -369,7 +369,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
           child: Stack(
             children: [
               RepaintBoundary(
-                key: _screenshotKey,
+                key: _bodyScreenshotKey,
                 child: PageView(
                   controller: _pageController,
                   physics: const NeverScrollableScrollPhysics(),
