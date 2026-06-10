@@ -545,6 +545,8 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
   static const double _minLogFontSize = 8;
   static const double _maxLogFontSize = 16;
   static const double _defaultLogFontSize = 12;
+  static const int _maxStreamReconnectAttempts = 3;
+  static const Duration _streamReconnectDelay = Duration(seconds: 2);
   static const List<LogLevel> _streamLevels = [
     LogLevel.debug,
     LogLevel.info,
@@ -560,6 +562,7 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
   int _appLastFileLength = 0;
   String? _appLogPath;
   CancelToken? _streamCancelToken;
+  Timer? _streamReconnectTimer;
   String? _connectionId;
   String? _streamError;
   bool _connected = false;
@@ -581,6 +584,7 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
   void dispose() {
     _appTailTimer?.cancel();
     _cancelStream('日志浮窗关闭');
+    _streamReconnectTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -798,19 +802,30 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
 
   // ────────────────── 后端日志 SSE ──────────────────
 
-  Future<void> _connectStream({bool resetLines = false}) async {
-    _cancelStream('重新连接日志流');
+  Future<void> _connectStream({
+    bool resetLines = false,
+    int reconnectAttempt = 0,
+  }) async {
+    if (reconnectAttempt == 0) {
+      _cancelStream('重新连接日志流');
+      _streamReconnectTimer?.cancel();
+      _streamReconnectTimer = null;
+    }
     final cancelToken = CancelToken();
     _streamCancelToken = cancelToken;
     if (mounted) {
       setState(() {
         if (resetLines) _serverLines.clear();
         _connected = false;
-        _streamError = null;
-        _connectionId = null;
+        _streamError = reconnectAttempt == 0
+            ? null
+            : '日志流重连中 ($reconnectAttempt/$_maxStreamReconnectAttempts)...';
+        if (reconnectAttempt == 0) _connectionId = null;
         _lastHeartbeatAt = null;
       });
     }
+    var shouldReconnect = false;
+    var disconnectMessage = '日志流已断开';
     try {
       final responseBody = await Http.get<ResponseBody>(
         '/api/auth/logs/stream',
@@ -840,13 +855,26 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
 
       final remaining = buffer.trim();
       if (remaining.isNotEmpty) _processStreamEvent(remaining);
+      if (!cancelToken.isCancelled) {
+        shouldReconnect = true;
+        disconnectMessage = '日志流已断开';
+      }
     } on DioException catch (e) {
-      if (!cancelToken.isCancelled) _markStreamError(e.message ?? e.toString());
+      if (!cancelToken.isCancelled) {
+        shouldReconnect = true;
+        disconnectMessage = e.message ?? e.toString();
+      }
     } catch (e) {
-      if (!cancelToken.isCancelled) _markStreamError(e.toString());
+      if (!cancelToken.isCancelled) {
+        shouldReconnect = true;
+        disconnectMessage = e.toString();
+      }
     } finally {
       if (identical(_streamCancelToken, cancelToken)) {
         _streamCancelToken = null;
+        if (shouldReconnect) {
+          _scheduleStreamReconnect(disconnectMessage, reconnectAttempt);
+        }
       }
     }
   }
@@ -874,11 +902,39 @@ class _LogFloatingWidgetState extends State<_LogFloatingWidget> {
   }
 
   void _cancelStream(String reason) {
+    _streamReconnectTimer?.cancel();
+    _streamReconnectTimer = null;
     final token = _streamCancelToken;
     _streamCancelToken = null;
     if (token != null && !token.isCancelled) {
       token.cancel(reason);
     }
+  }
+
+  void _scheduleStreamReconnect(String message, int currentAttempt) {
+    if (!mounted || _source != _LogSource.server) return;
+    if (currentAttempt >= _maxStreamReconnectAttempts) {
+      _markStreamError(
+        '日志流断开: $message，重试 $_maxStreamReconnectAttempts 次失败，已断开',
+      );
+      return;
+    }
+
+    final nextAttempt = currentAttempt + 1;
+    setState(() {
+      _connected = false;
+      _streamError =
+          '日志流断开，${_streamReconnectDelay.inSeconds}s 后重连 ($nextAttempt/$_maxStreamReconnectAttempts)';
+      _serverLines.add('[WARN] $_streamError: $message');
+      _trimLogLines(_serverLines);
+    });
+    if (_source == _LogSource.server && _following) _scrollToBottom();
+
+    _streamReconnectTimer?.cancel();
+    _streamReconnectTimer = Timer(_streamReconnectDelay, () {
+      if (!mounted || _source != _LogSource.server) return;
+      _connectStream(reconnectAttempt: nextAttempt);
+    });
   }
 
   void _processStreamEvent(String event) {
