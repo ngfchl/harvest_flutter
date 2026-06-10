@@ -1614,33 +1614,41 @@ class SiteCard2 extends ConsumerWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text.rich(
-          TextSpan(
-            children: [
+        SizedBox(
+          height: 19,
+          width: double.infinity,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Text.rich(
               TextSpan(
-                text: parts.value,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: color,
-                  height: 1,
-                ),
-              ),
-              if (parts.unit.isNotEmpty)
-                TextSpan(
-                  text: ' ${parts.unit}',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: color,
-                    height: 1,
+                children: [
+                  TextSpan(
+                    text: parts.value,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: color,
+                      height: 1,
+                    ),
                   ),
-                ),
-            ],
+                  if (parts.unit.isNotEmpty)
+                    TextSpan(
+                      text: ' ${parts.unit}',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: color,
+                        height: 1,
+                      ),
+                    ),
+                ],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 4),
         Row(
@@ -2162,16 +2170,24 @@ class SiteCard3 extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Flexible(
-                  child: Text(
-                    value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: _titleText(context).withValues(alpha: 0.74),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
+                  child: SizedBox(
+                    height: 16,
+                    width: double.infinity,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.center,
+                      child: Text(
+                        value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: _titleText(context).withValues(alpha: 0.74),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          height: 1,
+                        ),
+                      ),
                     ),
                   ),
                 ),
