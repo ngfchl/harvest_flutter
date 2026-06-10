@@ -11,6 +11,7 @@ import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/admin_user/admin_user_access.dart';
 import 'package:harvest/modules/admin_user/admin_user_page.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
+import 'package:harvest/modules/dashboard/provider/privacy_provider.dart';
 import 'package:harvest/modules/login/login_history_provider.dart';
 import 'package:harvest/modules/news/provider/media_info_settings_provider.dart';
 import 'package:harvest/modules/option/widgets/option_page.dart';
@@ -245,6 +246,7 @@ class GlobalNavigationSidebar extends StatelessWidget {
     final showAccountSwitcher = ref.watch(loginHistoryProvider).length >= 2;
     final currentPath = _currentPath(context);
     final selectedKey = _selectedNavigationKey(currentPath);
+    final privacy = ref.watch(privacyModeProvider);
 
     return SizedBox.expand(
       child: Material(
@@ -302,6 +304,7 @@ class GlobalNavigationSidebar extends StatelessWidget {
                           user: user,
                           server: AppConfig.baseUrl,
                           authInfo: authInfo,
+                          privacy: privacy,
                           trailing: persistent
                               ? null
                               : shadcn.IconButton.ghost(
@@ -607,12 +610,14 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
   final dynamic user;
   final String server;
   final Object? authInfo;
+  final bool privacy;
   final Widget? trailing;
 
   const _GlobalDrawerAccountHeader({
     required this.user,
     required this.server,
     required this.authInfo,
+    required this.privacy,
     this.trailing,
   });
 
@@ -624,7 +629,13 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
     final username = _userName(user);
     final authEmail = _authInfoEmail(authInfo, user);
     final authTime = _authInfoTime(authInfo);
-    final initial = username.isNotEmpty
+    final displayName = _maskSidebarValue(username, privacy, empty: '未登录用户');
+    final displayServer = _maskSidebarValue(server, privacy);
+    final displayAuthEmail = _maskSidebarValue(authEmail, privacy);
+    final displayAuthTime = _maskSidebarValue(authTime, privacy);
+    final initial = privacy
+        ? '*'
+        : username.isNotEmpty
         ? username.characters.first.toUpperCase()
         : '?';
 
@@ -645,7 +656,7 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    username.isEmpty ? '未登录用户' : username,
+                    displayName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.typography.base.copyWith(
@@ -655,7 +666,7 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
                   ),
                   SizedBox(height: tokens.size(3)),
                   Text(
-                    server,
+                    displayServer,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.typography.small.copyWith(
@@ -686,13 +697,13 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
                 _GlobalDrawerAuthLine(
                   icon: shadcn.LucideIcons.mail,
                   label: '授权邮箱',
-                  value: authEmail.isEmpty ? '--' : authEmail,
+                  value: displayAuthEmail,
                 ),
                 SizedBox(height: tokens.size(7)),
                 _GlobalDrawerAuthLine(
                   icon: shadcn.LucideIcons.calendarClock,
                   label: '授权时间',
-                  value: authTime.isEmpty ? '--' : authTime,
+                  value: displayAuthTime,
                 ),
               ],
             ),
@@ -785,6 +796,13 @@ String _userEmail(dynamic user) {
     if (v != null) return v.toString().trim();
   } catch (_) {}
   return '';
+}
+
+String _maskSidebarValue(String value, bool privacy, {String empty = '--'}) {
+  final text = value.trim();
+  if (text.isEmpty) return empty;
+  if (!privacy) return text;
+  return '****';
 }
 
 String _authInfoEmail(Object? authInfo, dynamic user) {

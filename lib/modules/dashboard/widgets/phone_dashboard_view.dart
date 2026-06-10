@@ -1010,15 +1010,23 @@ extension _PhoneDashboardView on _DashboardPageState {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
-                    color: color,
-                    height: 1,
+                SizedBox(
+                  width: double.infinity,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: shadcn.Theme.of(context).typography.xSmall
+                          .copyWith(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            color: color,
+                            height: 1,
+                          ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 5),
