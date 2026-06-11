@@ -39,7 +39,9 @@ class OptionService {
   Future<List<Option>> fetchOptions() async {
     final res = await Http.get(API.OPTION_OPERATE);
     if (res is List) {
-      return res.map((e) => Option.fromJson(e as Map<String, dynamic>)).toList();
+      return res
+          .map((e) => Option.fromJson(e as Map<String, dynamic>))
+          .toList();
     }
     return [];
   }
@@ -59,8 +61,11 @@ class OptionService {
   }
 
   /// 通知测试
-  Future<void> testNotice(Map<String, String> body) async {
-    await Http.get(API.NOTICE_TEST, data: body);
+  Future<void> testNotice(String title, String content) async {
+    await Http.get(
+      API.NOTICE_TEST,
+      queryParameters: {'title': title, 'content': content},
+    );
   }
 
   /// 设置 Telegram Webhook
@@ -69,7 +74,10 @@ class OptionService {
   }
 
   /// 导入站点备份文件
-  Future<String> importCookieBackup({required PlatformFile file, required CookieBackupSource source}) async {
+  Future<String> importCookieBackup({
+    required PlatformFile file,
+    required CookieBackupSource source,
+  }) async {
     if (file.path == null && file.bytes == null) {
       throw StateError('无法读取文件: ${file.name}');
     }
@@ -94,7 +102,11 @@ class OptionService {
       }
       return '${source.label} 导入任务已提交';
     } on DioException catch (e, st) {
-      AppLogger.error('${source.label} 备份导入失败: response=${e.response?.data}', e, st);
+      AppLogger.error(
+        '${source.label} 备份导入失败: response=${e.response?.data}',
+        e,
+        st,
+      );
       rethrow;
     }
   }
@@ -104,7 +116,10 @@ class OptionService {
     try {
       final response = await DioClient.dio.get<List<int>>(
         API.setupBackup,
-        options: Options(responseType: ResponseType.bytes, extra: const {'allowAnySucceed': true}),
+        options: Options(
+          responseType: ResponseType.bytes,
+          extra: const {'allowAnySucceed': true},
+        ),
       );
 
       final data = response.data;
@@ -113,10 +128,14 @@ class OptionService {
       }
 
       final fileName = _normalizeBackupFileName(
-        _backupFileNameFromHeaders(response.headers) ?? _defaultBackupFileName(),
+        _backupFileNameFromHeaders(response.headers) ??
+            _defaultBackupFileName(),
       );
       AppLogger.info('数据备份导出完成: fileName=$fileName, size=${data.length}');
-      return BackupDownload(bytes: Uint8List.fromList(data), fileName: fileName);
+      return BackupDownload(
+        bytes: Uint8List.fromList(data),
+        fileName: fileName,
+      );
     } on DioException catch (e, st) {
       AppLogger.error('数据备份导出失败: response=${e.response?.data}', e, st);
       rethrow;
@@ -158,7 +177,10 @@ class OptionService {
     final value = headers.value('content-disposition');
     if (value == null || value.trim().isEmpty) return null;
 
-    final encodedMatch = RegExp(r'''filename\*=UTF-8''([^;]+)''', caseSensitive: false).firstMatch(value);
+    final encodedMatch = RegExp(
+      r'''filename\*=UTF-8''([^;]+)''',
+      caseSensitive: false,
+    ).firstMatch(value);
     if (encodedMatch != null) {
       final encoded = encodedMatch.group(1)?.trim();
       if (encoded != null && encoded.isNotEmpty) {
@@ -166,14 +188,18 @@ class OptionService {
       }
     }
 
-    final quotedMatch = RegExp(r'''filename="?([^";]+)"?''', caseSensitive: false).firstMatch(value);
+    final quotedMatch = RegExp(
+      r'''filename="?([^";]+)"?''',
+      caseSensitive: false,
+    ).firstMatch(value);
     return quotedMatch?.group(1)?.trim();
   }
 
   String _defaultBackupFileName() {
     final now = DateTime.now();
     String two(int value) => value.toString().padLeft(2, '0');
-    final stamp = '${now.year}${two(now.month)}${two(now.day)}_${two(now.hour)}${two(now.minute)}${two(now.second)}';
+    final stamp =
+        '${now.year}${two(now.month)}${two(now.day)}_${two(now.hour)}${two(now.minute)}${two(now.second)}';
     return 'harvest_backup_$stamp.zip';
   }
 
@@ -193,8 +219,14 @@ class OptionService {
   }
 
   /// 从旧收割机服务器导入数据
-  Future<void> importLegacyHarvestData({required String baseUrl, required String legacyToken}) async {
-    await Http.post<dynamic>(API.setupImport, data: {'base_url': baseUrl, 'legacy_token': legacyToken});
+  Future<void> importLegacyHarvestData({
+    required String baseUrl,
+    required String legacyToken,
+  }) async {
+    await Http.post<dynamic>(
+      API.setupImport,
+      data: {'base_url': baseUrl, 'legacy_token': legacyToken},
+    );
     AppLogger.info('[Option] 收割机数据导入已提交 baseUrl=$baseUrl');
   }
 
@@ -224,7 +256,11 @@ class OptionService {
       }
       return '旧版数据库导入任务已提交';
     } on DioException catch (e, st) {
-      AppLogger.error('旧版 sqlite3 数据库导入失败: response=${e.response?.data}', e, st);
+      AppLogger.error(
+        '旧版 sqlite3 数据库导入失败: response=${e.response?.data}',
+        e,
+        st,
+      );
       rethrow;
     }
   }
@@ -236,8 +272,14 @@ class OptionService {
   }
 
   /// 批量更新站点配置字段
-  Future<void> bulkUpgrade({required String key, required dynamic value}) async {
-    await Http.post<dynamic>(API.Bulk_UPGRADE_API, data: {'key': key, 'value': value});
+  Future<void> bulkUpgrade({
+    required String key,
+    required dynamic value,
+  }) async {
+    await Http.post<dynamic>(
+      API.Bulk_UPGRADE_API,
+      data: {'key': key, 'value': value},
+    );
     AppLogger.info('[Option] 批量更新已提交 key=$key valueType=${value.runtimeType}');
   }
 }

@@ -69,9 +69,9 @@ class OptionNotifier extends StateNotifier<OptionState> {
     }
   }
 
-  Future<bool> testNotice(Map<String, String> body) async {
+  Future<bool> testNotice(String title, String content) async {
     try {
-      await ref.read(optionServiceProvider).testNotice(body);
+      await ref.read(optionServiceProvider).testNotice(title, content);
       return true;
     } catch (e) {
       return false;
