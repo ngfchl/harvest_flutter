@@ -115,6 +115,9 @@ class _HistoryHeader extends StatelessWidget {
     final tokens = _AccountSwitcherThemeTokens.of(context);
     final theme = tokens.theme;
     final cs = tokens.cs;
+    final top = MediaQuery.paddingOf(context).top;
+    final leadingInset = appHeaderLeadingInset(context);
+    final trailingInset = appHeaderTrailingInset(context);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -123,33 +126,35 @@ class _HistoryHeader extends StatelessWidget {
           bottom: BorderSide(color: cs.border, width: tokens.hairline),
         ),
       ),
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: tokens.headerHeight,
-          child: Padding(
-            padding: appHeaderPadding(context, top: 0, bottom: 0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                shadcn.IconButton.ghost(
-                  onPressed: onBack,
-                  icon: Icon(shadcn.LucideIcons.arrowLeft, size: tokens.iconLg),
-                ),
-                tokens.hGap(6),
-                Expanded(
-                  child: Text(
-                    '登录历史',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.typography.large.copyWith(
-                      color: cs.foreground,
-                      fontWeight: FontWeight.w700,
-                    ),
+      child: SizedBox(
+        height: top + tokens.headerHeight,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            8 + leadingInset,
+            top,
+            12 + trailingInset,
+            0,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              shadcn.IconButton.ghost(
+                onPressed: onBack,
+                icon: Icon(shadcn.LucideIcons.arrowLeft, size: tokens.iconLg),
+              ),
+              tokens.hGap(6),
+              Expanded(
+                child: Text(
+                  '登录历史',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.typography.large.copyWith(
+                    color: cs.foreground,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
