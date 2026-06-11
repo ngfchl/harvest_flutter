@@ -165,6 +165,41 @@ final _formConfigs = <String, FormConfig>{
     ),
   ),
 
+  'wechat_bot_push': FormConfig(
+    title: '微信机器人',
+    icon: shadcn.LucideIcons.bot,
+    textFields: [
+      FormFieldDef('token', 'IM BOT Token', (v) => v?.token),
+      FormFieldDef('to_uid', 'IM BOT User ID', (v) => v?.toUid),
+      FormFieldDef(
+        'refresh_token',
+        'Context Token',
+        (v) => v?.refreshToken,
+        maxLines: 3,
+      ),
+    ],
+    buildValue: (c, _, v) => v.copyWith(
+      token: c['token']!.text,
+      toUid: c['to_uid']!.text,
+      refreshToken: c['refresh_token']!.text,
+    ),
+  ),
+
+  'qqbot_push': FormConfig(
+    title: 'QQ机器人',
+    icon: shadcn.LucideIcons.messagesSquare,
+    textFields: [
+      FormFieldDef('app_id', '机器人 App ID', (v) => v?.appId),
+      FormFieldDef('secret_key', '机器人 Secret', (v) => v?.secretKey),
+      FormFieldDef('uids', '接收 UIDs', (v) => v?.uids, maxLines: 3),
+    ],
+    buildValue: (c, _, v) => v.copyWith(
+      appId: c['app_id']!.text,
+      secretKey: c['secret_key']!.text,
+      uids: c['uids']!.text,
+    ),
+  ),
+
   'wxpusher_push': FormConfig(
     title: 'WxPusher',
     icon: shadcn.LucideIcons.send,
@@ -774,10 +809,9 @@ class _OptionPageState extends ConsumerState<OptionPage> {
           titleCtrl: titleCtrl,
           msgCtrl: msgCtrl,
           onSend: () async {
-            final success = await ref.read(optionProvider.notifier).testNotice({
-              'title': titleCtrl.text,
-              'message': msgCtrl.text,
-            });
+            final success = await ref
+                .read(optionProvider.notifier)
+                .testNotice(titleCtrl.text, msgCtrl.text);
             if (success) {
               Toast.success('测试消息发送完成');
               collapse();
