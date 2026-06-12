@@ -14,6 +14,7 @@ import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/news/provider/media_info_settings_provider.dart';
 import 'package:harvest/modules/option/widgets/app_upgrade_page.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
+import 'package:harvest/modules/site/provider/site_provider.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
@@ -837,14 +838,15 @@ const _inviteTokenSites = [
   _InviteTokenSite(label: '蜂巢', baseUrl: 'https://pting.club/'),
 ];
 
-class _InviteTokenToolCard extends StatefulWidget {
+class _InviteTokenToolCard extends ConsumerStatefulWidget {
   const _InviteTokenToolCard();
 
   @override
-  State<_InviteTokenToolCard> createState() => _InviteTokenToolCardState();
+  ConsumerState<_InviteTokenToolCard> createState() =>
+      _InviteTokenToolCardState();
 }
 
-class _InviteTokenToolCardState extends State<_InviteTokenToolCard> {
+class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
   final _usernameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _dio = Dio();
@@ -1029,6 +1031,14 @@ class _InviteTokenToolCardState extends State<_InviteTokenToolCard> {
         _token = token;
         _uid = uid;
       });
+
+      if (token != null) {
+        final confirmed = await _confirmUpdateSiteInfo(token, uid);
+        if (confirmed) {
+          await _updateMatchingSitesAuthkey(token, uid);
+        }
+      }
+
       Toast.success('获取成功');
     } catch (e, st) {
       AppLogger.error('${_selectedSite.label} Token 获取失败', e, st);
@@ -1088,6 +1098,84 @@ class _InviteTokenToolCardState extends State<_InviteTokenToolCard> {
       if (statusCode != null) return '请求失败: $statusCode';
     }
     return 'Token 获取失败';
+  }
+
+  Future<bool> _confirmUpdateSiteInfo(String token, String? uid) async {
+    final result = await shadcn.showDialog<bool>(
+      context: context,
+      builder: (ctx) => shadcn.AlertDialog(
+        leading: const Icon(shadcn.LucideIcons.keyRound),
+        title: const Text('更新站点信息'),
+        content: SizedBox(
+          width: 360,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('已获取 Token，是否更新到站点信息？'),
+              const SizedBox(height: 8),
+              Text(
+                'Token: $token',
+                style: shadcn.Theme.of(context).typography.xSmall.copyWith(
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                ),
+              ),
+              if (uid != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'UID: $uid',
+                  style: shadcn.Theme.of(context).typography.xSmall.copyWith(
+                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          shadcn.Button.outline(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+          shadcn.Button.primary(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('确定更新'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+  Future<void> _updateMatchingSitesAuthkey(String token, String? uid) async {
+    try {
+      final sites = ref.read(siteInfoListProvider).valueOrNull ?? [];
+      final baseHost = Uri.tryParse(_selectedSite.baseUrl)?.host.toLowerCase();
+      if (baseHost == null || baseHost.isEmpty) return;
+
+      final matchingSites = sites.where((site) {
+        final siteName = site.site.toLowerCase();
+        final mirror = site.mirror?.toLowerCase() ?? '';
+        return siteName.contains(baseHost) || mirror.contains(baseHost);
+      }).toList();
+
+      if (matchingSites.isEmpty) {
+        AppLogger.info('未找到匹配的站点，跳过写入 authkey');
+        return;
+      }
+
+      for (final site in matchingSites) {
+        final updatedSite = site.copyWith(
+          authkey: token,
+          userId: uid ?? site.userId,
+        );
+        await ref.read(siteInfoListProvider.notifier).updateSite(updatedSite);
+      }
+
+      AppLogger.info('已更新 ${matchingSites.length} 个站点的 authkey 和 user_id');
+    } catch (e, st) {
+      AppLogger.error('更新站点 authkey 失败', e, st);
+    }
   }
 }
 
