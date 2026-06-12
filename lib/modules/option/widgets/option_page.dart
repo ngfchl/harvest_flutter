@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
@@ -22,6 +23,7 @@ import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../provider/option_provider.dart';
 import '../service/option_service.dart';
@@ -709,6 +711,7 @@ class _OptionPageState extends ConsumerState<OptionPage> {
         const _BulkUpgradeCard(),
         _buildTelegramWebhook(context, ref),
         if (!kIsWeb) const _InviteTokenToolCard(),
+        if (!kIsWeb) const _WechatBotLoginCard(),
       ],
     );
   }
@@ -1175,6 +1178,139 @@ class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
       AppLogger.info('已更新 ${matchingSites.length} 个站点的 authkey 和 user_id');
     } catch (e, st) {
       AppLogger.error('更新站点 authkey 失败', e, st);
+    }
+  }
+}
+
+class _WechatBotLoginCard extends ConsumerStatefulWidget {
+  const _WechatBotLoginCard();
+
+  @override
+  ConsumerState<_WechatBotLoginCard> createState() =>
+      _WechatBotLoginCardState();
+}
+
+class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
+  bool _loading = false;
+  String? _qrUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = _optionColors(context);
+    final typo = shadcn.Theme.of(context).typography;
+
+    return ExpandableCard(
+      title: '微信机器人登录',
+      icon: shadcn.LucideIcons.scanLine,
+      builder: (_) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_qrUrl != null) ...[
+            AppSurfaceContainer(
+              padding: const EdgeInsets.all(12),
+              borderRadius: _optionRadius(context),
+              color: appSurfaceColor(context, cs.card),
+              borderColor: cs.border.withValues(alpha: 0.7),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    _qrUrl!,
+                    style: typo.xSmall.copyWith(color: cs.mutedForeground),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: shadcn.Button.outline(
+                          onPressed: () => _openUrl(_qrUrl!),
+                          alignment: Alignment.center,
+                          child: const _ButtonText('打开链接'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: shadcn.Button.outline(
+                          onPressed: () => _copyUrl(_qrUrl!),
+                          alignment: Alignment.center,
+                          child: const _ButtonText('复制链接'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+          _ActionButtonFrame(
+            child: shadcn.Button.primary(
+              onPressed: _loading ? null : _fetchQrCode,
+              alignment: Alignment.center,
+              child: _loading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: shadcn.CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : _ButtonText(_qrUrl != null ? '刷新二维码' : '获取二维码'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Toast.error('无法打开链接');
+    }
+  }
+
+  Future<void> _copyUrl(String url) async {
+    try {
+      if (kIsWeb) {
+        Pasteboard.writeText(url);
+      } else {
+        await Clipboard.setData(ClipboardData(text: url));
+      }
+      Toast.success('链接已复制');
+    } catch (e, st) {
+      AppLogger.error('复制链接失败', e, st);
+      Toast.error('复制失败');
+    }
+  }
+
+  Future<void> _fetchQrCode() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _loading = true;
+      _qrUrl = null;
+    });
+
+    try {
+      final data = await Http.get<dynamic>('/api/option/wechatbot/qrcode');
+      AppLogger.debug('获取二维码响应：$data');
+      if (data is Map) {
+        final qrUrl = data['qrcode_url']?.toString();
+        if (qrUrl != null && mounted) {
+          setState(() => _qrUrl = qrUrl);
+          return;
+        }
+      }
+      Toast.error('获取二维码失败');
+    } catch (e, st) {
+      AppLogger.error('获取微信机器人二维码失败', e, st);
+      Toast.error('获取二维码失败');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 }
