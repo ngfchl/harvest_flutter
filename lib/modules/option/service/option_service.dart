@@ -61,10 +61,18 @@ class OptionService {
   }
 
   /// 通知测试
-  Future<void> testNotice(String title, String content) async {
+  Future<void> testNotice(
+    String title,
+    String content, {
+    String pushType = '',
+  }) async {
     await Http.get(
       API.NOTICE_TEST,
-      queryParameters: {'title': title, 'content': content},
+      queryParameters: {
+        'title': title,
+        'content': content,
+        'push_type': pushType,
+      },
     );
   }
 
