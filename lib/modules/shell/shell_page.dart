@@ -164,7 +164,10 @@ class _ShellPageState extends ConsumerState<ShellPage> {
       await Future.delayed(const Duration(milliseconds: 300));
       await WidgetsBinding.instance.endOfFrame;
 
-      final sc = ref.read(activeScrollControllerProvider);
+      final currentIndex = _getCurrentIndex();
+      final sc =
+          ref.read(pageScrollControllersProvider)[currentIndex] ??
+          ref.read(activeScrollControllerProvider);
       final bytes =
           (sc != null && sc.hasClients && sc.position.maxScrollExtent > 0)
           ? await ScreenshotSaver.captureLong(

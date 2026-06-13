@@ -301,6 +301,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      registerPageScrollController(ref, 4, _scrollController);
       ref.read(activeScrollControllerProvider.notifier).state =
           _scrollController;
     });
@@ -308,6 +309,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
 
   @override
   void dispose() {
+    unregisterPageScrollController(ref, 4, _scrollController);
     _scrollController.dispose();
     super.dispose();
   }

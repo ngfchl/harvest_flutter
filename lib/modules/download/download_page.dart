@@ -28,19 +28,21 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
   final _scrollController = ScrollController();
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      registerPageScrollController(ref, 3, _scrollController);
       ref.read(activeScrollControllerProvider.notifier).state =
           _scrollController;
     });
+  }
+
+  @override
+  void dispose() {
+    unregisterPageScrollController(ref, 3, _scrollController);
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override

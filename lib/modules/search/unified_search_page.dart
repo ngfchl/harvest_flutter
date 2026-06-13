@@ -126,6 +126,8 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     _ctrl.dispose();
     _focusNode.dispose();
     _historyScrollController.dispose();
+    unregisterPageScrollController(ref, 5, _mediaScrollController);
+    unregisterPageScrollController(ref, 5, _resourceScrollController);
     _mediaScrollController.dispose();
     _resourceScrollController.dispose();
     super.dispose();
@@ -136,11 +138,11 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   // ═══════════════════════════════════════════════
 
   void _bindActiveScrollController() {
-    ref
-        .read(activeScrollControllerProvider.notifier)
-        .state = _mode == SearchMode.media
+    final controller = _mode == SearchMode.media
         ? _mediaScrollController
         : _resourceScrollController;
+    registerPageScrollController(ref, 5, controller);
+    ref.read(activeScrollControllerProvider.notifier).state = controller;
   }
 
   void _queueBindActiveScrollController() {

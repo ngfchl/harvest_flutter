@@ -286,6 +286,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       _loadInitialDashboardData();
       _syncPhoneMonitorCards(_chartVisibility);
       if (mounted) {
+        registerPageScrollController(ref, 2, _scrollController);
         ref.read(activeScrollControllerProvider.notifier).state =
             _scrollController;
       }
@@ -361,6 +362,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   void dispose() {
     _hideDashboardOverlayTooltip();
     _refreshController.dispose();
+    unregisterPageScrollController(ref, 2, _scrollController);
     _scrollController.dispose();
     super.dispose();
   }

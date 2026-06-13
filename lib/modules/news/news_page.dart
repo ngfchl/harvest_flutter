@@ -75,6 +75,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      registerPageScrollController(ref, 0, _scrollController);
       ref.read(activeScrollControllerProvider.notifier).state =
           _scrollController;
     });
@@ -82,6 +83,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
 
   @override
   void dispose() {
+    unregisterPageScrollController(ref, 0, _scrollController);
     _scrollController.dispose();
     super.dispose();
   }

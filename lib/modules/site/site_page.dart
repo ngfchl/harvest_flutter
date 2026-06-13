@@ -47,6 +47,7 @@ class _SitePageState extends ConsumerState<SitePage> {
     _searchCtrl.addListener(_onSearchTextChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      registerPageScrollController(ref, 1, _scrollController);
       ref.read(activeScrollControllerProvider.notifier).state =
           _scrollController;
     });
@@ -56,6 +57,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   void dispose() {
     _searchCtrl.removeListener(_onSearchTextChanged);
     _searchCtrl.dispose();
+    unregisterPageScrollController(ref, 1, _scrollController);
     _scrollController.dispose();
     super.dispose();
   }

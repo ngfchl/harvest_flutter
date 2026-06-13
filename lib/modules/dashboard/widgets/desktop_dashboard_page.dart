@@ -197,6 +197,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       _loadInitialDashboard();
       _syncDesktopMonitorCards(_chartVisibility);
       if (mounted) {
+        registerPageScrollController(ref, 2, _scrollController);
         ref.read(activeScrollControllerProvider.notifier).state =
             _scrollController;
       }
@@ -214,6 +215,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   @override
   void dispose() {
     _refreshController.dispose();
+    unregisterPageScrollController(ref, 2, _scrollController);
     _scrollController.dispose();
     super.dispose();
   }
