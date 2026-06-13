@@ -306,6 +306,46 @@ jobs:
           # 创建 payload 目录结构
           mkdir -p pkg_payload
           cp -R build/macos/Build/Products/Release/harvest.app pkg_payload/
+
+          # 创建 preinstall 脚本：安装前退出 /Applications 中正在运行的旧 APP
+          mkdir -p pkg_scripts
+          cat > pkg_scripts/preinstall <<'EOF'
+          #!/bin/bash
+          set -e
+
+          APP_EXECUTABLE="/Applications/harvest.app/Contents/MacOS/harvest"
+          APP_PROCESS_NAME="harvest"
+          PIDS=""
+
+          while IFS= read -r pid; do
+            [ -n "$pid" ] || continue
+            running_command="$(ps -ww -p "$pid" -o command= 2>/dev/null || true)"
+            case "$running_command" in
+              "$APP_EXECUTABLE"|"$APP_EXECUTABLE"\ *)
+              PIDS="$PIDS $pid"
+              ;;
+            esac
+          done < <(pgrep -x "$APP_PROCESS_NAME" 2>/dev/null || true)
+
+          [ -n "$PIDS" ] || exit 0
+
+          kill -TERM $PIDS 2>/dev/null || true
+
+          for _ in {1..15}; do
+            still_running=""
+            for pid in $PIDS; do
+              if kill -0 "$pid" 2>/dev/null; then
+                still_running="$still_running $pid"
+              fi
+            done
+            [ -n "$still_running" ] || exit 0
+            sleep 1
+          done
+
+          kill -KILL $PIDS 2>/dev/null || true
+          exit 0
+          EOF
+          chmod 755 pkg_scripts/preinstall
           
           # 执行 pkgbuild
           # --identifier: 必须唯一，通常用反向域名
@@ -313,6 +353,7 @@ jobs:
           # --version: 版本号
           pkgbuild \
             --root pkg_payload \
+            --scripts pkg_scripts \
             --identifier com.ptools.harvest \
             --install-location /Applications \
             --version "$VERSION" \
@@ -379,6 +420,46 @@ jobs:
           # 创建 payload 目录结构
           mkdir -p pkg_payload
           cp -R build/macos/Build/Products/Release/harvest.app pkg_payload/
+
+          # 创建 preinstall 脚本：安装前退出 /Applications 中正在运行的旧 APP
+          mkdir -p pkg_scripts
+          cat > pkg_scripts/preinstall <<'EOF'
+          #!/bin/bash
+          set -e
+
+          APP_EXECUTABLE="/Applications/harvest.app/Contents/MacOS/harvest"
+          APP_PROCESS_NAME="harvest"
+          PIDS=""
+
+          while IFS= read -r pid; do
+            [ -n "$pid" ] || continue
+            running_command="$(ps -ww -p "$pid" -o command= 2>/dev/null || true)"
+            case "$running_command" in
+              "$APP_EXECUTABLE"|"$APP_EXECUTABLE"\ *)
+              PIDS="$PIDS $pid"
+              ;;
+            esac
+          done < <(pgrep -x "$APP_PROCESS_NAME" 2>/dev/null || true)
+
+          [ -n "$PIDS" ] || exit 0
+
+          kill -TERM $PIDS 2>/dev/null || true
+
+          for _ in {1..15}; do
+            still_running=""
+            for pid in $PIDS; do
+              if kill -0 "$pid" 2>/dev/null; then
+                still_running="$still_running $pid"
+              fi
+            done
+            [ -n "$still_running" ] || exit 0
+            sleep 1
+          done
+
+          kill -KILL $PIDS 2>/dev/null || true
+          exit 0
+          EOF
+          chmod 755 pkg_scripts/preinstall
           
           # 执行 pkgbuild
           # --identifier: 必须唯一，通常用反向域名
@@ -386,6 +467,7 @@ jobs:
           # --version: 版本号
           pkgbuild \
             --root pkg_payload \
+            --scripts pkg_scripts \
             --identifier com.ptools.harvest \
             --install-location /Applications \
             --version "$VERSION" \
