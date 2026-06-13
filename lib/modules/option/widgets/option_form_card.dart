@@ -18,6 +18,7 @@ class FormFieldDef {
   final String? Function(OptionValue?) getValue;
   final int maxLines;
   final String? helperText;
+  final bool readOnly;
 
   const FormFieldDef(
     this.key,
@@ -25,6 +26,7 @@ class FormFieldDef {
     this.getValue, {
     this.maxLines = 1,
     this.helperText,
+    this.readOnly = false,
   });
 }
 
@@ -46,6 +48,7 @@ class FormConfig {
   final List<FormFieldDef> textFields;
   final List<SwitchFieldDef> switchFields;
   final Widget Function(Map<String, TextEditingController> ctrls)? extraBuilder;
+  final bool showSaveButton;
   final OptionValue Function(
     Map<String, TextEditingController> ctrls,
     Map<String, bool> switches,
@@ -60,6 +63,7 @@ class FormConfig {
     this.icon,
     this.switchFields = const [],
     this.extraBuilder,
+    this.showSaveButton = true,
   });
 }
 
@@ -268,6 +272,7 @@ class OptionFormCard extends StatefulWidget {
   final Future<bool> Function(Option option) onSave;
   final Future<void> Function(Option option)? onToggleActive;
   final VoidCallback? onSaved;
+  final bool showSaveButton;
 
   const OptionFormCard({
     super.key,
@@ -282,6 +287,7 @@ class OptionFormCard extends StatefulWidget {
     this.extraBuilder,
     this.onToggleActive,
     this.onSaved,
+    this.showSaveButton = true,
   });
 
   @override
@@ -444,6 +450,7 @@ class _OptionFormCardState extends State<OptionFormCard> {
                     controller: _ctrls[f.key],
                     hintText: f.label,
                     maxLines: f.maxLines,
+                    readOnly: f.readOnly,
                     onSubmitted: (_) =>
                         FocusManager.instance.primaryFocus?.unfocus(),
                   ),
@@ -484,16 +491,18 @@ class _OptionFormCardState extends State<OptionFormCard> {
           // ── 额外组件 ──
           if (widget.extraBuilder != null) widget.extraBuilder!(_ctrls),
           // ── 保存按钮 ──
-          const SizedBox(height: 6),
-          _ActionButtonFrame(
-            child: shadcn.Button.primary(
-              onPressed: _busy ? null : _handleSave,
-              alignment: Alignment.center,
-              child: const Center(
-                child: Text('保存', textAlign: TextAlign.center),
+          if (widget.showSaveButton) ...[
+            const SizedBox(height: 6),
+            _ActionButtonFrame(
+              child: shadcn.Button.primary(
+                onPressed: _busy ? null : _handleSave,
+                alignment: Alignment.center,
+                child: const Center(
+                  child: Text('保存', textAlign: TextAlign.center),
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
