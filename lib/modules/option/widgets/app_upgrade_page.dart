@@ -2019,9 +2019,7 @@ class _DownloadLinksState extends State<_DownloadLinks> {
     final primaryEntries = platformEntries.isNotEmpty
         ? platformEntries
         : entries.take(1).toList();
-    final visibleEntries = widget.compact && primaryEntries.length > 1
-        ? primaryEntries.take(1).toList()
-        : primaryEntries;
+    final visibleEntries = primaryEntries;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -2541,16 +2539,16 @@ List<List<String>> _preferredAssetPatterns({required String macosArch}) {
   }
   if (Platform.isMacOS) {
     return [
-      [macosArch, 'macos', 'dmg'],
-      [macosArch, 'mac', 'dmg'],
       [macosArch, 'macos', 'pkg'],
       [macosArch, 'mac', 'pkg'],
-      ['macos', 'dmg'],
-      ['mac', 'dmg'],
       ['macos', 'pkg'],
       ['mac', 'pkg'],
-      ['dmg'],
       ['pkg'],
+      [macosArch, 'macos', 'dmg'],
+      [macosArch, 'mac', 'dmg'],
+      ['macos', 'dmg'],
+      ['mac', 'dmg'],
+      ['dmg'],
     ];
   }
   if (Platform.isWindows) {
