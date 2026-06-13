@@ -6,6 +6,8 @@ import 'package:harvest/widgets/shad_text_field.dart';
 
 import '../model/option_model.dart';
 
+final Map<String, bool> _optionExpandedStates = {};
+
 // ══════════════════════════════════════════════════════════
 //  字段定义
 // ══════════════════════════════════════════════════════════
@@ -586,6 +588,17 @@ class _ExpandableCardState extends State<ExpandableCard> {
   bool _expanded = false;
 
   @override
+  void initState() {
+    super.initState();
+    _expanded = _optionExpandedStates[widget.title] ?? false;
+  }
+
+  void _toggle() {
+    setState(() => _expanded = !_expanded);
+    _optionExpandedStates[widget.title] = _expanded;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
@@ -600,7 +613,7 @@ class _ExpandableCardState extends State<ExpandableCard> {
           mainAxisSize: MainAxisSize.min,
           children: [
             GestureDetector(
-              onTap: () => setState(() => _expanded = !_expanded),
+              onTap: _toggle,
               behavior: HitTestBehavior.opaque,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
