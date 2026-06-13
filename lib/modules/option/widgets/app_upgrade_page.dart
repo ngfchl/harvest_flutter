@@ -1842,14 +1842,11 @@ class _SwitchOptionCard extends StatelessWidget {
         : '$subtitle\n$tooltip';
 
     return shadcn.Tooltip(
-      tooltip: (_) => ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 260),
-        child: Text(
-          tooltipText,
-          style: theme.typography.xSmall.copyWith(
-            color: cs.popoverForeground,
-            height: 1.35,
-          ),
+      tooltip: (_) => Text(
+        tooltipText,
+        style: theme.typography.xSmall.copyWith(
+          color: cs.popoverForeground,
+          height: 1.35,
         ),
       ),
       child: shadcn.Card(
@@ -1877,25 +1874,45 @@ class _SwitchOptionCard extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Flexible(
-                    child: Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.typography.small.copyWith(
-                        color: cs.foreground,
-                        fontWeight: FontWeight.w700,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.typography.small.copyWith(
+                            color: cs.foreground,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Icon(
+                        shadcn.LucideIcons.info,
+                        size: 13,
+                        color: cs.mutedForeground,
+                      ),
+                    ],
+                  ),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        subtitle,
+                        maxLines: 1,
+                        style: theme.typography.xSmall.copyWith(
+                          color: cs.mutedForeground,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    shadcn.LucideIcons.info,
-                    size: 13,
-                    color: cs.mutedForeground,
-                  ),
+                  ],
                 ],
               ),
             ),
