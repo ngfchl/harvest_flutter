@@ -122,6 +122,10 @@ Future<void> _startApp() async {
               TitleBarStyle.hidden,
               windowButtonVisibility: false,
             );
+            await windowManager.setPreventClose(true);
+          }
+          if (PlatformTool.isWindows()) {
+            await windowManager.setPreventClose(true);
           }
           await windowManager.show();
           await windowManager.focus();
