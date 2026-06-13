@@ -11,7 +11,6 @@ import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/http_error.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
-import 'package:harvest/core/utils/media/media.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/option/widgets/app_upgrade_page.dart';
 import 'package:harvest/modules/shell/widgets/log_floating_overlay.dart';

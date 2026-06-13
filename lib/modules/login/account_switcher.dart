@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:harvest/core/utils/media/media.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
