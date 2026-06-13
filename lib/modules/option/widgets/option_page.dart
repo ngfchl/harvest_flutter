@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
@@ -23,7 +24,6 @@ import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:url_launcher/url_launcher.dart';
 
 import '../provider/option_provider.dart';
 import '../service/option_service.dart';
@@ -1193,6 +1193,11 @@ class _WechatBotLoginCard extends ConsumerStatefulWidget {
 class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
   bool _loading = false;
   String? _qrUrl;
+  String _status = 'idle'; // idle | wait | scaned | confirmed | expired
+  String _statusMessage = '';
+  DateTime? _pollStartTime;
+
+  bool get _polling => _status == 'wait' || _status == 'scaned';
 
   @override
   Widget build(BuildContext context) {
@@ -1207,85 +1212,137 @@ class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (_qrUrl != null) ...[
-            AppSurfaceContainer(
-              padding: const EdgeInsets.all(12),
-              borderRadius: _optionRadius(context),
-              color: appSurfaceColor(context, cs.card),
-              borderColor: cs.border.withValues(alpha: 0.7),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+            _ActionButtonFrame(
+              child: shadcn.Button.outline(
+                onPressed: _loading || _polling ? null : _fetchQrCode,
+                alignment: Alignment.center,
+                child: const _ButtonText('刷新二维码'),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (_status == 'wait' || _status == 'scaned') ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  if (_status == 'scaned')
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Icon(
+                        shadcn.LucideIcons.scanLine,
+                        size: 14,
+                        color: cs.primary,
+                      ),
+                    ),
                   Text(
-                    _qrUrl!,
-                    style: typo.xSmall.copyWith(color: cs.mutedForeground),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: shadcn.Button.outline(
-                          onPressed: () => _openUrl(_qrUrl!),
-                          alignment: Alignment.center,
-                          child: const _ButtonText('打开链接'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: shadcn.Button.outline(
-                          onPressed: () => _copyUrl(_qrUrl!),
-                          alignment: Alignment.center,
-                          child: const _ButtonText('复制链接'),
-                        ),
-                      ),
-                    ],
+                    _statusMessage.isNotEmpty
+                        ? _statusMessage
+                        : (_status == 'scaned' ? '已扫码，请在手机上确认' : '等待扫码...'),
+                    style: typo.small.copyWith(
+                      color: _status == 'scaned' ? cs.primary : cs.mutedForeground,
+                      fontWeight:
+                          _status == 'scaned' ? FontWeight.w600 : FontWeight.normal,
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
-          ],
-          _ActionButtonFrame(
-            child: shadcn.Button.primary(
-              onPressed: _loading ? null : _fetchQrCode,
-              alignment: Alignment.center,
-              child: _loading
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: shadcn.CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : _ButtonText(_qrUrl != null ? '刷新二维码' : '获取二维码'),
+            SizedBox(
+              height: 300,
+              child: InAppWebView(
+                key: ValueKey(_qrUrl),
+                initialUrlRequest: URLRequest(url: WebUri(_qrUrl!)),
+                initialSettings: InAppWebViewSettings(
+                  javaScriptEnabled: true,
+                  domStorageEnabled: true,
+                  useHybridComposition: true,
+                  allowsInlineMediaPlayback: true,
+                  transparentBackground: true,
+                  supportZoom: false,
+                  builtInZoomControls: false,
+                  displayZoomControls: false,
+                ),
+                onLoadStop: (controller, url) async {
+                  await controller.scrollTo(x: 0, y: 99999);
+                  await Future<void>.delayed(
+                    const Duration(milliseconds: 300),
+                  );
+                  await controller.evaluateJavascript(source: '''
+                    document.addEventListener('touchmove', function(e) { e.preventDefault(); }, {passive: false});
+                    document.addEventListener('touchstart', function(e) { e.preventDefault(); }, {passive: false});
+                    document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+                    document.addEventListener('gesturechange', function(e) { e.preventDefault(); });
+                  ''');
+                },
+              ),
             ),
-          ),
+          ] else if (_status == 'confirmed')
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                children: [
+                  Icon(
+                    shadcn.LucideIcons.circleCheck,
+                    size: 48,
+                    color: Colors.green,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _statusMessage.isNotEmpty ? _statusMessage : '登录成功',
+                    style: typo.medium.copyWith(
+                      color: cs.foreground,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (_status == 'expired')
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                children: [
+                  Icon(
+                    shadcn.LucideIcons.clock,
+                    size: 48,
+                    color: cs.mutedForeground,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _statusMessage.isNotEmpty ? _statusMessage : '二维码已过期',
+                    style: typo.small.copyWith(color: cs.mutedForeground),
+                  ),
+                  const SizedBox(height: 12),
+                  shadcn.Button.primary(
+                    onPressed: _fetchQrCode,
+                    alignment: Alignment.center,
+                    child: const _ButtonText('重新获取'),
+                  ),
+                ],
+              ),
+            )
+          else
+            _ActionButtonFrame(
+              child: shadcn.Button.primary(
+                onPressed: _loading ? null : _fetchQrCode,
+                alignment: Alignment.center,
+                child: _loading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: shadcn.CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const _ButtonText('获取二维码'),
+              ),
+            ),
         ],
       ),
     );
-  }
-
-  Future<void> _openUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      Toast.error('无法打开链接');
-    }
-  }
-
-  Future<void> _copyUrl(String url) async {
-    try {
-      if (kIsWeb) {
-        Pasteboard.writeText(url);
-      } else {
-        await Clipboard.setData(ClipboardData(text: url));
-      }
-      Toast.success('链接已复制');
-    } catch (e, st) {
-      AppLogger.error('复制链接失败', e, st);
-      Toast.error('复制失败');
-    }
   }
 
   Future<void> _fetchQrCode() async {
@@ -1293,6 +1350,7 @@ class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
     setState(() {
       _loading = true;
       _qrUrl = null;
+      _status = 'idle';
     });
 
     try {
@@ -1301,7 +1359,11 @@ class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
       if (data is Map) {
         final qrUrl = data['qrcode_url']?.toString();
         if (qrUrl != null && mounted) {
-          setState(() => _qrUrl = qrUrl);
+          setState(() {
+            _qrUrl = qrUrl;
+            _status = 'wait';
+          });
+          _startPolling();
           return;
         }
       }
@@ -1311,6 +1373,74 @@ class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
       Toast.error('获取二维码失败');
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _startPolling() {
+    _pollStartTime = DateTime.now();
+    _pollStatus();
+  }
+
+  Future<void> _pollStatus() async {
+    if (!mounted || !_polling) return;
+
+    final elapsed = DateTime.now().difference(_pollStartTime!);
+    if (elapsed.inSeconds >= 120) {
+      setState(() {
+        _status = 'expired';
+        _statusMessage = '二维码已过期，请重新获取';
+      });
+      return;
+    }
+
+    try {
+      final data =
+          await Http.get<dynamic>('/api/option/wechatbot/qrcode/status');
+      AppLogger.debug('轮询状态响应：$data');
+      if (data is Map && mounted) {
+        final status = data['status']?.toString() ?? '';
+        final message = data['message']?.toString() ?? '';
+        switch (status) {
+          case 'wait':
+            if (_status != 'wait') {
+              setState(() {
+                _status = 'wait';
+                _statusMessage = message;
+              });
+            }
+          case 'scaned':
+            setState(() {
+              _status = 'scaned';
+              _statusMessage = message;
+            });
+          case 'confirmed':
+            setState(() {
+              _status = 'confirmed';
+              _statusMessage = message.isNotEmpty ? message : '登录成功';
+            });
+            Toast.success('登录成功');
+            Future<void>.delayed(const Duration(seconds: 5), () {
+              if (mounted) {
+                setState(() {
+                  _status = 'idle';
+                  _qrUrl = null;
+                });
+              }
+            });
+            return;
+          case 'expired':
+            setState(() {
+              _status = 'expired';
+              _statusMessage = message.isNotEmpty ? message : '二维码已过期';
+            });
+            return;
+        }
+      }
+    } catch (_) {}
+
+    if (mounted && _polling) {
+      await Future<void>.delayed(const Duration(seconds: 3));
+      _pollStatus();
     }
   }
 }
