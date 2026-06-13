@@ -31,8 +31,7 @@ import 'option_form_card.dart';
 import 'update_page.dart';
 import 'update_panel.dart';
 
-shadcn.ColorScheme _optionColors(BuildContext context) =>
-    shadcn.Theme.of(context).colorScheme;
+shadcn.ColorScheme _optionColors(BuildContext context) => shadcn.Theme.of(context).colorScheme;
 
 BorderRadius _optionRadius(BuildContext context, {String size = 'md'}) {
   final theme = shadcn.Theme.of(context);
@@ -61,11 +60,7 @@ class _ActionButtonFrame extends StatelessWidget {
   final double minWidth;
   final double maxWidth;
 
-  const _ActionButtonFrame({
-    required this.child,
-    this.minWidth = 160,
-    this.maxWidth = 260,
-  });
+  const _ActionButtonFrame({required this.child, this.minWidth = 160, this.maxWidth = 260});
 
   @override
   Widget build(BuildContext context) {
@@ -125,15 +120,9 @@ final _formConfigs = <String, FormConfig>{
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 128),
-                  child: randomButton,
-                ),
+                ConstrainedBox(constraints: const BoxConstraints(minWidth: 128), child: randomButton),
                 const SizedBox(width: 8),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 128),
-                  child: copyButton,
-                ),
+                ConstrainedBox(constraints: const BoxConstraints(minWidth: 128), child: copyButton),
               ],
             ),
           );
@@ -172,20 +161,12 @@ final _formConfigs = <String, FormConfig>{
     title: '微信机器人',
     icon: shadcn.LucideIcons.bot,
     textFields: [
-      FormFieldDef('token', 'IM BOT Token', (v) => v?.token),
-      FormFieldDef('to_uid', 'IM BOT User ID', (v) => v?.toUid),
-      FormFieldDef(
-        'refresh_token',
-        'Context Token',
-        (v) => v?.refreshToken,
-        maxLines: 3,
-      ),
+      FormFieldDef('token', 'IM BOT Token', (v) => v?.token, readOnly: true, helperText: '从「常用工具」中的微信机器人登录获取，当前页面只读。'),
+      FormFieldDef('to_uid', 'IM BOT User ID', (v) => v?.toUid, readOnly: true, helperText: '扫码登录后由后端同步，当前页面只读。'),
     ],
-    buildValue: (c, _, v) => v.copyWith(
-      token: c['token']!.text,
-      toUid: c['to_uid']!.text,
-      refreshToken: c['refresh_token']!.text,
-    ),
+    showSaveButton: false,
+    buildValue: (c, _, v) =>
+        v.copyWith(token: c['token']!.text, toUid: c['to_uid']!.text, refreshToken: c['refresh_token']!.text),
   ),
 
   'qqbot_push': FormConfig(
@@ -194,13 +175,17 @@ final _formConfigs = <String, FormConfig>{
     textFields: [
       FormFieldDef('app_id', '机器人 App ID', (v) => v?.appId),
       FormFieldDef('secret_key', '机器人 Secret', (v) => v?.secretKey),
-      FormFieldDef('uids', '接收 UIDs', (v) => v?.uids, maxLines: 3),
+      FormFieldDef(
+        'uids',
+        '接收 UIDs',
+        (v) => v?.uids,
+        maxLines: 3,
+        readOnly: true,
+        helperText: '接收 UID 由后端或机器人会话同步，当前页面只读。',
+      ),
     ],
-    buildValue: (c, _, v) => v.copyWith(
-      appId: c['app_id']!.text,
-      secretKey: c['secret_key']!.text,
-      uids: c['uids']!.text,
-    ),
+    buildValue: (c, _, v) =>
+        v.copyWith(appId: c['app_id']!.text, secretKey: c['secret_key']!.text, uids: c['uids']!.text),
   ),
 
   'wxpusher_push': FormConfig(
@@ -211,22 +196,14 @@ final _formConfigs = <String, FormConfig>{
       FormFieldDef('token', '令牌', (v) => v?.token),
       FormFieldDef('uids', '接收人', (v) => v?.uids),
     ],
-    buildValue: (c, _, v) => v.copyWith(
-      appId: c['app_id']!.text,
-      token: c['token']!.text,
-      uids: c['uids']!.text,
-    ),
+    buildValue: (c, _, v) => v.copyWith(appId: c['app_id']!.text, token: c['token']!.text, uids: c['uids']!.text),
   ),
 
   'pushdeer_push': FormConfig(
     title: 'PushDeer',
     icon: shadcn.LucideIcons.send,
-    textFields: [
-      FormFieldDef('key', 'Key', (v) => v?.key),
-      FormFieldDef('proxy', '服务器', (v) => v?.proxy),
-    ],
-    buildValue: (c, _, v) =>
-        v.copyWith(key: c['key']!.text, proxy: c['proxy']!.text),
+    textFields: [FormFieldDef('key', 'Key', (v) => v?.key), FormFieldDef('proxy', '服务器', (v) => v?.proxy)],
+    buildValue: (c, _, v) => v.copyWith(key: c['key']!.text, proxy: c['proxy']!.text),
   ),
 
   'bark_push': FormConfig(
@@ -236,8 +213,7 @@ final _formConfigs = <String, FormConfig>{
       FormFieldDef('device_key', '设备ID', (v) => v?.deviceKey),
       FormFieldDef('server', '服务器', (v) => v?.server),
     ],
-    buildValue: (c, _, v) =>
-        v.copyWith(deviceKey: c['device_key']!.text, server: c['server']!.text),
+    buildValue: (c, _, v) => v.copyWith(deviceKey: c['device_key']!.text, server: c['server']!.text),
   ),
 
   'iyuu_push': FormConfig(
@@ -245,8 +221,7 @@ final _formConfigs = <String, FormConfig>{
     icon: shadcn.LucideIcons.heart,
     textFields: [FormFieldDef('token', '令牌', (v) => v?.token)],
     switchFields: [SwitchFieldDef('repeat', '辅种开关', (v) => v?.repeat ?? false)],
-    buildValue: (c, s, v) =>
-        v.copyWith(token: c['token']!.text, repeat: s['repeat']),
+    buildValue: (c, s, v) => v.copyWith(token: c['token']!.text, repeat: s['repeat']),
   ),
 
   'meow_push': FormConfig(
@@ -285,8 +260,7 @@ final _formConfigs = <String, FormConfig>{
     title: 'PushPlus',
     icon: shadcn.LucideIcons.send,
     textFields: [FormFieldDef('token', '令牌', (v) => v?.token)],
-    buildValue: (c, _, v) =>
-        v.copyWith(token: c['token']!.text, template: 'markdown'),
+    buildValue: (c, _, v) => v.copyWith(token: c['token']!.text, template: 'markdown'),
   ),
 
   'telegram_push': FormConfig(
@@ -297,31 +271,16 @@ final _formConfigs = <String, FormConfig>{
       FormFieldDef('token', '令牌', (v) => v?.telegramToken),
       FormFieldDef('proxy', '代理', (v) => v?.proxy),
     ],
-    buildValue: (c, _, v) => v.copyWith(
-      telegramChatId: c['chat_id']!.text,
-      telegramToken: c['token']!.text,
-      proxy: c['proxy']!.text,
-    ),
+    buildValue: (c, _, v) =>
+        v.copyWith(telegramChatId: c['chat_id']!.text, telegramToken: c['token']!.text, proxy: c['proxy']!.text),
   ),
 
   'aliyun_drive': FormConfig(
     title: '阿里云盘',
     icon: shadcn.LucideIcons.hardDrive,
-    textFields: [
-      FormFieldDef(
-        'refresh_token',
-        '保存令牌',
-        (v) => v?.refreshToken,
-        maxLines: 3,
-      ),
-    ],
-    switchFields: [
-      SwitchFieldDef('welfare', '领取福利', (v) => v?.welfare ?? true),
-    ],
-    buildValue: (c, s, v) => v.copyWith(
-      refreshToken: c['refresh_token']!.text,
-      welfare: s['welfare'],
-    ),
+    textFields: [FormFieldDef('refresh_token', '保存令牌', (v) => v?.refreshToken, maxLines: 3)],
+    switchFields: [SwitchFieldDef('welfare', '领取福利', (v) => v?.welfare ?? true)],
+    buildValue: (c, s, v) => v.copyWith(refreshToken: c['refresh_token']!.text, welfare: s['welfare']),
   ),
   'baidu_ocr': FormConfig(
     title: '百度 OCR',
@@ -331,11 +290,8 @@ final _formConfigs = <String, FormConfig>{
       FormFieldDef('api_key', 'APIKey', (v) => v?.apiKey),
       FormFieldDef('secret_key', 'Secret', (v) => v?.secretKey),
     ],
-    buildValue: (c, _, v) => v.copyWith(
-      appId: c['app_id']!.text,
-      apiKey: c['api_key']!.text,
-      secretKey: c['secret_key']!.text,
-    ),
+    buildValue: (c, _, v) =>
+        v.copyWith(appId: c['app_id']!.text, apiKey: c['api_key']!.text, secretKey: c['secret_key']!.text),
   ),
 
   'ssdforum': FormConfig(
@@ -346,11 +302,8 @@ final _formConfigs = <String, FormConfig>{
       FormFieldDef('user_agent', 'UserAgent', (v) => v?.userAgent, maxLines: 3),
       FormFieldDef('today_say', '今天想说', (v) => v?.todaySay, maxLines: 5),
     ],
-    buildValue: (c, _, v) => v.copyWith(
-      cookie: c['cookie']!.text,
-      userAgent: c['user_agent']!.text,
-      todaySay: c['today_say']!.text,
-    ),
+    buildValue: (c, _, v) =>
+        v.copyWith(cookie: c['cookie']!.text, userAgent: c['user_agent']!.text, todaySay: c['today_say']!.text),
   ),
 
   'cookie_cloud': FormConfig(
@@ -361,11 +314,7 @@ final _formConfigs = <String, FormConfig>{
       FormFieldDef('key', 'Key', (v) => v?.key),
       FormFieldDef('password', '密码', (v) => v?.password),
     ],
-    buildValue: (c, _, v) => v.copyWith(
-      server: c['server']!.text,
-      key: c['key']!.text,
-      password: c['password']!.text,
-    ),
+    buildValue: (c, _, v) => v.copyWith(server: c['server']!.text, key: c['key']!.text, password: c['password']!.text),
   ),
 
   'FileList': FormConfig(
@@ -375,10 +324,7 @@ final _formConfigs = <String, FormConfig>{
       FormFieldDef('username', '账号', (v) => v?.username),
       FormFieldDef('password', '密码', (v) => v?.password),
     ],
-    buildValue: (c, _, v) => v.copyWith(
-      username: c['username']!.text,
-      password: c['password']!.text,
-    ),
+    buildValue: (c, _, v) => v.copyWith(username: c['username']!.text, password: c['password']!.text),
   ),
 
   'tmdb_api_auth': FormConfig(
@@ -389,34 +335,19 @@ final _formConfigs = <String, FormConfig>{
       FormFieldDef('secret_key', '豆瓣Cookie', (v) => v?.secretKey),
       FormFieldDef('proxy', '代理地址', (v) => v?.proxy),
     ],
-    buildValue: (c, _, v) => v.copyWith(
-      apiKey: c['api_key']!.text,
-      secretKey: c['secret_key']!.text,
-      proxy: c['proxy']!.text,
-    ),
+    buildValue: (c, _, v) =>
+        v.copyWith(apiKey: c['api_key']!.text, secretKey: c['secret_key']!.text, proxy: c['proxy']!.text),
   ),
 
   'aggregation_search': FormConfig(
     title: '聚合搜索配置',
     icon: shadcn.LucideIcons.search,
     textFields: [
-      FormFieldDef(
-        'max_count',
-        '站点数量限制',
-        (v) => v?.maxCount?.toString(),
-        helperText: '单次搜索的站点数量，0表示不限制',
-      ),
-      FormFieldDef(
-        'limit',
-        '并发数量限制',
-        (v) => v?.limit?.toString(),
-        helperText: '并发搜索站点数量，0表示不限制',
-      ),
+      FormFieldDef('max_count', '站点数量限制', (v) => v?.maxCount?.toString(), helperText: '单次搜索的站点数量，0表示不限制'),
+      FormFieldDef('limit', '并发数量限制', (v) => v?.limit?.toString(), helperText: '并发搜索站点数量，0表示不限制'),
     ],
-    buildValue: (c, _, v) => v.copyWith(
-      maxCount: int.tryParse(c['max_count']!.text) ?? 30,
-      limit: int.tryParse(c['limit']!.text) ?? 30,
-    ),
+    buildValue: (c, _, v) =>
+        v.copyWith(maxCount: int.tryParse(c['max_count']!.text) ?? 30, limit: int.tryParse(c['limit']!.text) ?? 30),
   ),
 
   'notice_category_enable': FormConfig(
@@ -424,40 +355,20 @@ final _formConfigs = <String, FormConfig>{
     icon: shadcn.LucideIcons.bellRing,
     textFields: const [],
     switchFields: [
-      SwitchFieldDef(
-        'aliyundrive_notice',
-        '阿里云盘',
-        (v) => v?.aliyundriveNotice ?? true,
-      ),
+      SwitchFieldDef('aliyundrive_notice', '阿里云盘', (v) => v?.aliyundriveNotice ?? true),
       SwitchFieldDef('site_data', '站点数据', (v) => v?.siteData ?? true),
-      SwitchFieldDef(
-        'site_data_success',
-        '成功站点消息',
-        (v) => v?.siteDataSuccess ?? true,
-      ),
+      SwitchFieldDef('site_data_success', '成功站点消息', (v) => v?.siteDataSuccess ?? true),
       SwitchFieldDef('today_data', '今日数据', (v) => v?.todayData ?? true),
       SwitchFieldDef('package_torrent', '拆包', (v) => v?.packageTorrent ?? true),
       SwitchFieldDef('delete_torrent', '删种', (v) => v?.deleteTorrent ?? true),
       SwitchFieldDef('rss_torrent', 'RSS', (v) => v?.rssTorrent ?? true),
       SwitchFieldDef('push_torrent', '种子推送', (v) => v?.pushTorrent ?? true),
-      SwitchFieldDef(
-        'program_upgrade',
-        'Docker 升级',
-        (v) => v?.programUpgrade ?? true,
-      ),
+      SwitchFieldDef('program_upgrade', 'Docker 升级', (v) => v?.programUpgrade ?? true),
       SwitchFieldDef('ptpp_import', 'PTPP 导入', (v) => v?.ptppImport ?? true),
       SwitchFieldDef('announcement', '公告详情', (v) => v?.announcement ?? true),
       SwitchFieldDef('message', '短消息详情', (v) => v?.message ?? true),
-      SwitchFieldDef(
-        'sign_in_success',
-        '签到成功消息',
-        (v) => v?.signInSuccess ?? true,
-      ),
-      SwitchFieldDef(
-        'cookie_sync',
-        'CookieCloud 同步',
-        (v) => v?.cookieSync ?? true,
-      ),
+      SwitchFieldDef('sign_in_success', '签到成功消息', (v) => v?.signInSuccess ?? true),
+      SwitchFieldDef('cookie_sync', 'CookieCloud 同步', (v) => v?.cookieSync ?? true),
     ],
     buildValue: (_, s, v) => v.copyWith(
       aliyundriveNotice: s['aliyundrive_notice'],
@@ -515,18 +426,12 @@ final _formConfigs = <String, FormConfig>{
     title: '自动添加标签',
     icon: shadcn.LucideIcons.tags,
     textFields: const [],
-    switchFields: [
-      SwitchFieldDef('repeat', '自动添加标签', (v) => v?.repeat ?? false),
-    ],
+    switchFields: [SwitchFieldDef('repeat', '自动添加标签', (v) => v?.repeat ?? false)],
     buildValue: (_, s, v) => v.copyWith(repeat: s['repeat']),
   ),
 };
 
-Future<void> _copyOptionToken(
-  String token, {
-  String emptyMessage = 'Token 为空',
-  String logLabel = 'Token',
-}) async {
+Future<void> _copyOptionToken(String token, {String emptyMessage = 'Token 为空', String logLabel = 'Token'}) async {
   final value = token.trim();
   if (value.isEmpty) {
     Toast.error(emptyMessage);
@@ -584,10 +489,7 @@ class _OptionPageState extends ConsumerState<OptionPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         shadcn.IconButton.ghost(
-                          icon: const Icon(
-                            shadcn.LucideIcons.arrowLeft,
-                            size: 20,
-                          ),
+                          icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 20),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                         Expanded(
@@ -595,22 +497,14 @@ class _OptionPageState extends ConsumerState<OptionPage> {
                             '选项设置',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: typo.large.copyWith(
-                              color: cs.foreground,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: typo.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
                           ),
                         ),
                         const DebugThemeButton.shadcn(),
                         if (isServerTab)
                           shadcn.IconButton.ghost(
-                            icon: const Icon(
-                              shadcn.LucideIcons.refreshCw,
-                              size: 18,
-                            ),
-                            onPressed: () => ref
-                                .read(optionProvider.notifier)
-                                .fetchOptions(),
+                            icon: const Icon(shadcn.LucideIcons.refreshCw, size: 18),
+                            onPressed: () => ref.read(optionProvider.notifier).fetchOptions(),
                           ),
                       ],
                     ),
@@ -619,17 +513,10 @@ class _OptionPageState extends ConsumerState<OptionPage> {
               ),
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.fromLTRB(
-                  context.isMobile ? 12 : 16,
-                  2,
-                  context.isMobile ? 12 : 16,
-                  8,
-                ),
+                padding: EdgeInsets.fromLTRB(context.isMobile ? 12 : 16, 2, context.isMobile ? 12 : 16, 8),
                 decoration: BoxDecoration(
                   color: appSurfaceColor(context, cs.background),
-                  border: Border(
-                    bottom: BorderSide(color: cs.border, width: 0.5),
-                  ),
+                  border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
                 ),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -643,11 +530,7 @@ class _OptionPageState extends ConsumerState<OptionPage> {
                   ),
                 ),
               ),
-              Expanded(
-                child: isServerTab
-                    ? _buildServerSettings(context, state)
-                    : _buildCommonTools(context),
-              ),
+              Expanded(child: isServerTab ? _buildServerSettings(context, state) : _buildCommonTools(context)),
             ],
           ),
         ),
@@ -680,6 +563,7 @@ class _OptionPageState extends ConsumerState<OptionPage> {
               textFields: config.textFields,
               switchFields: config.switchFields,
               extraBuilder: config.extraBuilder,
+              showSaveButton: config.showSaveButton,
               buildValue: config.buildValue,
               onSave: (opt) async {
                 return ref.read(optionProvider.notifier).saveOption(opt);
@@ -738,19 +622,13 @@ class _OptionPageState extends ConsumerState<OptionPage> {
           SizedBox(
             width: 190,
             child: shadcn.Button.outline(
-              onPressed: () => Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const UpdatePage())),
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const UpdatePage())),
               alignment: Alignment.center,
               child: const Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(shadcn.LucideIcons.externalLink, size: 15),
-                    SizedBox(width: 6),
-                    Text('打开完整更新页面'),
-                  ],
+                  children: [Icon(shadcn.LucideIcons.externalLink, size: 15), SizedBox(width: 6), Text('打开完整更新页面')],
                 ),
               ),
             ),
@@ -784,9 +662,7 @@ class _OptionPageState extends ConsumerState<OptionPage> {
       icon: shadcn.LucideIcons.send,
       builder: (collapse) => _TelegramWebhookForm(
         onSubmit: (normalized) async {
-          final success = await ref
-              .read(optionProvider.notifier)
-              .setTelegramWebhook(normalized);
+          final success = await ref.read(optionProvider.notifier).setTelegramWebhook(normalized);
           if (success) {
             Toast.success('设置成功');
             collapse();
@@ -801,21 +677,25 @@ class _OptionPageState extends ConsumerState<OptionPage> {
   // ────────────────── 通知测试 ──────────────────
 
   Widget _buildNoticeTest(BuildContext context, WidgetRef ref) {
+    final String message = """
+    [简介](https://ptools.fun/收割机/home.html) [安装](https://ptools.fun/收割机/install.html) [指南](https://ptools.fun/收割机/使用指南.html) [常见问题](https://ptools.fun/收割机/common.html)
+[SSH](https://ptools.fun/收割机/ssh.html) [企业微信](https://ptools.fun/收割机/wechat.html) [app](https://ptools.fun/收割机/app.html) [站点导入](https://ptools.fun/收割机/import.html)
+[自行适配](https://ptools.fun/收割机/custom-add.html) [自定义主题](https://ptools.fun/收割机/custom-theme.html) [协议](https://ptools.fun/收割机/agreement.html)
+[阿里云盘](https://ptools.fun/通用教程/aliyun.html) [百度OCR](https://ptools.fun/通用教程/baidu-ocr.html) [CookieCloud](https://ptools.fun/通用教程/CookieCloud.html)
+[Tailscale](https://ptools.fun/通用教程/tailscale-nat.html) [Telegram](https://ptools.fun/通用教程/telegram-bot.html) [命令行](https://ptools.fun/通用教程/termnal.html) [穿透](https://ptools.fun/通用教程/tunnel.html)
+[TG群](https://t.me/n_ptools) [QQ群](https://qm.qq.com/q/87aDeLe968)
+    """;
     return ExpandableCard(
       title: '通知测试',
       icon: shadcn.LucideIcons.bellRing,
       builder: (collapse) {
-        final titleCtrl = TextEditingController(text: '这是一个消息标题');
-        final msgCtrl = TextEditingController(
-          text: '*这是一条测试消息*\n__这是二号标题__\n```这是消息```',
-        );
+        final titleCtrl = TextEditingController(text: '收割机文档');
+        final msgCtrl = TextEditingController(text: message);
         return _TestNoticeForm(
           titleCtrl: titleCtrl,
           msgCtrl: msgCtrl,
           onSend: () async {
-            final success = await ref
-                .read(optionProvider.notifier)
-                .testNotice(titleCtrl.text, msgCtrl.text);
+            final success = await ref.read(optionProvider.notifier).testNotice(titleCtrl.text, msgCtrl.text);
             if (success) {
               Toast.success('测试消息发送完成');
               collapse();
@@ -845,8 +725,7 @@ class _InviteTokenToolCard extends ConsumerStatefulWidget {
   const _InviteTokenToolCard();
 
   @override
-  ConsumerState<_InviteTokenToolCard> createState() =>
-      _InviteTokenToolCardState();
+  ConsumerState<_InviteTokenToolCard> createState() => _InviteTokenToolCardState();
 }
 
 class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
@@ -893,19 +772,14 @@ class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
                   items: shadcn.SelectItemList(
                     children: [
                       for (final site in _inviteTokenSites)
-                        shadcn.SelectItemButton<String>(
-                          value: site.baseUrl,
-                          child: Text(site.label),
-                        ),
+                        shadcn.SelectItemButton<String>(value: site.baseUrl, child: Text(site.label)),
                     ],
                   ),
                 ).call,
                 onChanged: _loading
                     ? null
                     : (value) {
-                        final next = _inviteTokenSites
-                            .where((site) => site.baseUrl == value)
-                            .firstOrNull;
+                        final next = _inviteTokenSites.where((site) => site.baseUrl == value).firstOrNull;
                         if (next == null) return;
                         setState(() => _selectedSite = next);
                       },
@@ -949,22 +823,13 @@ class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
                 child: Column(
                   children: [
                     if (_token != null)
-                      _InviteTokenResultRow(
-                        label: 'Token',
-                        value: _token!,
-                        onCopy: () => _copyOptionToken(_token!),
-                      ),
-                    if (_token != null && _uid != null)
-                      Divider(color: cs.border.withValues(alpha: 0.7)),
+                      _InviteTokenResultRow(label: 'Token', value: _token!, onCopy: () => _copyOptionToken(_token!)),
+                    if (_token != null && _uid != null) Divider(color: cs.border.withValues(alpha: 0.7)),
                     if (_uid != null)
                       _InviteTokenResultRow(
                         label: 'UID',
                         value: _uid!,
-                        onCopy: () => _copyOptionToken(
-                          _uid!,
-                          emptyMessage: 'UID 为空',
-                          logLabel: 'UID',
-                        ),
+                        onCopy: () => _copyOptionToken(_uid!, emptyMessage: 'UID 为空', logLabel: 'UID'),
                       ),
                   ],
                 ),
@@ -984,11 +849,7 @@ class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
   }
 
   String _siteLabel(String? baseUrl) {
-    return _inviteTokenSites
-            .where((site) => site.baseUrl == baseUrl)
-            .map((site) => site.label)
-            .firstOrNull ??
-        '选择站点';
+    return _inviteTokenSites.where((site) => site.baseUrl == baseUrl).map((site) => site.label).firstOrNull ?? '选择站点';
   }
 
   Future<void> _fetchToken() async {
@@ -1017,11 +878,7 @@ class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
         options: Options(headers: {'Content-Type': 'application/json'}),
       );
       final data = _decodeResponseData(response.data);
-      final token = _findValue(data, const [
-        'token',
-        'access_token',
-        'api_token',
-      ]);
+      final token = _findValue(data, const ['token', 'access_token', 'api_token']);
       final uid = _findValue(data, const ['uid', 'userId', 'user_id', 'id']);
 
       if (token == null && uid == null) {
@@ -1070,9 +927,7 @@ class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
     if (data is Map) {
       for (final entry in data.entries) {
         final key = entry.key.toString();
-        if (keys.any(
-          (candidate) => candidate.toLowerCase() == key.toLowerCase(),
-        )) {
+        if (keys.any((candidate) => candidate.toLowerCase() == key.toLowerCase())) {
           final value = entry.value;
           if (value != null && value.toString().trim().isNotEmpty) {
             return value.toString();
@@ -1119,31 +974,25 @@ class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
               const SizedBox(height: 8),
               Text(
                 'Token: $token',
-                style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                ),
+                style: shadcn.Theme.of(
+                  context,
+                ).typography.xSmall.copyWith(color: shadcn.Theme.of(context).colorScheme.mutedForeground),
               ),
               if (uid != null) ...[
                 const SizedBox(height: 4),
                 Text(
                   'UID: $uid',
-                  style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                  ),
+                  style: shadcn.Theme.of(
+                    context,
+                  ).typography.xSmall.copyWith(color: shadcn.Theme.of(context).colorScheme.mutedForeground),
                 ),
               ],
             ],
           ),
         ),
         actions: [
-          shadcn.Button.outline(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
-          ),
-          shadcn.Button.primary(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('确定更新'),
-          ),
+          shadcn.Button.outline(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+          shadcn.Button.primary(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('确定更新')),
         ],
       ),
     );
@@ -1168,10 +1017,7 @@ class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
       }
 
       for (final site in matchingSites) {
-        final updatedSite = site.copyWith(
-          authkey: token,
-          userId: uid ?? site.userId,
-        );
+        final updatedSite = site.copyWith(authkey: token, userId: uid ?? site.userId);
         await ref.read(siteInfoListProvider.notifier).updateSite(updatedSite);
       }
 
@@ -1186,8 +1032,7 @@ class _WechatBotLoginCard extends ConsumerStatefulWidget {
   const _WechatBotLoginCard();
 
   @override
-  ConsumerState<_WechatBotLoginCard> createState() =>
-      _WechatBotLoginCardState();
+  ConsumerState<_WechatBotLoginCard> createState() => _WechatBotLoginCardState();
 }
 
 class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
@@ -1230,20 +1075,13 @@ class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
                   if (_status == 'scaned')
                     Padding(
                       padding: const EdgeInsets.only(right: 6),
-                      child: Icon(
-                        shadcn.LucideIcons.scanLine,
-                        size: 14,
-                        color: cs.primary,
-                      ),
+                      child: Icon(shadcn.LucideIcons.scanLine, size: 14, color: cs.primary),
                     ),
                   Text(
-                    _statusMessage.isNotEmpty
-                        ? _statusMessage
-                        : (_status == 'scaned' ? '已扫码，请在手机上确认' : '等待扫码...'),
+                    _statusMessage.isNotEmpty ? _statusMessage : (_status == 'scaned' ? '已扫码，请在手机上确认' : '等待扫码...'),
                     style: typo.small.copyWith(
                       color: _status == 'scaned' ? cs.primary : cs.mutedForeground,
-                      fontWeight:
-                          _status == 'scaned' ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: _status == 'scaned' ? FontWeight.w600 : FontWeight.normal,
                     ),
                   ),
                 ],
@@ -1266,15 +1104,15 @@ class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
                 ),
                 onLoadStop: (controller, url) async {
                   await controller.scrollTo(x: 0, y: 99999);
-                  await Future<void>.delayed(
-                    const Duration(milliseconds: 300),
-                  );
-                  await controller.evaluateJavascript(source: '''
+                  await Future<void>.delayed(const Duration(milliseconds: 300));
+                  await controller.evaluateJavascript(
+                    source: '''
                     document.addEventListener('touchmove', function(e) { e.preventDefault(); }, {passive: false});
                     document.addEventListener('touchstart', function(e) { e.preventDefault(); }, {passive: false});
                     document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
                     document.addEventListener('gesturechange', function(e) { e.preventDefault(); });
-                  ''');
+                  ''',
+                  );
                 },
               ),
             ),
@@ -1283,18 +1121,11 @@ class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Column(
                 children: [
-                  Icon(
-                    shadcn.LucideIcons.circleCheck,
-                    size: 48,
-                    color: Colors.green,
-                  ),
+                  Icon(shadcn.LucideIcons.circleCheck, size: 48, color: Colors.green),
                   const SizedBox(height: 12),
                   Text(
                     _statusMessage.isNotEmpty ? _statusMessage : '登录成功',
-                    style: typo.medium.copyWith(
-                      color: cs.foreground,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: typo.medium.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -1304,11 +1135,7 @@ class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Column(
                 children: [
-                  Icon(
-                    shadcn.LucideIcons.clock,
-                    size: 48,
-                    color: cs.mutedForeground,
-                  ),
+                  Icon(shadcn.LucideIcons.clock, size: 48, color: cs.mutedForeground),
                   const SizedBox(height: 12),
                   Text(
                     _statusMessage.isNotEmpty ? _statusMessage : '二维码已过期',
@@ -1332,10 +1159,7 @@ class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: shadcn.CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
+                        child: shadcn.CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
                     : const _ButtonText('获取二维码'),
               ),
@@ -1394,8 +1218,7 @@ class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
     }
 
     try {
-      final data =
-          await Http.get<dynamic>('/api/option/wechatbot/qrcode/status');
+      final data = await Http.get<dynamic>('/api/option/wechatbot/qrcode/status');
       AppLogger.debug('轮询状态响应：$data');
       if (data is Map && mounted) {
         final status = data['status']?.toString() ?? '';
@@ -1450,11 +1273,7 @@ class _InviteTokenResultRow extends StatelessWidget {
   final String value;
   final VoidCallback onCopy;
 
-  const _InviteTokenResultRow({
-    required this.label,
-    required this.value,
-    required this.onCopy,
-  });
+  const _InviteTokenResultRow({required this.label, required this.value, required this.onCopy});
 
   @override
   Widget build(BuildContext context) {
@@ -1467,10 +1286,7 @@ class _InviteTokenResultRow extends StatelessWidget {
           width: 56,
           child: Text(
             label,
-            style: typo.small.copyWith(
-              color: cs.foreground,
-              fontWeight: FontWeight.w600,
-            ),
+            style: typo.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
           ),
         ),
         Expanded(
@@ -1490,10 +1306,7 @@ class _InviteTokenResultRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        shadcn.IconButton.outline(
-          icon: const Icon(shadcn.LucideIcons.copy, size: 16),
-          onPressed: onCopy,
-        ),
+        shadcn.IconButton.outline(icon: const Icon(shadcn.LucideIcons.copy, size: 16), onPressed: onCopy),
       ],
     );
   }
@@ -1533,9 +1346,9 @@ class _TelegramWebhookFormState extends State<_TelegramWebhookForm> {
           const SizedBox(height: 6),
           Text(
             '请仅输入域名部分，端口必须是【80、443、8080、8443】之一',
-            style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-            ),
+            style: shadcn.Theme.of(
+              context,
+            ).typography.xSmall.copyWith(color: shadcn.Theme.of(context).colorScheme.mutedForeground),
           ),
           const SizedBox(height: 10),
           _ActionButtonFrame(
@@ -1616,12 +1429,10 @@ class _MediaInfoSettingsCard extends ConsumerStatefulWidget {
   const _MediaInfoSettingsCard();
 
   @override
-  ConsumerState<_MediaInfoSettingsCard> createState() =>
-      _MediaInfoSettingsCardState();
+  ConsumerState<_MediaInfoSettingsCard> createState() => _MediaInfoSettingsCardState();
 }
 
-class _MediaInfoSettingsCardState
-    extends ConsumerState<_MediaInfoSettingsCard> {
+class _MediaInfoSettingsCardState extends ConsumerState<_MediaInfoSettingsCard> {
   bool _saving = false;
 
   @override
@@ -1651,16 +1462,10 @@ class _MediaInfoSettingsCardState
                 children: [
                   Text(
                     title,
-                    style: typo.small.copyWith(
-                      color: cs.foreground,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: typo.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: typo.xSmall.copyWith(color: cs.mutedForeground),
-                  ),
+                  Text(subtitle, style: typo.xSmall.copyWith(color: cs.mutedForeground)),
                 ],
               ),
             ),
@@ -1718,8 +1523,7 @@ class _DataImportExportCard extends ConsumerStatefulWidget {
   const _DataImportExportCard();
 
   @override
-  ConsumerState<_DataImportExportCard> createState() =>
-      _DataImportExportCardState();
+  ConsumerState<_DataImportExportCard> createState() => _DataImportExportCardState();
 }
 
 class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
@@ -1794,12 +1598,8 @@ class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
 
     setState(() => _uploading = source);
     try {
-      AppLogger.info(
-        '提交 ${source.label} 备份导入: file=${file.name}, size=${file.size}',
-      );
-      final message = await ref
-          .read(optionProvider.notifier)
-          .importCookieBackup(file: file, source: source);
+      AppLogger.info('提交 ${source.label} 备份导入: file=${file.name}, size=${file.size}');
+      final message = await ref.read(optionProvider.notifier).importCookieBackup(file: file, source: source);
       if (!mounted) return;
 
       if (message == null) {
@@ -1915,9 +1715,7 @@ class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
     setState(() => _importingBackup = true);
     try {
       AppLogger.info('提交数据备份导入: file=${file.name}, size=${file.size}');
-      final message = await ref
-          .read(optionProvider.notifier)
-          .importBackup(file: file);
+      final message = await ref.read(optionProvider.notifier).importBackup(file: file);
       if (!mounted) return;
 
       if (message == null) {
@@ -1947,17 +1745,11 @@ class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
               shadcn.AccordionItem(
                 expanded: true,
                 trigger: const shadcn.AccordionTrigger(child: Text('导入导出')),
-                content: Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildImportExportContent(context),
-                ),
+                content: Padding(padding: const EdgeInsets.only(bottom: 12), child: _buildImportExportContent(context)),
               ),
               shadcn.AccordionItem(
                 trigger: const shadcn.AccordionTrigger(child: Text('数据库文件导入')),
-                content: Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildSqliteImportContent(context),
-                ),
+                content: Padding(padding: const EdgeInsets.only(bottom: 12), child: _buildSqliteImportContent(context)),
               ),
               shadcn.AccordionItem(
                 trigger: const shadcn.AccordionTrigger(child: Text('外部数据导入')),
@@ -1984,11 +1776,7 @@ class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
     if (context.isMobile) {
       return Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildDataBackupExportTile(context),
-          const SizedBox(height: 8),
-          _buildDataBackupImportTile(context),
-        ],
+        children: [_buildDataBackupExportTile(context), const SizedBox(height: 8), _buildDataBackupImportTile(context)],
       );
     }
 
@@ -2049,16 +1837,11 @@ class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
                       file?.name ?? '未选择数据库文件',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: typo.small.copyWith(
-                        color: fileColor,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: typo.small.copyWith(color: fileColor, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      file == null
-                          ? '仅支持 .sqlite3 文件'
-                          : '${formatBytes(file.size)}，仅会作为 file 字段上传',
+                      file == null ? '仅支持 .sqlite3 文件' : '${formatBytes(file.size)}，仅会作为 file 字段上传',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: typo.xSmall.copyWith(color: cs.mutedForeground),
@@ -2070,9 +1853,7 @@ class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
               Icon(
                 shadcn.LucideIcons.folderOpen,
                 size: 17,
-                color: _busy
-                    ? cs.mutedForeground
-                    : cs.foreground.withValues(alpha: 0.62),
+                color: _busy ? cs.mutedForeground : cs.foreground.withValues(alpha: 0.62),
               ),
             ],
           ),
@@ -2105,18 +1886,11 @@ class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
                     enabled: !_busy,
                     placeholder: const Text('安全 Token'),
                     obscureText: true,
-                    onSubmitted: (_) =>
-                        FocusManager.instance.primaryFocus?.unfocus(),
+                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   ),
                 ),
                 const SizedBox(width: 10),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minWidth: 150,
-                    maxWidth: 190,
-                  ),
-                  child: submitButton,
-                ),
+                ConstrainedBox(constraints: const BoxConstraints(minWidth: 150, maxWidth: 190), child: submitButton),
               ],
             ),
           ];
@@ -2146,11 +1920,7 @@ class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(shadcn.LucideIcons.databaseBackup, size: 15),
-            SizedBox(width: 6),
-            Text('开始导入'),
-          ],
+          children: [Icon(shadcn.LucideIcons.databaseBackup, size: 15), SizedBox(width: 6), Text('开始导入')],
         ),
       ),
     );
@@ -2210,9 +1980,7 @@ class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
       onTap: enabled ? () => _pickAndUpload(source) : null,
       leading: Icon(shadcn.LucideIcons.cookie, size: 18, color: color),
       title: '${source.label} 导入',
-      subtitle: file == null
-          ? '从备份文件导入站点'
-          : '${file.name} · ${formatBytes(file.size)}',
+      subtitle: file == null ? '从备份文件导入站点' : '${file.name} · ${formatBytes(file.size)}',
       trailing: Icon(shadcn.LucideIcons.fileUp, size: 17, color: color),
     );
   }
@@ -2264,14 +2032,8 @@ class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
         title: Text(title),
         content: SizedBox(width: 360, child: Text(message)),
         actions: [
-          shadcn.Button.outline(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
-          ),
-          shadcn.Button.primary(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(confirmText),
-          ),
+          shadcn.Button.outline(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+          shadcn.Button.primary(onPressed: () => Navigator.of(ctx).pop(true), child: Text(confirmText)),
         ],
       ),
     );
@@ -2341,12 +2103,8 @@ class _DataImportExportCardState extends ConsumerState<_DataImportExportCard> {
 
     setState(() => _importingSqlite = true);
     try {
-      AppLogger.info(
-        '提交旧版 sqlite3 数据库导入: file=${file.name}, size=${file.size}',
-      );
-      final message = await ref
-          .read(optionProvider.notifier)
-          .importLegacySqlite(file: file);
+      AppLogger.info('提交旧版 sqlite3 数据库导入: file=${file.name}, size=${file.size}');
+      final message = await ref.read(optionProvider.notifier).importLegacySqlite(file: file);
       if (!mounted) return;
 
       if (message == null) {
@@ -2442,17 +2200,14 @@ class _ImportActionTile extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: shadcn.Theme.of(context).typography.small.copyWith(
-                        color: cs.foreground,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: shadcn.Theme.of(
+                        context,
+                      ).typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: shadcn.Theme.of(
-                        context,
-                      ).typography.xSmall.copyWith(color: cs.mutedForeground),
+                      style: shadcn.Theme.of(context).typography.xSmall.copyWith(color: cs.mutedForeground),
                     ),
                   ],
                 ),
@@ -2470,12 +2225,10 @@ class _AppAutoRefreshIntervalCard extends ConsumerStatefulWidget {
   const _AppAutoRefreshIntervalCard();
 
   @override
-  ConsumerState<_AppAutoRefreshIntervalCard> createState() =>
-      _AppAutoRefreshIntervalCardState();
+  ConsumerState<_AppAutoRefreshIntervalCard> createState() => _AppAutoRefreshIntervalCardState();
 }
 
-class _AppAutoRefreshIntervalCardState
-    extends ConsumerState<_AppAutoRefreshIntervalCard> {
+class _AppAutoRefreshIntervalCardState extends ConsumerState<_AppAutoRefreshIntervalCard> {
   static const _presets = [5, 10, 15, 30, 60];
 
   late final TextEditingController _minutesCtrl;
@@ -2485,9 +2238,7 @@ class _AppAutoRefreshIntervalCardState
   @override
   void initState() {
     super.initState();
-    _minutesCtrl = TextEditingController(
-      text: '${ref.read(appAutoRefreshIntervalProvider)}',
-    );
+    _minutesCtrl = TextEditingController(text: '${ref.read(appAutoRefreshIntervalProvider)}');
   }
 
   @override
@@ -2541,10 +2292,7 @@ class _AppAutoRefreshIntervalCardState
           children: [
             Text(
               'APP 在前台每隔设定时间自动刷新一次数据；从后台回到前台时也会按同一间隔节流刷新。',
-              style: typo.small.copyWith(
-                color: cs.mutedForeground,
-                height: 1.35,
-              ),
+              style: typo.small.copyWith(color: cs.mutedForeground, height: 1.35),
             ),
             const SizedBox(height: 12),
             AppSurfaceContainer(
@@ -2554,11 +2302,7 @@ class _AppAutoRefreshIntervalCardState
               borderColor: cs.border.withValues(alpha: 0.7),
               child: Row(
                 children: [
-                  Icon(
-                    shadcn.LucideIcons.clock,
-                    size: 18,
-                    color: cs.foreground.withValues(alpha: 0.62),
-                  ),
+                  Icon(shadcn.LucideIcons.clock, size: 18, color: cs.foreground.withValues(alpha: 0.62)),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -2566,18 +2310,11 @@ class _AppAutoRefreshIntervalCardState
                       children: [
                         Text(
                           '刷新间隔',
-                          style: typo.small.copyWith(
-                            color: cs.foreground,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: typo.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                         ),
                         Text(
-                          minutes == kDefaultAppAutoRefreshMinutes
-                              ? '当前 $minutes 分钟，默认频率'
-                              : '当前 $minutes 分钟',
-                          style: typo.xSmall.copyWith(
-                            color: cs.mutedForeground,
-                          ),
+                          minutes == kDefaultAppAutoRefreshMinutes ? '当前 $minutes 分钟，默认频率' : '当前 $minutes 分钟',
+                          style: typo.xSmall.copyWith(color: cs.mutedForeground),
                         ),
                       ],
                     ),
@@ -2599,14 +2336,7 @@ class _AppAutoRefreshIntervalCardState
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       onSubmitted: (_) => _commitInput(),
                       features: [
-                        shadcn.InputFeature.trailing(
-                          Text(
-                            '分',
-                            style: typo.xSmall.copyWith(
-                              color: cs.mutedForeground,
-                            ),
-                          ),
-                        ),
+                        shadcn.InputFeature.trailing(Text('分', style: typo.xSmall.copyWith(color: cs.mutedForeground))),
                       ],
                     ),
                   ),
@@ -2627,15 +2357,12 @@ class _AppAutoRefreshIntervalCardState
               children: [
                 for (final preset in _presets)
                   shadcn.Button.outline(
-                    onPressed: minutes == preset || _updating
-                        ? null
-                        : () => _setMinutes(preset),
+                    onPressed: minutes == preset || _updating ? null : () => _setMinutes(preset),
                     alignment: Alignment.center,
                     child: _ButtonText('$preset 分钟'),
                   ),
                 shadcn.Button.outline(
-                  onPressed:
-                      minutes == kDefaultAppAutoRefreshMinutes || _updating
+                  onPressed: minutes == kDefaultAppAutoRefreshMinutes || _updating
                       ? null
                       : () => _setMinutes(kDefaultAppAutoRefreshMinutes),
                   alignment: Alignment.center,
@@ -2658,10 +2385,7 @@ class _BulkUpgradeCard extends ConsumerStatefulWidget {
 }
 
 class _BulkUpgradeCardState extends ConsumerState<_BulkUpgradeCard> {
-  static const _fieldOptions = <String, String>{
-    'user_agent': 'User-Agent',
-    'proxy': 'Proxy',
-  };
+  static const _fieldOptions = <String, String>{'user_agent': 'User-Agent', 'proxy': 'Proxy'};
 
   final _valueCtrl = TextEditingController();
   String _selectedKey = 'user_agent';
@@ -2688,10 +2412,7 @@ class _BulkUpgradeCardState extends ConsumerState<_BulkUpgradeCard> {
           children: [
             Text(
               '选择要批量更新的字段，并输入新的配置值。值会优先按 JSON 解析，解析失败时按普通字符串提交。',
-              style: shadcn.Theme.of(context).typography.small.copyWith(
-                color: cs.mutedForeground,
-                height: 1.35,
-              ),
+              style: shadcn.Theme.of(context).typography.small.copyWith(color: cs.mutedForeground, height: 1.35),
             ),
             const SizedBox(height: 12),
             shadcn.OverlayManagerLayer(
@@ -2703,16 +2424,12 @@ class _BulkUpgradeCardState extends ConsumerState<_BulkUpgradeCard> {
                 child: shadcn.Select<String>(
                   value: _selectedKey,
                   placeholder: const Text('选择字段'),
-                  itemBuilder: (_, value) =>
-                      Text(_fieldOptions[value] ?? value),
+                  itemBuilder: (_, value) => Text(_fieldOptions[value] ?? value),
                   popup: shadcn.SelectPopup<String>(
                     items: shadcn.SelectItemList(
                       children: [
                         for (final entry in _fieldOptions.entries)
-                          shadcn.SelectItemButton<String>(
-                            value: entry.key,
-                            child: Text(entry.value),
-                          ),
+                          shadcn.SelectItemButton<String>(value: entry.key, child: Text(entry.value)),
                       ],
                     ),
                   ).call,
@@ -2729,9 +2446,7 @@ class _BulkUpgradeCardState extends ConsumerState<_BulkUpgradeCard> {
             ShadTextField(
               controller: _valueCtrl,
               enabled: !_submitting,
-              hintText: _selectedKey == 'user_agent'
-                  ? 'Mozilla/5.0 ...'
-                  : 'http://127.0.0.1:7890 或 {"http":"..."}',
+              hintText: _selectedKey == 'user_agent' ? 'Mozilla/5.0 ...' : 'http://127.0.0.1:7890 或 {"http":"..."}',
               maxLines: _selectedKey == 'user_agent' ? 3 : 2,
               onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
             ),
@@ -2746,11 +2461,7 @@ class _BulkUpgradeCardState extends ConsumerState<_BulkUpgradeCard> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(shadcn.LucideIcons.replace, size: 15),
-                      SizedBox(width: 6),
-                      Text('提交批量替换'),
-                    ],
+                    children: [Icon(shadcn.LucideIcons.replace, size: 15), SizedBox(width: 6), Text('提交批量替换')],
                   ),
                 ),
               ),
@@ -2815,10 +2526,9 @@ class _SpeedTestActionState extends State<_SpeedTestAction> {
         children: [
           Text(
             '提交后端网络测速任务，任务完成后请留意通知。',
-            style: shadcn.Theme.of(context).typography.small.copyWith(
-              color: cs.foreground.withValues(alpha: 0.52),
-              height: 1.35,
-            ),
+            style: shadcn.Theme.of(
+              context,
+            ).typography.small.copyWith(color: cs.foreground.withValues(alpha: 0.52), height: 1.35),
           ),
           const SizedBox(height: 10),
           _ActionButtonFrame(
@@ -2838,11 +2548,7 @@ class _SpeedTestActionState extends State<_SpeedTestAction> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(shadcn.LucideIcons.gauge, size: 15),
-                    SizedBox(width: 6),
-                    Text('开始测速'),
-                  ],
+                  children: [Icon(shadcn.LucideIcons.gauge, size: 15), SizedBox(width: 6), Text('开始测速')],
                 ),
               ),
             ),
@@ -2862,11 +2568,7 @@ class _TestNoticeForm extends StatefulWidget {
   final TextEditingController msgCtrl;
   final Future<void> Function() onSend;
 
-  const _TestNoticeForm({
-    required this.titleCtrl,
-    required this.msgCtrl,
-    required this.onSend,
-  });
+  const _TestNoticeForm({required this.titleCtrl, required this.msgCtrl, required this.onSend});
 
   @override
   State<_TestNoticeForm> createState() => _TestNoticeFormState();
@@ -2950,9 +2652,7 @@ class _VersionCardState extends State<_VersionCard> {
         if (info == null) {
           return const Padding(
             padding: EdgeInsets.symmetric(vertical: 10),
-            child: Center(
-              child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-            ),
+            child: Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
           );
         }
 
@@ -2965,20 +2665,15 @@ class _VersionCardState extends State<_VersionCard> {
               onTap: () => _showAboutDialog(context, info),
               child: ClipRRect(
                 borderRadius: _optionRadius(context, size: 'lg'),
-                child: Image.asset(
-                  'assets/images/avatar.png',
-                  height: 50,
-                  width: 50,
-                ),
+                child: Image.asset('assets/images/avatar.png', height: 50, width: 50),
               ),
             ),
             const SizedBox(height: 10),
             Text(
               info.appName,
-              style: shadcn.Theme.of(context).typography.large.copyWith(
-                color: cs.foreground,
-                fontWeight: FontWeight.w700,
-              ),
+              style: shadcn.Theme.of(
+                context,
+              ).typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             Text(
@@ -2998,9 +2693,7 @@ class _VersionCardState extends State<_VersionCard> {
               ),
               child: Text(
                 'Harvest 本义收割,收获，本软件致力于让你更轻松的玩转国内 PT 站点，与收割机有异曲同工之妙，故此得名。',
-                style: shadcn.Theme.of(
-                  context,
-                ).typography.small.copyWith(color: cs.foreground, height: 1.5),
+                style: shadcn.Theme.of(context).typography.small.copyWith(color: cs.foreground, height: 1.5),
               ),
             ),
             const SizedBox(height: 12),
@@ -3011,9 +2704,7 @@ class _VersionCardState extends State<_VersionCard> {
                 color: cs.foreground.withValues(alpha: 0.04),
                 borderRadius: _optionRadius(context),
               ),
-              child: Column(
-                children: [_infoRow(context, '包名', info.packageName)],
-              ),
+              child: Column(children: [_infoRow(context, '包名', info.packageName)]),
             ),
           ],
         );
@@ -3035,24 +2726,19 @@ class _VersionCardState extends State<_VersionCard> {
               const SizedBox(height: 12),
               Text(
                 '版本: ${info.version}',
-                style: shadcn.Theme.of(ctx).typography.small.copyWith(
-                  color: _optionColors(ctx).mutedForeground,
-                ),
+                style: shadcn.Theme.of(ctx).typography.small.copyWith(color: _optionColors(ctx).mutedForeground),
               ),
               const SizedBox(height: 8),
               Text(
                 '© ${DateTime.now().year} ${info.appName}',
-                style: shadcn.Theme.of(ctx).typography.xSmall.copyWith(
-                  color: _optionColors(ctx).mutedForeground,
-                ),
+                style: shadcn.Theme.of(ctx).typography.xSmall.copyWith(color: _optionColors(ctx).mutedForeground),
               ),
               const SizedBox(height: 12),
               Text(
                 'Harvest 本义收割,收获，本软件致力于让你更轻松的玩转国内 PT 站点，与收割机有异曲同工之妙，故此得名。',
-                style: shadcn.Theme.of(ctx).typography.small.copyWith(
-                  color: _optionColors(ctx).foreground,
-                  height: 1.5,
-                ),
+                style: shadcn.Theme.of(
+                  ctx,
+                ).typography.small.copyWith(color: _optionColors(ctx).foreground, height: 1.5),
               ),
             ],
           ),
@@ -3075,9 +2761,7 @@ class _VersionCardState extends State<_VersionCard> {
       children: [
         Text(
           label,
-          style: shadcn.Theme.of(context).typography.small.copyWith(
-            color: cs.foreground.withValues(alpha: 0.4),
-          ),
+          style: shadcn.Theme.of(context).typography.small.copyWith(color: cs.foreground.withValues(alpha: 0.4)),
         ),
         Text(
           value,
@@ -3096,13 +2780,7 @@ class _VersionCardState extends State<_VersionCard> {
 // ══════════════════════════════════════════════════════════
 
 String _randomString(int length) {
-  const chars =
-      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   final random = Random.secure();
-  return String.fromCharCodes(
-    Iterable.generate(
-      length,
-      (_) => chars.codeUnitAt(random.nextInt(chars.length)),
-    ),
-  );
+  return String.fromCharCodes(Iterable.generate(length, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
 }
