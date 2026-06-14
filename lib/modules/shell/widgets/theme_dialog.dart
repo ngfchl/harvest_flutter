@@ -43,8 +43,8 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final current = ref.watch(themeNotifierProvider);
-    final notifier = ref.read(themeNotifierProvider.notifier);
+    final current = ref.watch(themeProvider);
+    final notifier = ref.read(themeProvider.notifier);
     final tokens = _ThemeDialogTokens.of(context);
     final currentWidth =
         HiveManager.get(StorageKeys.windowSizeWidth)?.toDouble() ?? 1440;
@@ -776,13 +776,13 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
 
   Widget _modeButton(BuildContext context, WidgetRef ref, shadcn.ThemeMode mode, IconData icon, String label) {
     final tokens = _ThemeDialogTokens.of(context);
-    final current = ref.watch(themeNotifierProvider);
+    final current = ref.watch(themeProvider);
     final theme = tokens.theme;
     final cs = tokens.cs;
     final selected = current.mode == mode;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => ref.read(themeNotifierProvider.notifier).setMode(mode),
+      onTap: () => ref.read(themeProvider.notifier).setMode(mode),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 140),
         width: tokens.modeButtonWidth,

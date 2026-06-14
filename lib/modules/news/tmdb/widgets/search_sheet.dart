@@ -146,7 +146,7 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: _results.length,
-                  separatorBuilder: (_, __) => const shadcn.Divider(),
+                  separatorBuilder: (_, _) => const shadcn.Divider(),
                   itemBuilder: (_, i) => _buildResultTile(context, _results[i]),
                 ),
               )
@@ -194,14 +194,14 @@ class _SearchSheetState extends ConsumerState<_SearchSheet> {
                     ? CachedNetworkImage(
                         imageUrl: posterUrl,
                         fit: BoxFit.cover,
-                        placeholder: (_, __) => const Center(
+                        placeholder: (_, _) => const Center(
                           child: SizedBox(
                             width: 16,
                             height: 16,
                             child: shadcn.CircularProgressIndicator(strokeWidth: 1.5),
                           ),
                         ),
-                        errorWidget: (_, __, ___) => _ph(context),
+                        errorWidget: (_, _, _) => _ph(context),
                       )
                     : _ph(context),
               ),

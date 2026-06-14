@@ -44,7 +44,7 @@ class DoubanPage extends ConsumerWidget {
       title: '豆瓣 Top250',
       isLoading: async.isLoading && !async.hasValue,
       items:
-          async.valueOrNull
+          async.value
               ?.map(
                 (m) => DoubanCard(
                   title: m.title,
@@ -70,7 +70,7 @@ class DoubanPage extends ConsumerWidget {
       title: '豆瓣排行榜',
       isLoading: async.isLoading && !async.hasValue,
       items:
-          async.valueOrNull
+          async.value
               ?.map(
                 (m) => DoubanCard(
                   title: m.title,
@@ -94,7 +94,7 @@ class DoubanPage extends ConsumerWidget {
       title: '热门电影',
       isLoading: async.isLoading && !async.hasValue,
       items:
-          async.valueOrNull
+          async.value
               ?.map(
                 (m) => DoubanCard(
                   title: m.title,
@@ -118,7 +118,7 @@ class DoubanPage extends ConsumerWidget {
       title: '热门剧集',
       isLoading: async.isLoading && !async.hasValue,
       items:
-          async.valueOrNull
+          async.value
               ?.map(
                 (m) => DoubanCard(
                   title: m.title,

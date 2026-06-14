@@ -865,7 +865,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                       imageUrl: imageUrl,
                       fit: BoxFit.cover,
                       httpHeaders: headers,
-                      placeholder: (_, __) => const Center(
+                      placeholder: (_, _) => const Center(
                         child: SizedBox(
                           width: 16,
                           height: 16,
@@ -874,7 +874,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                           ),
                         ),
                       ),
-                      errorWidget: (_, __, ___) => _posterPh(context),
+                      errorWidget: (_, _, _) => _posterPh(context),
                     )
                   : _posterPh(context),
             ),
@@ -1358,7 +1358,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       controller: _resourceScrollController,
       padding: EdgeInsets.fromLTRB(mobile ? 8 : 16, 8, mobile ? 8 : 16, 80),
       itemCount: results.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 6),
+      separatorBuilder: (_, _) => const SizedBox(height: 6),
       itemBuilder: (_, i) => _buildTorrentCard(results[i]),
     );
   }
@@ -1944,7 +1944,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   List<String> _normalizedSearchSiteIds(List<String> sites) {
-    final siteInfos = ref.read(siteInfoListProvider).valueOrNull ?? [];
+    final siteInfos = ref.read(siteInfoListProvider).value ?? [];
     final byId = {for (final site in siteInfos) site.id.toString(): site};
     final byName = {for (final site in siteInfos) site.site: site};
     final normalized = <String>[];
@@ -1959,7 +1959,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   String _siteLabel(String siteId) {
-    final sites = ref.read(siteInfoListProvider).valueOrNull ?? [];
+    final sites = ref.read(siteInfoListProvider).value ?? [];
     for (final site in sites) {
       if (site.id.toString() == siteId || site.site == siteId) {
         return site.nickname.isNotEmpty ? site.nickname : site.site;
@@ -2154,7 +2154,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   SiteInfo? _siteFor(String siteId) {
-    final sites = ref.read(siteInfoListProvider).valueOrNull ?? [];
+    final sites = ref.read(siteInfoListProvider).value ?? [];
     for (final site in sites) {
       if (site.id.toString() == siteId || site.site == siteId) return site;
     }

@@ -576,7 +576,7 @@ Future<void> _runBatchMenuAction({
 }
 
 List<Torrent> _currentTorrentSnapshot(WidgetRef ref, int downloaderId) {
-  return ref.read(torrentListProvider(downloaderId)).valueOrNull?.torrents ?? const <Torrent>[];
+  return ref.read(torrentListProvider(downloaderId)).value?.torrents ?? const <Torrent>[];
 }
 
 Future<void> _deleteTorrentsWithOptionalFiles({

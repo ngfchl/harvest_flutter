@@ -38,7 +38,7 @@ class QbCategoryManagerSheet extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 18),
             itemCount: categories.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            separatorBuilder: (_, _) => const SizedBox(height: 8),
             itemBuilder: (_, index) {
               final category = categories[index];
               return _CategoryCard(
@@ -135,7 +135,7 @@ class QbTagManagerSheet extends ConsumerWidget {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 18),
             itemCount: tags.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            separatorBuilder: (_, _) => const SizedBox(height: 8),
             itemBuilder: (_, index) {
               final tag = tags[index];
               return _TagCard(tag: tag, onDelete: () => _confirmDeleteTag(context, ref, tag));

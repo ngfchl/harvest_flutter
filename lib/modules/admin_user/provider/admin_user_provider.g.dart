@@ -6,21 +6,49 @@ part of 'admin_user_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$adminUserListHash() => r'185e6fd033da29935c9b1bb820ce17428155cdc5';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [AdminUserList].
 @ProviderFor(AdminUserList)
-final adminUserListProvider =
-    AutoDisposeAsyncNotifierProvider<AdminUserList, List<AdminUser>>.internal(
-      AdminUserList.new,
-      name: r'adminUserListProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$adminUserListHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+final adminUserListProvider = AdminUserListProvider._();
 
-typedef _$AdminUserList = AutoDisposeAsyncNotifier<List<AdminUser>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class AdminUserListProvider
+    extends $AsyncNotifierProvider<AdminUserList, List<AdminUser>> {
+  AdminUserListProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'adminUserListProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$adminUserListHash();
+
+  @$internal
+  @override
+  AdminUserList create() => AdminUserList();
+}
+
+String _$adminUserListHash() => r'eb9bdbb6154cce17f7362170fbb419d31bb57f61';
+
+abstract class _$AdminUserList extends $AsyncNotifier<List<AdminUser>> {
+  FutureOr<List<AdminUser>> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<AdminUser>>, List<AdminUser>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<AdminUser>>, List<AdminUser>>,
+              AsyncValue<List<AdminUser>>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

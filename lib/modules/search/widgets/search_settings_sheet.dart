@@ -259,7 +259,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   }
 
   List<SiteInfo> _availableSearchSites() {
-    final sites = ref.watch(siteInfoListProvider).valueOrNull ?? [];
+    final sites = ref.watch(siteInfoListProvider).value ?? [];
     final result = sites
         .where(
           (site) =>

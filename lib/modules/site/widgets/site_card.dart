@@ -82,7 +82,7 @@ class SiteCard extends ConsumerWidget {
     final (dailyUp, dailyDown) = _calcDailyDelta();
 
     // 读取站点配置的满魔值
-    final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
+    final configs = ref.watch(websiteListProvider).value ?? [];
     final config = configs.firstWhereOrNull((c) => c.name == site.site);
     final spFull = _numVal(config?.spFull);
     final tokens = SiteCardTokens.of(context);
@@ -470,7 +470,7 @@ class SiteCard extends ConsumerWidget {
               scrollDirection: Axis.horizontal,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: tags.length + (extraTags > 0 ? 1 : 0),
-              separatorBuilder: (_, __) => const SizedBox(width: 3),
+              separatorBuilder: (_, _) => const SizedBox(width: 3),
               itemBuilder: (context, index) {
                 final text = index < tags.length ? tags[index] : '+$extraTags';
                 return _style1FooterChip(
@@ -1028,8 +1028,8 @@ class _SiteLogoImage extends StatelessWidget {
       imageUrl: candidate.url,
       httpHeaders: candidate.headers,
       fit: BoxFit.cover,
-      placeholder: (_, __) => fallback,
-      errorWidget: (_, __, ___) => _cachedImageCandidates(
+      placeholder: (_, _) => fallback,
+      errorWidget: (_, _, _) => _cachedImageCandidates(
         candidates,
         fallback: fallback,
         index: index + 1,
@@ -1309,7 +1309,7 @@ class SiteCard2 extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = site.latestStatus;
-    final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
+    final configs = ref.watch(websiteListProvider).value ?? [];
     final config = configs.firstWhereOrNull((c) => c.name == site.site);
     final spFull = _numVal(config?.spFull);
     final delta = _siteDailyDelta(site);
@@ -1877,7 +1877,7 @@ class SiteCard3 extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = site.latestStatus;
-    final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
+    final configs = ref.watch(websiteListProvider).value ?? [];
     final config = configs.firstWhereOrNull((c) => c.name == site.site);
     final spFull = _numVal(config?.spFull);
     final delta = _siteDailyDelta(site);
@@ -2595,7 +2595,7 @@ class SiteCard4 extends SiteCard3 {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = site.latestStatus;
-    final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
+    final configs = ref.watch(websiteListProvider).value ?? [];
     final config = configs.firstWhereOrNull((c) => c.name == site.site);
     final spFull = _numVal(config?.spFull);
     final tokens = SiteCardTokens.of(context);
@@ -3077,11 +3077,11 @@ class SiteCard4 extends SiteCard3 {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   _dottedDivider(context),
                   const SizedBox(height: 2),
                   SizedBox(
-                    height: item.twoLineValue ? 22 : 15,
+                    height: item.twoLineValue ? 21 : 15,
                     width: double.infinity,
                     child: FittedBox(
                       fit: BoxFit.scaleDown,

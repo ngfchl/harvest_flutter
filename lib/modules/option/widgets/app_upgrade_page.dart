@@ -104,7 +104,7 @@ class AppUpgradeSummaryCard extends ConsumerWidget {
     if (kIsWeb) return const SizedBox.shrink();
 
     final status = ref.watch(appUpgradeStatusProvider);
-    final data = status.valueOrNull;
+    final data = status.value;
     final hasUpdate = data?.shouldPrompt == true;
     final summary = status.isLoading
         ? '正在检查 APP 版本'
@@ -294,7 +294,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     bool refresh = true,
   }) {
     var changed = false;
-    final data = status.valueOrNull;
+    final data = status.value;
     if (data != null) {
       _latest = data.latest;
       _loadingLatest = false;
@@ -333,7 +333,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
 
     final current = ref.read(appUpgradeStatusProvider);
     _applyAppUpgradeStatus(current);
-    if (current.valueOrNull != null) return;
+    if (current.value != null) return;
 
     _loadingLatest = true;
     _error = null;
@@ -751,6 +751,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
           dialogTitle: '保存安装包',
           fileName: fileName,
           type: FileType.any,
+          bytes: Uint8List(0),
         );
         if (savePath == null) return;
         _activeDownloadPath = savePath;

@@ -42,7 +42,7 @@ class _AccountSwitcherState extends ConsumerState<AccountSwitcher> {
     setState(() => _loggingIn = record);
     try {
       await ref
-          .read(authNotifierProvider.notifier)
+          .read(authProvider.notifier)
           .login(record.server, record.username, record.password);
     } catch (error, trace) {
       AppLogger.error(error);
@@ -87,7 +87,7 @@ class _AccountSwitcherState extends ConsumerState<AccountSwitcher> {
                               child: ListView.separated(
                                 padding: tokens.edgeFromLTRB(16, 16, 16, 24),
                                 itemCount: groups.length + 1,
-                                separatorBuilder: (_, __) => tokens.vGap(12),
+                                separatorBuilder: (_, _) => tokens.vGap(12),
                                 itemBuilder: (context, index) {
                                   if (index == 0) {
                                     return _HistoryOverview(

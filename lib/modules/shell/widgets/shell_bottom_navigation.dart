@@ -368,9 +368,7 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation>
                 shape: const RoundedRectangleShape(
                   cornerRadius: 24,
                   borderWidth: 1,
-                  borderSoftness: 3,
                   lightIntensity: 1.35,
-                  oneSideLightIntensity: 0.7,
                   lightDirection: 42,
                 ),
                 outOfBoundaries: true,
@@ -967,9 +965,7 @@ class _ShellSearchButtonState extends State<ShellSearchButton>
                 shape: const RoundedRectangleShape(
                   cornerRadius: 24,
                   borderWidth: 1,
-                  borderSoftness: 3,
                   lightIntensity: 1.35,
-                  oneSideLightIntensity: 0.7,
                   lightDirection: 42,
                 ),
                 outOfBoundaries: true,

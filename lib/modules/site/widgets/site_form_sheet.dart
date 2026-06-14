@@ -371,7 +371,7 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
   }
 
   void _openAddForm(BuildContext context, WidgetRef ref, String siteName) {
-    final configs = ref.read(websiteListProvider).valueOrNull ?? [];
+    final configs = ref.read(websiteListProvider).value ?? [];
     final config = configs.firstWhereOrNull((c) => c.name == siteName);
     final rootContext =
         navigatorKey.currentContext ?? Navigator.of(context).context;

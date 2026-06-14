@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest/router/router_refresh.dart';
 
@@ -19,7 +20,7 @@ final postLogoutRouteProvider = StateProvider<String?>((_) => null);
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = ref.watch(routerRefreshProvider);
-  final isLogin = ref.watch(authNotifierProvider);
+  final isLogin = ref.watch(authProvider);
   final postLogoutRoute = ref.watch(postLogoutRouteProvider);
 
   final router = GoRouter(
@@ -47,17 +48,17 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
 
     routes: [
-      GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
+      GoRoute(path: '/login', builder: (_, _) => const LoginPage()),
       GoRoute(
         path: '/login-history',
-        builder: (_, __) => const AccountSwitcher(),
+        builder: (_, _) => const AccountSwitcher(),
       ),
       GoRoute(
         path: '/app-upgrade',
-        redirect: (_, __) => kIsWeb ? '/dashboard' : null,
-        builder: (_, __) => const AppUpgradePage(),
+        redirect: (_, _) => kIsWeb ? '/dashboard' : null,
+        builder: (_, _) => const AppUpgradePage(),
       ),
-      GoRoute(path: '/log-center', builder: (_, __) => const LogCenterPage()),
+      GoRoute(path: '/log-center', builder: (_, _) => const LogCenterPage()),
       GoRoute(
         path: '/:tab',
         pageBuilder: (context, state) => const NoTransitionPage<void>(
@@ -88,7 +89,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         bool openSetupAfterLogout = false,
         String? setupBaseUrl,
       }) => ref
-          .read(authNotifierProvider.notifier)
+          .read(authProvider.notifier)
           .logout(
             redirectTo: redirectTo,
             openSetupAfterLogout: openSetupAfterLogout,

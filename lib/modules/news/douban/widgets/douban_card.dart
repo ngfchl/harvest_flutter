@@ -149,14 +149,14 @@ class DoubanCard extends StatelessWidget {
       imageUrl: posterUrl,
       httpHeaders: _buildHeaders(),
       fit: BoxFit.cover,
-      placeholder: (_, __) => const Center(
+      placeholder: (_, _) => const Center(
         child: SizedBox(
           width: 20,
           height: 20,
           child: shadcn.CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
-      errorWidget: (_, __, ___) => _placeholder(context),
+      errorWidget: (_, _, _) => _placeholder(context),
     );
   }
 

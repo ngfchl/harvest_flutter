@@ -1,6 +1,7 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:harvest/core/utils/utils.dart';
 
 import '../widgets/news_bottom_padding.dart';
@@ -46,12 +47,12 @@ class TmdbPage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String title,
-    AutoDisposeFutureProvider<SearchResults> provider,
+    ProviderListenable<AsyncValue<SearchResults>> provider,
   ) {
     final async = ref.watch(provider);
     return MediaSection(
       title: title,
-      items: async.valueOrNull?.results ?? const [],
+      items: async.value?.results ?? const [],
       isLoading: async.isLoading && !async.hasValue,
       onItemTap: (item) => openTmdbDetail(context, item), // ← 加这行
     );

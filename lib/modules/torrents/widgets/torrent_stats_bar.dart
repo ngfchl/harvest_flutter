@@ -67,7 +67,7 @@ List<Widget> buildTorrentStatsBarItems({
   VoidCallback? onOpenSpeedSettings,
 }) {
   final cs = shadcn.Theme.of(context).colorScheme;
-  final data = ref.watch(torrentListProvider(downloaderId)).valueOrNull;
+  final data = ref.watch(torrentListProvider(downloaderId)).value;
   final status = data?.status;
   final speedMap = ref.watch(downloaderSpeedProvider);
 

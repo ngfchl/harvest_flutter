@@ -701,7 +701,7 @@ class _TomlFieldList extends StatelessWidget {
     return ListView.separated(
       controller: controller,
       itemCount: sections.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, index) => sections[index],
     );
   }
@@ -1064,7 +1064,7 @@ class _TomlSwitchTile extends StatelessWidget {
           ),
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: field.controller,
-            builder: (_, value, __) {
+            builder: (_, value, _) {
               final active = value.text.trim().toLowerCase() == 'true';
               return shadcn.Switch(
                 value: active,
@@ -1601,7 +1601,7 @@ class _AutocompleteTextFieldState extends State<_AutocompleteTextField> {
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 shrinkWrap: true,
                 itemCount: items.length,
-                separatorBuilder: (_, __) => Divider(
+                separatorBuilder: (_, _) => Divider(
                   height: 1,
                   color: cs.border.withValues(alpha: 0.55),
                 ),
@@ -2106,7 +2106,7 @@ class _LevelBooleanField extends StatelessWidget {
               ),
               ValueListenableBuilder<TextEditingValue>(
                 valueListenable: field.controller,
-                builder: (_, value, __) {
+                builder: (_, value, _) {
                   final active = value.text.trim().toLowerCase() == 'true';
                   return shadcn.Switch(
                     value: active,
@@ -2197,10 +2197,10 @@ class _TomlTemplate {
 
   List<_TomlField> get orderedFields => [
     for (final key in _levelFieldOrder)
-      if (fields[key] case final field?) field,
+      ?fields[key],
     for (final key in order)
       if (!_levelFieldOrder.contains(key))
-        if (fields[key] case final field?) field,
+        ?fields[key],
   ];
 
   List<_TomlLevel> get sortedLevels {
@@ -2363,10 +2363,10 @@ class _TomlLevel {
 
   List<_TomlField> get orderedFields => [
     for (final key in _levelFieldOrder)
-      if (fields[key] case final field?) field,
+      ?fields[key],
     for (final key in order)
       if (!_levelFieldOrder.contains(key))
-        if (fields[key] case final field?) field,
+        ?fields[key],
   ];
 
   int get sortLevelId =>

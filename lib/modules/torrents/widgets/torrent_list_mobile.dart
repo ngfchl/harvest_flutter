@@ -45,7 +45,7 @@ class TorrentListMobile extends ConsumerWidget {
         .toList();
     final selectionMode = selectedTorrents.isNotEmpty;
 
-    if (asyncData.isLoading && asyncData.valueOrNull == null) {
+    if (asyncData.isLoading && asyncData.value == null) {
       return Center(child: shadcn.CircularProgressIndicator(size: 18));
     }
 
@@ -91,7 +91,7 @@ class TorrentListMobile extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              (asyncData.valueOrNull?.torrents.isEmpty ?? true)
+              (asyncData.value?.torrents.isEmpty ?? true)
                   ? '暂无种子'
                   : '当前筛选无结果',
               style: TextStyle(

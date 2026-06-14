@@ -83,14 +83,14 @@ class MediaCard extends StatelessWidget {
               CachedNetworkImage(
                 imageUrl: url,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => const Center(
+                placeholder: (_, _) => const Center(
                   child: SizedBox(
                     width: 20,
                     height: 20,
                     child: shadcn.CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
-                errorWidget: (_, __, ___) => _posterPlaceholder(context),
+                errorWidget: (_, _, _) => _posterPlaceholder(context),
               )
             else
               _posterPlaceholder(context),

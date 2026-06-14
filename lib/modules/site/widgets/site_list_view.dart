@@ -42,7 +42,7 @@ class SiteListView extends ConsumerWidget {
         controller: controller,
         padding: EdgeInsets.fromLTRB(8, 4, 8, _bottomPadding(context)),
         itemCount: sites.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 4),
+        separatorBuilder: (_, _) => const SizedBox(height: 4),
         itemBuilder: (_, i) => SiteCard(site: sites[i]),
       );
 

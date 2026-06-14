@@ -224,8 +224,7 @@ Map<String, dynamic> _$WebSiteToJson(_WebSite instance) => <String, dynamic>{
   'my_email_rule': instance.myEmailRule,
   'my_username_rule': instance.myUsernameRule,
   'buy_page': instance.buyPage,
-  if (_stringMapToNullableJson(instance.buyAction) case final value?)
-    'buy_action': value,
+  'buy_action': ?_stringMapToNullableJson(instance.buyAction),
   'level': instance.level,
 };
 

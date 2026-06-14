@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:harvest/core/cache/session_cache.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 
@@ -45,11 +46,11 @@ class ScheduleNotifier extends AsyncNotifier<List<Schedule>> {
 
   Future<void> refresh() async {
     if (!HiveManager.hasAccessToken) {
-      state = AsyncValue.data(state.valueOrNull ?? const <Schedule>[]);
+      state = AsyncValue.data(state.value ?? const <Schedule>[]);
       return;
     }
 
-    final previous = state.valueOrNull;
+    final previous = state.value;
     final next = await AsyncValue.guard(_fetchAndCache);
     state = next.hasError && previous != null
         ? AsyncValue.data(previous)

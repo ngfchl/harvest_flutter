@@ -306,8 +306,8 @@ class _BrowserPageState extends State<BrowserPage> {
 
   Future<void> _loadWebsiteConfigs() async {
     final container = ProviderScope.containerOf(context, listen: false);
-    final currentConfigs = container.read(websiteListProvider).valueOrNull;
-    final currentSites = container.read(siteInfoListProvider).valueOrNull;
+    final currentConfigs = container.read(websiteListProvider).value;
+    final currentSites = container.read(siteInfoListProvider).value;
     if (currentConfigs != null && currentSites != null) {
       _websiteConfigs = currentConfigs;
       _siteInfos = currentSites;
@@ -502,8 +502,10 @@ class _BrowserPageState extends State<BrowserPage> {
     }
     if (url?.trim().isNotEmpty == true) {
       final currentUri = Uri.tryParse(url!.trim());
-      if (currentUri == null || !_isConfiguredLocalStorageHost(currentUri.host))
+      if (currentUri == null ||
+          !_isConfiguredLocalStorageHost(currentUri.host)) {
         return null;
+      }
     }
     return _buildLocalStorageInjectionScript(
       localStorage,
@@ -547,8 +549,9 @@ class _BrowserPageState extends State<BrowserPage> {
 
   bool _shouldInstallLocalStorageAuthBridge(String localStorage) {
     final storageText = localStorage.toLowerCase();
-    if (!storageText.contains('auth') && !storageText.contains('token'))
+    if (!storageText.contains('auth') && !storageText.contains('token')) {
       return false;
+    }
 
     final siteText = [
       widget.url,
@@ -1189,8 +1192,9 @@ class _BrowserPageState extends State<BrowserPage> {
     for (final site in sites) {
       final siteName = site.site.trim().toLowerCase();
       final nickname = site.nickname.trim().toLowerCase();
-      if (siteId.isNotEmpty && (siteName == siteId || nickname == siteId))
+      if (siteId.isNotEmpty && (siteName == siteId || nickname == siteId)) {
         return site;
+      }
       if (websiteName.isNotEmpty &&
           (siteName == websiteName || nickname == websiteName)) {
         return site;
@@ -3156,7 +3160,7 @@ JSON.stringify({
         ProviderScope.containerOf(
           context,
           listen: false,
-        ).read(siteInfoListProvider).valueOrNull ??
+        ).read(siteInfoListProvider).value ??
         const <SiteInfo>[];
     final configName = website.name.trim().toLowerCase();
     final siteId = widget.siteId?.trim().toLowerCase() ?? '';
@@ -3164,8 +3168,10 @@ JSON.stringify({
 
     for (final site in sites) {
       final siteName = site.site.trim().toLowerCase();
-      if (siteName.isNotEmpty && (siteName == configName || siteName == siteId))
+      if (siteName.isNotEmpty &&
+          (siteName == configName || siteName == siteId)) {
         return site;
+      }
     }
     if (currentHost == null) return null;
     for (final site in sites) {
@@ -3533,7 +3539,7 @@ JSON.stringify({
         .map((item) {
           if (item is Map) {
             return _BrowserExtractedTorrent.fromMap(
-              Map<String, dynamic>.from(item as Map),
+              Map<String, dynamic>.from(item),
             );
           }
           return null;
@@ -5056,9 +5062,9 @@ JSON.stringify({
     if (!mounted) return;
     final container = ProviderScope.containerOf(context, listen: false);
     final websites =
-        container.read(websiteListProvider).valueOrNull ?? const <WebSite>[];
+        container.read(websiteListProvider).value ?? const <WebSite>[];
     final mySites =
-        container.read(siteInfoListProvider).valueOrNull ?? const <SiteInfo>[];
+        container.read(siteInfoListProvider).value ?? const <SiteInfo>[];
     if (websites.isEmpty) {
       Toast.warning('暂无站点配置');
       return;
@@ -5123,8 +5129,9 @@ JSON.stringify({
             ..sort((a, b) {
               final at = a.registeredAt;
               final bt = b.registeredAt;
-              if (at == null && bt == null)
+              if (at == null && bt == null) {
                 return a.displayName.compareTo(b.displayName);
+              }
               if (at == null) return 1;
               if (bt == null) return -1;
               final cmp = at.compareTo(bt);

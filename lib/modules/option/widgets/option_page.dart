@@ -1173,7 +1173,7 @@ class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
 
   Future<void> _updateMatchingSitesAuthkey(String token, String? uid) async {
     try {
-      final sites = ref.read(siteInfoListProvider).valueOrNull ?? [];
+      final sites = ref.read(siteInfoListProvider).value ?? [];
       final baseHost = Uri.tryParse(_selectedSite.baseUrl)?.host.toLowerCase();
       if (baseHost == null || baseHost.isEmpty) return;
 

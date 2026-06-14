@@ -158,14 +158,14 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final sites = ref.watch(siteInfoListProvider).valueOrNull;
+    final sites = ref.watch(siteInfoListProvider).value;
     final providerSite = sites?.firstWhereOrNull(
       (item) => item.id == widget.site.id,
     );
     _activeSite = _fetchedSite ?? providerSite ?? widget.site;
     final status = site.latestStatus;
     final statusPoints = _buildStatusPoints(site);
-    final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
+    final configs = ref.watch(websiteListProvider).value ?? [];
     final config = findSiteWebsiteConfig(site, configs);
     final spFull = _numVal(config?.spFull);
     final limitSpeed = config?.limitSpeed ?? 0;
@@ -2287,7 +2287,7 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     shadcn.ColorScheme cs,
     int limitSpeed,
   ) {
-    final configs = ref.read(websiteListProvider).valueOrNull ?? [];
+    final configs = ref.read(websiteListProvider).value ?? [];
     final website = findSiteWebsiteConfig(site, configs);
     final browseTargets = buildSiteBrowseTargets(site, website);
 

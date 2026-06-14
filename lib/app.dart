@@ -5,18 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/platform/platform_tool.dart';
 import 'package:harvest/core/utils/ui/responsive.dart';
-import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/notice/provider/notice_provider.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:window_manager/window_manager.dart';
 // ignore: implementation_imports
 import 'package:shadcn_flutter/src/components/locale/shadcn_localizations_en.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'core/theme/theme_provider.dart';
 import 'core/utils/navigation/navigator_key.dart';
@@ -303,8 +303,8 @@ class _MyAppState extends ConsumerState<MyApp>
       _scheduleCurrentRefreshTimer();
     });
 
-    final themeState = ref.watch(themeNotifierProvider);
-    final loggedIn = ref.watch(authNotifierProvider).loggedIn;
+    final themeState = ref.watch(themeProvider);
+    final loggedIn = ref.watch(authProvider).loggedIn;
 
     return shadcn.ShadcnApp.router(
       debugShowCheckedModeBanner: false,
@@ -339,6 +339,7 @@ class _MyAppState extends ConsumerState<MyApp>
         shadcn.ThemeMode.dark => Brightness.dark,
         shadcn.ThemeMode.light => Brightness.light,
         shadcn.ThemeMode.system => _platformBrightness,
+        _ => _platformBrightness,
       }),
       theme: themeState.shadcnLight,
       darkTheme: themeState.shadcnDark,
@@ -346,6 +347,7 @@ class _MyAppState extends ConsumerState<MyApp>
         shadcn.ThemeMode.dark => shadcn.ThemeMode.dark,
         shadcn.ThemeMode.light => shadcn.ThemeMode.light,
         shadcn.ThemeMode.system => shadcn.ThemeMode.system,
+        _ => shadcn.ThemeMode.system,
       },
     );
   }

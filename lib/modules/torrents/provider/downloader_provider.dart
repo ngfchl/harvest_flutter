@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:harvest/core/http/hooks.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
@@ -83,7 +84,7 @@ class TorrentListNotifier extends StateNotifier<AsyncValue<DownloaderData>> {
   }
 
   Future<void> _refreshMainData({required bool preservePrevious}) async {
-    final previous = state.valueOrNull;
+    final previous = state.value;
     try {
       final data = await fetchMainData(downloaderId);
       debugPrint(
@@ -166,7 +167,7 @@ class TorrentListNotifier extends StateNotifier<AsyncValue<DownloaderData>> {
                 debugPrint('[WS] 第一个: name=${first.toJson()}, ');
               }
 
-              final previous = state.valueOrNull;
+              final previous = state.value;
               final nextData = previous == null
                   ? parsed
                   : _mergeDataOnExisting(
@@ -376,7 +377,7 @@ final torrentRefreshRemainingProvider = StateProvider.autoDispose
 
 final downloaderStatusProvider = Provider.autoDispose
     .family<DownloaderStatus?, int>((ref, id) {
-      final status = ref.watch(torrentListProvider(id)).valueOrNull?.status;
+      final status = ref.watch(torrentListProvider(id)).value?.status;
       debugPrint('[Provider] status 更新: ${status?.torrentCount ?? "null"}');
       return status;
     });
@@ -399,13 +400,13 @@ final torrentSiteMatcherProvider = Provider.autoDispose<TorrentSiteMatcher>((
   ref,
 ) {
   final sites =
-      ref.watch(site_providers.websiteListProvider).valueOrNull ?? const [];
+      ref.watch(site_providers.websiteListProvider).value ?? const [];
   return TorrentSiteMatcher(sites);
 });
 
 final availableTorrentSitesProvider = Provider.autoDispose
     .family<List<TorrentSiteMatch>, int>((ref, id) {
-      final data = ref.watch(torrentListProvider(id)).valueOrNull;
+      final data = ref.watch(torrentListProvider(id)).value;
       if (data == null) return const <TorrentSiteMatch>[];
 
       final matcher = ref.watch(torrentSiteMatcherProvider);
@@ -423,7 +424,7 @@ final availableTorrentSitesProvider = Provider.autoDispose
 // ── 新增：所有可用分类 ──
 final availableCategoriesProvider = Provider.autoDispose
     .family<List<String>, int>((ref, id) {
-      final data = ref.watch(torrentListProvider(id)).valueOrNull;
+      final data = ref.watch(torrentListProvider(id)).value;
       if (data == null) return [];
       final cats = <String>{};
       for (final torrent in data.torrents) {
@@ -466,7 +467,7 @@ final availableTagsProvider = Provider.autoDispose.family<List<String>, int>((
   ref,
   id,
 ) {
-  final data = ref.watch(torrentListProvider(id)).valueOrNull;
+  final data = ref.watch(torrentListProvider(id)).value;
   if (data == null) return [];
   final tags = <String>{};
   for (final t in data.torrents) {
@@ -483,7 +484,7 @@ String _normalizedErrorDetail(Torrent torrent) {
 
 final availableErrorDetailsProvider = Provider.autoDispose
     .family<List<String>, int>((ref, id) {
-      final data = ref.watch(torrentListProvider(id)).valueOrNull;
+      final data = ref.watch(torrentListProvider(id)).value;
       if (data == null) return const <String>[];
       final details = <String>{};
       for (final torrent in data.torrents) {
@@ -511,7 +512,7 @@ final filteredTorrentsProvider = Provider.autoDispose
       final asc = ref.watch(torrentSortAscProvider);
       final matcher = ref.watch(torrentSiteMatcherProvider);
 
-      final data = asyncData.valueOrNull;
+      final data = asyncData.value;
       if (data == null) return [];
 
       var list = List<Torrent>.from(data.torrents);

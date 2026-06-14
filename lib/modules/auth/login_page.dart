@@ -91,7 +91,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = ref.watch(authNotifierProvider);
+    final auth = ref.watch(authProvider);
     final loginHistory = ref.watch(loginHistoryProvider);
     final showLoginHistory = loginHistory.length >= 2;
     final tokens = _LoginThemeTokens.of(context);
@@ -235,7 +235,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                                   try {
                                                     await ref
                                                         .read(
-                                                          authNotifierProvider
+                                                          authProvider
                                                               .notifier,
                                                         )
                                                         .login(
@@ -500,7 +500,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       PaintingBinding.instance.imageCache.clear();
       PaintingBinding.instance.imageCache.clearLiveImages();
 
-      ref.invalidate(authNotifierProvider);
+      ref.invalidate(authProvider);
       ref.invalidate(loginHistoryProvider);
       ref.read(postLogoutRouteProvider.notifier).state = null;
       ref.read(setupDialogBaseUrlProvider.notifier).state = null;

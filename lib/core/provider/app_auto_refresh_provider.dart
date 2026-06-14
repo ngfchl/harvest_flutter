@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/modules/admin_user/provider/admin_user_provider.dart';
@@ -25,8 +26,8 @@ int normalizeAppAutoRefreshMinutes(int value) {
 
 final appAutoRefreshIntervalProvider =
     StateNotifierProvider<AppAutoRefreshIntervalNotifier, int>(
-  (_) => AppAutoRefreshIntervalNotifier(),
-);
+      (_) => AppAutoRefreshIntervalNotifier(),
+    );
 
 final appAutoRefreshRevisionProvider = StateProvider<int>((_) => 0);
 
@@ -36,12 +37,12 @@ final appAutoRefreshControllerProvider = Provider<AppAutoRefreshController>(
 
 class AppAutoRefreshIntervalNotifier extends StateNotifier<int> {
   AppAutoRefreshIntervalNotifier()
-      : super(
-          normalizeAppAutoRefreshMinutes(
-            HiveManager.get<int>(StorageKeys.appAutoRefreshIntervalMinutes) ??
-                kDefaultAppAutoRefreshMinutes,
-          ),
-        );
+    : super(
+        normalizeAppAutoRefreshMinutes(
+          HiveManager.get<int>(StorageKeys.appAutoRefreshIntervalMinutes) ??
+              kDefaultAppAutoRefreshMinutes,
+        ),
+      );
 
   Future<void> update(int value) async {
     final next = normalizeAppAutoRefreshMinutes(value);
@@ -102,7 +103,7 @@ class AppAutoRefreshController {
       ..invalidate(adminUserListProvider);
 
     await Future.wait([
-      ref.read(dashboardNotifierProvider.notifier).refresh(days: dashboardDays),
+      ref.read(dashboardProvider.notifier).refresh(days: dashboardDays),
       ref.read(siteInfoListProvider.notifier).refresh(),
       ref.read(downloaderListProvider.notifier).refresh(),
       ref.read(scheduleProvider.notifier).refresh(),

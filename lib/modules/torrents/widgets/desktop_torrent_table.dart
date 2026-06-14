@@ -6,6 +6,7 @@ import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:harvest/core/utils/feedback/toast.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -95,7 +96,7 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
     );
     final tableWidth = desktopTorrentTableWidth(visibleColumns);
 
-    if (asyncData.isLoading && asyncData.valueOrNull == null) {
+    if (asyncData.isLoading && asyncData.value == null) {
       return Center(child: shadcn.CircularProgressIndicator(size: 18));
     }
 
@@ -109,7 +110,7 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
     if (torrents.isEmpty) {
       return DesktopEmptyState(
         icon: shadcn.LucideIcons.inbox,
-        title: (asyncData.valueOrNull?.torrents.isEmpty ?? true)
+        title: (asyncData.value?.torrents.isEmpty ?? true)
             ? '暂无种子'
             : '当前筛选无结果',
       );
@@ -147,7 +148,7 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
                       Expanded(
                         child: ListView.separated(
                           itemCount: torrents.length,
-                          separatorBuilder: (_, __) => Divider(
+                          separatorBuilder: (_, _) => Divider(
                             height: 1,
                             color: cs.border.withValues(alpha: 0.6),
                           ),

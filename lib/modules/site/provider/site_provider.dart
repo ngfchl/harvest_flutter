@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:harvest/core/cache/session_cache.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/utils/utils.dart';
@@ -60,11 +61,11 @@ class SiteInfoList extends _$SiteInfoList {
   // ── 3. refresh 加 cached 参数 ──
   Future<void> refresh({bool cached = true}) async {
     if (!HiveManager.hasAccessToken) {
-      state = AsyncValue.data(state.valueOrNull ?? const <SiteInfo>[]);
+      state = AsyncValue.data(state.value ?? const <SiteInfo>[]);
       return;
     }
 
-    final previous = state.valueOrNull;
+    final previous = state.value;
     final next = await AsyncValue.guard(() => _fetchAndCache(cached: cached));
     state = next.hasError && previous != null
         ? AsyncValue.data(previous)

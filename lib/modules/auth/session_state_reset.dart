@@ -29,7 +29,7 @@ void _invalidateSessionState(dynamic ref) {
   unawaited(LocalNoticeNotificationService.instance.clearAllNotices());
 
   ref
-    ..invalidate(dashboardNotifierProvider)
+    ..invalidate(dashboardProvider)
     ..invalidate(dashboardCacheInfoProvider)
     ..invalidate(siteInfoListProvider)
     ..invalidate(siteInfoCacheInfoProvider)

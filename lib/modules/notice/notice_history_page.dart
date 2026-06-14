@@ -254,7 +254,7 @@ class _NoticeList extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
       itemCount: notices.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, index) => _NoticeTile(notice: notices[index]),
     );
   }
@@ -314,7 +314,7 @@ class _NoticeTile extends ConsumerWidget {
         borderRadius: BorderRadius.circular(8),
         onTap: () => Navigator.of(context).push(
           PageRouteBuilder(
-            pageBuilder: (_, __, ___) => NoticeDetailPage(notice: notice),
+            pageBuilder: (_, _, _) => NoticeDetailPage(notice: notice),
           ),
         ),
         child: AppSurfaceContainer(
@@ -395,7 +395,7 @@ class NoticeDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final current = _latestNotice(
-      ref.watch(noticeHistoryProvider).valueOrNull,
+      ref.watch(noticeHistoryProvider).value,
       notice,
     );
     final title = _cleanTitle(current.title);

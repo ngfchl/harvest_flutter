@@ -192,7 +192,7 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
           final paused = ref.watch(speedPausedProvider);
           final remaining = ref.watch(speedRemainingProvider);
           final downloaders =
-              ref.watch(downloaderListProvider).valueOrNull ??
+              ref.watch(downloaderListProvider).value ??
               const <Downloader>[];
           final activeCount = downloaders.where((d) => d.isActive).length;
           final brushCount = downloaders.where((d) => !d.brush).length;

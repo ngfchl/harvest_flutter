@@ -306,7 +306,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
                 imageUrl: vendor.icon,
                 width: 18,
                 height: 18,
-                errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                errorWidget: (_, _, _) => const SizedBox.shrink(),
               ),
             ),
           if (vendor.icon.isNotEmpty) const SizedBox(width: 6),
@@ -341,8 +341,8 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
                 'Referer': 'https://movie.douban.com/',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
               },
-              placeholder: (_, __) => _loadingBox(height: 180),
-              errorWidget: (_, __, ___) => _mutedBox(context, height: 180),
+              placeholder: (_, _) => _loadingBox(height: 180),
+              errorWidget: (_, _, _) => _mutedBox(context, height: 180),
             )
           else
             _mutedBox(context, height: 180),
@@ -384,8 +384,8 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
           'Referer': 'https://movie.douban.com/',
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         },
-        placeholder: (_, __) => _loadingBox(height: 180),
-        errorWidget: (_, __, ___) =>
+        placeholder: (_, _) => _loadingBox(height: 180),
+        errorWidget: (_, _, _) =>
             _posterFallback(context, width: double.infinity, height: 180, iconSize: 40, iconAlpha: 0.2),
       ),
     );
@@ -404,8 +404,8 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
           'Referer': 'https://movie.douban.com/',
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         },
-        placeholder: (_, __) => _loadingBox(width: 110, height: 165),
-        errorWidget: (_, __, ___) => _posterFallback(context, width: 110, height: 165, iconSize: 32, iconAlpha: 0.3),
+        placeholder: (_, _) => _loadingBox(width: 110, height: 165),
+        errorWidget: (_, _, _) => _posterFallback(context, width: 110, height: 165, iconSize: 32, iconAlpha: 0.3),
       ),
     );
   }
