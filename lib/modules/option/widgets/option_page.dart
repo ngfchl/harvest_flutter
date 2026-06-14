@@ -206,8 +206,7 @@ final _formConfigs = <String, FormConfig>{
         '接收 UIDs',
         (v) => v?.uids,
         maxLines: 3,
-        readOnly: true,
-        helperText: '接收 UID 由后端或机器人会话同步，当前页面只读。',
+        helperText: '多个接收 UID 可用逗号或换行分隔。',
       ),
     ],
     buildValue: (c, _, v) => v.copyWith(
