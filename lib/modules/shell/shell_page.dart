@@ -164,7 +164,10 @@ class _ShellPageState extends ConsumerState<ShellPage> {
       await Future.delayed(const Duration(milliseconds: 300));
       await WidgetsBinding.instance.endOfFrame;
 
-      final sc = ref.read(activeScrollControllerProvider);
+      final currentIndex = _getCurrentIndex();
+      final sc =
+          ref.read(pageScrollControllersProvider)[currentIndex] ??
+          ref.read(activeScrollControllerProvider);
       final bytes =
           (sc != null && sc.hasClients && sc.position.maxScrollExtent > 0)
           ? await ScreenshotSaver.captureLong(
@@ -286,19 +289,19 @@ class _ShellPageState extends ConsumerState<ShellPage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(authNotifierProvider).user;
+    final user = ref.watch(authProvider).user;
     final currentIndex = _getCurrentIndex();
-    final authInfo = ref.watch(authInfoProvider).valueOrNull;
+    final authInfo = ref.watch(authInfoProvider).value;
     final showAdminUser = canOpenAdminUsers(authInfo);
     final updateState = ref.watch(updateProvider);
     final appUpgradeStatus = kIsWeb
         ? null
         : ref.watch(appUpgradeStatusProvider);
-    final hasAppUpgrade = appUpgradeStatus?.valueOrNull?.hasNewVersion == true;
+    final hasAppUpgrade = appUpgradeStatus?.value?.hasNewVersion == true;
     final showNews = ref.watch(mediaInfoSettingsProvider).enabled;
     final unreadCount = ref.watch(noticeUnreadCountProvider);
     final notices =
-        ref.watch(noticeHistoryProvider).valueOrNull ?? const <NoticeHistory>[];
+        ref.watch(noticeHistoryProvider).value ?? const <NoticeHistory>[];
     final unread = [
       for (final n in notices)
         if (!n.isRead) n,
@@ -348,7 +351,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                   onOpenNotices: () => Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (_, __, ___) => const NoticeHistoryPage(),
+                      pageBuilder: (_, _, _) => const NoticeHistoryPage(),
                     ),
                   ),
                   onOpenDrawer: _openDrawer,
@@ -1094,7 +1097,7 @@ class _AccountMenuButton extends ConsumerWidget {
                   icon: shadcn.LucideIcons.users,
                   title: '切换账号',
                   onTap: () => ref
-                      .read(authNotifierProvider.notifier)
+                      .read(authProvider.notifier)
                       .logout(redirectTo: '/login-history'),
                 ),
               _item(
@@ -1102,7 +1105,7 @@ class _AccountMenuButton extends ConsumerWidget {
                 icon: shadcn.LucideIcons.logOut,
                 title: '退出登录',
                 color: colors.destructive,
-                onTap: () => ref.read(authNotifierProvider.notifier).logout(),
+                onTap: () => ref.read(authProvider.notifier).logout(),
               ),
               const shadcn.MenuDivider(),
               shadcn.MenuLabel(child: const Text('设置')),

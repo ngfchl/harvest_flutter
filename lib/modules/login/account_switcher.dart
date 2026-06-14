@@ -18,7 +18,23 @@ class AccountSwitcher extends ConsumerStatefulWidget {
 }
 
 class _AccountSwitcherState extends ConsumerState<AccountSwitcher> {
+  final _screenshotKey = GlobalKey();
   LoginRecord? _loggingIn;
+
+  Future<void> _takeScreenshot() async {
+    try {
+      final bytes = await ScreenshotSaver.capture(_screenshotKey);
+      if (bytes == null) {
+        Toast.error('截图失败');
+        return;
+      }
+      await ScreenshotSaver.saveAndShare(bytes);
+      Toast.success('截图已保存');
+    } catch (e, st) {
+      AppLogger.error('登录历史截图失败', e, st);
+      if (mounted) Toast.error('截图失败');
+    }
+  }
 
   Future<void> _login(LoginRecord record) async {
     if (_loggingIn != null) return;
@@ -26,7 +42,7 @@ class _AccountSwitcherState extends ConsumerState<AccountSwitcher> {
     setState(() => _loggingIn = record);
     try {
       await ref
-          .read(authNotifierProvider.notifier)
+          .read(authProvider.notifier)
           .login(record.server, record.username, record.password);
     } catch (error, trace) {
       AppLogger.error(error);
@@ -48,47 +64,53 @@ class _AccountSwitcherState extends ConsumerState<AccountSwitcher> {
         builder: (context) {
           final tokens = _AccountSwitcherThemeTokens.of(context);
           final cs = tokens.cs;
-          return ColoredBox(
-            key: const ValueKey('account-switcher-surface'),
-            color: cs.background,
-            child: Column(
-              children: [
-                _HistoryHeader(onBack: () => context.go('/login')),
-                Expanded(
-                  child: history.isEmpty
-                      ? const _EmptyHistory()
-                      : Align(
-                          alignment: Alignment.topCenter,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: tokens.contentWidth,
-                            ),
-                            child: ListView.separated(
-                              padding: tokens.edgeFromLTRB(16, 16, 16, 24),
-                              itemCount: groups.length + 1,
-                              separatorBuilder: (_, __) => tokens.vGap(12),
-                              itemBuilder: (context, index) {
-                                if (index == 0) {
-                                  return _HistoryOverview(
-                                    serverCount: groups.length,
-                                    accountCount: history.length,
+          return RepaintBoundary(
+            key: _screenshotKey,
+            child: ColoredBox(
+              key: const ValueKey('account-switcher-surface'),
+              color: cs.background,
+              child: Column(
+                children: [
+                  _HistoryHeader(
+                    onBack: () => context.go('/login'),
+                    onScreenshot: _takeScreenshot,
+                  ),
+                  Expanded(
+                    child: history.isEmpty
+                        ? const _EmptyHistory()
+                        : Align(
+                            alignment: Alignment.topCenter,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: tokens.contentWidth,
+                              ),
+                              child: ListView.separated(
+                                padding: tokens.edgeFromLTRB(16, 16, 16, 24),
+                                itemCount: groups.length + 1,
+                                separatorBuilder: (_, _) => tokens.vGap(12),
+                                itemBuilder: (context, index) {
+                                  if (index == 0) {
+                                    return _HistoryOverview(
+                                      serverCount: groups.length,
+                                      accountCount: history.length,
+                                    );
+                                  }
+                                  final entry = groups.entries.elementAt(
+                                    index - 1,
                                   );
-                                }
-                                final entry = groups.entries.elementAt(
-                                  index - 1,
-                                );
-                                return _ServerGroup(
-                                  server: entry.key,
-                                  records: entry.value,
-                                  loggingIn: _loggingIn,
-                                  onLogin: _login,
-                                );
-                              },
+                                  return _ServerGroup(
+                                    server: entry.key,
+                                    records: entry.value,
+                                    loggingIn: _loggingIn,
+                                    onLogin: _login,
+                                  );
+                                },
+                              ),
                             ),
                           ),
-                        ),
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -107,8 +129,9 @@ class _AccountSwitcherState extends ConsumerState<AccountSwitcher> {
 
 class _HistoryHeader extends StatelessWidget {
   final VoidCallback onBack;
+  final VoidCallback onScreenshot;
 
-  const _HistoryHeader({required this.onBack});
+  const _HistoryHeader({required this.onBack, required this.onScreenshot});
 
   @override
   Widget build(BuildContext context) {
@@ -116,8 +139,6 @@ class _HistoryHeader extends StatelessWidget {
     final theme = tokens.theme;
     final cs = tokens.cs;
     final top = MediaQuery.paddingOf(context).top;
-    final leadingInset = appHeaderLeadingInset(context);
-    final trailingInset = appHeaderTrailingInset(context);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -129,11 +150,12 @@ class _HistoryHeader extends StatelessWidget {
       child: SizedBox(
         height: top + tokens.headerHeight,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            8 + leadingInset,
-            top,
-            12 + trailingInset,
-            0,
+          padding: appStandaloneHeaderPadding(
+            context,
+            left: 8,
+            top: top,
+            right: 12,
+            bottom: 0,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -153,6 +175,10 @@ class _HistoryHeader extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+              ),
+              shadcn.IconButton.ghost(
+                onPressed: onScreenshot,
+                icon: Icon(shadcn.LucideIcons.camera, size: tokens.iconLg),
               ),
             ],
           ),

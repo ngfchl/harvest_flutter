@@ -2,22 +2,24 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/platform/platform_tool.dart';
 import 'package:harvest/core/utils/ui/responsive.dart';
-import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/notice/provider/notice_provider.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:window_manager/window_manager.dart';
 // ignore: implementation_imports
 import 'package:shadcn_flutter/src/components/locale/shadcn_localizations_en.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'core/theme/theme_provider.dart';
+import 'core/utils/navigation/navigator_key.dart';
 import 'router/app_router.dart';
 import 'widgets/desktop_window_controls.dart';
 
@@ -50,6 +52,9 @@ class _MyAppState extends ConsumerState<MyApp>
     if (PlatformTool.isDesktopOS()) {
       windowManager.addListener(this);
     }
+    if (PlatformTool.isMacOS() || PlatformTool.isWindows()) {
+      HardwareKeyboard.instance.addHandler(_handleKey);
+    }
     _scheduleCurrentRefreshTimer();
   }
 
@@ -61,8 +66,64 @@ class _MyAppState extends ConsumerState<MyApp>
     if (PlatformTool.isDesktopOS()) {
       windowManager.removeListener(this);
     }
+    if (PlatformTool.isMacOS() || PlatformTool.isWindows()) {
+      HardwareKeyboard.instance.removeHandler(_handleKey);
+    }
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  bool _handleKey(KeyEvent event) {
+    if (event is! KeyDownEvent) return false;
+    if (PlatformTool.isMacOS()) {
+      if (event.logicalKey != LogicalKeyboardKey.keyQ) return false;
+      if (!HardwareKeyboard.instance.isMetaPressed) return false;
+      _showQuitConfirmation();
+      return true;
+    }
+    if (PlatformTool.isWindows()) {
+      if (event.logicalKey == LogicalKeyboardKey.f4 &&
+          HardwareKeyboard.instance.isAltPressed) {
+        _showQuitConfirmation();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @override
+  void onWindowClose() {
+    if (PlatformTool.isMacOS() || PlatformTool.isWindows()) {
+      _showQuitConfirmation();
+    }
+  }
+
+  Future<void> _showQuitConfirmation() async {
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null) {
+      await windowManager.destroy();
+      return;
+    }
+    final confirmed = await shadcn.showDialog<bool>(
+      context: ctx,
+      builder: (ctx) => shadcn.AlertDialog(
+        title: const Text('确认退出'),
+        content: const Text('确定要退出 Harvest 吗？'),
+        actions: [
+          shadcn.Button.outline(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+          shadcn.Button.destructive(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('退出'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await windowManager.destroy();
+    }
   }
 
   @override
@@ -242,8 +303,8 @@ class _MyAppState extends ConsumerState<MyApp>
       _scheduleCurrentRefreshTimer();
     });
 
-    final themeState = ref.watch(themeNotifierProvider);
-    final loggedIn = ref.watch(authNotifierProvider).loggedIn;
+    final themeState = ref.watch(themeProvider);
+    final loggedIn = ref.watch(authProvider).loggedIn;
 
     return shadcn.ShadcnApp.router(
       debugShowCheckedModeBanner: false,
@@ -278,6 +339,7 @@ class _MyAppState extends ConsumerState<MyApp>
         shadcn.ThemeMode.dark => Brightness.dark,
         shadcn.ThemeMode.light => Brightness.light,
         shadcn.ThemeMode.system => _platformBrightness,
+        _ => _platformBrightness,
       }),
       theme: themeState.shadcnLight,
       darkTheme: themeState.shadcnDark,
@@ -285,6 +347,7 @@ class _MyAppState extends ConsumerState<MyApp>
         shadcn.ThemeMode.dark => shadcn.ThemeMode.dark,
         shadcn.ThemeMode.light => shadcn.ThemeMode.light,
         shadcn.ThemeMode.system => shadcn.ThemeMode.system,
+        _ => shadcn.ThemeMode.system,
       },
     );
   }

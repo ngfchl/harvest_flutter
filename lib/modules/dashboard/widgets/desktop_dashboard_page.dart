@@ -197,6 +197,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       _loadInitialDashboard();
       _syncDesktopMonitorCards(_chartVisibility);
       if (mounted) {
+        registerPageScrollController(ref, 2, _scrollController);
         ref.read(activeScrollControllerProvider.notifier).state =
             _scrollController;
       }
@@ -205,7 +206,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
 
   Future<void> _loadInitialDashboard() async {
     try {
-      await ref.read(dashboardNotifierProvider.notifier).refresh();
+      await ref.read(dashboardProvider.notifier).refresh();
     } finally {
       if (mounted) setState(() => _initialLoading = false);
     }
@@ -214,6 +215,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   @override
   void dispose() {
     _refreshController.dispose();
+    unregisterPageScrollController(ref, 2, _scrollController);
     _scrollController.dispose();
     super.dispose();
   }
@@ -244,7 +246,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         showTreemapCountControl: true,
         title: '桌面看板显示设置',
         onTreemapCountSaved: DashboardChartConfig.saveDesktopTreemapCount,
-        onSaved: (_, visibility, __, treemapCount, ___) {
+        onSaved: (_, visibility, _, treemapCount, _) {
           ref
               .read(serverResourceIntervalProvider.notifier)
               .update(
@@ -304,7 +306,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     try {
       await fetchBasic(_taskEndpoint(API.MYSITE_STATUS_OPERATE));
       await ref.read(siteInfoListProvider.notifier).refresh();
-      await ref.read(dashboardNotifierProvider.notifier).refresh();
+      await ref.read(dashboardProvider.notifier).refresh();
       Toast.success('站点数据任务已执行');
     } catch (e, st) {
       AppLogger.error('执行站点数据刷新任务失败', e, st);
@@ -320,7 +322,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     try {
       await fetchBasic(_taskEndpoint(API.MYSITE_SIGNIN_OPERATE));
       await ref.read(siteInfoListProvider.notifier).refresh();
-      await ref.read(dashboardNotifierProvider.notifier).refresh();
+      await ref.read(dashboardProvider.notifier).refresh();
       Toast.success('站点签到任务已执行');
     } catch (e, st) {
       AppLogger.error('执行站点签到任务失败', e, st);
@@ -411,7 +413,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final data = ref.watch(dashboardNotifierProvider);
+    final data = ref.watch(dashboardProvider);
     final cacheInfo = ref.watch(dashboardCacheInfoProvider);
     final refreshSerial = ref.watch(dashboardRefreshSerialProvider);
     final privacy = ref.watch(privacyModeProvider);
@@ -697,7 +699,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }
 
   Widget _themeModeSegmentedControl() {
-    final mode = ref.watch(themeNotifierProvider).mode;
+    final mode = ref.watch(themeProvider).mode;
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final tokens = _tokens;
@@ -756,7 +758,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => ref.read(themeNotifierProvider.notifier).setMode(mode),
+      onTap: () => ref.read(themeProvider.notifier).setMode(mode),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 140),
         height: tokens.size(32),
@@ -3105,7 +3107,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
               : ListView.separated(
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: items.length,
-                  separatorBuilder: (_, __) => tokens.vGap(10),
+                  separatorBuilder: (_, _) => tokens.vGap(10),
                   itemBuilder: (context, index) {
                     final item = items[index];
                     final factor = maxValue > 0 ? item.value / maxValue : 0.0;

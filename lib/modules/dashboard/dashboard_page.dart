@@ -286,6 +286,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       _loadInitialDashboardData();
       _syncPhoneMonitorCards(_chartVisibility);
       if (mounted) {
+        registerPageScrollController(ref, 2, _scrollController);
         ref.read(activeScrollControllerProvider.notifier).state =
             _scrollController;
       }
@@ -295,7 +296,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   Future<void> _loadInitialDashboardData() async {
     try {
       await ref
-          .read(dashboardNotifierProvider.notifier)
+          .read(dashboardProvider.notifier)
           .refresh(days: _phoneDashboardFetchDays);
     } finally {
       if (mounted) setState(() => _isDashboardInitialLoading = false);
@@ -361,6 +362,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   void dispose() {
     _hideDashboardOverlayTooltip();
     _refreshController.dispose();
+    unregisterPageScrollController(ref, 2, _scrollController);
     _scrollController.dispose();
     super.dispose();
   }
@@ -408,7 +410,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       await fetchBasic(_taskEndpoint(API.MYSITE_STATUS_OPERATE));
       await ref.read(siteInfoListProvider.notifier).refresh();
       await ref
-          .read(dashboardNotifierProvider.notifier)
+          .read(dashboardProvider.notifier)
           .refresh(days: _phoneDashboardFetchDays);
       Toast.success('站点数据任务已执行');
     } catch (e, st) {
@@ -427,7 +429,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       await fetchBasic(_taskEndpoint(API.MYSITE_SIGNIN_OPERATE));
       await ref.read(siteInfoListProvider.notifier).refresh();
       await ref
-          .read(dashboardNotifierProvider.notifier)
+          .read(dashboardProvider.notifier)
           .refresh(days: _phoneDashboardFetchDays);
       Toast.success('站点签到任务已执行');
     } catch (e, st) {
@@ -505,7 +507,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   Widget build(BuildContext context) {
     if (!context.isMobile) return const DesktopDashboardPage();
 
-    final data = ref.watch(dashboardNotifierProvider);
+    final data = ref.watch(dashboardProvider);
     final cacheInfo = ref.watch(dashboardCacheInfoProvider);
     final refreshSerial = ref.watch(dashboardRefreshSerialProvider);
     final privacy = ref.watch(privacyModeProvider);
@@ -991,7 +993,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   Widget _buildServerBar(bool privacy) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
-    final authState = ref.watch(authNotifierProvider);
+    final authState = ref.watch(authProvider);
     final authInfo = ref.watch(authInfoProvider);
     final user = authState.user;
     final username = user == null ? '未登录' : _mask(user.username, privacy);
@@ -1006,24 +1008,24 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final authText = authInfo.when(
       data: (data) => _dashboardAuthSummary(data, privacy),
       loading: () => '授权信息加载中',
-      error: (_, __) => '授权信息加载失败',
+      error: (_, _) => '授权信息加载失败',
     );
     final showExpireWarning = authInfo.when(
       data: _isDashboardAuthExpiringSoon,
       loading: () => false,
-      error: (_, __) => false,
+      error: (_, _) => false,
     );
     final authStatusText = authInfo.when(
       data: (data) => _dashboardAuthHealthy(data) ? '授权有效' : '授权异常',
       loading: () => '授权校验中',
-      error: (_, __) => '授权获取失败',
+      error: (_, _) => '授权获取失败',
     );
     final statusColor = authInfo.when(
       data: (data) => _dashboardAuthHealthy(data)
           ? cs.primary
           : _dashboardThemeTone(cs.primary, hueShift: 42, lightnessDelta: 0.04),
       loading: () => _dashboardThemeTone(cs.primary, hueShift: -36),
-      error: (_, __) => cs.destructive,
+      error: (_, _) => cs.destructive,
     );
     return AppSurfaceContainer(
       width: double.infinity,
@@ -1102,7 +1104,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               const SizedBox(width: 6),
               shadcn.IconButton.ghost(
                 onPressed: () async =>
-                    ref.read(authNotifierProvider.notifier).logout(),
+                    ref.read(authProvider.notifier).logout(),
                 icon: Icon(
                   shadcn.LucideIcons.logOut,
                   size: 16,

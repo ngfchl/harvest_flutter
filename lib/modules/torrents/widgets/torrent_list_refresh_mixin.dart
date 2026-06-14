@@ -15,9 +15,9 @@ mixin TorrentListRefreshMixin<T extends ConsumerStatefulWidget> on ConsumerState
   void onRefreshSilently();
 
   void initRefreshListeners() {
-    ref.listenManual<int>(speedIntervalProvider, (_, __) => restartAutoRefresh());
-    ref.listenManual<int>(speedDurationProvider, (_, __) => restartAutoRefresh());
-    ref.listenManual<bool>(speedEnabledProvider, (_, __) => syncTorrentRefreshState());
+    ref.listenManual<int>(speedIntervalProvider, (_, _) => restartAutoRefresh());
+    ref.listenManual<int>(speedDurationProvider, (_, _) => restartAutoRefresh());
+    ref.listenManual<bool>(speedEnabledProvider, (_, _) => syncTorrentRefreshState());
   }
 
   void disposeRefreshTimers() {

@@ -7,13 +7,16 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/news/provider/media_info_settings_provider.dart';
 import 'package:harvest/modules/option/widgets/app_upgrade_page.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
+import 'package:harvest/modules/site/provider/site_provider.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
@@ -169,15 +172,22 @@ final _formConfigs = <String, FormConfig>{
     title: '微信机器人',
     icon: shadcn.LucideIcons.bot,
     textFields: [
-      FormFieldDef('token', 'IM BOT Token', (v) => v?.token),
-      FormFieldDef('to_uid', 'IM BOT User ID', (v) => v?.toUid),
       FormFieldDef(
-        'refresh_token',
-        'Context Token',
-        (v) => v?.refreshToken,
-        maxLines: 3,
+        'token',
+        'IM BOT Token',
+        (v) => v?.token,
+        readOnly: true,
+        helperText: '从「常用工具」中的微信机器人登录获取，当前页面只读。',
+      ),
+      FormFieldDef(
+        'to_uid',
+        'IM BOT User ID',
+        (v) => v?.toUid,
+        readOnly: true,
+        helperText: '扫码登录后由后端同步，当前页面只读。',
       ),
     ],
+    showSaveButton: false,
     buildValue: (c, _, v) => v.copyWith(
       token: c['token']!.text,
       toUid: c['to_uid']!.text,
@@ -191,7 +201,13 @@ final _formConfigs = <String, FormConfig>{
     textFields: [
       FormFieldDef('app_id', '机器人 App ID', (v) => v?.appId),
       FormFieldDef('secret_key', '机器人 Secret', (v) => v?.secretKey),
-      FormFieldDef('uids', '接收 UIDs', (v) => v?.uids, maxLines: 3),
+      FormFieldDef(
+        'uids',
+        '接收 UIDs',
+        (v) => v?.uids,
+        maxLines: 3,
+        helperText: '多个接收 UID 可用逗号或换行分隔。',
+      ),
     ],
     buildValue: (c, _, v) => v.copyWith(
       appId: c['app_id']!.text,
@@ -677,6 +693,7 @@ class _OptionPageState extends ConsumerState<OptionPage> {
               textFields: config.textFields,
               switchFields: config.switchFields,
               extraBuilder: config.extraBuilder,
+              showSaveButton: config.showSaveButton,
               buildValue: config.buildValue,
               onSave: (opt) async {
                 return ref.read(optionProvider.notifier).saveOption(opt);
@@ -708,6 +725,7 @@ class _OptionPageState extends ConsumerState<OptionPage> {
         const _BulkUpgradeCard(),
         _buildTelegramWebhook(context, ref),
         if (!kIsWeb) const _InviteTokenToolCard(),
+        if (!kIsWeb) const _WechatBotLoginCard(),
       ],
     );
   }
@@ -797,21 +815,27 @@ class _OptionPageState extends ConsumerState<OptionPage> {
   // ────────────────── 通知测试 ──────────────────
 
   Widget _buildNoticeTest(BuildContext context, WidgetRef ref) {
+    final String message = """
+    [简介](https://ptools.fun/收割机/home.html) [安装](https://ptools.fun/收割机/install.html) [指南](https://ptools.fun/收割机/使用指南.html) [常见问题](https://ptools.fun/收割机/common.html)
+[SSH](https://ptools.fun/收割机/ssh.html) [企业微信](https://ptools.fun/收割机/wechat.html) [app](https://ptools.fun/收割机/app.html) [站点导入](https://ptools.fun/收割机/import.html)
+[自行适配](https://ptools.fun/收割机/custom-add.html) [自定义主题](https://ptools.fun/收割机/custom-theme.html) [协议](https://ptools.fun/收割机/agreement.html)
+[阿里云盘](https://ptools.fun/通用教程/aliyun.html) [百度OCR](https://ptools.fun/通用教程/baidu-ocr.html) [CookieCloud](https://ptools.fun/通用教程/CookieCloud.html)
+[Tailscale](https://ptools.fun/通用教程/tailscale-nat.html) [Telegram](https://ptools.fun/通用教程/telegram-bot.html) [命令行](https://ptools.fun/通用教程/termnal.html) [穿透](https://ptools.fun/通用教程/tunnel.html)
+[TG群](https://t.me/n_ptools) [QQ群](https://qm.qq.com/q/87aDeLe968)
+    """;
     return ExpandableCard(
       title: '通知测试',
       icon: shadcn.LucideIcons.bellRing,
       builder: (collapse) {
-        final titleCtrl = TextEditingController(text: '这是一个消息标题');
-        final msgCtrl = TextEditingController(
-          text: '*这是一条测试消息*\n__这是二号标题__\n```这是消息```',
-        );
+        final titleCtrl = TextEditingController(text: '收割机文档');
+        final msgCtrl = TextEditingController(text: message);
         return _TestNoticeForm(
           titleCtrl: titleCtrl,
           msgCtrl: msgCtrl,
-          onSend: () async {
+          onSend: (pushType) async {
             final success = await ref
                 .read(optionProvider.notifier)
-                .testNotice(titleCtrl.text, msgCtrl.text);
+                .testNotice(titleCtrl.text, msgCtrl.text, pushType: pushType);
             if (success) {
               Toast.success('测试消息发送完成');
               collapse();
@@ -837,14 +861,15 @@ const _inviteTokenSites = [
   _InviteTokenSite(label: '蜂巢', baseUrl: 'https://pting.club/'),
 ];
 
-class _InviteTokenToolCard extends StatefulWidget {
+class _InviteTokenToolCard extends ConsumerStatefulWidget {
   const _InviteTokenToolCard();
 
   @override
-  State<_InviteTokenToolCard> createState() => _InviteTokenToolCardState();
+  ConsumerState<_InviteTokenToolCard> createState() =>
+      _InviteTokenToolCardState();
 }
 
-class _InviteTokenToolCardState extends State<_InviteTokenToolCard> {
+class _InviteTokenToolCardState extends ConsumerState<_InviteTokenToolCard> {
   final _usernameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _dio = Dio();
@@ -1029,6 +1054,14 @@ class _InviteTokenToolCardState extends State<_InviteTokenToolCard> {
         _token = token;
         _uid = uid;
       });
+
+      if (token != null) {
+        final confirmed = await _confirmUpdateSiteInfo(token, uid);
+        if (confirmed) {
+          await _updateMatchingSitesAuthkey(token, uid);
+        }
+      }
+
       Toast.success('获取成功');
     } catch (e, st) {
       AppLogger.error('${_selectedSite.label} Token 获取失败', e, st);
@@ -1088,6 +1121,342 @@ class _InviteTokenToolCardState extends State<_InviteTokenToolCard> {
       if (statusCode != null) return '请求失败: $statusCode';
     }
     return 'Token 获取失败';
+  }
+
+  Future<bool> _confirmUpdateSiteInfo(String token, String? uid) async {
+    final result = await shadcn.showDialog<bool>(
+      context: context,
+      builder: (ctx) => shadcn.AlertDialog(
+        leading: const Icon(shadcn.LucideIcons.keyRound),
+        title: const Text('更新站点信息'),
+        content: SizedBox(
+          width: 360,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('已获取 Token，是否更新到站点信息？'),
+              const SizedBox(height: 8),
+              Text(
+                'Token: $token',
+                style: shadcn.Theme.of(context).typography.xSmall.copyWith(
+                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                ),
+              ),
+              if (uid != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  'UID: $uid',
+                  style: shadcn.Theme.of(context).typography.xSmall.copyWith(
+                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        actions: [
+          shadcn.Button.outline(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+          shadcn.Button.primary(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('确定更新'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
+  Future<void> _updateMatchingSitesAuthkey(String token, String? uid) async {
+    try {
+      final sites = ref.read(siteInfoListProvider).value ?? [];
+      final baseHost = Uri.tryParse(_selectedSite.baseUrl)?.host.toLowerCase();
+      if (baseHost == null || baseHost.isEmpty) return;
+
+      final matchingSites = sites.where((site) {
+        final siteName = site.site.toLowerCase();
+        final mirror = site.mirror?.toLowerCase() ?? '';
+        return siteName.contains(baseHost) || mirror.contains(baseHost);
+      }).toList();
+
+      if (matchingSites.isEmpty) {
+        AppLogger.info('未找到匹配的站点，跳过写入 authkey');
+        return;
+      }
+
+      for (final site in matchingSites) {
+        final updatedSite = site.copyWith(
+          authkey: token,
+          userId: uid ?? site.userId,
+        );
+        await ref.read(siteInfoListProvider.notifier).updateSite(updatedSite);
+      }
+
+      AppLogger.info('已更新 ${matchingSites.length} 个站点的 authkey 和 user_id');
+    } catch (e, st) {
+      AppLogger.error('更新站点 authkey 失败', e, st);
+    }
+  }
+}
+
+class _WechatBotLoginCard extends ConsumerStatefulWidget {
+  const _WechatBotLoginCard();
+
+  @override
+  ConsumerState<_WechatBotLoginCard> createState() =>
+      _WechatBotLoginCardState();
+}
+
+class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
+  bool _loading = false;
+  String? _qrUrl;
+  String _status = 'idle'; // idle | wait | scaned | confirmed | expired
+  String _statusMessage = '';
+  DateTime? _pollStartTime;
+
+  bool get _polling => _status == 'wait' || _status == 'scaned';
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = _optionColors(context);
+    final typo = shadcn.Theme.of(context).typography;
+
+    return ExpandableCard(
+      title: '微信机器人登录',
+      icon: shadcn.LucideIcons.scanLine,
+      builder: (_) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_qrUrl != null) ...[
+            _ActionButtonFrame(
+              child: shadcn.Button.outline(
+                onPressed: _loading || _polling ? null : _fetchQrCode,
+                alignment: Alignment.center,
+                child: const _ButtonText('刷新二维码'),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (_status == 'wait' || _status == 'scaned') ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_status == 'scaned')
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Icon(
+                        shadcn.LucideIcons.scanLine,
+                        size: 14,
+                        color: cs.primary,
+                      ),
+                    ),
+                  Text(
+                    _statusMessage.isNotEmpty
+                        ? _statusMessage
+                        : (_status == 'scaned' ? '已扫码，请在手机上确认' : '等待扫码...'),
+                    style: typo.small.copyWith(
+                      color: _status == 'scaned'
+                          ? cs.primary
+                          : cs.mutedForeground,
+                      fontWeight: _status == 'scaned'
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 300,
+              child: InAppWebView(
+                key: ValueKey(_qrUrl),
+                initialUrlRequest: URLRequest(url: WebUri(_qrUrl!)),
+                initialSettings: InAppWebViewSettings(
+                  javaScriptEnabled: true,
+                  domStorageEnabled: true,
+                  useHybridComposition: true,
+                  allowsInlineMediaPlayback: true,
+                  transparentBackground: true,
+                  supportZoom: false,
+                  builtInZoomControls: false,
+                  displayZoomControls: false,
+                ),
+                onLoadStop: (controller, url) async {
+                  await controller.scrollTo(x: 0, y: 99999);
+                },
+              ),
+            ),
+          ] else if (_status == 'confirmed')
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                children: [
+                  Icon(
+                    shadcn.LucideIcons.circleCheck,
+                    size: 48,
+                    color: Colors.green,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _statusMessage.isNotEmpty ? _statusMessage : '登录成功',
+                    style: typo.medium.copyWith(
+                      color: cs.foreground,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (_status == 'expired')
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                children: [
+                  Icon(
+                    shadcn.LucideIcons.clock,
+                    size: 48,
+                    color: cs.mutedForeground,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _statusMessage.isNotEmpty ? _statusMessage : '二维码已过期',
+                    style: typo.small.copyWith(color: cs.mutedForeground),
+                  ),
+                  const SizedBox(height: 12),
+                  shadcn.Button.primary(
+                    onPressed: _fetchQrCode,
+                    alignment: Alignment.center,
+                    child: const _ButtonText('重新获取'),
+                  ),
+                ],
+              ),
+            )
+          else
+            _ActionButtonFrame(
+              child: shadcn.Button.primary(
+                onPressed: _loading ? null : _fetchQrCode,
+                alignment: Alignment.center,
+                child: _loading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: shadcn.CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const _ButtonText('获取二维码'),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _fetchQrCode() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _loading = true;
+      _qrUrl = null;
+      _status = 'idle';
+    });
+
+    try {
+      final data = await Http.get<dynamic>('/api/option/wechatbot/qrcode');
+      AppLogger.debug('获取二维码响应：$data');
+      if (data is Map) {
+        final qrUrl = data['qrcode_url']?.toString();
+        if (qrUrl != null && mounted) {
+          setState(() {
+            _qrUrl = qrUrl;
+            _status = 'wait';
+          });
+          _startPolling();
+          return;
+        }
+      }
+      Toast.error('获取二维码失败');
+    } catch (e, st) {
+      AppLogger.error('获取微信机器人二维码失败', e, st);
+      Toast.error('获取二维码失败');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _startPolling() {
+    _pollStartTime = DateTime.now();
+    _pollStatus();
+  }
+
+  Future<void> _pollStatus() async {
+    if (!mounted || !_polling) return;
+
+    final elapsed = DateTime.now().difference(_pollStartTime!);
+    if (elapsed.inSeconds >= 120) {
+      setState(() {
+        _status = 'expired';
+        _statusMessage = '二维码已过期，请重新获取';
+      });
+      return;
+    }
+
+    try {
+      final data = await Http.get<dynamic>(
+        '/api/option/wechatbot/qrcode/status',
+      );
+      AppLogger.debug('轮询状态响应：$data');
+      if (data is Map && mounted) {
+        final status = data['status']?.toString() ?? '';
+        final message = data['message']?.toString() ?? '';
+        switch (status) {
+          case 'wait':
+            if (_status != 'wait') {
+              setState(() {
+                _status = 'wait';
+                _statusMessage = message;
+              });
+            }
+          case 'scaned':
+            setState(() {
+              _status = 'scaned';
+              _statusMessage = message;
+            });
+          case 'confirmed':
+            setState(() {
+              _status = 'confirmed';
+              _statusMessage = message.isNotEmpty ? message : '登录成功';
+            });
+            Toast.success('登录成功');
+            Future<void>.delayed(const Duration(seconds: 5), () {
+              if (mounted) {
+                setState(() {
+                  _status = 'idle';
+                  _qrUrl = null;
+                });
+              }
+            });
+            return;
+          case 'expired':
+            setState(() {
+              _status = 'expired';
+              _statusMessage = message.isNotEmpty ? message : '二维码已过期';
+            });
+            return;
+        }
+      }
+    } catch (_) {}
+
+    if (mounted && _polling) {
+      await Future<void>.delayed(const Duration(seconds: 3));
+      _pollStatus();
+    }
   }
 }
 
@@ -2503,10 +2872,40 @@ class _SpeedTestActionState extends State<_SpeedTestAction> {
 //  通知测试表单
 // ══════════════════════════════════════════════════════════
 
+class _NoticePushTypeOption {
+  final String value;
+  final String label;
+
+  const _NoticePushTypeOption(this.value, this.label);
+}
+
+const _noticePushTypeOptions = [
+  _NoticePushTypeOption('', '默认通道'),
+  _NoticePushTypeOption('wechat_work_push', '企业微信'),
+  _NoticePushTypeOption('wechat_bot_push', '微信机器人'),
+  _NoticePushTypeOption('wxpusher_push', 'WxPusher'),
+  _NoticePushTypeOption('pushdeer_push', 'PushDeer'),
+  _NoticePushTypeOption('server_chan_push', 'Server 酱'),
+  _NoticePushTypeOption('bark_push', 'Bark'),
+  _NoticePushTypeOption('iyuu_push', '爱语飞飞'),
+  _NoticePushTypeOption('telegram_push', 'Telegram'),
+  _NoticePushTypeOption('qqbot_push', 'QQ 机器人'),
+  _NoticePushTypeOption('pushplus_push', 'PushPlus'),
+  _NoticePushTypeOption('meow_push', '喵呜通知'),
+];
+
+String _noticePushTypeLabel(String value) {
+  return _noticePushTypeOptions
+          .where((option) => option.value == value)
+          .firstOrNull
+          ?.label ??
+      value;
+}
+
 class _TestNoticeForm extends StatefulWidget {
   final TextEditingController titleCtrl;
   final TextEditingController msgCtrl;
-  final Future<void> Function() onSend;
+  final Future<void> Function(String pushType) onSend;
 
   const _TestNoticeForm({
     required this.titleCtrl,
@@ -2520,6 +2919,7 @@ class _TestNoticeForm extends StatefulWidget {
 
 class _TestNoticeFormState extends State<_TestNoticeForm> {
   bool _sending = false;
+  String _pushType = '';
 
   @override
   void dispose() {
@@ -2541,6 +2941,37 @@ class _TestNoticeFormState extends State<_TestNoticeForm> {
             onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           ),
           const SizedBox(height: 10),
+          shadcn.OverlayManagerLayer(
+            popoverHandler: const shadcn.PopoverOverlayHandler(),
+            tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
+            menuHandler: const shadcn.PopoverOverlayHandler(),
+            child: SizedBox(
+              width: double.infinity,
+              child: shadcn.Select<String>(
+                value: _pushType,
+                placeholder: const Text('选择通知通道'),
+                itemBuilder: (_, value) => Text(_noticePushTypeLabel(value)),
+                popup: shadcn.SelectPopup<String>(
+                  items: shadcn.SelectItemList(
+                    children: [
+                      for (final option in _noticePushTypeOptions)
+                        shadcn.SelectItemButton<String>(
+                          value: option.value,
+                          child: Text(option.label),
+                        ),
+                    ],
+                  ),
+                ).call,
+                onChanged: _sending
+                    ? null
+                    : (value) {
+                        if (value == null) return;
+                        setState(() => _pushType = value);
+                      },
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
           ShadTextField(
             controller: widget.msgCtrl,
             hintText: '消息内容',
@@ -2554,7 +2985,7 @@ class _TestNoticeFormState extends State<_TestNoticeForm> {
                   ? null
                   : () async {
                       setState(() => _sending = true);
-                      await widget.onSend();
+                      await widget.onSend(_pushType);
                       if (mounted) setState(() => _sending = false);
                     },
               alignment: Alignment.center,

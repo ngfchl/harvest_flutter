@@ -1215,7 +1215,7 @@ extension _DesktopDashboardView on _DashboardPageState {
                     return _buildRankBarRow(
                       0,
                       _mask(item.name, privacy),
-                      '${_formatCount(item.value)}',
+                      _formatCount(item.value),
                       ratio,
                       color,
                     );

@@ -109,7 +109,7 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage>
     final pageBackground = appSurfaceColor(context, cs.background);
     final downloaders = ref
         .watch(download_providers.downloaderListProvider)
-        .valueOrNull;
+        .value;
     final downloader = _findCurrentDownloader(downloaders);
     final currentDownloaderType = downloader == null
         ? _currentDownloaderType

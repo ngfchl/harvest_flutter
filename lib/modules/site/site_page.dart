@@ -47,6 +47,7 @@ class _SitePageState extends ConsumerState<SitePage> {
     _searchCtrl.addListener(_onSearchTextChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      registerPageScrollController(ref, 1, _scrollController);
       ref.read(activeScrollControllerProvider.notifier).state =
           _scrollController;
     });
@@ -56,6 +57,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   void dispose() {
     _searchCtrl.removeListener(_onSearchTextChanged);
     _searchCtrl.dispose();
+    unregisterPageScrollController(ref, 1, _scrollController);
     _scrollController.dispose();
     super.dispose();
   }
@@ -70,7 +72,7 @@ class _SitePageState extends ConsumerState<SitePage> {
     final filteredSites = ref.watch(filteredSiteListProvider);
     final filter = ref.watch(siteFilterStateProvider);
     final hasFilters = filter.hasActiveFilters;
-    final totalCount = sitesAsync.valueOrNull?.length ?? 0;
+    final totalCount = sitesAsync.value?.length ?? 0;
     final mobile = context.isMobile;
     final cacheInfo = ref.watch(siteInfoCacheInfoProvider);
 
@@ -898,9 +900,9 @@ class _SitePageState extends ConsumerState<SitePage> {
 
   Future<void> _showSiteTimeline(BuildContext context) async {
     final websites =
-        ref.read(websiteListProvider).valueOrNull ?? const <WebSite>[];
+        ref.read(websiteListProvider).value ?? const <WebSite>[];
     final mySites =
-        ref.read(siteInfoListProvider).valueOrNull ?? const <SiteInfo>[];
+        ref.read(siteInfoListProvider).value ?? const <SiteInfo>[];
     if (websites.isEmpty) {
       Toast.warning('暂无站点配置');
       return;
@@ -1813,7 +1815,7 @@ class _MobileFilterSheet extends ConsumerWidget {
     final filteredSites = ref.watch(filteredSiteListProvider);
     final filter = ref.watch(siteFilterStateProvider);
     final hasFilters = filter.hasActiveFilters;
-    final totalCount = sitesAsync.valueOrNull?.length ?? 0;
+    final totalCount = sitesAsync.value?.length ?? 0;
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;

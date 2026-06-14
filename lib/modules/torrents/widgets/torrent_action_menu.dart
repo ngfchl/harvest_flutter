@@ -462,7 +462,7 @@ class _MenuBody extends StatelessWidget {
               Expanded(
                 child: Text(label, style: TextStyle(color: fg, fontSize: 13.5)),
               ),
-              if (trailing != null) trailing,
+              ?trailing,
             ],
           ),
         ),

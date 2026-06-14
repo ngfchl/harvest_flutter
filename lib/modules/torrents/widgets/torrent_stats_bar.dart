@@ -14,12 +14,7 @@ class StatsBar extends ConsumerWidget {
   final Downloader? downloader;
   final VoidCallback? onOpenSpeedSettings;
 
-  const StatsBar({
-    super.key,
-    required this.downloaderId,
-    this.downloader,
-    this.onOpenSpeedSettings,
-  });
+  const StatsBar({super.key, required this.downloaderId, this.downloader, this.onOpenSpeedSettings});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,10 +31,7 @@ class StatsBar extends ConsumerWidget {
     final compactLayout = MediaQuery.sizeOf(context).width < kMobileBreakpoint;
 
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: compactLayout ? 10 : 12,
-        vertical: compactLayout ? 6 : 8,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: compactLayout ? 10 : 12, vertical: compactLayout ? 6 : 8),
       decoration: BoxDecoration(
         color: cs.background,
         border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
@@ -48,12 +40,7 @@ class StatsBar extends ConsumerWidget {
         width: double.infinity,
         child: compactLayout
             ? StatusBarInlineRow(spacing: 7, height: 18, children: items)
-            : Wrap(
-                spacing: 14,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: items,
-              ),
+            : Wrap(spacing: 14, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: items),
       ),
     );
   }
@@ -67,7 +54,7 @@ List<Widget> buildTorrentStatsBarItems({
   VoidCallback? onOpenSpeedSettings,
 }) {
   final cs = shadcn.Theme.of(context).colorScheme;
-  final data = ref.watch(torrentListProvider(downloaderId)).valueOrNull;
+  final data = ref.watch(torrentListProvider(downloaderId)).value;
   final status = data?.status;
   final speedMap = ref.watch(downloaderSpeedProvider);
 
@@ -78,9 +65,7 @@ List<Widget> buildTorrentStatsBarItems({
     for (final entry in speedMap.entries) {
       final key = entry.key.toLowerCase();
       final dataId = entry.value.downloaderId.toLowerCase();
-      if (key == id ||
-          dataId == id ||
-          (wsKey != null && (key == wsKey || dataId == wsKey))) {
+      if (key == id || dataId == id || (wsKey != null && (key == wsKey || dataId == wsKey))) {
         liveInfo = entry.value.info;
         break;
       }
@@ -93,26 +78,15 @@ List<Widget> buildTorrentStatsBarItems({
   final activeCount = torrents.isEmpty
       ? liveInfo?.activeTorrentCount ?? status?.activeTorrentCount ?? 0
       : torrents.where((t) => t.rateDownload > 0 || t.rateUpload > 0).length;
-  final pausedCount =
-      status?.pausedTorrentCount ?? liveInfo?.pausedTorrentCount ?? 0;
-  final totalCount =
-      status?.torrentCount ?? liveInfo?.totalTorrentCount ?? torrents.length;
-  final sessionUploaded = _firstPositive([
-    liveInfo?.uploadedSession ?? 0,
-    status?.currentStats.uploadedBytes ?? 0,
-  ]);
+  final pausedCount = status?.pausedTorrentCount ?? liveInfo?.pausedTorrentCount ?? 0;
+  final totalCount = status?.torrentCount ?? liveInfo?.totalTorrentCount ?? torrents.length;
+  final sessionUploaded = _firstPositive([liveInfo?.uploadedSession ?? 0, status?.currentStats.uploadedBytes ?? 0]);
   final sessionDownloaded = _firstPositive([
     liveInfo?.downloadedSession ?? 0,
     status?.currentStats.downloadedBytes ?? 0,
   ]);
-  final totalUploaded = _firstPositive([
-    status?.cumulativeStats.uploadedBytes ?? 0,
-    _sumUploadedEver(torrents),
-  ]);
-  final totalDownloaded = _firstPositive([
-    status?.cumulativeStats.downloadedBytes ?? 0,
-    _sumDownloadedEver(torrents),
-  ]);
+  final totalUploaded = _firstPositive([status?.cumulativeStats.uploadedBytes ?? 0, _sumUploadedEver(torrents)]);
+  final totalDownloaded = _firstPositive([status?.cumulativeStats.downloadedBytes ?? 0, _sumDownloadedEver(torrents)]);
   final uploadLimit = liveInfo?.uploadLimit ?? 0;
   final downloadLimit = liveInfo?.downloadLimit ?? 0;
   final limited = liveInfo?.hasLimit ?? false;
@@ -138,8 +112,8 @@ List<Widget> buildTorrentStatsBarItems({
     if (limited)
       StatusBarLimitMetric(
         icon: shadcn.LucideIcons.gauge,
-        uploadValue: _formatLimitValue(uploadLimit),
-        downloadValue: _formatLimitValue(downloadLimit),
+        uploadValue: _formatLimitValue(uploadLimit * (downloader?.isQb == true ? 1 : 1000)),
+        downloadValue: _formatLimitValue(downloadLimit * (downloader?.isQb == true ? 1 : 1000)),
         tooltip: onOpenSpeedSettings == null ? null : '打开限速设置',
         onTap: onOpenSpeedSettings,
       ),
@@ -179,8 +153,7 @@ String _formatTrafficTotal(int total, int session) {
   return '${TorrentUtils.formatBytes(total)} (${TorrentUtils.formatBytes(session)})';
 }
 
-String _formatLimitValue(int value) =>
-    value <= 0 ? '不限' : TorrentUtils.formatSpeed(value);
+String _formatLimitValue(int value) => value <= 0 ? '不限' : TorrentUtils.formatSpeed(value);
 
 // ── 子组件 ──
 
@@ -203,10 +176,7 @@ class StatusBarInlineRow extends StatelessWidget {
     final row = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        for (var i = 0; i < children.length; i++) ...[
-          if (i > 0) SizedBox(width: spacing),
-          children[i],
-        ],
+        for (var i = 0; i < children.length; i++) ...[if (i > 0) SizedBox(width: spacing), children[i]],
       ],
     );
 
@@ -221,11 +191,7 @@ class StatusBarInlineRow extends StatelessWidget {
         return SizedBox(
           width: constraints.maxWidth,
           height: height,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: alignment,
-            child: row,
-          ),
+          child: FittedBox(fit: BoxFit.scaleDown, alignment: alignment, child: row),
         );
       },
     );
@@ -260,11 +226,7 @@ class StatusBarMetric extends StatelessWidget {
       children: [
         Icon(icon, size: 12, color: color),
         const SizedBox(width: 4),
-        if (showLabel)
-          Text(
-            '$label ',
-            style: TextStyle(fontSize: 11, color: cs.mutedForeground),
-          ),
+        if (showLabel) Text('$label ', style: TextStyle(fontSize: 11, color: cs.mutedForeground)),
         Text(
           value,
           style: TextStyle(
@@ -279,11 +241,7 @@ class StatusBarMetric extends StatelessWidget {
 
     final child = onTap == null
         ? content
-        : GestureDetector(
-            onTap: onTap,
-            behavior: HitTestBehavior.opaque,
-            child: content,
-          );
+        : GestureDetector(onTap: onTap, behavior: HitTestBehavior.opaque, child: content);
 
     if (tooltip != null) {
       return shadcn.Tooltip(tooltip: (_) => Text(tooltip!), child: child);
@@ -341,11 +299,7 @@ class StatusBarLimitMetric extends StatelessWidget {
 
     final child = onTap == null
         ? content
-        : GestureDetector(
-            onTap: onTap,
-            behavior: HitTestBehavior.opaque,
-            child: content,
-          );
+        : GestureDetector(onTap: onTap, behavior: HitTestBehavior.opaque, child: content);
 
     if (tooltip != null) {
       return shadcn.Tooltip(tooltip: (_) => Text(tooltip!), child: child);
@@ -358,20 +312,12 @@ class StatusBarTrafficGroup extends StatelessWidget {
   final String uploadValue;
   final String downloadValue;
 
-  const StatusBarTrafficGroup({
-    super.key,
-    required this.uploadValue,
-    required this.downloadValue,
-  });
+  const StatusBarTrafficGroup({super.key, required this.uploadValue, required this.downloadValue});
 
   @override
   Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
-    final labelStyle = TextStyle(
-      fontSize: 11,
-      color: cs.mutedForeground,
-      fontWeight: FontWeight.w500,
-    );
+    final labelStyle = TextStyle(fontSize: 11, color: cs.mutedForeground, fontWeight: FontWeight.w500);
     const valueStyle = TextStyle(
       fontSize: 11,
       fontWeight: FontWeight.w600,
@@ -379,8 +325,7 @@ class StatusBarTrafficGroup extends StatelessWidget {
     );
 
     return shadcn.Tooltip(
-      tooltip: (_) =>
-          const Text('数据量详情：箭头向上为总上传量（括号内为本次上传），箭头向下为总下载量（括号内为本次下载）'),
+      tooltip: (_) => const Text('数据量详情：箭头向上为总上传量（括号内为本次上传），箭头向下为总下载量（括号内为本次下载）'),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -390,16 +335,9 @@ class StatusBarTrafficGroup extends StatelessWidget {
           const SizedBox(width: 4),
           Text(uploadValue, style: valueStyle.copyWith(color: colorSeeding)),
           const SizedBox(width: 10),
-          const Icon(
-            shadcn.LucideIcons.arrowDown,
-            size: 12,
-            color: colorDownloading,
-          ),
+          const Icon(shadcn.LucideIcons.arrowDown, size: 12, color: colorDownloading),
           const SizedBox(width: 4),
-          Text(
-            downloadValue,
-            style: valueStyle.copyWith(color: colorDownloading),
-          ),
+          Text(downloadValue, style: valueStyle.copyWith(color: colorDownloading)),
         ],
       ),
     );
@@ -418,10 +356,7 @@ class StatusBarCount extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          '$label ',
-          style: TextStyle(fontSize: 11, color: cs.mutedForeground),
-        ),
+        Text('$label ', style: TextStyle(fontSize: 11, color: cs.mutedForeground)),
         Text(
           '$count',
           style: TextStyle(
@@ -460,13 +395,7 @@ class StatusBarIconButton extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: compact ? 5 : 8),
-        child: Icon(
-          icon,
-          size: 14,
-          color:
-              color ??
-              cs.mutedForeground.withValues(alpha: onTap == null ? 0.25 : 0.45),
-        ),
+        child: Icon(icon, size: 14, color: color ?? cs.mutedForeground.withValues(alpha: onTap == null ? 0.25 : 0.45)),
       ),
     );
 
@@ -512,11 +441,7 @@ class StatusBarPillButton extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               label,
-              style: typo.xSmall.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
-                fontSize: 11,
-              ),
+              style: typo.xSmall.copyWith(color: color, fontWeight: FontWeight.w600, fontSize: 11),
             ),
           ],
         ),

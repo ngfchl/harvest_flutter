@@ -104,7 +104,7 @@ class AppUpgradeSummaryCard extends ConsumerWidget {
     if (kIsWeb) return const SizedBox.shrink();
 
     final status = ref.watch(appUpgradeStatusProvider);
-    final data = status.valueOrNull;
+    final data = status.value;
     final hasUpdate = data?.shouldPrompt == true;
     final summary = status.isLoading
         ? '正在检查 APP 版本'
@@ -294,7 +294,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
     bool refresh = true,
   }) {
     var changed = false;
-    final data = status.valueOrNull;
+    final data = status.value;
     if (data != null) {
       _latest = data.latest;
       _loadingLatest = false;
@@ -333,7 +333,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
 
     final current = ref.read(appUpgradeStatusProvider);
     _applyAppUpgradeStatus(current);
-    if (current.valueOrNull != null) return;
+    if (current.value != null) return;
 
     _loadingLatest = true;
     _error = null;
@@ -751,6 +751,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
           dialogTitle: '保存安装包',
           fileName: fileName,
           type: FileType.any,
+          bytes: Uint8List(0),
         );
         if (savePath == null) return;
         _activeDownloadPath = savePath;
@@ -1842,14 +1843,11 @@ class _SwitchOptionCard extends StatelessWidget {
         : '$subtitle\n$tooltip';
 
     return shadcn.Tooltip(
-      tooltip: (_) => ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 260),
-        child: Text(
-          tooltipText,
-          style: theme.typography.xSmall.copyWith(
-            color: cs.popoverForeground,
-            height: 1.35,
-          ),
+      tooltip: (_) => Text(
+        tooltipText,
+        style: theme.typography.xSmall.copyWith(
+          color: cs.popoverForeground,
+          height: 1.35,
         ),
       ),
       child: shadcn.Card(
@@ -1877,25 +1875,45 @@ class _SwitchOptionCard extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Flexible(
-                    child: Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.typography.small.copyWith(
-                        color: cs.foreground,
-                        fontWeight: FontWeight.w700,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.typography.small.copyWith(
+                            color: cs.foreground,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Icon(
+                        shadcn.LucideIcons.info,
+                        size: 13,
+                        color: cs.mutedForeground,
+                      ),
+                    ],
+                  ),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        subtitle,
+                        maxLines: 1,
+                        style: theme.typography.xSmall.copyWith(
+                          color: cs.mutedForeground,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    shadcn.LucideIcons.info,
-                    size: 13,
-                    color: cs.mutedForeground,
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -2019,9 +2037,7 @@ class _DownloadLinksState extends State<_DownloadLinks> {
     final primaryEntries = platformEntries.isNotEmpty
         ? platformEntries
         : entries.take(1).toList();
-    final visibleEntries = widget.compact && primaryEntries.length > 1
-        ? primaryEntries.take(1).toList()
-        : primaryEntries;
+    final visibleEntries = primaryEntries;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -2541,16 +2557,16 @@ List<List<String>> _preferredAssetPatterns({required String macosArch}) {
   }
   if (Platform.isMacOS) {
     return [
-      [macosArch, 'macos', 'dmg'],
-      [macosArch, 'mac', 'dmg'],
       [macosArch, 'macos', 'pkg'],
       [macosArch, 'mac', 'pkg'],
-      ['macos', 'dmg'],
-      ['mac', 'dmg'],
       ['macos', 'pkg'],
       ['mac', 'pkg'],
-      ['dmg'],
       ['pkg'],
+      [macosArch, 'macos', 'dmg'],
+      [macosArch, 'mac', 'dmg'],
+      ['macos', 'dmg'],
+      ['mac', 'dmg'],
+      ['dmg'],
     ];
   }
   if (Platform.isWindows) {

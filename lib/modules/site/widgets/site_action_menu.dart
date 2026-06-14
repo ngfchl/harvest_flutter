@@ -77,7 +77,7 @@ List<shadcn.MenuItem> _buildActionItems(
   SiteInfo site,
 ) {
   final cs = shadcn.Theme.of(context).colorScheme;
-  final configs = ref.watch(websiteListProvider).valueOrNull ?? const [];
+  final configs = ref.watch(websiteListProvider).value ?? const [];
   final website = findSiteWebsiteConfig(site, configs);
   final disabled = !site.available;
   final alreadySigned = site.signInText == '已签到';

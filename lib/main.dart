@@ -122,6 +122,10 @@ Future<void> _startApp() async {
               TitleBarStyle.hidden,
               windowButtonVisibility: false,
             );
+            await windowManager.setPreventClose(true);
+          }
+          if (PlatformTool.isWindows()) {
+            await windowManager.setPreventClose(true);
           }
           await windowManager.show();
           await windowManager.focus();
@@ -140,7 +144,7 @@ Future<void> _startApp() async {
   // 触发 auth 初始化（build 自动恢复）
   AuthState authState;
   try {
-    authState = container.read(authNotifierProvider);
+    authState = container.read(authProvider);
   } catch (e, st) {
     AppLogger.error('恢复登录状态失败，清理本地登录态后继续启动', e, st);
     await Future.wait([
@@ -148,9 +152,9 @@ Future<void> _startApp() async {
       HiveManager.delete(StorageKeys.refreshToken),
       HiveManager.delete(StorageKeys.authState),
     ]);
-    container.invalidate(authNotifierProvider);
+    container.invalidate(authProvider);
     try {
-      authState = container.read(authNotifierProvider);
+      authState = container.read(authProvider);
     } catch (retryError, retryStack) {
       AppLogger.error('清理登录态后恢复仍失败', retryError, retryStack);
       authState = const AuthState();
@@ -166,7 +170,7 @@ Future<void> _startApp() async {
   }
 
   // ✅ 确认状态
-  AppLogger.debug("启动 auth: ${container.read(authNotifierProvider).loggedIn}");
+  AppLogger.debug("启动 auth: ${container.read(authProvider).loggedIn}");
   if (!kIsWeb) {
     unawaited(
       container

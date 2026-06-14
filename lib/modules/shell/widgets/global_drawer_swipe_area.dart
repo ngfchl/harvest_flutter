@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/http/api.dart';
@@ -225,13 +226,13 @@ class GlobalNavigationSidebar extends StatelessWidget {
   Future<void> _switchAccount() async {
     await _close();
     ref
-        .read(authNotifierProvider.notifier)
+        .read(authProvider.notifier)
         .logout(redirectTo: '/login-history');
   }
 
   Future<void> _logout() async {
     await _close();
-    ref.read(authNotifierProvider.notifier).logout();
+    ref.read(authProvider.notifier).logout();
   }
 
   @override
@@ -239,8 +240,8 @@ class GlobalNavigationSidebar extends StatelessWidget {
     final tokens = _GlobalDrawerTokens.of(context);
     final theme = tokens.theme;
     final cs = tokens.cs;
-    final user = ref.watch(authNotifierProvider).user;
-    final authInfo = ref.watch(authInfoProvider).valueOrNull;
+    final user = ref.watch(authProvider).user;
+    final authInfo = ref.watch(authInfoProvider).value;
     final showAdminUser = canOpenAdminUsers(authInfo);
     final showNews = ref.watch(mediaInfoSettingsProvider).enabled;
     final showAccountSwitcher = ref.watch(loginHistoryProvider).length >= 2;

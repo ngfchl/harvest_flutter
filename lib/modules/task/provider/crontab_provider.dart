@@ -20,7 +20,7 @@ class CrontabListNotifier extends AsyncNotifier<List<CrontabItem>> {
 
   Future<void> refresh() async {
     if (!HiveManager.hasAccessToken) {
-      state = AsyncValue.data(state.valueOrNull ?? const <CrontabItem>[]);
+      state = AsyncValue.data(state.value ?? const <CrontabItem>[]);
       return;
     }
 

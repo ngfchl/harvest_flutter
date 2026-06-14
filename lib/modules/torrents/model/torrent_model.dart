@@ -181,12 +181,28 @@ enum DesktopTorrentStatusFilter {
 enum TorrentSort {
   queuePosition('队列顺序'),
   name('名称'),
-  size('大小'),
+  selectedSize('选定大小'),
+  totalSize('总大小'),
   progress('进度'),
+  status('状态'),
+  seeds('种子'),
+  peers('用户'),
   downloadSpeed('下载速度'),
   uploadSpeed('上传速度'),
+  eta('剩余时间'),
   ratio('分享率'),
+  category('分类'),
+  tags('标签'),
   addedDate('添加时间'),
+  completedDate('完成时间'),
+  tracker('Tracker'),
+  speedLimit('下载/上传限速'),
+  downloaded('已下载'),
+  uploaded('已上传'),
+  sessionTransfer('本次会话上传/下载'),
+  savePath('保存路径'),
+  ratioLimit('分享率限制'),
+  lastSeenComplete('最后完整可见'),
   activityDate('最后活动');
 
   final String label;
@@ -310,8 +326,18 @@ abstract class Torrent with _$Torrent {
     return Torrent(
       id: _safeInt(_pick(json, ['id'])),
       name: (_pick(json, ['name']) ?? '').toString(),
-      hashString: (_pick(json, ['hashString', 'hash_string', 'hash', 'infohash_v1', 'infoHash', 'info_hash', 'torrent_hash']) ?? '')
-          .toString(),
+      hashString:
+          (_pick(json, [
+                    'hashString',
+                    'hash_string',
+                    'hash',
+                    'infohash_v1',
+                    'infoHash',
+                    'info_hash',
+                    'torrent_hash',
+                  ]) ??
+                  '')
+              .toString(),
       percentDone: _safeDouble(
         _pick(json, ['percentDone', 'progress', 'percent_done']),
       ),
@@ -343,7 +369,16 @@ abstract class Torrent with _$Torrent {
       secondsDownloading: _safeInt(
         _pick(json, ['secondsDownloading', 'time_active']),
       ),
-      queuePosition: _safeInt(_pick(json, ['queuePosition', 'priority'])),
+      queuePosition: _safeInt(
+        _pick(json, [
+          'queuePosition',
+          'queue_position',
+          'queuePositionId',
+          'queue_position_id',
+          'queueId',
+          'queue_id',
+        ]),
+      ),
       isFinished: _safeBool(_pick(json, ['isFinished', 'is_finished'])),
       isStalled: _safeBool(_pick(json, ['isStalled', 'is_stalled'])),
       downloadLimited: _safeBool(
@@ -617,7 +652,17 @@ abstract class DownloaderData with _$DownloaderData {
         if (value is! Map) continue;
         final torrentJson = Map<String, dynamic>.from(value);
         final key = entry.key.toString();
-        final hasHash = _pick(torrentJson, ['hashString', 'hash_string', 'hash', 'infohash_v1', 'infoHash', 'info_hash', 'torrent_hash']) != null;
+        final hasHash =
+            _pick(torrentJson, [
+              'hashString',
+              'hash_string',
+              'hash',
+              'infohash_v1',
+              'infoHash',
+              'info_hash',
+              'torrent_hash',
+            ]) !=
+            null;
         if (!hasHash && _looksLikeTorrentHash(key)) {
           torrentJson['hashString'] = key;
         }

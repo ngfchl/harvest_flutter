@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 
 import '../model/notice_history.dart';
@@ -31,7 +32,7 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
       return;
     }
 
-    final previous = state.valueOrNull;
+    final previous = state.value;
     if (previous == null) state = const AsyncValue.loading();
 
     final result = await AsyncValue.guard(_fetchNoticeHistoryWithNotification);
@@ -41,7 +42,7 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
       return;
     }
     state = result;
-    final notices = result.valueOrNull;
+    final notices = result.value;
     if (notices != null) _syncBadgeFor(notices);
   }
 
@@ -49,7 +50,7 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
     if (!HiveManager.hasAccessToken) return;
     if (notice.isRead || notice.id <= 0) return;
 
-    final previous = state.valueOrNull;
+    final previous = state.value;
     final previousUnreadCount = ref.read(noticeUnreadCountProvider);
     final changedLocally = _setReadLocally({notice.id}, syncBadge: false);
     _syncUnreadCount(previousUnreadCount - 1, forceBadgeSync: true);
@@ -73,7 +74,7 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
     if (!HiveManager.hasAccessToken) return;
     if (notice.id <= 0) return;
 
-    final previous = state.valueOrNull;
+    final previous = state.value;
     final previousUnreadCount = ref.read(noticeUnreadCountProvider);
     final notices = previous ?? const <NoticeHistory>[];
     final removedUnread = notices.any(
@@ -83,7 +84,7 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
       for (final item in notices)
         if (item.id != notice.id) item,
     ]);
-    _syncBadgeFor(state.valueOrNull ?? const <NoticeHistory>[]);
+    _syncBadgeFor(state.value ?? const <NoticeHistory>[]);
     if (previous == null && !notice.isRead) {
       _syncUnreadCount(previousUnreadCount - 1, forceBadgeSync: true);
     } else if (!removedUnread && !notice.isRead) {
@@ -107,7 +108,7 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
   Future<void> markAllRead() async {
     if (!HiveManager.hasAccessToken) return;
 
-    final notices = state.valueOrNull ?? const <NoticeHistory>[];
+    final notices = state.value ?? const <NoticeHistory>[];
     final unreadIds = notices
         .where((notice) => !notice.isRead && notice.id > 0)
         .map((notice) => notice.id)
@@ -140,7 +141,7 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
   Future<void> deleteAll() async {
     if (!HiveManager.hasAccessToken) return;
 
-    final previous = state.valueOrNull;
+    final previous = state.value;
     final notices = previous ?? const <NoticeHistory>[];
     final previousUnreadCount = ref.read(noticeUnreadCountProvider);
     if (notices.isEmpty && previousUnreadCount <= 0) return;
@@ -163,7 +164,7 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
   }
 
   bool _setReadLocally(Set<int> ids, {bool syncBadge = true}) {
-    final notices = state.valueOrNull;
+    final notices = state.value;
     if (notices == null) return false;
     var changed = false;
 
@@ -180,7 +181,7 @@ class NoticeHistoryNotifier extends AsyncNotifier<List<NoticeHistory>> {
         break;
       }
     }
-    if (syncBadge) _syncBadgeFor(state.valueOrNull ?? const <NoticeHistory>[]);
+    if (syncBadge) _syncBadgeFor(state.value ?? const <NoticeHistory>[]);
     return changed;
   }
 

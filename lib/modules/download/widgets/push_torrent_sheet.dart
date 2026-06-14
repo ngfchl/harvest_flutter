@@ -95,7 +95,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
   bool get _hasTorrent => widget.torrent != null;
 
   SiteInfo? _siteFor(String siteId) {
-    final sites = ref.read(siteInfoListProvider).valueOrNull ?? [];
+    final sites = ref.read(siteInfoListProvider).value ?? [];
     for (final site in sites) {
       if (site.id.toString() == siteId || site.site == siteId) return site;
     }
@@ -1625,8 +1625,9 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
         final torrentIds = <String>[];
         void addId(String id) {
           final value = id.trim();
-          if (value.isNotEmpty && !torrentIds.contains(value))
+          if (value.isNotEmpty && !torrentIds.contains(value)) {
             torrentIds.add(value);
+          }
         }
 
         addId(t.tid);

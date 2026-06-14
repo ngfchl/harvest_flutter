@@ -24,6 +24,15 @@ double appHeaderLeadingInset(BuildContext context) {
   return 0;
 }
 
+double appHeaderStandaloneLeadingInset(BuildContext context) {
+  if (!PlatformTool.isWeb() &&
+      (PlatformTool.isMacOS() || PlatformTool.isLinux()) &&
+      !context.isMobile) {
+    return kDesktopWindowControlsLeadingReservedWidth;
+  }
+  return 0;
+}
+
 double appHeaderTrailingInset(BuildContext context) {
   if (!PlatformTool.isWeb() && PlatformTool.isWindows() && !context.isMobile) {
     return kDesktopWindowControlsReservedWidth;
@@ -40,6 +49,21 @@ EdgeInsets appHeaderPadding(
 }) {
   return EdgeInsets.fromLTRB(
     left + appHeaderLeadingInset(context),
+    top,
+    right + appHeaderTrailingInset(context),
+    bottom,
+  );
+}
+
+EdgeInsets appStandaloneHeaderPadding(
+  BuildContext context, {
+  double left = 0,
+  double top = 6,
+  double right = 8,
+  double bottom = 6,
+}) {
+  return EdgeInsets.fromLTRB(
+    left + appHeaderStandaloneLeadingInset(context),
     top,
     right + appHeaderTrailingInset(context),
     bottom,

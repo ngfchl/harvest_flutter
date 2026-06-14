@@ -17,6 +17,7 @@ import 'torrent_action_menu.dart';
 import 'torrent_context_menu.dart';
 import 'torrent_detail_sheet.dart';
 import 'torrent_list_status.dart';
+import 'torrent_status_utils.dart';
 
 class TorrentListMobile extends ConsumerWidget {
   final int downloaderId;
@@ -45,7 +46,7 @@ class TorrentListMobile extends ConsumerWidget {
         .toList();
     final selectionMode = selectedTorrents.isNotEmpty;
 
-    if (asyncData.isLoading && asyncData.valueOrNull == null) {
+    if (asyncData.isLoading && asyncData.value == null) {
       return Center(child: shadcn.CircularProgressIndicator(size: 18));
     }
 
@@ -91,9 +92,7 @@ class TorrentListMobile extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              (asyncData.valueOrNull?.torrents.isEmpty ?? true)
-                  ? '暂无种子'
-                  : '当前筛选无结果',
+              (asyncData.value?.torrents.isEmpty ?? true) ? '暂无种子' : '当前筛选无结果',
               style: TextStyle(
                 color: cs.foreground.withValues(alpha: 0.35),
                 fontSize: 14,
@@ -103,6 +102,11 @@ class TorrentListMobile extends ConsumerWidget {
         ),
       );
     }
+
+    final indexByKey = <String, int>{
+      for (var i = 0; i < torrents.length; i++)
+        torrentIdentityKey(torrents[i]): i,
+    };
 
     void toggleSelection(Torrent torrent) {
       final hash = torrent.hashString;
@@ -154,6 +158,10 @@ class TorrentListMobile extends ConsumerWidget {
     return Stack(
       children: [
         ListView.builder(
+          findChildIndexCallback: (key) {
+            final value = key is ValueKey<String> ? key.value : null;
+            return value == null ? null : indexByKey[value];
+          },
           padding: EdgeInsets.fromLTRB(
             12,
             8,
@@ -165,6 +173,7 @@ class TorrentListMobile extends ConsumerWidget {
             final torrent = torrents[i];
             final hash = torrent.hashString;
             return TorrentTile(
+              key: ValueKey(torrentIdentityKey(torrent)),
               torrent: torrent,
               downloaderId: downloaderId,
               downloaderType: downloaderType,

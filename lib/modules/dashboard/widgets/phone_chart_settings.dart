@@ -607,7 +607,7 @@ class _SettingsTile extends StatelessWidget {
       borderColor: cs.border.withValues(alpha: 0.44),
       padding: tokens.symmetric(horizontal: 14, vertical: 13),
       child: LayoutBuilder(
-        builder: (_, __) {
+        builder: (_, _) {
           final label = Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

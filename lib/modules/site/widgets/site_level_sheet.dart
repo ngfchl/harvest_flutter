@@ -91,7 +91,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
+    final configs = ref.watch(websiteListProvider).value ?? [];
     final config = configs.firstWhereOrNull((c) => c.name == widget.site.site);
     final status = widget.site.latestStatus;
 

@@ -64,7 +64,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final cron = _findCrontab(ref.read(crontabListProvider).valueOrNull ?? []);
+    final cron = _findCrontab(ref.read(crontabListProvider).value ?? []);
     if (cron != null) {
       _minuteCtrl.text = cron.minute;
       _hourCtrl.text = cron.hour;
@@ -538,7 +538,7 @@ class _SheetTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailing != null) trailing!,
+            ?trailing,
           ],
         ),
       ),

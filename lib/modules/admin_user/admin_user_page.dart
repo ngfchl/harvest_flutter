@@ -124,7 +124,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
     final authInfo = ref.watch(authInfoProvider);
     final cs = _adminColors(context);
     final pageBackground = appSurfaceColor(context, cs.background);
-    final canAccess = canOpenAdminUsers(authInfo.valueOrNull);
+    final canAccess = canOpenAdminUsers(authInfo.value);
 
     if (!canAccess) {
       return _buildAccessGate(pageBackground, authInfo.isLoading);

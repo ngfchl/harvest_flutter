@@ -71,7 +71,7 @@ class DesktopDetailSection extends StatelessWidget {
               const SizedBox(width: 6),
               Text(title).small.bold.foreground,
               const Spacer(),
-              if (trailing != null) trailing!,
+              ?trailing,
             ],
           ),
           const SizedBox(height: 10),

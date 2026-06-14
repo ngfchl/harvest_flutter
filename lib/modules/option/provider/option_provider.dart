@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../model/option_model.dart';
@@ -69,9 +70,15 @@ class OptionNotifier extends StateNotifier<OptionState> {
     }
   }
 
-  Future<bool> testNotice(String title, String content) async {
+  Future<bool> testNotice(
+    String title,
+    String content, {
+    String pushType = '',
+  }) async {
     try {
-      await ref.read(optionServiceProvider).testNotice(title, content);
+      await ref
+          .read(optionServiceProvider)
+          .testNotice(title, content, pushType: pushType);
       return true;
     } catch (e) {
       return false;

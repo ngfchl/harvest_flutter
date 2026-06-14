@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../model/site_config.dart';
@@ -17,13 +18,13 @@ final siteFilterStateProvider = ChangeNotifierProvider(
 
 @riverpod
 List<String> availableTags(Ref ref) {
-  final sites = ref.watch(siteInfoListProvider).valueOrNull ?? [];
+  final sites = ref.watch(siteInfoListProvider).value ?? [];
   return sites.expand((s) => s.tags).where((t) => t.isNotEmpty).toSet().toList()
     ..sort();
 }
 
 final availableSiteTypesProvider = Provider.autoDispose<List<String>>((ref) {
-  final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
+  final configs = ref.watch(websiteListProvider).value ?? [];
   return configs
       .map((config) => config.type.trim())
       .where((type) => type.isNotEmpty)
@@ -35,19 +36,19 @@ final availableSiteTypesProvider = Provider.autoDispose<List<String>>((ref) {
 final availableSiteUsernamesProvider = Provider.autoDispose<List<String>>((
   ref,
 ) {
-  final data = ref.watch(dashboardNotifierProvider);
+  final data = ref.watch(dashboardProvider);
   return _dashboardIdentityOptions(data?.usernameCount ?? const []);
 });
 
 final availableSiteEmailsProvider = Provider.autoDispose<List<String>>((ref) {
-  final data = ref.watch(dashboardNotifierProvider);
+  final data = ref.watch(dashboardProvider);
   return _dashboardIdentityOptions(data?.emailCount ?? const []);
 });
 
 @riverpod
 List<SiteInfo> filteredSiteList(Ref ref) {
-  final sites = ref.watch(siteInfoListProvider).valueOrNull ?? [];
-  final configs = ref.watch(websiteListProvider).valueOrNull ?? [];
+  final sites = ref.watch(siteInfoListProvider).value ?? [];
+  final configs = ref.watch(websiteListProvider).value ?? [];
   final filter = ref.watch(siteFilterStateProvider);
   return _applyFilter(sites, filter, configs);
 }

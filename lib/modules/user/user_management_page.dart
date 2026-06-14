@@ -34,7 +34,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
   @override
   Widget build(BuildContext context) {
     final users = ref.watch(managedUserListProvider);
-    final currentUser = ref.watch(authNotifierProvider).user;
+    final currentUser = ref.watch(authProvider).user;
     final tokens = _UserManagementThemeTokens.of(context);
 
     return EscapeBackScope(

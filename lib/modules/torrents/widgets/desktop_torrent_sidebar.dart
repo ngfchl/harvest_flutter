@@ -135,7 +135,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
     final allTorrents =
         ref
             .watch(torrentListProvider(widget.downloaderId))
-            .valueOrNull
+            .value
             ?.torrents ??
         const <Torrent>[];
     final cleanableErrorTorrents = allTorrents
@@ -953,7 +953,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
     final torrents =
         ref
             .read(torrentListProvider(widget.downloaderId))
-            .valueOrNull
+            .value
             ?.torrents ??
         const <Torrent>[];
     final hashes = torrents

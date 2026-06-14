@@ -129,8 +129,8 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
   Widget build(BuildContext context) {
     final websitesAsync = ref.watch(websiteListProvider);
     final mySitesAsync = ref.watch(siteInfoListProvider);
-    final websites = websitesAsync.valueOrNull ?? const <WebSite>[];
-    final mySites = mySitesAsync.valueOrNull ?? const <SiteInfo>[];
+    final websites = websitesAsync.value ?? const <WebSite>[];
+    final mySites = mySitesAsync.value ?? const <SiteInfo>[];
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
 

@@ -8,14 +8,14 @@ import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:pasteboard/pasteboard.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ScreenshotSaver {
   /// 可视区域截图
   static Future<Uint8List?> capture(GlobalKey key) async {
     await WidgetsBinding.instance.endOfFrame;
-    final boundary = key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    final boundary =
+        key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null) return null;
     final image = await boundary.toImage(pixelRatio: 3.0);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
@@ -27,11 +27,12 @@ class ScreenshotSaver {
     required GlobalKey scrollKey,
     required ScrollController scrollController,
   }) async {
-    final boundary = scrollKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    final boundary =
+        scrollKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null) return null;
 
     final viewportHeight = boundary.size.height;
-    final pixelRatio = 3.0;
+    final pixelRatio = (Platform.isAndroid || Platform.isIOS) ? 2.0 : 3.0;
 
     // ── 0. 跳到顶部 ──
     scrollController.jumpTo(0);
@@ -47,7 +48,9 @@ class ScreenshotSaver {
 
     final realMaxScroll = scrollController.position.maxScrollExtent;
     final totalContentHeight = viewportHeight + realMaxScroll;
-    debugPrint('[Screenshot] viewport=$viewportHeight, maxScroll=$realMaxScroll, total=$totalContentHeight');
+    debugPrint(
+      '[Screenshot] viewport=$viewportHeight, maxScroll=$realMaxScroll, total=$totalContentHeight',
+    );
 
     // ── 2. 回到顶部 ──
     scrollController.jumpTo(0);
@@ -71,7 +74,9 @@ class ScreenshotSaver {
       await WidgetsBinding.instance.endOfFrame;
 
       final img = await boundary.toImage(pixelRatio: pixelRatio);
-      screenshots.add(_ScreenshotPiece(image: img, scrollOffset: currentOffset));
+      screenshots.add(
+        _ScreenshotPiece(image: img, scrollOffset: currentOffset),
+      );
       debugPrint('[Screenshot] captured at $currentOffset, imgH=${img.height}');
 
       currentOffset += step;
@@ -93,7 +98,9 @@ class ScreenshotSaver {
       await WidgetsBinding.instance.endOfFrame;
 
       final img = await boundary.toImage(pixelRatio: pixelRatio);
-      screenshots.add(_ScreenshotPiece(image: img, scrollOffset: realMaxScroll));
+      screenshots.add(
+        _ScreenshotPiece(image: img, scrollOffset: realMaxScroll),
+      );
       debugPrint('[Screenshot] captured final at $realMaxScroll');
     }
 
@@ -103,7 +110,12 @@ class ScreenshotSaver {
     if (screenshots.isEmpty) return null;
 
     // ── 6. 拼接 ──
-    return _stitchByOffset(screenshots, viewportHeight, totalContentHeight, pixelRatio);
+    return _stitchByOffset(
+      screenshots,
+      viewportHeight,
+      totalContentHeight,
+      pixelRatio,
+    );
   }
 
   /// 按滚动偏移量精确拼接
@@ -133,7 +145,12 @@ class ScreenshotSaver {
       final srcHeight = remaining < img.height ? remaining : img.height;
 
       final src = Rect.fromLTWH(0, 0, width.toDouble(), srcHeight.toDouble());
-      final dst = Rect.fromLTWH(0, dstY.toDouble(), width.toDouble(), srcHeight.toDouble());
+      final dst = Rect.fromLTWH(
+        0,
+        dstY.toDouble(),
+        width.toDouble(),
+        srcHeight.toDouble(),
+      );
 
       canvas.drawImageRect(img, src, dst, Paint());
     }
@@ -148,17 +165,16 @@ class ScreenshotSaver {
   static Future<void> saveAndShare(Uint8List bytes) async {
     // 先写入临时文件
     final tempDir = await getTemporaryDirectory();
-    final filePath = p.join(tempDir.path, 'screenshot_${DateTime.now().millisecondsSinceEpoch}.png');
+    final filePath = p.join(
+      tempDir.path,
+      'screenshot_${DateTime.now().millisecondsSinceEpoch}.png',
+    );
     final file = File(filePath);
     await file.writeAsBytes(bytes);
 
     // 保存到相册
     if (Platform.isAndroid || Platform.isIOS) {
       try {
-        if (Platform.isAndroid) {
-          final status = await Permission.manageExternalStorage.request();
-          if (!status.isGranted) return;
-        }
         await ImageGallerySaverPlus.saveImage(
           bytes,
           quality: 100,
@@ -178,7 +194,9 @@ class ScreenshotSaver {
 
     // 分享
     try {
-      await SharePlus.instance.share(ShareParams(files: [XFile(filePath)], text: '来自 PT 收割机'));
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(filePath)], text: '来自 PT 收割机'),
+      );
     } catch (e) {
       debugPrint('分享失败: $e');
     }

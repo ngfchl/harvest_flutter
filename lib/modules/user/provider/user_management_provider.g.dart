@@ -6,41 +6,83 @@ part of 'user_management_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(authInfo)
+final authInfoProvider = AuthInfoProvider._();
+
+final class AuthInfoProvider
+    extends $FunctionalProvider<AsyncValue<dynamic>, dynamic, FutureOr<dynamic>>
+    with $FutureModifier<dynamic>, $FutureProvider<dynamic> {
+  AuthInfoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'authInfoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$authInfoHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<dynamic> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<dynamic> create(Ref ref) {
+    return authInfo(ref);
+  }
+}
+
 String _$authInfoHash() => r'0ff3d388a9b9835bf62d1cd70a67f5622e177e63';
 
-/// See also [authInfo].
-@ProviderFor(authInfo)
-final authInfoProvider = AutoDisposeFutureProvider<dynamic>.internal(
-  authInfo,
-  name: r'authInfoProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$authInfoHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+@ProviderFor(ManagedUserList)
+final managedUserListProvider = ManagedUserListProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AuthInfoRef = AutoDisposeFutureProviderRef<dynamic>;
+final class ManagedUserListProvider
+    extends $AsyncNotifierProvider<ManagedUserList, List<ManagedUser>> {
+  ManagedUserListProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'managedUserListProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$managedUserListHash();
+
+  @$internal
+  @override
+  ManagedUserList create() => ManagedUserList();
+}
+
 String _$managedUserListHash() => r'4909d6d3313a71dac41cb0c3d2911865a5ddf06b';
 
-/// See also [ManagedUserList].
-@ProviderFor(ManagedUserList)
-final managedUserListProvider =
-    AutoDisposeAsyncNotifierProvider<
-      ManagedUserList,
-      List<ManagedUser>
-    >.internal(
-      ManagedUserList.new,
-      name: r'managedUserListProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$managedUserListHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$ManagedUserList = AutoDisposeAsyncNotifier<List<ManagedUser>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+abstract class _$ManagedUserList extends $AsyncNotifier<List<ManagedUser>> {
+  FutureOr<List<ManagedUser>> build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref =
+        this.ref as $Ref<AsyncValue<List<ManagedUser>>, List<ManagedUser>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<ManagedUser>>, List<ManagedUser>>,
+              AsyncValue<List<ManagedUser>>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, build);
+  }
+}

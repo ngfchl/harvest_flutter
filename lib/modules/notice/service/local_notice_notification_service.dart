@@ -247,7 +247,7 @@ class LocalNoticeNotificationService {
     if (context == null) return;
 
     Navigator.of(context).push(
-      PageRouteBuilder(pageBuilder: (_, __, ___) => const NoticeHistoryPage()),
+      PageRouteBuilder(pageBuilder: (_, _, _) => const NoticeHistoryPage()),
     );
   }
 

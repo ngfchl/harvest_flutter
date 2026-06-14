@@ -301,6 +301,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      registerPageScrollController(ref, 4, _scrollController);
       ref.read(activeScrollControllerProvider.notifier).state =
           _scrollController;
     });
@@ -308,6 +309,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
 
   @override
   void dispose() {
+    unregisterPageScrollController(ref, 4, _scrollController);
     _scrollController.dispose();
     super.dispose();
   }
@@ -421,7 +423,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
         16 + ShellBottomSpacing.value(context),
       ),
       itemCount: widget.tasks.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, index) => _buildTile(context, widget.tasks[index]),
     );
   }
@@ -460,7 +462,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
   }
 
   Widget _buildTile(BuildContext context, Schedule task) {
-    final crontabList = ref.watch(crontabListProvider).valueOrNull ?? [];
+    final crontabList = ref.watch(crontabListProvider).value ?? [];
     final taskCrontabExpress = task.crontab?.express.trim() ?? '';
     final matchedCrontabExpress =
         crontabList
@@ -875,7 +877,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
     final kwargsText = task.kwargs.trim();
     if (kwargsText.isEmpty || kwargsText == '{}') return null;
 
-    final downloaders = ref.watch(downloaderListProvider).valueOrNull ?? [];
+    final downloaders = ref.watch(downloaderListProvider).value ?? [];
 
     try {
       final kwargs = jsonDecode(kwargsText) as Map<String, dynamic>;
@@ -1112,7 +1114,7 @@ class _TaskResultList extends StatelessWidget {
         16 + ShellBottomSpacing.value(context),
       ),
       itemCount: results.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, index) => _TaskResultTile(result: results[index]),
     );
   }
@@ -1331,7 +1333,7 @@ class _TaskResultDetailDialog {
                         result: result,
                         loading: true,
                       ),
-                      error: (_, __) => _TaskResultDetailContent(
+                      error: (_, _) => _TaskResultDetailContent(
                         result: result,
                         loading: false,
                       ),

@@ -45,7 +45,7 @@ class TorrentRefreshBar extends ConsumerWidget {
     final speedMap = ref.watch(downloaderSpeedProvider);
     final prefs = ref
         .watch(download_providers.downloaderPrefsProvider(downloaderId))
-        .valueOrNull;
+        .value;
 
     final running = enabled && !paused;
     final min = remaining ~/ 60;

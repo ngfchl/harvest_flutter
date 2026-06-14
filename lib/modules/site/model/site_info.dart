@@ -161,6 +161,7 @@ abstract class SiteDailyStatus with _$SiteDailyStatus {
         seedVolume: _toInt(json['seed_volume']),
       );
 
+  @override
   Map<String, dynamic> toJson() => {
     'seed': seed,
     'leech': leech,

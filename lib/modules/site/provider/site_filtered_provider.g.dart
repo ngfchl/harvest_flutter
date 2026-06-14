@@ -6,39 +6,87 @@ part of 'site_filtered_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$availableTagsHash() => r'b0bc661e93fde4bdb9ac5309e557c213b6a9f49c';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [availableTags].
 @ProviderFor(availableTags)
-final availableTagsProvider = AutoDisposeProvider<List<String>>.internal(
-  availableTags,
-  name: r'availableTagsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$availableTagsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final availableTagsProvider = AvailableTagsProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AvailableTagsRef = AutoDisposeProviderRef<List<String>>;
-String _$filteredSiteListHash() => r'14ac8bfbe62bc4727491e80b9d631abc4217bdfb';
+final class AvailableTagsProvider
+    extends $FunctionalProvider<List<String>, List<String>, List<String>>
+    with $Provider<List<String>> {
+  AvailableTagsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'availableTagsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
-/// See also [filteredSiteList].
+  @override
+  String debugGetCreateSourceHash() => _$availableTagsHash();
+
+  @$internal
+  @override
+  $ProviderElement<List<String>> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  List<String> create(Ref ref) {
+    return availableTags(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<String> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<String>>(value),
+    );
+  }
+}
+
+String _$availableTagsHash() => r'b917e0a5589858dd96667d3e5e6c9eb658754c0b';
+
 @ProviderFor(filteredSiteList)
-final filteredSiteListProvider = AutoDisposeProvider<List<SiteInfo>>.internal(
-  filteredSiteList,
-  name: r'filteredSiteListProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$filteredSiteListHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final filteredSiteListProvider = FilteredSiteListProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef FilteredSiteListRef = AutoDisposeProviderRef<List<SiteInfo>>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+final class FilteredSiteListProvider
+    extends $FunctionalProvider<List<SiteInfo>, List<SiteInfo>, List<SiteInfo>>
+    with $Provider<List<SiteInfo>> {
+  FilteredSiteListProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'filteredSiteListProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$filteredSiteListHash();
+
+  @$internal
+  @override
+  $ProviderElement<List<SiteInfo>> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  List<SiteInfo> create(Ref ref) {
+    return filteredSiteList(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(List<SiteInfo> value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<List<SiteInfo>>(value),
+    );
+  }
+}
+
+String _$filteredSiteListHash() => r'ec7ce6ad745d00cee35d3200ab6d1927cde04db5';

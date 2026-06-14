@@ -1554,7 +1554,7 @@ extension _PhoneDashboardView on _DashboardPageState {
         .take(24)
         .toList();
     if (points.isEmpty) {
-      return Center(child: this._buildPanelEmpty(compact: true));
+      return Center(child: _buildPanelEmpty(compact: true));
     }
     final maxValue = points.fold<num>(
       0,
@@ -1667,7 +1667,7 @@ extension _PhoneDashboardView on _DashboardPageState {
           ),
           const SizedBox(height: 16),
           if (displayItems.isEmpty)
-            this._buildPanelEmpty()
+            _buildPanelEmpty()
           else
             LayoutBuilder(
               builder: (context, constraints) {
@@ -1759,7 +1759,7 @@ extension _PhoneDashboardView on _DashboardPageState {
           SizedBox(
             height: chartItems.length <= 4 ? 214 : 276,
             child: chartItems.isEmpty
-                ? this._buildPanelEmpty()
+                ? _buildPanelEmpty()
                 : _buildIncrementBarChart(chartItems),
           ),
         ],
@@ -1914,7 +1914,7 @@ extension _PhoneDashboardView on _DashboardPageState {
     Color color,
     String Function(num value) formatValue,
   ) {
-    if (chartItems.isEmpty) return this._buildPanelEmpty(compact: true);
+    if (chartItems.isEmpty) return _buildPanelEmpty(compact: true);
     final cs = shadcn.Theme.of(context).colorScheme;
 
     return Listener(
@@ -2043,7 +2043,7 @@ extension _PhoneDashboardView on _DashboardPageState {
           ),
           const SizedBox(height: 16),
           if (chartItems.isEmpty)
-            this._buildPanelEmpty()
+            _buildPanelEmpty()
           else ...[
             SizedBox(
               height: 204,
@@ -2085,7 +2085,7 @@ extension _PhoneDashboardView on _DashboardPageState {
           name: '其他 ${items.length - top.length} 项',
           value: otherValue,
           color: _phoneTreemapChartColor(top.length),
-          valueText: '${_formatCount(otherValue)}',
+          valueText: _formatCount(otherValue),
           tooltip: _buildDistributionTooltip(
             '其他 ${items.length - top.length} 项',
             otherValue,
@@ -2101,7 +2101,7 @@ extension _PhoneDashboardView on _DashboardPageState {
         Text(title, style: _phoneTitleStyle(14)),
         const SizedBox(height: 10),
         if (displayItems.isEmpty)
-          this._buildPanelEmpty(compact: true)
+          _buildPanelEmpty(compact: true)
         else
           LayoutBuilder(
             builder: (context, constraints) {
@@ -2281,7 +2281,7 @@ extension _PhoneDashboardView on _DashboardPageState {
                 int pointIndex,
                 int seriesIndex,
               ) => _buildDashboardOverlayTooltip(
-                '${(data as _IncrementChartItem).name}\n${(data as _IncrementChartItem).tooltip}',
+                '${(data as _IncrementChartItem).name}\n${(data).tooltip}',
               ),
         ),
       ),
@@ -2311,7 +2311,7 @@ extension _PhoneDashboardView on _DashboardPageState {
         ),
         const SizedBox(height: 8),
         if (top.isEmpty)
-          this._buildPanelEmpty(compact: true)
+          _buildPanelEmpty(compact: true)
         else
           ...top.map((item) => _buildDistributionListRow(item, total)),
       ],
@@ -2351,7 +2351,7 @@ extension _PhoneDashboardView on _DashboardPageState {
           color: _phoneTreemapChartColor(i + colorOffset),
           valueText:
               valueFormatter?.call(sorted[i].value) ??
-              '${_formatCount(sorted[i].value)}',
+              _formatCount(sorted[i].value),
         ),
     ];
   }

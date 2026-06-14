@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 
 import '../model/update_log_model.dart';

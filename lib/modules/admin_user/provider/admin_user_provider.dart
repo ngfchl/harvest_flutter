@@ -11,7 +11,7 @@ class AdminUserList extends _$AdminUserList {
   Future<List<AdminUser>> build() => AdminUserService.fetchUsers();
 
   Future<void> refresh() async {
-    final previous = state.valueOrNull;
+    final previous = state.value;
     try {
       state = AsyncValue.data(await AdminUserService.fetchUsers());
     } catch (error, stackTrace) {
