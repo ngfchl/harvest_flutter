@@ -133,6 +133,7 @@ jobs:
           find build/linux/x64/release/bundle -maxdepth 4 -type f | sort
           echo "::endgroup::"
           tar -czvf $FILE_NAME -C build/linux/x64/release/bundle .
+          test -f "$FILE_NAME" || { echo "::error::Linux archive not found: $FILE_NAME"; exit 1; }
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME
@@ -278,6 +279,7 @@ jobs:
             exit 1
           fi
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk $FILE_NAME
+          test -f "$FILE_NAME" || { echo "::error::Android APK copy not found: $FILE_NAME"; exit 1; }
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME
@@ -403,6 +405,10 @@ jobs:
           Get-ChildItem build/windows/x64/runner/Release -Recurse | Select-Object FullName, Length | Format-Table -AutoSize
           Write-Host "::endgroup::"
           Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $FILE_NAME  # 压缩为 zip 文件
+          if (-not (Test-Path $FILE_NAME)) {
+            Write-Host "::error::Windows ZIP not found: $FILE_NAME"
+            exit 1
+          }
           echo "file_name=$FILE_NAME" >> $env:GITHUB_OUTPUT
           echo "app_version=$version" >> $env:GITHUB_OUTPUT
           ls -l $FILE_NAME
@@ -419,6 +425,7 @@ jobs:
           $version = "${{ steps.app_info.outputs.version }}"
           $versionWithDot = $version -replace '\+', '.'
           $SETUP_FILE_NAME="harvest_${version}_x86_64-windows-setup"
+          $SETUP_OUTPUT_PATH="Output\${SETUP_FILE_NAME}.exe"
           
           Write-Host "1. 提取版本号和设置文件名"
           $parts = $versionWithDot -split '\.' | ForEach-Object {
@@ -478,10 +485,10 @@ jobs:
             iscc setup.iss
           }
           
-          if (test-path ".\${SETUP_FILE_NAME}.exe") {
-            Write-Host "✅ Created EXE: ${SETUP_FILE_NAME}"
+          if (test-path $SETUP_OUTPUT_PATH) {
+            Write-Host "✅ Created EXE: $SETUP_OUTPUT_PATH"
           } else {
-            Write-Host "::error::Failed to create EXE: ${SETUP_FILE_NAME}.exe"
+            Write-Host "::error::Failed to create EXE: $SETUP_OUTPUT_PATH"
             Get-ChildItem -Recurse Output -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize
             exit 1
           }
@@ -1203,6 +1210,7 @@ jobs:
           FILE_NAME="harvest_${VERSION}_web.tar.gz"
           test -f build/web/index.html || { echo "::error::Web index not found before archive: build/web/index.html"; exit 1; }
           tar -czvf $FILE_NAME -C build/web .
+          test -f "$FILE_NAME" || { echo "::error::Web archive not found: $FILE_NAME"; exit 1; }
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME
