@@ -47,19 +47,14 @@ class DesktopTorrentRow extends StatelessWidget {
         color: selected ? cs.primary.withValues(alpha: 0.08) : null,
         child: Row(
           children: [
-            for (final column in columns)
-              _buildCell(context, column, color),
+            for (final column in columns) _buildCell(context, column, color),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCell(
-      BuildContext context,
-      TorrentColumn column,
-      Color color,
-      ) {
+  Widget _buildCell(BuildContext context, TorrentColumn column, Color color) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final hasError = torrent.hasError;
     final errorText = torrent.effectiveErrorMessage.isEmpty
@@ -68,7 +63,7 @@ class DesktopTorrentRow extends StatelessWidget {
     return switch (column) {
       TorrentColumn.queueId => DesktopCell(
         width: column.width,
-        text: '${torrent.id > 0 ? torrent.id : torrent.queuePosition}',
+        text: '${torrent.queuePosition}',
       ),
       TorrentColumn.name => DesktopCell(
         width: column.width,
@@ -102,37 +97,33 @@ class DesktopTorrentRow extends StatelessWidget {
             Expanded(
               child: hasError
                   ? shadcn.Tooltip(
-                tooltip: (_) => Text(errorText).xSmall,
-                child: DefaultTextStyle.merge(
-                  style: TextStyle(color: cs.destructive),
-                  child: (selected
-                      ? Text(
-                    torrent.name.isEmpty
-                        ? '(无名称)'
-                        : torrent.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ).small.bold
-                      : Text(
-                    torrent.name.isEmpty
-                        ? '(无名称)'
-                        : torrent.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ).small.medium),
-                ),
-              )
+                      tooltip: (_) => Text(errorText).xSmall,
+                      child: DefaultTextStyle.merge(
+                        style: TextStyle(color: cs.destructive),
+                        child: (selected
+                            ? Text(
+                                torrent.name.isEmpty ? '(无名称)' : torrent.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ).small.bold
+                            : Text(
+                                torrent.name.isEmpty ? '(无名称)' : torrent.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ).small.medium),
+                      ),
+                    )
                   : (selected
-                  ? Text(
-                torrent.name.isEmpty ? '(无名称)' : torrent.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ).small.bold.foreground
-                  : Text(
-                torrent.name.isEmpty ? '(无名称)' : torrent.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ).small.medium.foreground),
+                        ? Text(
+                            torrent.name.isEmpty ? '(无名称)' : torrent.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ).small.bold.foreground
+                        : Text(
+                            torrent.name.isEmpty ? '(无名称)' : torrent.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ).small.medium.foreground),
             ),
           ],
         ),
@@ -144,24 +135,16 @@ class DesktopTorrentRow extends StatelessWidget {
       TorrentColumn.totalSize => DesktopCell(
         width: column.width,
         text: TorrentUtils.formatBytes(
-          torrent.totalSize > 0
-              ? torrent.totalSize
-              : torrent.sizeWhenDone,
+          torrent.totalSize > 0 ? torrent.totalSize : torrent.sizeWhenDone,
         ),
       ),
       TorrentColumn.status => DesktopCell(
         width: column.width,
-        child: StatusPill(
-          label: torrent.torrentStatus.label,
-          color: color,
-        ),
+        child: StatusPill(label: torrent.torrentStatus.label, color: color),
       ),
       TorrentColumn.progress => DesktopCell(
         width: column.width,
-        child: InlineProgress(
-          value: torrent.percentDone,
-          color: color,
-        ),
+        child: InlineProgress(value: torrent.percentDone, color: color),
       ),
       TorrentColumn.seeds => DesktopCell(
         width: column.width,
@@ -197,9 +180,7 @@ class DesktopTorrentRow extends StatelessWidget {
       ),
       TorrentColumn.tags => DesktopCell(
         width: column.width,
-        text: torrent.labels.isEmpty
-            ? '-'
-            : torrent.labels.join(', '),
+        text: torrent.labels.isEmpty ? '-' : torrent.labels.join(', '),
       ),
       TorrentColumn.added => DesktopCell(
         width: column.width,
@@ -211,13 +192,12 @@ class DesktopTorrentRow extends StatelessWidget {
       ),
       TorrentColumn.tracker => DesktopCell(
         width: column.width,
-        text: siteMatch?.displayName ??
-            desktopTorrentTracker(torrent),
+        text: siteMatch?.displayName ?? desktopTorrentTracker(torrent),
       ),
       TorrentColumn.speedLimit => DesktopCell(
         width: column.width,
         text:
-        '↓ ${desktopTorrentSpeedLimit(torrent.downloadLimit)} / ↑ ${desktopTorrentSpeedLimit(torrent.uploadLimit)}',
+            '↓ ${desktopTorrentSpeedLimit(torrent.downloadLimit)} / ↑ ${desktopTorrentSpeedLimit(torrent.uploadLimit)}',
       ),
       TorrentColumn.downloaded => DesktopCell(
         width: column.width,
@@ -233,9 +213,7 @@ class DesktopTorrentRow extends StatelessWidget {
       ),
       TorrentColumn.savePath => DesktopCell(
         width: column.width,
-        text: torrent.downloadDir.isEmpty
-            ? '-'
-            : torrent.downloadDir,
+        text: torrent.downloadDir.isEmpty ? '-' : torrent.downloadDir,
       ),
       TorrentColumn.ratioLimit => DesktopCell(
         width: column.width,
@@ -280,13 +258,14 @@ class DesktopCell extends StatelessWidget {
     ).xSmall;
     return SizedBox(
       width: width,
-      child: child ??
+      child:
+          child ??
           (color == null
               ? content.muted
               : DefaultTextStyle.merge(
-            style: TextStyle(color: color),
-            child: content,
-          )),
+                  style: TextStyle(color: color),
+                  child: content,
+                )),
     );
   }
 }
@@ -345,11 +324,7 @@ class InlineProgress extends StatelessWidget {
   final double value;
   final Color color;
 
-  const InlineProgress({
-    super.key,
-    required this.value,
-    required this.color,
-  });
+  const InlineProgress({super.key, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {

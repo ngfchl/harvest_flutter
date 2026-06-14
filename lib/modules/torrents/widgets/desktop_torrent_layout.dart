@@ -65,6 +65,7 @@ class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
   Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final torrents = ref.watch(filteredTorrentsProvider(widget.downloaderId));
+    final queueEnabled = _downloaderQueueEnabled(widget.downloader);
     final pageData = _pageData(torrents);
 
     return ColoredBox(
@@ -128,6 +129,7 @@ class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
                         child: DesktopTorrentTable(
                           downloaderId: widget.downloaderId,
                           downloaderType: widget.downloaderType,
+                          queueEnabled: queueEnabled,
                           selectedHash: widget.selectedHash,
                           selectedHashes: widget.selectedHashes,
                           torrents: pageData.items,
@@ -204,6 +206,36 @@ class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
       start: startIndex + 1,
       end: endIndex,
     );
+  }
+
+  bool _downloaderQueueEnabled(Downloader? downloader) {
+    if (downloader == null) return false;
+    if (downloader.isQb) {
+      return _pickBool(downloader.prefs, const [
+            'queueing_enabled',
+            'queueingEnabled',
+          ]) ??
+          false;
+    }
+    if (downloader.isTr) {
+      return true;
+    }
+    return false;
+  }
+
+  bool? _pickBool(Map<String, dynamic>? map, List<String> keys) {
+    if (map == null) return null;
+    for (final key in keys) {
+      final value = map[key];
+      if (value is bool) return value;
+      if (value is num) return value != 0;
+      if (value is String) {
+        final normalized = value.trim().toLowerCase();
+        if (normalized == 'true' || normalized == '1') return true;
+        if (normalized == 'false' || normalized == '0') return false;
+      }
+    }
+    return null;
   }
 }
 

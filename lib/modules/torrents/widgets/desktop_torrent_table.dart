@@ -22,6 +22,7 @@ import 'desktop_torrent_row.dart';
 import 'torrent_column.dart';
 import 'torrent_context_menu.dart';
 import 'torrent_detail_sheet.dart';
+import 'torrent_status_utils.dart';
 
 double desktopTorrentTableWidth(List<TorrentColumn> columns) {
   return columns.fold<double>(24, (sum, c) => sum + c.width);
@@ -29,18 +30,30 @@ double desktopTorrentTableWidth(List<TorrentColumn> columns) {
 
 final desktopTorrentColumnsProvider =
     StateProvider.autoDispose<Set<TorrentColumn>>(
-      (_) => Set<TorrentColumn>.of(TorrentColumn.values),
+      (_) => TorrentColumn.values
+          .where((column) => column != TorrentColumn.queueId)
+          .toSet(),
     );
 
 List<TorrentColumn> visibleDesktopTorrentColumns(
   Set<TorrentColumn> configured,
+  bool queueEnabled,
 ) {
-  return TorrentColumn.values.where((c) => configured.contains(c)).toList();
+  return availableDesktopTorrentColumns(
+    queueEnabled,
+  ).where((c) => configured.contains(c)).toList();
+}
+
+List<TorrentColumn> availableDesktopTorrentColumns(bool queueEnabled) {
+  return TorrentColumn.values
+      .where((c) => queueEnabled || c != TorrentColumn.queueId)
+      .toList();
 }
 
 class DesktopTorrentTable extends ConsumerStatefulWidget {
   final int downloaderId;
   final DownloaderType downloaderType;
+  final bool queueEnabled;
   final String? selectedHash;
   final Set<String> selectedHashes;
   final List<Torrent>? torrents;
@@ -51,6 +64,7 @@ class DesktopTorrentTable extends ConsumerStatefulWidget {
     super.key,
     required this.downloaderId,
     required this.downloaderType,
+    required this.queueEnabled,
     required this.selectedHash,
     required this.selectedHashes,
     this.torrents,
@@ -93,7 +107,12 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
     final matcher = ref.watch(torrentSiteMatcherProvider);
     final visibleColumns = visibleDesktopTorrentColumns(
       ref.watch(desktopTorrentColumnsProvider),
+      widget.queueEnabled,
     );
+    final indexByKey = <String, int>{
+      for (var i = 0; i < torrents.length; i++)
+        torrentIdentityKey(torrents[i]): i,
+    };
     final tableWidth = desktopTorrentTableWidth(visibleColumns);
 
     if (asyncData.isLoading && asyncData.value == null) {
@@ -110,9 +129,7 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
     if (torrents.isEmpty) {
       return DesktopEmptyState(
         icon: shadcn.LucideIcons.inbox,
-        title: (asyncData.value?.torrents.isEmpty ?? true)
-            ? '暂无种子'
-            : '当前筛选无结果',
+        title: (asyncData.value?.torrents.isEmpty ?? true) ? '暂无种子' : '当前筛选无结果',
       );
     }
 
@@ -143,10 +160,19 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
                   height: constraints.maxHeight,
                   child: Column(
                     children: [
-                      _DesktopTorrentHeader(columns: visibleColumns),
+                      _DesktopTorrentHeader(
+                        columns: visibleColumns,
+                        queueEnabled: widget.queueEnabled,
+                      ),
                       Divider(height: 1, color: cs.border),
                       Expanded(
                         child: ListView.separated(
+                          findItemIndexCallback: (key) {
+                            final value = key is ValueKey<String>
+                                ? key.value
+                                : null;
+                            return value == null ? null : indexByKey[value];
+                          },
                           itemCount: torrents.length,
                           separatorBuilder: (_, _) => Divider(
                             height: 1,
@@ -159,6 +185,7 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
                                 hash.isNotEmpty &&
                                 widget.selectedHashes.contains(hash);
                             return DesktopTorrentRow(
+                              key: ValueKey(torrentIdentityKey(torrent)),
                               columns: visibleColumns,
                               torrent: torrent,
                               selected:
@@ -381,8 +408,12 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
 
 class _DesktopTorrentHeader extends ConsumerWidget {
   final List<TorrentColumn> columns;
+  final bool queueEnabled;
 
-  const _DesktopTorrentHeader({required this.columns});
+  const _DesktopTorrentHeader({
+    required this.columns,
+    required this.queueEnabled,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -418,6 +449,7 @@ class _DesktopTorrentHeader extends ConsumerWidget {
       context: context,
       position: position,
       selectedColumns: ref.read(desktopTorrentColumnsProvider),
+      availableColumns: availableDesktopTorrentColumns(queueEnabled),
     );
     if (selected == null) return;
     final notifier = ref.read(desktopTorrentColumnsProvider.notifier);
@@ -520,6 +552,7 @@ Future<TorrentColumn?> _showDesktopColumnMenu({
   required BuildContext context,
   required Offset position,
   required Set<TorrentColumn> selectedColumns,
+  required List<TorrentColumn> availableColumns,
 }) {
   final overlay = Overlay.of(context);
   final completer = Completer<TorrentColumn?>();
@@ -549,7 +582,7 @@ Future<TorrentColumn?> _showDesktopColumnMenu({
           children: [
             shadcn.MenuLabel(child: const Text('显示列').xSmall.muted),
             const shadcn.MenuDivider(),
-            for (final column in TorrentColumn.values)
+            for (final column in availableColumns)
               shadcn.MenuButton(
                 leading: Icon(
                   selectedColumns.contains(column)

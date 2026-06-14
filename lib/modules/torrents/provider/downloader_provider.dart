@@ -93,10 +93,7 @@ class TorrentListNotifier extends StateNotifier<AsyncValue<DownloaderData>> {
       );
       if (!_disposed) {
         final nextData = preservePrevious && previous != null
-            ? _mergeDataOnExisting(
-                previous,
-                data,
-              )
+            ? _mergeDataOnExisting(previous, data)
             : data;
         state = AsyncValue.data(nextData);
         debugPrint(
@@ -170,10 +167,7 @@ class TorrentListNotifier extends StateNotifier<AsyncValue<DownloaderData>> {
               final previous = state.value;
               final nextData = previous == null
                   ? parsed
-                  : _mergeDataOnExisting(
-                      previous,
-                      parsed,
-                    );
+                  : _mergeDataOnExisting(previous, parsed);
               state = AsyncValue.data(nextData);
               debugPrint(
                 '[WS] 已合并到 state: '
@@ -289,7 +283,9 @@ class TorrentListNotifier extends StateNotifier<AsyncValue<DownloaderData>> {
     for (final incoming in next.torrents) {
       final hash = incoming.hashString;
       if (hash.isNotEmpty && emittedHashes.contains(hash)) continue;
-      if (hash.isEmpty && incoming.id != 0 && emittedIds.contains(incoming.id)) {
+      if (hash.isEmpty &&
+          incoming.id != 0 &&
+          emittedIds.contains(incoming.id)) {
         continue;
       }
       final previousTorrent = hash.isNotEmpty
@@ -310,6 +306,9 @@ class TorrentListNotifier extends StateNotifier<AsyncValue<DownloaderData>> {
     if (previous == null) return next;
     return next.copyWith(
       id: next.id != 0 ? next.id : previous.id,
+      queuePosition: next.queuePosition > 0
+          ? next.queuePosition
+          : previous.queuePosition,
       name: next.name.isNotEmpty ? next.name : previous.name,
       category: next.category.isNotEmpty ? next.category : previous.category,
       hashString: next.hashString.isNotEmpty
@@ -341,7 +340,6 @@ class TorrentListNotifier extends StateNotifier<AsyncValue<DownloaderData>> {
           : previous.errorString,
     );
   }
-
 }
 
 // ────────────────────── Providers ──────────────────────
@@ -399,8 +397,7 @@ final torrentErrorDetailFilterProvider = StateProvider.autoDispose<String>(
 final torrentSiteMatcherProvider = Provider.autoDispose<TorrentSiteMatcher>((
   ref,
 ) {
-  final sites =
-      ref.watch(site_providers.websiteListProvider).value ?? const [];
+  final sites = ref.watch(site_providers.websiteListProvider).value ?? const [];
   return TorrentSiteMatcher(sites);
 });
 
@@ -515,11 +512,11 @@ final filteredTorrentsProvider = Provider.autoDispose
       final data = asyncData.value;
       if (data == null) return [];
 
-      var list = List<Torrent>.from(data.torrents);
+      Iterable<Torrent> filtered = data.torrents;
 
       // ── 状态过滤 ──
       if (filter != TorrentFilter.all) {
-        list = list.where((t) {
+        filtered = filtered.where((t) {
           return switch (filter) {
             TorrentFilter.downloading =>
               t.torrentStatus == TorrentStatus.downloading ||
@@ -534,46 +531,46 @@ final filteredTorrentsProvider = Provider.autoDispose
             TorrentFilter.error => t.hasError,
             TorrentFilter.all => true,
           };
-        }).toList();
+        });
       }
 
       if (desktopStatusFilter != DesktopTorrentStatusFilter.all) {
-        list = list
-            .where((t) => matchesDesktopTorrentStatus(t, desktopStatusFilter))
-            .toList();
+        filtered = filtered.where(
+          (t) => matchesDesktopTorrentStatus(t, desktopStatusFilter),
+        );
       }
 
       // ── 分类过滤 ──
       if (category.isNotEmpty) {
-        list = list.where((t) => _matchesCategory(t, category)).toList();
+        filtered = filtered.where((t) => _matchesCategory(t, category));
       }
 
       // ── 标签过滤 ──
       if (tags.isNotEmpty) {
-        list = list.where((t) => t.labels.any(tags.contains)).toList();
+        filtered = filtered.where((t) => t.labels.any(tags.contains));
       }
 
       // ── 站点过滤 ──
       if (site.isNotEmpty) {
-        list = list.where((t) => matcher.match(t)?.key == site).toList();
+        filtered = filtered.where((t) => matcher.match(t)?.key == site);
       }
 
       if (desktopStatusFilter == DesktopTorrentStatusFilter.error &&
           errorDetail.isNotEmpty) {
-        list = list
-            .where((t) => _normalizedErrorDetail(t) == errorDetail)
-            .toList();
+        filtered = filtered.where(
+          (t) => _normalizedErrorDetail(t) == errorDetail,
+        );
       }
 
       // ── 搜索 ──
       if (search.isNotEmpty) {
-        list = list
-            .where((t) => t.name.toLowerCase().contains(search))
-            .toList();
+        filtered = filtered.where((t) => t.name.toLowerCase().contains(search));
       }
 
+      final result = filtered.toList();
+
       // ── 排序 ──
-      list.sort((a, b) {
+      result.sort((a, b) {
         final cmp = switch (sort) {
           TorrentSort.queuePosition => a.queuePosition.compareTo(
             b.queuePosition,
@@ -581,19 +578,112 @@ final filteredTorrentsProvider = Provider.autoDispose
           TorrentSort.name => a.name.toLowerCase().compareTo(
             b.name.toLowerCase(),
           ),
-          TorrentSort.size => a.sizeWhenDone.compareTo(b.sizeWhenDone),
+          TorrentSort.selectedSize => a.sizeWhenDone.compareTo(b.sizeWhenDone),
+          TorrentSort.totalSize => _torrentTotalSize(
+            a,
+          ).compareTo(_torrentTotalSize(b)),
           TorrentSort.progress => a.percentDone.compareTo(b.percentDone),
+          TorrentSort.status => a.status.compareTo(b.status),
+          TorrentSort.seeds => a.peersGettingFromUs.compareTo(
+            b.peersGettingFromUs,
+          ),
+          TorrentSort.peers => a.peersSendingToUs.compareTo(b.peersSendingToUs),
           TorrentSort.downloadSpeed => a.rateDownload.compareTo(b.rateDownload),
           TorrentSort.uploadSpeed => a.rateUpload.compareTo(b.rateUpload),
+          TorrentSort.eta => _torrentEtaSeconds(
+            a,
+          ).compareTo(_torrentEtaSeconds(b)),
           TorrentSort.ratio => a.uploadRatio.compareTo(b.uploadRatio),
+          TorrentSort.category => _torrentCategorySortText(
+            a,
+          ).compareTo(_torrentCategorySortText(b)),
+          TorrentSort.tags =>
+            a.labels
+                .join(', ')
+                .toLowerCase()
+                .compareTo(b.labels.join(', ').toLowerCase()),
           TorrentSort.addedDate => a.addedDate.compareTo(b.addedDate),
+          TorrentSort.completedDate => a.doneDate.compareTo(b.doneDate),
+          TorrentSort.tracker => _torrentTrackerSortText(
+            a,
+          ).compareTo(_torrentTrackerSortText(b)),
+          TorrentSort.speedLimit => _torrentSpeedLimitSortValue(
+            a,
+          ).compareTo(_torrentSpeedLimitSortValue(b)),
+          TorrentSort.downloaded => a.downloadedEver.compareTo(
+            b.downloadedEver,
+          ),
+          TorrentSort.uploaded => a.uploadedEver.compareTo(b.uploadedEver),
+          TorrentSort.sessionTransfer => 0,
+          TorrentSort.savePath => a.downloadDir.toLowerCase().compareTo(
+            b.downloadDir.toLowerCase(),
+          ),
+          TorrentSort.ratioLimit => a.seedRatioLimit.compareTo(
+            b.seedRatioLimit,
+          ),
+          TorrentSort.lastSeenComplete => 0,
           TorrentSort.activityDate => a.activityDate.compareTo(b.activityDate),
         };
-        return asc ? cmp : -cmp;
+        if (cmp != 0) return asc ? cmp : -cmp;
+        return _compareTorrentIdentity(a, b);
       });
 
-      return list;
+      return List<Torrent>.unmodifiable(result);
     });
+
+int _torrentTotalSize(Torrent torrent) {
+  if (torrent.totalSize > 0) return torrent.totalSize;
+  return torrent.sizeWhenDone;
+}
+
+int _torrentRemainingBytes(Torrent torrent) {
+  if (torrent.leftUntilDone > 0) return torrent.leftUntilDone;
+  final total = torrent.sizeWhenDone > 0
+      ? torrent.sizeWhenDone
+      : torrent.totalSize;
+  if (total <= 0) return 0;
+  return (total * (1 - torrent.percentDone.clamp(0.0, 1.0))).ceil();
+}
+
+int _torrentEtaSeconds(Torrent torrent) {
+  final remaining = _torrentRemainingBytes(torrent);
+  if (remaining <= 0) return 0;
+  if (torrent.rateDownload <= 0) return 1 << 62;
+  return (remaining / torrent.rateDownload).ceil();
+}
+
+String _torrentCategorySortText(Torrent torrent) {
+  if (torrent.category.isNotEmpty) return torrent.category.toLowerCase();
+  return torrent.downloadDir.toLowerCase();
+}
+
+String _torrentTrackerSortText(Torrent torrent) {
+  final visible = torrent.visibleTrackerStats;
+  if (visible.isEmpty) return torrent.trackerUrl.toLowerCase();
+  final first = visible.first;
+  if (first.sitename.isNotEmpty) return first.sitename.toLowerCase();
+  if (first.host.isNotEmpty) return first.host.toLowerCase();
+  return first.announce.toLowerCase();
+}
+
+int _torrentSpeedLimitSortValue(Torrent torrent) {
+  final download = torrent.downloadLimit > 0 ? torrent.downloadLimit : 1 << 30;
+  final upload = torrent.uploadLimit > 0 ? torrent.uploadLimit : 1 << 30;
+  return download + upload;
+}
+
+int _compareTorrentIdentity(Torrent a, Torrent b) {
+  final hashCompare = a.hashString.compareTo(b.hashString);
+  if (hashCompare != 0) return hashCompare;
+
+  final idCompare = a.id.compareTo(b.id);
+  if (idCompare != 0) return idCompare;
+
+  final nameCompare = a.name.toLowerCase().compareTo(b.name.toLowerCase());
+  if (nameCompare != 0) return nameCompare;
+
+  return a.addedDate.compareTo(b.addedDate);
+}
 
 bool matchesDesktopTorrentStatus(
   Torrent torrent,
