@@ -2,15 +2,45 @@ name: Build and Deploy All Dist
 # 触发工作流的条件：手动触发（workflow_dispatch）或推送了 tag（例如 v1.0.0）
 on:
   workflow_dispatch:
+    inputs:
+      platform:
+        description: '选择要构建的平台'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - linux
+          - android
+          - windows
+          - macos_intel
+          - macos_arm
+          - ios
+          - web
   push:
     tags:
       - '*'  # 匹配所有 tag，例如 v1.0.0
+
+concurrency:
+  group: build-dist-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: '3.41.9'
+  RELEASE_TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+  RELEASE_NAME: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
+  RELEASE_DRAFT: ${{ startsWith(github.ref, 'refs/tags/') == false }}
 
 # 定义多个“任务”（jobs），每个任务表示构建一个平台的应用
 jobs:
 
   linux: # 构建 Linux 桌面应用
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: github.event_name != 'workflow_dispatch' || inputs.platform == 'all' || inputs.platform == 'linux'
     steps:
       - name: 签出仓库
         uses: actions/checkout@v6
@@ -20,8 +50,30 @@ jobs:
       - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.7'
-      - run: |
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: CI 环境诊断
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::group::Runner"
+          uname -a
+          lsb_release -a 2>/dev/null || true
+          git rev-parse --short HEAD
+          git status --short
+          echo "::endgroup::"
+
+          echo "::group::Flutter"
+          flutter --version
+          dart --version
+          flutter doctor -v
+          echo "::endgroup::"
+
+      - name: 安装 Linux 构建依赖
+        shell: bash
+        run: |
+          set -euo pipefail
           sudo apt-get update -y  # 更新系统包信息
           sudo apt-get install -y \
                ninja-build \
@@ -34,37 +86,73 @@ jobs:
                libmpv-dev \
                pkg-config  # 安装依赖（用于 Linux 构建）
 
+          echo "::group::Linux toolchain"
+          cmake --version
+          ninja --version
+          clang --version | head -n 1
+          pkg-config --version
+          echo "::endgroup::"
+
       - name: 安装 Flutter 依赖
         run: flutter pub get
 
       - name: 打包 Linux x64 发行版
-        run: flutter build linux --release
+        shell: bash
+        run: |
+          set -euo pipefail
+          print_linux_build_context() {
+            echo "::group::Linux build output"
+            find build/linux/x64/release -maxdepth 4 -type f 2>/dev/null | sort || true
+            echo "::endgroup::"
+
+            echo "::group::Linux CMake files"
+            find build/linux -type f \( -name CMakeCache.txt -o -name CMakeError.log -o -name CMakeOutput.log \) -print 2>/dev/null || true
+            echo "::endgroup::"
+          }
+          trap 'print_linux_build_context' ERR
+          flutter build linux --release
+          print_linux_build_context
 
       - name: 生成 Linux x64 发行版文件名
         id: build_linux_x64  # 定义一个步骤 ID，用于后续引用
+        shell: bash
         run: |
+          set -euo pipefail
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
           ARCH="x64"
           SYSTEM="linux"
           FILE_NAME="harvest_${VERSION}_${ARCH}_${SYSTEM}.tar.gz"
+          echo "Linux package version: $VERSION"
+          echo "Linux package file: $FILE_NAME"
+          if [ ! -d build/linux/x64/release/bundle ]; then
+            echo "::error::Linux bundle not found: build/linux/x64/release/bundle"
+            find build/linux -maxdepth 5 -type f 2>/dev/null | sort || true
+            exit 1
+          fi
+          echo "::group::Linux bundle files"
+          find build/linux/x64/release/bundle -maxdepth 4 -type f | sort
+          echo "::endgroup::"
           tar -czvf $FILE_NAME -C build/linux/x64/release/bundle .
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
           ls -l $FILE_NAME
 
       - name: 发布 Linux x64 发行版到 GitHub Releases
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
           files: ${{ github.workspace }}/${{ steps.build_linux_x64.outputs.file_name }}
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          fail_on_unmatched_files: true
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          draft: ${{ env.RELEASE_DRAFT }}
           prerelease: false
 
 
   android: # 构建 Android 应用
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: github.event_name != 'workflow_dispatch' || inputs.platform == 'all' || inputs.platform == 'android'
     steps:
       - name: 签出仓库
         uses: actions/checkout@v6
@@ -76,29 +164,79 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
 
       # 👇 关键步骤：还原 keystore 文件
       - name: 还原 Android 上传 keystore 文件
+        shell: bash
         run: |
+          set -euo pipefail
+          if [ -z "${KEYSTORE_BASE64:-}" ]; then
+            echo "::error::Missing required secret: KEYSTORE_BASE64"
+            exit 1
+          fi
           mkdir -p android/app
-          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          if [ ! -s android/app/upload-keystore.jks ]; then
+            echo "::error::Decoded Android keystore is empty: android/app/upload-keystore.jks"
+            exit 1
+          fi
+          ls -lh android/app/upload-keystore.jks
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
       # 👇 生成 key.properties 文件
       - name: 生成 Android key.properties 文件
+        shell: bash
         run: |
-          cat <<EOF > android/key.properties
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=upload-keystore.jks
-          EOF
+          set -euo pipefail
+          for name in KEYSTORE_PASSWORD KEY_PASSWORD KEY_ALIAS; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing required secret: $name"
+              exit 1
+            fi
+          done
+          {
+            printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'storeFile=upload-keystore.jks\n'
+          } > android/key.properties
+          echo "Generated android/key.properties with storeFile=upload-keystore.jks"
+          grep -E '^(keyAlias|storeFile)=' android/key.properties
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
 
       - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.7'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: CI 环境诊断
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::group::Runner"
+          uname -a
+          git rev-parse --short HEAD
+          git status --short
+          echo "::endgroup::"
+
+          echo "::group::Java and Android"
+          java -version
+          echo "ANDROID_HOME=${ANDROID_HOME:-}"
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-}"
+          ls -1 "$ANDROID_HOME/platforms" | tail -n 10 || true
+          echo "::endgroup::"
+
+          echo "::group::Flutter"
+          flutter --version
+          dart --version
+          flutter doctor -v
+          echo "::endgroup::"
 
       - name: 同意 Android SDK 许可证
         run: yes | flutter doctor --android-licenses
@@ -107,15 +245,38 @@ jobs:
         run: flutter pub get
 
       - name: 打包 Android arm64 发行版
-        run: flutter build apk --release --obfuscate --split-debug-info=build/symbols --split-per-abi  # 构建 64 位 Android 安装包
+        shell: bash
+        run: |
+          set -euo pipefail
+          print_android_build_context() {
+            echo "::group::Android build output"
+            find build/app/outputs build/symbols -maxdepth 5 -type f 2>/dev/null | sort || true
+            echo "::endgroup::"
+
+            echo "::group::Android reports"
+            find build/app/outputs/logs android/build/reports android/app/build/reports -maxdepth 5 -type f 2>/dev/null | sort || true
+            echo "::endgroup::"
+          }
+          trap 'print_android_build_context' ERR
+          flutter build apk --release --obfuscate --split-debug-info=build/symbols --split-per-abi
+          print_android_build_context
 
       - name: 生成 Android arm64 发行版文件名
         id: build_android_arm64  # 定义一个步骤 ID，用于后续引用
+        shell: bash
         run: |
+          set -euo pipefail
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
           ARCH="arm64"
           SYSTEM="android"
           FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}.apk"
+          echo "Android package version: $VERSION"
+          echo "Android package file: $FILE_NAME"
+          if [ ! -f build/app/outputs/flutter-apk/app-arm64-v8a-release.apk ]; then
+            echo "::error::Android APK not found: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
+            find build/app/outputs -maxdepth 5 -type f 2>/dev/null | sort || true
+            exit 1
+          fi
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk $FILE_NAME
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=${VERSION}" >> $GITHUB_OUTPUT
@@ -126,13 +287,16 @@ jobs:
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
           files: ${{ github.workspace }}/${{ steps.build_android_arm64.outputs.file_name }}  # 上传 APK 文件
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          fail_on_unmatched_files: true
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          draft: ${{ env.RELEASE_DRAFT }}
           prerelease: false
 
   windows: # 构建 Windows 桌面应用
-    runs-on: windows-latest
+    runs-on: windows-2022
+    timeout-minutes: 75
+    if: github.event_name != 'workflow_dispatch' || inputs.platform == 'all' || inputs.platform == 'windows'
     steps:
       - name: 签出仓库
         uses: actions/checkout@v6
@@ -142,7 +306,34 @@ jobs:
       - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.7'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: CI 环境诊断
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Write-Host "::group::Runner"
+          Get-ComputerInfo | Select-Object OsName, OsVersion, OsArchitecture, WindowsVersion
+          git rev-parse --short HEAD
+          git status --short
+          Write-Host "::endgroup::"
+
+          Write-Host "::group::Flutter"
+          flutter --version
+          dart --version
+          flutter doctor -v
+          Write-Host "::endgroup::"
+
+          Write-Host "::group::CMake and Visual Studio"
+          Get-ChildItem Env:CMAKE* | Sort-Object Name | Format-Table -AutoSize
+          cmake --version
+          where.exe cmake
+          where.exe flutter
+          Get-CimInstance MSFT_VSInstance -Namespace root/cimv2/vs -ErrorAction SilentlyContinue |
+            Select-Object DisplayName, Version, InstallLocation |
+            Format-Table -AutoSize
+          Write-Host "::endgroup::"
 
       - name: 安装 Flutter 依赖
         run: flutter pub get
@@ -160,15 +351,57 @@ jobs:
           echo "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: 打包 Windows x86 发行版
-        run: flutter build windows --release
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          function Print-WindowsBuildContext {
+            Write-Host "::group::Windows build files"
+            Get-ChildItem build/windows -Recurse -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize
+            Write-Host "::endgroup::"
+
+            Write-Host "::group::Windows CMake files"
+            Get-ChildItem build/windows -Recurse -ErrorAction SilentlyContinue -Include CMakeCache.txt, CMakeError.log, CMakeOutput.log | Select-Object FullName, Length | Format-Table -AutoSize
+            Write-Host "::endgroup::"
+          }
+          Remove-Item Env:CMAKE_GENERATOR -ErrorAction SilentlyContinue
+          Remove-Item Env:CMAKE_GENERATOR_INSTANCE -ErrorAction SilentlyContinue
+          Remove-Item Env:CMAKE_GENERATOR_PLATFORM -ErrorAction SilentlyContinue
+          Remove-Item Env:CMAKE_GENERATOR_TOOLSET -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force build/windows -ErrorAction SilentlyContinue
+          cmake --version
+          Get-CimInstance MSFT_VSInstance -Namespace root/cimv2/vs -ErrorAction SilentlyContinue |
+            Select-Object DisplayName, Version, InstallLocation |
+            Format-Table -AutoSize
+          try {
+            flutter build windows --release
+          } catch {
+            Print-WindowsBuildContext
+            throw
+          }
+          Print-WindowsBuildContext
+          if (-not (Test-Path "build/windows/x64/runner/Release/harvest.exe")) {
+            Write-Host "::error::Windows executable not found: build/windows/x64/runner/Release/harvest.exe"
+            Get-ChildItem build/windows -Recurse -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize
+            exit 1
+          }
 
       - name: 生成 Windows x86 发行版文件名
         id: build_windows_x86  # 定义一个步骤 ID，用于后续引用
         shell: pwsh   # 👈 必须加！
         run: |
+          $ErrorActionPreference = 'Stop'
           $version = "${{ steps.app_info.outputs.version }}"
           $arch="x86_64"
           $FILE_NAME="harvest_${version}_${arch}-windows.zip"
+          Write-Host "Windows package version: $version"
+          Write-Host "Windows package file: $FILE_NAME"
+          if (-not (Test-Path "build/windows/x64/runner/Release/harvest.exe")) {
+            Write-Host "::error::Windows executable not found before zip: build/windows/x64/runner/Release/harvest.exe"
+            exit 1
+          }
+          Write-Host "::group::Windows release files"
+          Get-ChildItem build/windows/x64/runner/Release -Recurse | Select-Object FullName, Length | Format-Table -AutoSize
+          Write-Host "::endgroup::"
           Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $FILE_NAME  # 压缩为 zip 文件
           echo "file_name=$FILE_NAME" >> $env:GITHUB_OUTPUT
           echo "app_version=$version" >> $env:GITHUB_OUTPUT
@@ -179,8 +412,10 @@ jobs:
         id: build_windows_setup
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           Write-Host "0 Build Setup for Windows x64"
-          choco install innosetup
+          choco install innosetup -y --no-progress
+          where.exe iscc
           $version = "${{ steps.app_info.outputs.version }}"
           $versionWithDot = $version -replace '\+', '.'
           $SETUP_FILE_NAME="harvest_${version}_x86_64-windows-setup"
@@ -237,13 +472,18 @@ jobs:
           
           Write-Host "4. 执行 Inno Setup 编译"
           if (test-path ".\setup.iss") {
+            Write-Host "::group::setup.iss"
+            Get-Content setup.iss -TotalCount 240 -ErrorAction SilentlyContinue
+            Write-Host "::endgroup::"
             iscc setup.iss
           }
           
           if (test-path ".\${SETUP_FILE_NAME}.exe") {
             Write-Host "✅ Created EXE: ${SETUP_FILE_NAME}"
           } else {
-            Write-Host "❌ Failed to create EXE: ${SETUP_FILE_NAME}"
+            Write-Host "::error::Failed to create EXE: ${SETUP_FILE_NAME}.exe"
+            Get-ChildItem -Recurse Output -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize
+            exit 1
           }
           echo "setup_file_name=${SETUP_FILE_NAME}.exe" >> $env:GITHUB_OUTPUT
 
@@ -254,14 +494,17 @@ jobs:
           files: |
             ${{ github.workspace }}/${{ steps.build_windows_x86.outputs.file_name }}
             ${{ github.workspace }}/Output/${{ steps.build_windows_setup.outputs.setup_file_name }}
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          fail_on_unmatched_files: true
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          draft: ${{ env.RELEASE_DRAFT }}
           prerelease: false
 
 
   macos_intel: # 构建 macOS 桌面应用
     runs-on: macos-15-intel
+    timeout-minutes: 75
+    if: github.event_name != 'workflow_dispatch' || inputs.platform == 'all' || inputs.platform == 'macos_intel'
     steps:
       - name: 签出仓库
         uses: actions/checkout@v6
@@ -271,21 +514,68 @@ jobs:
       - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.7'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: CI 环境诊断
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::group::Runner"
+          sw_vers
+          uname -m
+          git rev-parse --short HEAD
+          git status --short
+          echo "::endgroup::"
+
+          echo "::group::Xcode and packaging tools"
+          xcode-select -p
+          xcodebuild -version
+          pkgbuild --version
+          hdiutil version | head -n 1
+          brew --version | head -n 1
+          echo "::endgroup::"
+
+          echo "::group::Flutter"
+          flutter --version
+          dart --version
+          flutter doctor -v
+          echo "::endgroup::"
 
       - name: 安装 Flutter 依赖
         run: flutter pub get
 
       - name: 打包 macOS x86 发行版
-        run: flutter build macos --release
+        shell: bash
+        run: |
+          set -euo pipefail
+          print_macos_build_context() {
+            echo "::group::macOS build output"
+            find build/macos/Build/Products/Release -maxdepth 5 -type f 2>/dev/null | sort || true
+            echo "::endgroup::"
+
+            echo "::group::macOS build logs"
+            find build/macos -type f \( -name '*.xcactivitylog' -o -name CMakeCache.txt -o -name CMakeError.log -o -name CMakeOutput.log \) -print 2>/dev/null || true
+            echo "::endgroup::"
+          }
+          trap 'print_macos_build_context' ERR
+          flutter build macos --release
+          print_macos_build_context
 
       - name: 生成 macOS x86 发行版文件名
         id: build_macos_x86  # 定义一个步骤 ID，用于后续引用
+        shell: bash
         run: |
+          set -euo pipefail
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
           ARCH="x86_64"
           SYSTEM="macos"
           FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}"
+          if [ ! -d build/macos/Build/Products/Release/harvest.app ]; then
+            echo "::error::macOS app bundle not found: build/macos/Build/Products/Release/harvest.app"
+            find build/macos -maxdepth 6 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
           brew install create-dmg
           create-dmg \
             --volname $FILE_NAME \
@@ -346,6 +636,9 @@ jobs:
           exit 0
           EOF
           chmod 755 pkg_scripts/preinstall
+          echo "::group::macOS pkg preinstall"
+          sed -n '1,220p' pkg_scripts/preinstall
+          echo "::endgroup::"
           
           # 执行 pkgbuild
           # --identifier: 必须唯一，通常用反向域名
@@ -359,7 +652,9 @@ jobs:
             --version "$VERSION" \
             "${FILE_NAME}.pkg"
           # 验证生成的文件
-          ls -l $FILE_NAME.dmg
+          test -f "$FILE_NAME.dmg" || { echo "::error::DMG not found: $FILE_NAME.dmg"; exit 1; }
+          test -f "$FILE_NAME.pkg" || { echo "::error::PKG not found: $FILE_NAME.pkg"; exit 1; }
+          ls -l "$FILE_NAME.dmg" "$FILE_NAME.pkg"
 
       - name: 发布 macOS x86 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
@@ -368,14 +663,17 @@ jobs:
           files: |
             ${{ github.workspace }}/${{ steps.build_macos_x86.outputs.file_name }}.dmg
             ${{ github.workspace }}/${{ steps.build_macos_x86.outputs.file_name }}.pkg
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          fail_on_unmatched_files: true
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          draft: ${{ env.RELEASE_DRAFT }}
           prerelease: false
 
 
   macos_arm: # 构建 macOS 桌面应用
     runs-on: macos-26
+    timeout-minutes: 75
+    if: github.event_name != 'workflow_dispatch' || inputs.platform == 'all' || inputs.platform == 'macos_arm'
     steps:
       - name: 签出仓库
         uses: actions/checkout@v6
@@ -385,20 +683,67 @@ jobs:
       - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.7'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: CI 环境诊断
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::group::Runner"
+          sw_vers
+          uname -m
+          git rev-parse --short HEAD
+          git status --short
+          echo "::endgroup::"
+
+          echo "::group::Xcode and packaging tools"
+          xcode-select -p
+          xcodebuild -version
+          pkgbuild --version
+          hdiutil version | head -n 1
+          brew --version | head -n 1
+          echo "::endgroup::"
+
+          echo "::group::Flutter"
+          flutter --version
+          dart --version
+          flutter doctor -v
+          echo "::endgroup::"
 
       - name: 安装 Flutter 依赖
         run: flutter pub get
       - name: 打包 macOS arm64 发行版
-        run: flutter build macos --release
+        shell: bash
+        run: |
+          set -euo pipefail
+          print_macos_build_context() {
+            echo "::group::macOS build output"
+            find build/macos/Build/Products/Release -maxdepth 5 -type f 2>/dev/null | sort || true
+            echo "::endgroup::"
+
+            echo "::group::macOS build logs"
+            find build/macos -type f \( -name '*.xcactivitylog' -o -name CMakeCache.txt -o -name CMakeError.log -o -name CMakeOutput.log \) -print 2>/dev/null || true
+            echo "::endgroup::"
+          }
+          trap 'print_macos_build_context' ERR
+          flutter build macos --release
+          print_macos_build_context
 
       - name: 生成 macOS arm64 发行版文件名
         id: build_macos_arm  # 定义一个步骤 ID，用于后续引用
+        shell: bash
         run: |
+          set -euo pipefail
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
           ARCH="arm64"
           SYSTEM="macos"
           FILE_NAME="harvest_${VERSION}_${ARCH}-${SYSTEM}"
+          if [ ! -d build/macos/Build/Products/Release/harvest.app ]; then
+            echo "::error::macOS app bundle not found: build/macos/Build/Products/Release/harvest.app"
+            find build/macos -maxdepth 6 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
           brew install create-dmg
           create-dmg \
             --volname $FILE_NAME \
@@ -460,6 +805,9 @@ jobs:
           exit 0
           EOF
           chmod 755 pkg_scripts/preinstall
+          echo "::group::macOS pkg preinstall"
+          sed -n '1,220p' pkg_scripts/preinstall
+          echo "::endgroup::"
           
           # 执行 pkgbuild
           # --identifier: 必须唯一，通常用反向域名
@@ -473,7 +821,9 @@ jobs:
             --version "$VERSION" \
             "${FILE_NAME}.pkg"
           # 验证生成的文件
-          ls -l $FILE_NAME.dmg
+          test -f "$FILE_NAME.dmg" || { echo "::error::DMG not found: $FILE_NAME.dmg"; exit 1; }
+          test -f "$FILE_NAME.pkg" || { echo "::error::PKG not found: $FILE_NAME.pkg"; exit 1; }
+          ls -l "$FILE_NAME.dmg" "$FILE_NAME.pkg"
 
       - name: 发布 macOS arm64 发行版到 GitHub Releases
         uses: softprops/action-gh-release@v2
@@ -482,14 +832,17 @@ jobs:
           files: |
             ${{ github.workspace }}/${{ steps.build_macos_arm.outputs.file_name }}.dmg
             ${{ github.workspace }}/${{ steps.build_macos_arm.outputs.file_name }}.pkg
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          fail_on_unmatched_files: true
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          draft: ${{ env.RELEASE_DRAFT }}
           prerelease: false
 
 
   ios:
     runs-on: macos-26
+    timeout-minutes: 90
+    if: github.event_name != 'workflow_dispatch' || inputs.platform == 'all' || inputs.platform == 'ios'
     steps:
       - name: 签出仓库
         uses: actions/checkout@v6
@@ -624,22 +977,63 @@ jobs:
       - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.7'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: CI 环境诊断
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::group::Runner"
+          sw_vers
+          uname -m
+          git rev-parse --short HEAD
+          git status --short
+          echo "::endgroup::"
+
+          echo "::group::Flutter"
+          flutter --version
+          dart --version
+          flutter doctor -v
+          echo "::endgroup::"
 
       - name: 安装 Flutter 依赖
         run: flutter pub get
 
       - name: 打包 iOS arm64
-        run: flutter build ios --release --no-codesign
+        shell: bash
+        run: |
+          set -euo pipefail
+          print_ios_build_context() {
+            echo "::group::iOS build output"
+            find build/ios/iphoneos -maxdepth 5 -type f 2>/dev/null | sort || true
+            echo "::endgroup::"
+
+            echo "::group::iOS build logs"
+            find build/ios -type f -name '*.xcactivitylog' -print 2>/dev/null || true
+            [ ! -f ios/Flutter/flutter_export_environment.sh ] || sed -n '1,160p' ios/Flutter/flutter_export_environment.sh
+            echo "::endgroup::"
+          }
+          trap 'print_ios_build_context' ERR
+          flutter build ios --release --no-codesign
+          print_ios_build_context
 
       - name: 生成 IPA
         id: build_ios
+        shell: bash
         run: |
+          set -euo pipefail
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
           FILE_NAME="harvest_${VERSION}_arm64-ios.ipa"
+          if [ ! -d build/ios/iphoneos/Runner.app ]; then
+            echo "::error::iOS Runner.app not found: build/ios/iphoneos/Runner.app"
+            find build/ios -maxdepth 6 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
           mkdir Payload
           cp -R build/ios/iphoneos/Runner.app ./Payload/Runner.app
           zip -r "$FILE_NAME" Payload
+          test -f "$FILE_NAME" || { echo "::error::IPA not found: $FILE_NAME"; exit 1; }
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT
           ls -l "$FILE_NAME"
@@ -649,23 +1043,17 @@ jobs:
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
           files: ${{ github.workspace }}/${{ steps.build_ios.outputs.file_name }}
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          fail_on_unmatched_files: true
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          draft: ${{ env.RELEASE_DRAFT }}
           prerelease: false
 
 
   web:
     runs-on: ubuntu-latest
-    needs: [ linux, android, windows, macos_intel, macos_arm, ios ]
-    if: >-
-      always() &&
-      !cancelled() &&
-      (needs.linux.result == 'success') &&
-      (needs.android.result == 'success') &&
-      (needs.windows.result == 'success') &&
-      (needs.macos_intel.result == 'success') &&
-      (needs.macos_arm.result == 'success')
+    timeout-minutes: 45
+    if: github.event_name != 'workflow_dispatch' || inputs.platform == 'all' || inputs.platform == 'web'
 
     steps:
       - name: 签出仓库
@@ -676,20 +1064,62 @@ jobs:
       - name: 指定 Flutter 版本
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.7'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: CI 环境诊断
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::group::Runner"
+          uname -a
+          git rev-parse --short HEAD
+          git status --short
+          echo "::endgroup::"
+
+          echo "::group::Flutter"
+          flutter --version
+          dart --version
+          flutter doctor -v
+          echo "::endgroup::"
 
       - name: 生成发行版变更日志
         id: changelog
         shell: bash
         run: |
-          CURRENT_TAG=${GITHUB_REF#refs/tags/}
-          PREV_TAG=$(git describe --tags --abbrev=0 ${CURRENT_TAG}^ 2>/dev/null || echo "")
+          set -euo pipefail
+          echo "::group::Changelog context"
+          echo "event: ${GITHUB_EVENT_NAME}"
+          echo "ref: ${GITHUB_REF}"
+          echo "ref_name: ${GITHUB_REF_NAME}"
+          echo "sha: ${GITHUB_SHA}"
+          echo "::endgroup::"
 
-          if [ -z "$PREV_TAG" ]; then
-            RANGE=""
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            CURRENT_TAG="${GITHUB_REF#refs/tags/}"
+            PREV_TAG=$(git describe --tags --abbrev=0 "${CURRENT_TAG}^" 2>/dev/null || echo "")
+
+            if [ -z "$PREV_TAG" ]; then
+              RANGE="$CURRENT_TAG"
+            else
+              RANGE="$PREV_TAG..$CURRENT_TAG"
+            fi
           else
-            RANGE="$PREV_TAG..$CURRENT_TAG"
+            CURRENT_TAG=""
+            PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+            if [ -z "$PREV_TAG" ]; then
+              RANGE="HEAD"
+            else
+              RANGE="$PREV_TAG..HEAD"
+            fi
           fi
+
+          echo "::group::Changelog range"
+          echo "current tag: ${CURRENT_TAG:-none}"
+          echo "previous tag: ${PREV_TAG:-none}"
+          echo "range: $RANGE"
+          echo "::endgroup::"
 
           RAW_LOG=$(git log $RANGE --pretty=format:"%H|%s" --no-merges | grep -v -E '^.*\|(chore|chore:)' || true)
 
@@ -737,10 +1167,23 @@ jobs:
         run: flutter pub get
 
       - name: 打包 Web 发行版
-        run: flutter build web --release
+        shell: bash
+        run: |
+          set -euo pipefail
+          print_web_build_context() {
+            echo "::group::Web build output"
+            find build/web -maxdepth 3 -type f 2>/dev/null | sort || true
+            echo "::endgroup::"
+          }
+          trap 'print_web_build_context' ERR
+          flutter build web --release
+          print_web_build_context
 
       - name: 清理 Web 调试符号
+        shell: bash
         run: |
+          set -euo pipefail
+          test -f build/web/index.html || { echo "::error::Web index not found: build/web/index.html"; exit 1; }
           find build/web -name "*.symbols" -delete
           find build/web -name "*.map" -delete
 
@@ -753,9 +1196,12 @@ jobs:
 
       - name: 生成 Web 发行版文件名
         id: build_web
+        shell: bash
         run: |
+          set -euo pipefail
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
           FILE_NAME="harvest_${VERSION}_web.tar.gz"
+          test -f build/web/index.html || { echo "::error::Web index not found before archive: build/web/index.html"; exit 1; }
           tar -czvf $FILE_NAME -C build/web .
           echo "file_name=$FILE_NAME" >> $GITHUB_OUTPUT
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT
@@ -766,26 +1212,51 @@ jobs:
         with:
           token: ${{ secrets.TOKEN_GITHUB }}
           files: ${{ github.workspace }}/${{ steps.build_web.outputs.file_name }}
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          name: Release ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.sha }}
-          draft: ${{ startsWith(github.ref, 'refs/tags/') == false }}
+          fail_on_unmatched_files: true
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          draft: ${{ env.RELEASE_DRAFT }}
           prerelease: false
           body: |
             ## 📌 更新日志
             ${{ steps.changelog.outputs.changelog }}
 
+  clear_app_version_cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [ linux, android, windows, macos_intel, macos_arm, ios, web ]
+    if: >-
+      always() &&
+      !cancelled()
+    steps:
       - name: 清理 APP 版本缓存
         env:
           AUTHORIZATION: ${{ secrets.HARVEST_TOKEN }}
           EMAIL: ${{ secrets.HARVEST_EMAIL }}
         if: ${{ env.AUTHORIZATION != '' && env.EMAIL != '' }}
+        shell: bash
         run: |
-          HTTP_CODE=$(curl --silent --show-error \
+          set -euo pipefail
+          echo "::group::Upstream job results"
+          echo "linux=${{ needs.linux.result }}"
+          echo "android=${{ needs.android.result }}"
+          echo "windows=${{ needs.windows.result }}"
+          echo "macos_intel=${{ needs.macos_intel.result }}"
+          echo "macos_arm=${{ needs.macos_arm.result }}"
+          echo "ios=${{ needs.ios.result }}"
+          echo "web=${{ needs.web.result }}"
+          echo "::endgroup::"
+
+          HTTP_RESPONSE=$(curl --silent --show-error \
             -X POST "https://repeat.ptools.fun/api/app/version/cache/clear" \
             -H "Authorization: ${AUTHORIZATION}" \
             -H "EMAIL: ${EMAIL}" \
             -w "\n%{http_code}")
-          STATUS=$(printf '%s' "$HTTP_CODE" | tail -n 1)
-          BODY=$(printf '%s' "$HTTP_CODE" | sed '$d')
+          STATUS=$(printf '%s' "$HTTP_RESPONSE" | tail -n 1)
+          BODY=$(printf '%s' "$HTTP_RESPONSE" | sed '$d')
           echo "cache clear status: ${STATUS}"
           echo "cache clear response: ${BODY}"
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            echo "::error::Cache clear request failed with HTTP $STATUS"
+            exit 1
+          fi
