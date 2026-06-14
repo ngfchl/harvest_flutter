@@ -9,12 +9,7 @@ class DownloaderLiveInfo extends StatelessWidget {
   final bool isQb;
   final bool compact;
 
-  const DownloaderLiveInfo({
-    super.key,
-    required this.info,
-    required this.isQb,
-    this.compact = false,
-  });
+  const DownloaderLiveInfo({super.key, required this.info, required this.isQb, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
@@ -25,26 +20,11 @@ class DownloaderLiveInfo extends StatelessWidget {
     final tokens = _DownloaderLiveInfoTokens.of(context, compact: compact);
     final extraMetrics = <Widget>[
       if (info.activeTorrentCount > 0)
-        _metricPill(
-          context,
-          label: '活跃',
-          value: '${info.activeTorrentCount}',
-          color: uploadColor,
-        ),
+        _metricPill(context, label: '活跃', value: '${info.activeTorrentCount}', color: uploadColor),
       if (info.totalTorrentCount > 0)
-        _metricPill(
-          context,
-          label: '总数',
-          value: '${info.totalTorrentCount}',
-          color: cs.mutedForeground,
-        ),
+        _metricPill(context, label: '总数', value: '${info.totalTorrentCount}', color: cs.mutedForeground),
       if (info.freeSpace > 0)
-        _metricPill(
-          context,
-          label: '剩余',
-          value: _formatSize(info.freeSpace),
-          color: cs.mutedForeground,
-        ),
+        _metricPill(context, label: '剩余', value: _formatSize(info.freeSpace), color: cs.mutedForeground),
     ];
 
     return Column(
@@ -59,7 +39,7 @@ class DownloaderLiveInfo extends StatelessWidget {
                 label: '已上传',
                 value: _formatSessionSize(info.uploadedSession),
                 speed: _formatSpeed(info.uploadSpeed),
-                limitLabel: _limitLabel(info.uploadLimit),
+                limitLabel: _limitLabel(info.uploadLimit * (isQb ? 1 : 1000)),
                 color: uploadColor,
                 active: info.uploadSpeed > 0,
               ),
@@ -113,16 +93,9 @@ class DownloaderLiveInfo extends StatelessWidget {
       constraints: BoxConstraints(minHeight: tokens.size(48)),
       padding: tokens.edgeSymmetric(horizontal: 9, vertical: 7),
       decoration: BoxDecoration(
-        color: Color.alphaBlend(
-          color.withValues(alpha: 0.035),
-          cs.muted.withValues(alpha: 0.10),
-        ),
+        color: Color.alphaBlend(color.withValues(alpha: 0.035), cs.muted.withValues(alpha: 0.10)),
         borderRadius: BorderRadius.circular(theme.radiusMd),
-        border: Border.all(
-          color: active
-              ? color.withValues(alpha: 0.22)
-              : cs.border.withValues(alpha: 0.58),
-        ),
+        border: Border.all(color: active ? color.withValues(alpha: 0.22) : cs.border.withValues(alpha: 0.58)),
       ),
       child: Row(
         children: [
@@ -133,9 +106,7 @@ class DownloaderLiveInfo extends StatelessWidget {
             decoration: BoxDecoration(
               color: effectiveColor.withValues(alpha: active ? 0.12 : 0.075),
               borderRadius: BorderRadius.circular(theme.radiusSm),
-              border: Border.all(
-                color: effectiveColor.withValues(alpha: active ? 0.20 : 0.12),
-              ),
+              border: Border.all(color: effectiveColor.withValues(alpha: active ? 0.20 : 0.12)),
             ),
             child: Icon(icon, size: tokens.icon(20), color: effectiveColor),
           ),
@@ -165,14 +136,8 @@ class DownloaderLiveInfo extends StatelessWidget {
                         child: Align(
                           alignment: Alignment.centerRight,
                           child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minWidth: tokens.size(compact ? 56 : 64),
-                            ),
-                            child: _limitBadge(
-                              context,
-                              label: limitLabel,
-                              color: color,
-                            ),
+                            constraints: BoxConstraints(minWidth: tokens.size(compact ? 56 : 64)),
+                            child: _limitBadge(context, label: limitLabel, color: color),
                           ),
                         ),
                       ),
@@ -180,11 +145,7 @@ class DownloaderLiveInfo extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: tokens.size(3)),
-                _metricValueLine(
-                  context,
-                  text: '$value ($speed)',
-                  color: color,
-                ),
+                _metricValueLine(context, text: '$value ($speed)', color: color),
               ],
             ),
           ),
@@ -193,16 +154,9 @@ class DownloaderLiveInfo extends StatelessWidget {
     );
   }
 
-  Widget _metricValueLine(
-    BuildContext context, {
-    required String text,
-    required Color color,
-  }) {
+  Widget _metricValueLine(BuildContext context, {required String text, required Color color}) {
     final theme = shadcn.Theme.of(context);
-    final style = theme.typography.small.copyWith(
-      color: color,
-      fontWeight: FontWeight.w800,
-    );
+    final style = theme.typography.small.copyWith(color: color, fontWeight: FontWeight.w800);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -222,11 +176,7 @@ class DownloaderLiveInfo extends StatelessWidget {
     );
   }
 
-  Widget _limitBadge(
-    BuildContext context, {
-    required String label,
-    required Color color,
-  }) {
+  Widget _limitBadge(BuildContext context, {required String label, required Color color}) {
     final theme = shadcn.Theme.of(context);
     final tokens = _DownloaderLiveInfoTokens.of(context, compact: compact);
     return Container(
@@ -241,20 +191,12 @@ class DownloaderLiveInfo extends StatelessWidget {
         label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: theme.typography.xSmall.copyWith(
-          color: color,
-          fontWeight: FontWeight.w800,
-        ),
+        style: theme.typography.xSmall.copyWith(color: color, fontWeight: FontWeight.w800),
       ),
     );
   }
 
-  Widget _metricPill(
-    BuildContext context, {
-    required String label,
-    required String value,
-    required Color color,
-  }) {
+  Widget _metricPill(BuildContext context, {required String label, required String value, required Color color}) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final tokens = _DownloaderLiveInfoTokens.of(context, compact: compact);
@@ -270,10 +212,7 @@ class DownloaderLiveInfo extends StatelessWidget {
         children: [
           Text(
             label,
-            style: theme.typography.xSmall.copyWith(
-              color: cs.mutedForeground,
-              fontWeight: FontWeight.w600,
-            ),
+            style: theme.typography.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
           ),
           SizedBox(width: tokens.size(4)),
           Flexible(
@@ -283,10 +222,7 @@ class DownloaderLiveInfo extends StatelessWidget {
                 value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.typography.xSmall.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: theme.typography.xSmall.copyWith(color: color, fontWeight: FontWeight.w800),
               ),
             ),
           ),
@@ -301,13 +237,8 @@ class DownloaderLiveInfo extends StatelessWidget {
 
   String _formatSessionSize(int bytes) => formatBytes(bytes, decimals: 0);
 
-  String _formatLimit(int bps) => formatBytes(
-    bps,
-    suffix: '/s',
-    showZero: false,
-    decimals: 0,
-    unit: isQb ? 1024 : 1000,
-  );
+  String _formatLimit(int bps) =>
+      formatBytes(bps, suffix: '/s', showZero: false, decimals: 0, unit: isQb ? 1024 : 1000);
 
   String _limitLabel(int bps) {
     if (!info.hasLimit || bps <= 0) return '';
@@ -320,22 +251,13 @@ class _DownloaderLiveInfoTokens {
   final double densityScale;
   final double iconScale;
 
-  const _DownloaderLiveInfoTokens._({
-    required this.densityScale,
-    required this.iconScale,
-  });
+  const _DownloaderLiveInfoTokens._({required this.densityScale, required this.iconScale});
 
-  factory _DownloaderLiveInfoTokens.of(
-    BuildContext context, {
-    required bool compact,
-  }) {
+  factory _DownloaderLiveInfoTokens.of(BuildContext context, {required bool compact}) {
     final theme = shadcn.Theme.of(context);
-    final densityScale =
-        ((theme.density.baseContentPadding / 16.0) *
-                theme.scaling *
-                (compact ? 0.92 : 1.0))
-            .clamp(0.68, 1.28)
-            .toDouble();
+    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling * (compact ? 0.92 : 1.0))
+        .clamp(0.68, 1.28)
+        .toDouble();
     return _DownloaderLiveInfoTokens._(
       densityScale: densityScale,
       iconScale: theme.scaling.clamp(0.82, 1.24).toDouble(),
@@ -347,8 +269,5 @@ class _DownloaderLiveInfoTokens {
   double icon(num value) => value * iconScale;
 
   EdgeInsets edgeSymmetric({num horizontal = 0, num vertical = 0}) =>
-      EdgeInsets.symmetric(
-        horizontal: size(horizontal),
-        vertical: size(vertical),
-      );
+      EdgeInsets.symmetric(horizontal: size(horizontal), vertical: size(vertical));
 }
