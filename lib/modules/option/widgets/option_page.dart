@@ -1290,15 +1290,6 @@ class _WechatBotLoginCardState extends ConsumerState<_WechatBotLoginCard> {
                 ),
                 onLoadStop: (controller, url) async {
                   await controller.scrollTo(x: 0, y: 99999);
-                  await Future<void>.delayed(const Duration(milliseconds: 300));
-                  await controller.evaluateJavascript(
-                    source: '''
-                    document.addEventListener('touchmove', function(e) { e.preventDefault(); }, {passive: false});
-                    document.addEventListener('touchstart', function(e) { e.preventDefault(); }, {passive: false});
-                    document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
-                    document.addEventListener('gesturechange', function(e) { e.preventDefault(); });
-                  ''',
-                  );
                 },
               ),
             ),
