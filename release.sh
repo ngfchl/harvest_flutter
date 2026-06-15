@@ -4,36 +4,43 @@ set -euo pipefail
 REMOTE="origin"
 SOURCE_BRANCH="dev"
 TARGET_BRANCH="master"
-BUILD_BRANCH=""
+BUILD_BRANCH="build"
 PUBSPEC_FILE="pubspec.yaml"
+DRY_RUN=false
 
 usage() {
   cat <<'EOF'
-Usage: ./release.sh [options]
+用法: ./release.sh [选项]
 
-Options:
-  --source <branch>    Source branch to release from. Default: dev
-  --target <branch>    Target branch to merge into. Default: master
-  --build <branch>     Optional build branch to merge source into, for example: build
-  --remote <remote>    Git remote to push to. Default: origin
-  --pubspec <file>     pubspec.yaml path. Default: pubspec.yaml
-  -h, --help           Show this help
+选项:
+  --source <分支>      发布源分支。默认: dev
+  --target <分支>      合并目标分支。默认: master
+  --build <分支>       构建分支，将源分支合并到此分支。默认: build
+  --remote <远程>      Git 远程仓库。默认: origin
+  --pubspec <文件>     pubspec.yaml 路径。默认: pubspec.yaml
+  --dry-run            模拟完整流程，不执行实际 git 操作
+  -h, --help           显示帮助信息
 
-Flow:
-  1. Checkout source branch and pull the latest code.
-  2. Calculate next version from pubspec.yaml.
-  3. Show old_version => new_version and ask for confirmation.
-  4. Update pubspec.yaml and commit the version bump on source branch.
-  5. Ask before merging source branch into target branch.
-  6. Ask before creating the release tag.
-  7. Ask before pushing source, target, optional build branch, and tag.
+流程:
+  1. 切换到源分支并拉取最新代码。
+  2. 根据 pubspec.yaml 计算下一个版本号。
+  3. 显示 旧版本 => 新版本 并请求确认。
+  4. 更新 pubspec.yaml 并在源分支提交版本号变更。
+  5. 确认后将源分支合并到目标分支。
+  6. 确认后将源分支合并到构建分支。
+  7. 确认后创建发布标签。
+  8. 确认后推送源分支、目标分支、构建分支和标签。
 EOF
 }
 
 confirm() {
   local message="$1"
+  if [ "$DRY_RUN" = true ]; then
+    echo "[dry-run] 自动确认: $message"
+    return 0
+  fi
   local answer=""
-  read -r -p "$message [Y/enter to continue] " answer
+  read -r -p "$message [按回车继续] " answer
   case "$answer" in
     ""|y|Y) return 0 ;;
     *) echo "已取消: $message"; return 1 ;;
@@ -42,6 +49,9 @@ confirm() {
 
 run() {
   echo "+ $*"
+  if [ "$DRY_RUN" = true ]; then
+    return 0
+  fi
   "$@"
 }
 
@@ -57,6 +67,10 @@ require_command() {
 }
 
 require_clean_worktree() {
+  if [ "$DRY_RUN" = true ]; then
+    echo "[dry-run] 跳过工作区检查"
+    return 0
+  fi
   if [ -n "$(git status --porcelain)" ]; then
     echo "当前工作区不干净，请先提交或暂存现有改动后再发布。" >&2
     git status --short
@@ -96,6 +110,12 @@ calc_next_version() {
 update_pubspec_version() {
   local file="$1"
   local new_version="$2"
+
+  if [ "$DRY_RUN" = true ]; then
+    echo "[dry-run] 将更新 $file 中版本号为 $new_version"
+    return 0
+  fi
+
   local tmp_file
 
   tmp_file="$(mktemp)"
@@ -142,6 +162,10 @@ while [ "$#" -gt 0 ]; do
       PUBSPEC_FILE="${2:-}"
       shift 2
       ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -160,6 +184,12 @@ require_command date
 require_command mktemp
 
 cd "$(git rev-parse --show-toplevel)"
+
+if [ "$DRY_RUN" = true ]; then
+  echo "========================================="
+  echo "  DRY-RUN 模式：不会执行实际 git 操作"
+  echo "========================================="
+fi
 
 if [ ! -f "$PUBSPEC_FILE" ]; then
   echo "未找到文件: $PUBSPEC_FILE" >&2
@@ -197,7 +227,7 @@ confirm "确认提交版本号 $NEW_VERSION 到 $SOURCE_BRANCH" || {
 }
 
 run git add "$PUBSPEC_FILE"
-run git commit -m "update. 更新版本号：$NEW_VERSION"
+run git commit -m "release: 更新版本号 $NEW_VERSION"
 
 confirm "确认将 $SOURCE_BRANCH 合并到 $TARGET_BRANCH" || exit 1
 run git checkout "$TARGET_BRANCH"
@@ -212,9 +242,11 @@ if [ -n "$BUILD_BRANCH" ]; then
 fi
 
 confirm "确认创建标签 $TAG_NAME" || exit 1
-if git rev-parse "refs/tags/$TAG_NAME" >/dev/null 2>&1; then
-  echo "标签已存在: $TAG_NAME" >&2
-  exit 1
+if [ "$DRY_RUN" = false ]; then
+  if git rev-parse "refs/tags/$TAG_NAME" >/dev/null 2>&1; then
+    echo "标签已存在: $TAG_NAME" >&2
+    exit 1
+  fi
 fi
 run git tag "$TAG_NAME" "$SOURCE_BRANCH"
 
