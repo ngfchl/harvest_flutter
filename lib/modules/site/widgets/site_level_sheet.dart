@@ -703,7 +703,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
     if (dl > 0) parts.add('↓${fmtBytes(dl)}');
     if (lv.score > 0) parts.add('做种积分${fmtCompact(lv.score.toDouble())}');
     if (lv.bonus > 0) parts.add('魔力${fmtCompact(lv.bonus)}');
-    if (lv.torrents > 0) parts.add('做种${lv.torrents}');
+    if (lv.torrents > 0) parts.add('发种${lv.torrents}');
     return parts.isEmpty ? '-' : parts.join(' ');
   }
 
