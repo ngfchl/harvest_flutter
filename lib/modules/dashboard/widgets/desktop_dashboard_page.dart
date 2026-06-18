@@ -1232,6 +1232,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     final duration = ref.watch(serverResourceDurationProvider);
     final remaining = ref.watch(serverResourceRemainingProvider);
     final privacy = ref.watch(privacyModeProvider);
+    final autoRefresh = ref.watch(serverResourceAutoStartProvider);
     final data = state.data;
     final running = state.running;
     final statusText = state.error != null
@@ -1239,11 +1240,6 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         : running
         ? '监控中'
         : '已停止';
-    final statusColor = state.error != null
-        ? _red
-        : running
-        ? _green
-        : _muted;
     final remainingText = running
         ? '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}'
         : '${duration}min';
@@ -1256,66 +1252,63 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                width: tokens.size(3),
-                height: tokens.size(15),
-                color: _cyan,
-              ),
-              tokens.hGap(8),
-              Text(
-                '服务器状态',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: _text,
-                  fontSize: tokens.font(15),
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              tokens.hGap(12),
-              Expanded(
-                child: Text(
-                  '$serverHost · ${interval}s · $remainingText',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: _muted,
-                    fontSize: tokens.font(11),
-                    fontWeight: FontWeight.w600,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: tokens.size(3),
+                    height: tokens.size(15),
+                    color: _cyan,
                   ),
-                ),
-              ),
-              tokens.hGap(10),
-              Container(
-                padding: tokens.edgeSymmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.14),
-                  borderRadius: shadcn.Theme.of(context).borderRadiusXl,
-                  border: Border.all(
-                    color: statusColor.withValues(alpha: 0.28),
+                  tokens.hGap(8),
+                  Text(
+                    '服务器状态',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: _text,
+                      fontSize: tokens.font(15),
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
-                ),
-                child: Text(
-                  statusText,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: tokens.font(11),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                ],
               ),
-              tokens.hGap(8),
-              shadcn.IconButton.ghost(
-                onPressed: () =>
-                    ref.read(serverResourceProvider.notifier).toggle(),
-                icon: Icon(
-                  running ? shadcn.LucideIcons.pause : shadcn.LucideIcons.play,
-                  size: tokens.size(15),
-                  color: running ? _red : _green,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$serverHost · ${interval}s · $remainingText',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: _muted,
+                      fontSize: tokens.font(11),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  tokens.hGap(8),
+                  Tooltip(
+                    message: statusText,
+                    child: shadcn.IconButton.ghost(
+                      onPressed: () =>
+                          ref.read(serverResourceProvider.notifier).toggle(),
+                      icon: running && state.data == null
+                          ? shadcn.CircularProgressIndicator(
+                              size: tokens.size(15),
+                              strokeWidth: 2,
+                            )
+                          : Icon(
+                              running
+                                  ? shadcn.LucideIcons.pause
+                                  : shadcn.LucideIcons.play,
+                              size: tokens.size(15),
+                              color: running ? _red : _green,
+                            ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1327,7 +1320,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                 Expanded(
                   child: _serverResourceMetric(
                     'CPU',
-                    '${(data?.cpu.percent ?? 0).toStringAsFixed(1)}%',
+                    '${(data?.cpu.percent ?? 0).toStringAsFixed(2)}%',
                     '${(data?.cpu.limitCores ?? 0).toStringAsFixed(1)} 核',
                     _blue,
                     shadcn.LucideIcons.cpu,
@@ -1337,7 +1330,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                 Expanded(
                   child: _serverResourceMetric(
                     '内存',
-                    '${(data?.memory.percent ?? 0).toStringAsFixed(1)}%',
+                    '${(data?.memory.percent ?? 0).toStringAsFixed(2)}%',
                     '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)}',
                     _violet,
                     shadcn.LucideIcons.memoryStick,
@@ -1377,6 +1370,20 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     history: state.history,
                     valueOf: (item) => item.cpu.percent,
                     color: _blue,
+                    displayValue: '${(data?.cpu.percent ?? 0).toStringAsFixed(2)}%',
+                    formatY: (v) => '${v.toStringAsFixed(0)}%',
+                  ),
+                ),
+                tokens.hGap(10),
+                Expanded(
+                  child: _serverResourceUsageChart(
+                    title: '内存',
+                    value: 0,
+                    history: state.history,
+                    valueOf: (item) => item.memory.workingSet.toDouble(),
+                    color: _violet,
+                    displayValue: '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)}',
+                    formatY: formatBytes,
                   ),
                 ),
                 tokens.hGap(10),
@@ -1385,7 +1392,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     title: '内存占用',
                     value: data?.memory.percent ?? 0,
                     displayValue:
-                        '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)} · ${(data?.memory.percent ?? 0).toStringAsFixed(1)}%',
+                        '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)} · ${(data?.memory.percent ?? 0).toStringAsFixed(2)}%',
                     history: state.history,
                     valueOf: (item) => item.memory.percent,
                     color: _violet,
@@ -1406,14 +1413,15 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     required double Function(ServerResourceStatus item) valueOf,
     required Color color,
     String? displayValue,
+    String Function(double)? formatY,
   }) {
     final tokens = _tokens;
     final points = _serverResourceUsagePoints(history, valueOf);
-    final maxValue = points.isEmpty
-        ? 100.0
-        : (points.map((p) => p.value).reduce((a, b) => a > b ? a : b) * 1.1)
-              .clamp(20.0, 100.0);
-    final interval = maxValue <= 30 ? 10.0 : maxValue <= 60 ? 20.0 : 50.0;
+    final dataMax = points.isEmpty
+        ? 0.0
+        : points.map((p) => p.value).reduce((a, b) => a > b ? a : b);
+    final maxValue = dataMax <= 0 ? 100.0 : dataMax * 2;
+    final interval = maxValue <= 30 ? 10.0 : maxValue <= 60 ? 20.0 : maxValue <= 200 ? 50.0 : maxValue / 5;
     final valueText = displayValue ?? '${value.toStringAsFixed(1)}%';
 
     return Container(
@@ -1482,16 +1490,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                       minimum: 0,
                       maximum: maxValue,
                       interval: interval,
+                      isVisible: false,
                       axisLine: const AxisLine(width: 0),
                       majorTickLines: const MajorTickLines(size: 0),
                       majorGridLines: MajorGridLines(
                         width: 0.6,
                         color: _line.withValues(alpha: 0.55),
-                      ),
-                      labelStyle: _axisStyle(),
-                      axisLabelFormatter: (details) => ChartAxisLabel(
-                        '${details.value.toInt()}%',
-                        _axisStyle(),
                       ),
                     ),
                     series: <CartesianSeries>[
@@ -1522,7 +1526,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           : '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
       return _ServerResourceUsagePoint(
         label,
-        valueOf(entry.value).clamp(0, 100).toDouble(),
+        valueOf(entry.value).toDouble(),
       );
     }).toList();
   }

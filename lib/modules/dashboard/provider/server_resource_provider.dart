@@ -11,7 +11,7 @@ import '../service/server_resource_service.dart';
 
 const kDefaultServerResourceInterval = 5;
 const kDefaultServerResourceDuration = 5;
-const kDefaultServerResourceAutoStart = false;
+const kDefaultServerResourceAutoStart = true;
 const kMinServerResourceInterval = 1;
 const kMaxServerResourceInterval = 60;
 const kMinServerResourceDuration = 1;
@@ -197,8 +197,9 @@ class ServerResourceNotifier extends StateNotifier<ServerResourceState> {
           connected: true,
           clearError: true,
         );
-        if (_stopAfterFirstData) {
-          stop();
+        if (_stopAfterFirstData && !_continuousRefresh) {
+          _stopAfterFirstData = false;
+          _finishStopped();
         }
       },
       onError: (error) {

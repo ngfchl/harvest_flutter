@@ -412,6 +412,7 @@ extension _PhoneDashboardView on _DashboardPageState {
     final state = ref.watch(serverResourceProvider);
     final interval = ref.watch(serverResourceIntervalProvider);
     final remaining = ref.watch(serverResourceRemainingProvider);
+    final autoRefresh = ref.watch(serverResourceAutoStartProvider);
     final data = state.data;
     final running = state.running;
     final statusText = state.error != null
@@ -419,11 +420,6 @@ extension _PhoneDashboardView on _DashboardPageState {
         : running
         ? '监控中'
         : '已停止';
-    final statusColor = state.error != null
-        ? _phoneErrorColor
-        : running
-        ? _phoneSuccessColor
-        : cs.mutedForeground;
     final remainingText =
         '${remaining ~/ 60}:${(remaining % 60).toString().padLeft(2, '0')}';
     final latestText = data?.timestamp == null
@@ -436,44 +432,40 @@ extension _PhoneDashboardView on _DashboardPageState {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(child: Text('服务器状态', style: _phoneTitleStyle(17))),
-              if (running) ...[
-                Flexible(
-                  child: Text(
-                    '间隔 ${interval}s · 运行 $remainingText',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.right,
-                    style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-                      color: cs.mutedForeground,
-                      fontWeight: FontWeight.w700,
+              Text('服务器状态', style: _phoneTitleStyle(17)),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (running) ...[
+                    Text(
+                      '间隔 ${interval}s · 运行 $remainingText',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: shadcn.Theme.of(context).typography.xSmall.copyWith(
+                        color: cs.mutedForeground,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                  Tooltip(
+                    message: statusText,
+                    child: shadcn.IconButton.ghost(
+                      onPressed: () =>
+                          ref.read(serverResourceProvider.notifier).toggle(),
+                      icon: running && state.data == null
+                          ? shadcn.CircularProgressIndicator(size: 17, strokeWidth: 2)
+                          : Icon(
+                              running
+                                  ? shadcn.LucideIcons.pause
+                                  : shadcn.LucideIcons.play,
+                              size: 17,
+                            ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 6),
-              ],
-              shadcn.Card(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                filled: true,
-                fillColor: statusColor.withValues(alpha: 0.12),
-                borderColor: statusColor.withValues(alpha: 0.16),
-                child: Text(
-                  statusText,
-                  style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-                    color: statusColor,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              shadcn.IconButton.ghost(
-                onPressed: () =>
-                    ref.read(serverResourceProvider.notifier).toggle(),
-                icon: Icon(
-                  running ? shadcn.LucideIcons.pause : shadcn.LucideIcons.play,
-                  size: 17,
-                ),
+                ],
               ),
             ],
           ),
@@ -512,7 +504,7 @@ extension _PhoneDashboardView on _DashboardPageState {
                 child: _buildServerResourceMetric(
                   icon: shadcn.LucideIcons.cpu,
                   label: 'CPU',
-                  value: '${(data?.cpu.percent ?? 0).toStringAsFixed(1)}%',
+            value: '${(data?.cpu.percent ?? 0).toStringAsFixed(2)}%',
                   subtitle:
                       '${(data?.cpu.limitCores ?? 0).toStringAsFixed(1)} 核',
                   color: _phoneCpuChartColor,
@@ -523,7 +515,7 @@ extension _PhoneDashboardView on _DashboardPageState {
                 child: _buildServerResourceMetric(
                   icon: shadcn.LucideIcons.memoryStick,
                   label: '内存',
-                  value: '${(data?.memory.percent ?? 0).toStringAsFixed(1)}%',
+                  value: '${(data?.memory.percent ?? 0).toStringAsFixed(2)}%',
                   subtitle:
                       '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)}',
                   color: _phoneMemoryChartColor,
@@ -556,21 +548,25 @@ extension _PhoneDashboardView on _DashboardPageState {
             ],
           ),
           const SizedBox(height: 12),
-          _buildServerResourceUsageChart(
-            title: 'CPU 占用',
-            value: data?.cpu.percent ?? 0,
-            history: state.history,
-            valueOf: (item) => item.cpu.percent,
-            color: _phoneCpuChartColor,
-          ),
-          const SizedBox(height: 10),
-          _buildServerResourceUsageChart(
-            title: '内存占用',
-            value: data?.memory.percent ?? 0,
-            history: state.history,
-            valueOf: (item) => item.memory.percent,
-            color: _phoneMemoryChartColor,
-          ),
+          if (autoRefresh) ...[
+            _buildServerResourceUsageChart(
+              title: 'CPU 占用',
+              value: '${(data?.cpu.percent ?? 0).toStringAsFixed(2)}%',
+              history: state.history,
+              valueOf: (item) => item.cpu.percent,
+              color: _phoneCpuChartColor,
+              formatY: (v) => '${v.toStringAsFixed(0)}%',
+            ),
+            const SizedBox(height: 10),
+            _buildServerResourceUsageChart(
+              title: '内存占用',
+              value: '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)}',
+              history: state.history,
+              valueOf: (item) => item.memory.workingSet.toDouble(),
+              color: _phoneMemoryChartColor,
+              formatY: formatBytes,
+            ),
+          ],
         ],
       ),
     );
@@ -578,18 +574,19 @@ extension _PhoneDashboardView on _DashboardPageState {
 
   Widget _buildServerResourceUsageChart({
     required String title,
-    required double value,
+    required dynamic value,
     required List<ServerResourceStatus> history,
     required double Function(ServerResourceStatus item) valueOf,
     required Color color,
+    String Function(double)? formatY,
   }) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final points = _serverResourceUsagePoints(history, valueOf);
-    final maxValue = points.isEmpty
-        ? 100.0
-        : (points.map((p) => p.value).reduce((a, b) => a > b ? a : b) * 1.1)
-              .clamp(20.0, 100.0);
-    final interval = maxValue <= 30 ? 10.0 : maxValue <= 60 ? 20.0 : 50.0;
+    final dataMax = points.isEmpty
+        ? 0.0
+        : points.map((p) => p.value).reduce((a, b) => a > b ? a : b);
+    final maxValue = dataMax <= 0 ? 100.0 : dataMax * 2;
+    final interval = maxValue <= 30 ? 10.0 : maxValue <= 60 ? 20.0 : maxValue <= 200 ? 50.0 : maxValue / 5;
 
     return SizedBox(
       height: 132,
@@ -615,7 +612,7 @@ extension _PhoneDashboardView on _DashboardPageState {
                   ),
                 ),
                 Text(
-                  '${value.toStringAsFixed(1)}%',
+                  value is double ? '${value.toStringAsFixed(1)}%' : '$value',
                   style: shadcn.Theme.of(context).typography.small.copyWith(
                     color: color,
                     fontWeight: FontWeight.w900,
@@ -647,21 +644,12 @@ extension _PhoneDashboardView on _DashboardPageState {
                         minimum: 0,
                         maximum: maxValue,
                         interval: interval,
+                        isVisible: false,
                         axisLine: const AxisLine(width: 0),
                         majorTickLines: const MajorTickLines(size: 0),
                         majorGridLines: MajorGridLines(
                           width: 0.5,
                           color: cs.border.withValues(alpha: 0.42),
-                        ),
-                        labelStyle: shadcn.Theme.of(context).typography.xSmall
-                            .copyWith(
-                              color: cs.mutedForeground,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
-                            ),
-                        axisLabelFormatter: (details) => ChartAxisLabel(
-                          '${details.value.toInt()}%',
-                          details.textStyle,
                         ),
                       ),
                       series: <CartesianSeries>[
@@ -694,7 +682,7 @@ extension _PhoneDashboardView on _DashboardPageState {
           : '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
       return _ServerResourceUsagePoint(
         label,
-        valueOf(entry.value).clamp(0, 100).toDouble(),
+        valueOf(entry.value).toDouble(),
       );
     }).toList();
   }

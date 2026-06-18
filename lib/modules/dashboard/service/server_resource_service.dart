@@ -18,37 +18,43 @@ class ServerResourceService {
     try {
       client = HttpClient()
         ..autoUncompress = false
-        ..maxConnectionsPerHost = 5  // 限制连接数，避免资源耗尽
-        ..idleTimeout = const Duration(seconds: 60);  // 设置空闲超时
-      
+        ..maxConnectionsPerHost = 5
+        ..idleTimeout = const Duration(seconds: 60);
+
       final uri = Uri.parse(
         '${AppConfig.baseUrl}${API.SERVER_STATUS}',
       ).replace(queryParameters: {'interval': '$interval'});
       AppLogger.debug('[SSE] server resource open uri=$uri interval=$interval');
-      final request = await client.getUrl(uri);
-      AppLogger.debug(
-        '[SSE] server resource request ready elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)}',
-      );
-      request.headers.set('Accept-Encoding', 'identity');
-      request.headers.set('Accept', 'text/event-stream');
-      request.headers.set('Cache-Control', 'no-cache');
 
-      final token = HiveManager.get<String>(StorageKeys.accessToken);
-      if (token != null && token.isNotEmpty) {
-        request.headers.set('Authorization', 'Bearer $token');
+      var token = HiveManager.get<String>(StorageKeys.accessToken);
+      var response = await _doConnect(client, uri, token, stopwatch);
+
+      if (response.statusCode == 401) {
+        final oldToken = token;
+        AppLogger.info('[SSE] server resource 401, waiting for token refresh...');
+        await Future<void>.delayed(const Duration(seconds: 2));
+        final freshToken = HiveManager.get<String>(StorageKeys.accessToken);
+        if (freshToken != null && freshToken.isNotEmpty && freshToken != oldToken) {
+          AppLogger.info('[SSE] server resource retrying with refreshed token');
+          client.close(force: true);
+          client = HttpClient()
+            ..autoUncompress = false
+            ..maxConnectionsPerHost = 5
+            ..idleTimeout = const Duration(seconds: 60);
+          response = await _doConnect(client, uri, freshToken, stopwatch);
+        } else {
+          throw HttpException('服务器状态连接失败: 401', uri: uri);
+        }
       }
 
-      AppLogger.info('[SSE] server resource connecting interval=$interval');
-      final response = await request.close();
-      AppLogger.info(
-        '[SSE] server resource connected status=${response.statusCode}',
-      );
-      AppLogger.debug(
-        '[SSE] server resource connected status=${response.statusCode} elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)}',
-      );
       if (response.statusCode < 200 || response.statusCode >= 300) {
         throw HttpException('服务器状态连接失败: ${response.statusCode}', uri: uri);
       }
+
+      AppLogger.info('[SSE] server resource connected status=${response.statusCode}');
+      AppLogger.debug(
+        '[SSE] server resource connected status=${response.statusCode} elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)}',
+      );
 
       String buffer = '';
       await for (final chunk in response) {
@@ -96,6 +102,26 @@ class ServerResourceService {
       );
       AppLogger.info('[SSE] server resource closed events=$eventCount');
     }
+  }
+
+  static Future<HttpClientResponse> _doConnect(
+    HttpClient client,
+    Uri uri,
+    String? token,
+    Stopwatch stopwatch,
+  ) async {
+    AppLogger.debug('[SSE] server resource request ready elapsed=${_formatElapsed(stopwatch.elapsedMilliseconds)}');
+    final request = await client.getUrl(uri);
+    request.headers.set('Accept-Encoding', 'identity');
+    request.headers.set('Accept', 'text/event-stream');
+    request.headers.set('Cache-Control', 'no-cache');
+
+    if (token != null && token.isNotEmpty) {
+      request.headers.set('Authorization', 'Bearer $token');
+    }
+
+    AppLogger.info('[SSE] server resource connecting');
+    return request.close();
   }
 
   static String _formatElapsed(int milliseconds) =>
