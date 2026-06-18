@@ -189,7 +189,7 @@ class SiteCard extends ConsumerWidget {
           if (levelText.isNotEmpty) _levelBadge(context, levelText),
           if (signStatus != null) ...[
             const SizedBox(width: 4),
-            _signBadge(context, signStatus),
+            _signBadge(context, signStatus, onTap: () => openDetail(context, site)),
           ],
         ],
       ],
@@ -597,10 +597,10 @@ class SiteCard extends ConsumerWidget {
     );
   }
 
-  Widget _signBadge(BuildContext context, String text) {
+  Widget _signBadge(BuildContext context, String text, {VoidCallback? onTap}) {
     final ok = text.contains('已');
     final color = ok ? siteSuccess(context) : siteWarning(context);
-    return _pillBadge(
+    final badge = _pillBadge(
       context,
       icon: ok ? Icons.check_circle : Icons.pending,
       text: text,
@@ -609,6 +609,12 @@ class SiteCard extends ConsumerWidget {
       height: 20,
       fontSize: 9,
       iconSize: 11,
+    );
+    if (onTap == null) return badge;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: badge,
     );
   }
 
@@ -1164,10 +1170,10 @@ Widget _pillBadge(
   );
 }
 
-Widget _siteSignBadge(BuildContext context, String text) {
+Widget _siteSignBadge(BuildContext context, String text, {VoidCallback? onTap}) {
   final signed = text == '已签到';
   final color = signed ? siteSuccess(context) : siteWarning(context);
-  return _pillBadge(
+  final badge = _pillBadge(
     context,
     icon: signed ? Icons.check_circle : Icons.pending,
     text: text,
@@ -1176,6 +1182,12 @@ Widget _siteSignBadge(BuildContext context, String text) {
     height: 22,
     fontSize: 10,
     iconSize: 12,
+  );
+  if (onTap == null) return badge;
+  return GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: onTap,
+    child: badge,
   );
 }
 
@@ -1409,7 +1421,7 @@ class SiteCard2 extends ConsumerWidget {
                           ],
                           if (signStatus != null) ...[
                             const SizedBox(width: 8),
-                            _siteSignBadge(context, signStatus),
+                            _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
                           ],
                         ],
                       ),
@@ -1478,7 +1490,7 @@ class SiteCard2 extends ConsumerWidget {
                   ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 6),
-                    _siteSignBadge(context, signStatus),
+                    _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
                   ],
                   const SizedBox(width: 6),
                   Icon(
@@ -1977,7 +1989,7 @@ class SiteCard3 extends ConsumerWidget {
                             Expanded(child: _title(context)),
                             if (signStatus != null) ...[
                               const SizedBox(width: 6),
-                              _siteSignBadge(context, signStatus),
+                              _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
                             ],
                           ],
                         ),
@@ -2046,7 +2058,7 @@ class SiteCard3 extends ConsumerWidget {
                   ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 6),
-                    _siteSignBadge(context, signStatus),
+                    _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
                   ],
                 ],
               ),
@@ -2693,7 +2705,7 @@ class SiteCard4 extends SiteCard3 {
                             Expanded(child: _title(context)),
                             if (signStatus != null) ...[
                               const SizedBox(width: 6),
-                              _siteSignBadge(context, signStatus),
+                              _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
                             ],
                           ],
                         ),
@@ -2768,7 +2780,7 @@ class SiteCard4 extends SiteCard3 {
                     ],
                     if (signStatus != null) ...[
                       const SizedBox(width: 6),
-                      _siteSignBadge(context, signStatus),
+                      _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
                     ],
                   ],
                 ),
