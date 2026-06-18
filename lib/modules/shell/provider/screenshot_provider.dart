@@ -31,7 +31,8 @@ void unregisterPageScrollController(
   int pageIndex,
   ScrollController controller,
 ) {
-  final notifier = ref.read(pageScrollControllersProvider.notifier);
+  final container = ref.container;
+  final notifier = container.read(pageScrollControllersProvider.notifier);
   final current = notifier.state;
   if (current[pageIndex] != controller) return;
   final next = Map<int, ScrollController>.of(current)..remove(pageIndex);
