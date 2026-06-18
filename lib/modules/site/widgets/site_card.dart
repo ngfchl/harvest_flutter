@@ -1089,7 +1089,7 @@ Widget _siteBrowserLogo({
 }
 
 Widget _siteTooltip(String text, Widget child) {
-  return shadcn.Tooltip(tooltip: (_) => Text(text), child: child);
+  return Tooltip(message: text, preferBelow: false, child: child);
 }
 
 enum _SiteLevelMilestone {
@@ -2026,10 +2026,6 @@ class SiteCard3 extends ConsumerWidget {
                 height: centerHeight,
                 child: Center(child: _siteLogo(context, config, 44)),
               ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: _actionMenuButton(context, ref),
-            ),
           ],
         );
       },
@@ -2452,30 +2448,7 @@ class SiteCard3 extends ConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(width: 10),
-        _actionMenuButton(context, ref),
       ],
-    );
-  }
-
-  Widget _actionMenuButton(BuildContext context, WidgetRef ref) {
-    return Builder(
-      builder: (buttonContext) => GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          final renderObject = buttonContext.findRenderObject();
-          final position = renderObject is RenderBox
-              ? renderObject.localToGlobal(Offset(renderObject.size.width, 0))
-              : Offset.zero;
-          showSiteActionMenu(
-            context: buttonContext,
-            ref: ref,
-            site: site,
-            position: position,
-          );
-        },
-        child: _moreCircle(context),
-      ),
     );
   }
 
@@ -2551,30 +2524,6 @@ class SiteCard3 extends ConsumerWidget {
       invitation,
       height: _statusBadgeHeight,
       emojiLabel: true,
-    );
-  }
-
-  Widget _moreCircle(BuildContext context) {
-    return Container(
-      width: 32,
-      height: 32,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: _isDark(context)
-              ? shadcn.Theme.of(context).colorScheme.border
-              : siteInfo(context, alpha: 0.34),
-          width: 1.4,
-        ),
-      ),
-      child: Icon(
-        Icons.more_horiz,
-        size: 20,
-        color: _isDark(context)
-            ? shadcn.Theme.of(context).colorScheme.mutedForeground
-            : siteInfo(context),
-      ),
     );
   }
 
@@ -2745,10 +2694,6 @@ class SiteCard4 extends SiteCard3 {
             SizedBox(
               height: centerHeight,
               child: Center(child: _siteLogo(context, config, 44)),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: _actionMenuButton(context, ref),
             ),
           ],
         );
@@ -3193,8 +3138,6 @@ class SiteCard4 extends SiteCard3 {
             ),
           ),
         ),
-        const SizedBox(width: 8),
-        _actionMenuButton(context, ref),
       ],
     );
   }
