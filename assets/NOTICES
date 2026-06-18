@@ -2411,8 +2411,10 @@ go_router
 image_picker_for_web
 image_picker_macos
 image_picker_platform_interface
+path_provider
 path_provider_android
 path_provider_foundation
+path_provider_platform_interface
 url_launcher_android
 url_launcher_ios
 url_launcher_linux
@@ -7058,9 +7060,7 @@ flutter_lints
 flutter_markdown_plus
 image_picker_linux
 image_picker_windows
-path_provider
 path_provider_linux
-path_provider_platform_interface
 path_provider_windows
 plugin_platform_interface
 url_launcher
