@@ -1409,6 +1409,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }) {
     final tokens = _tokens;
     final points = _serverResourceUsagePoints(history, valueOf);
+    final maxValue = points.isEmpty
+        ? 100.0
+        : (points.map((p) => p.value).reduce((a, b) => a > b ? a : b) * 1.1)
+              .clamp(20.0, 100.0);
+    final interval = maxValue <= 30 ? 10.0 : maxValue <= 60 ? 20.0 : 50.0;
     final valueText = displayValue ?? '${value.toStringAsFixed(1)}%';
 
     return Container(
@@ -1475,8 +1480,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     ),
                     primaryYAxis: NumericAxis(
                       minimum: 0,
-                      maximum: 100,
-                      interval: 50,
+                      maximum: maxValue,
+                      interval: interval,
                       axisLine: const AxisLine(width: 0),
                       majorTickLines: const MajorTickLines(size: 0),
                       majorGridLines: MajorGridLines(

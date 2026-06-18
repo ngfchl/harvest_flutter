@@ -585,6 +585,11 @@ extension _PhoneDashboardView on _DashboardPageState {
   }) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final points = _serverResourceUsagePoints(history, valueOf);
+    final maxValue = points.isEmpty
+        ? 100.0
+        : (points.map((p) => p.value).reduce((a, b) => a > b ? a : b) * 1.1)
+              .clamp(20.0, 100.0);
+    final interval = maxValue <= 30 ? 10.0 : maxValue <= 60 ? 20.0 : 50.0;
 
     return SizedBox(
       height: 132,
@@ -640,8 +645,8 @@ extension _PhoneDashboardView on _DashboardPageState {
                       ),
                       primaryYAxis: NumericAxis(
                         minimum: 0,
-                        maximum: 100,
-                        interval: 50,
+                        maximum: maxValue,
+                        interval: interval,
                         axisLine: const AxisLine(width: 0),
                         majorTickLines: const MajorTickLines(size: 0),
                         majorGridLines: MajorGridLines(
