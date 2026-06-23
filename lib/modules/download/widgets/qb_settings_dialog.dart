@@ -360,7 +360,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     } catch (e) {
       setState(() {
         _loading = false;
-        _error = '加载失败: $e';
+        _error = _parseError(e);
       });
     }
   }
@@ -702,6 +702,22 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       double.tryParse(c.text.trim()) ?? d;
 
   String _ps(TextEditingController c) => c.text.trim();
+
+  String _parseError(Object e) {
+    final s = e.toString();
+    if (s.contains('connection refused') || s.contains('Connection refused')) {
+      return '无法连接到下载器，请检查地址和端口是否正确';
+    }
+    if (s.contains('Connection timed out') || s.contains('timeout')) {
+      return '连接超时，请检查网络或下载器地址';
+    }
+    if (s.contains('SocketException')) {
+      return '网络连接失败，请检查网络设置';
+    }
+    final msg = s.replaceFirst(RegExp(r'^Exception:\s*'), '');
+    final shortMsg = msg.length > 80 ? '${msg.substring(0, 80)}...' : msg;
+    return '加载失败: $shortMsg';
+  }
 
   // ━━━━━━━━━━━━━ 行为 ━━━━━━━━━━━━━
   Widget _behaviorContent(shadcn.ThemeData t) => Column(
@@ -1538,24 +1554,40 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                     )
                   : _error != null
                   ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            shadcn.LucideIcons.circleAlert,
-                            size: 32,
-                            color: t.colorScheme.mutedForeground.withValues(
-                              alpha: 0.3,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              shadcn.LucideIcons.cloudOff,
+                              size: 48,
+                              color: t.colorScheme.mutedForeground.withValues(
+                                alpha: 0.4,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _error!,
-                            style: t.typography.small.copyWith(
-                              color: t.colorScheme.mutedForeground,
+                            const SizedBox(height: 16),
+                            Text(
+                              _error!,
+                              textAlign: TextAlign.center,
+                              style: t.typography.small.copyWith(
+                                color: t.colorScheme.mutedForeground,
+                                height: 1.5,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 20),
+                            shadcn.Button.outline(
+                              onPressed: () {
+                                setState(() {
+                                  _loading = true;
+                                  _error = null;
+                                });
+                                _loadPrefs();
+                              },
+                              child: const Text('重试'),
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   : _isMobile
@@ -1723,9 +1755,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
         Toast.success('设置已保存');
       }
     } catch (e) {
-      String msg = "QB 设置保存失败！$e";
-
-      Toast.error(msg);
+      Toast.error(_parseError(e));
     } finally {
       if (mounted) setState(() => _saving = false);
     }

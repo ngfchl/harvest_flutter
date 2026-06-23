@@ -117,7 +117,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
     } catch (e) {
       setState(() {
         _loading = false;
-        _error = '加载失败: $e';
+        _error = _parseError(e);
       });
     }
   }
@@ -206,6 +206,22 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
     return h * 60 + m;
   }
 
+  String _parseError(Object e) {
+    final s = e.toString();
+    if (s.contains('connection refused') || s.contains('Connection refused')) {
+      return '无法连接到下载器，请检查地址和端口是否正确';
+    }
+    if (s.contains('Connection timed out') || s.contains('timeout')) {
+      return '连接超时，请检查网络或下载器地址';
+    }
+    if (s.contains('SocketException')) {
+      return '网络连接失败，请检查网络设置';
+    }
+    final msg = s.replaceFirst(RegExp(r'^Exception:\s*'), '');
+    final shortMsg = msg.length > 80 ? '${msg.substring(0, 80)}...' : msg;
+    return '加载失败: $shortMsg';
+  }
+
   int _speedLimitDisplay(String key, int fallback) {
     if (!_rawPrefs.containsKey(key)) return fallback;
     final raw = _rawPrefs[key];
@@ -290,11 +306,10 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         Toast.success('设置已保存');
       }
     } catch (e, trace) {
-      String msg = "Tr 设置保存失败！$e";
-      AppLogger.error(msg);
-      AppLogger.error("Tr 设置保存失败！$trace");
+      AppLogger.error('TR 设置保存失败: $e');
+      AppLogger.error('TR 设置保存失败: $trace');
       if (mounted) {
-        Toast.error(msg);
+        Toast.error(_parseError(e));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -392,13 +407,31 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
 
   Widget _buildError(shadcn.ThemeData theme) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(shadcn.LucideIcons.info, size: 32, color: theme.colorScheme.mutedForeground.withValues(alpha: 0.3)),
-          const SizedBox(height: 8),
-          Text(_error!, style: theme.typography.small.copyWith(color: theme.colorScheme.mutedForeground)),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(shadcn.LucideIcons.cloudOff, size: 48, color: theme.colorScheme.mutedForeground.withValues(alpha: 0.4)),
+            const SizedBox(height: 16),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: theme.typography.small.copyWith(color: theme.colorScheme.mutedForeground, height: 1.5),
+            ),
+            const SizedBox(height: 20),
+            shadcn.Button.outline(
+              onPressed: () {
+                setState(() {
+                  _loading = true;
+                  _error = null;
+                });
+                _loadPrefs();
+              },
+              child: const Text('重试'),
+            ),
+          ],
+        ),
       ),
     );
   }

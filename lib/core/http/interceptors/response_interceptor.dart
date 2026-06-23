@@ -43,7 +43,7 @@ class ResponseInterceptor extends Interceptor {
       'code=${data is Map ? data['code'] : '-'} msg=${msg ?? '-'}',
     );
     if (!suppressErrorToast(response.requestOptions)) {
-      Toast.error(requestToastMessage(response.requestOptions, msg ?? '请求失败'));
+      Toast.error(requestToastMessage(response.requestOptions, _parseErrorMsg(msg ?? '请求失败')));
     }
 
     return handler.reject(
@@ -82,5 +82,20 @@ class ResponseInterceptor extends Interceptor {
     final code = data['code'];
     if (data['succeed'] != true && code is num && code != 0) return false;
     return true;
+  }
+
+  static String _parseErrorMsg(String msg) {
+    if (msg.contains('connection refused') || msg.contains('Connection refused')) {
+      return '无法连接到下载器，请检查地址和端口是否正确';
+    }
+    if (msg.contains('Connection timed out') || msg.contains('timeout')) {
+      return '连接超时，请检查网络或下载器地址';
+    }
+    if (msg.contains('SocketException')) {
+      return '网络连接失败，请检查网络设置';
+    }
+    final cleaned = msg.replaceFirst(RegExp(r'^.*?：'), '');
+    if (cleaned.length > 80) return '${cleaned.substring(0, 80)}...';
+    return cleaned;
   }
 }
