@@ -13,11 +13,7 @@ class TrSettingsDialog extends ConsumerStatefulWidget {
   final Downloader downloader;
   final int initialIndex;
 
-  const TrSettingsDialog({
-    super.key,
-    required this.downloader,
-    this.initialIndex = 0,
-  });
+  const TrSettingsDialog({super.key, required this.downloader, this.initialIndex = 0});
 
   @override
   ConsumerState<TrSettingsDialog> createState() => _TrSettingsDialogState();
@@ -106,6 +102,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
   Future<void> _loadPrefs() async {
     try {
       final prefs = await DownloaderService.fetchPrefs(d.id);
+      AppLogger.debug("当前配置信息：$prefs");
       if (prefs == null) {
         setState(() {
           _loading = false;
@@ -135,24 +132,12 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
     _renamePartial = p.renamePartialFiles;
 
     // 限速
-    _speedDownCtrl.text = _speedLimitDisplay(
-      'speed-limit-down',
-      p.speedLimitDown,
-    ).toString();
-    _speedUpCtrl.text = _speedLimitDisplay(
-      'speed-limit-up',
-      p.speedLimitUp,
-    ).toString();
+    _speedDownCtrl.text = _speedLimitDisplay('speed-limit-down', p.speedLimitDown).toString();
+    _speedUpCtrl.text = _speedLimitDisplay('speed-limit-up', p.speedLimitUp).toString();
     _speedDownEnabled = p.speedLimitDownEnabled;
     _speedUpEnabled = p.speedLimitUpEnabled;
-    _altSpeedDownCtrl.text = _speedLimitDisplay(
-      'alt-speed-down',
-      p.altSpeedDown,
-    ).toString();
-    _altSpeedUpCtrl.text = _speedLimitDisplay(
-      'alt-speed-up',
-      p.altSpeedUp,
-    ).toString();
+    _altSpeedDownCtrl.text = _speedLimitDisplay('alt-speed-down', p.altSpeedDown).toString();
+    _altSpeedUpCtrl.text = _speedLimitDisplay('alt-speed-up', p.altSpeedUp).toString();
     _altSpeedEnabled = p.altSpeedEnabled;
 
     // 备用带宽调度
@@ -233,8 +218,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
     return value ~/ 1000;
   }
 
-  bool _isDaySelected(int dayIndex) =>
-      (_altSpeedTimeDay & (1 << dayIndex)) != 0;
+  bool _isDaySelected(int dayIndex) => (_altSpeedTimeDay & (1 << dayIndex)) != 0;
 
   void _toggleDay(int dayIndex, bool value) {
     setState(() {
@@ -252,9 +236,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
     final begin = _parseHHMMToMinutes(_altTimeBeginCtrl.text.trim());
     final end = _parseHHMMToMinutes(_altTimeEndCtrl.text.trim());
     if (_altSpeedTimeEnabled && (begin == null || end == null)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('备用带宽时间段格式无效，请使用 HH:MM')));
+      Toast.error('备用带宽时间段格式无效，请使用 HH:MM');
       return;
     }
 
@@ -276,28 +258,22 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         'alt-speed-time-begin': begin ?? _altSpeedTimeBegin,
         'alt-speed-time-end': end ?? _altSpeedTimeEnd,
         'alt-speed-time-day': _altSpeedTimeDay,
-        'peer-limit-global':
-            int.tryParse(_peerLimitGlobalCtrl.text.trim()) ?? 200,
-        'peer-limit-per-torrent':
-            int.tryParse(_peerLimitPerTorrentCtrl.text.trim()) ?? 50,
+        'peer-limit-global': int.tryParse(_peerLimitGlobalCtrl.text.trim()) ?? 200,
+        'peer-limit-per-torrent': int.tryParse(_peerLimitPerTorrentCtrl.text.trim()) ?? 50,
         'peer-port': int.tryParse(_peerPortCtrl.text.trim()) ?? 51413,
         'port-forwarding-enabled': _portForwarding,
         'peer-port-random-on-start': _peerPortRandomOnStart,
         'tcp-enabled': _tcpEnabled,
         'download-queue-enabled': _downloadQueueEnabled,
-        'download-queue-size':
-            int.tryParse(_downloadQueueSizeCtrl.text.trim()) ?? 5,
+        'download-queue-size': int.tryParse(_downloadQueueSizeCtrl.text.trim()) ?? 5,
         'seed-queue-enabled': _seedQueueEnabled,
         'seed-queue-size': int.tryParse(_seedQueueSizeCtrl.text.trim()) ?? 10,
         'queue-stalled-enabled': _queueStalledEnabled,
-        'queue-stalled-minutes':
-            int.tryParse(_queueStalledMinutesCtrl.text.trim()) ?? 30,
+        'queue-stalled-minutes': int.tryParse(_queueStalledMinutesCtrl.text.trim()) ?? 30,
         'seedRatioLimited': _seedRatioLimited,
-        'seedRatioLimit':
-            double.tryParse(_seedRatioLimitCtrl.text.trim()) ?? 2.0,
+        'seedRatioLimit': double.tryParse(_seedRatioLimitCtrl.text.trim()) ?? 2.0,
         'idle-seeding-limit-enabled': _idleSeedingLimitEnabled,
-        'idle-seeding-limit':
-            int.tryParse(_idleSeedingLimitCtrl.text.trim()) ?? 30,
+        'idle-seeding-limit': int.tryParse(_idleSeedingLimitCtrl.text.trim()) ?? 30,
         'dht-enabled': _dht,
         'pex-enabled': _pex,
         'lpd-enabled': _lpd,
@@ -357,26 +333,21 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
     final theme = shadcn.Theme.of(context);
 
     return Dialog(
-      insetPadding: _isMobile
-          ? const EdgeInsets.all(8)
-          : const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: _isMobile ? const EdgeInsets.all(8) : const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       clipBehavior: Clip.antiAlias,
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight:
-              MediaQuery.of(context).size.height * (_isMobile ? 0.95 : 0.9),
+          maxHeight: MediaQuery.of(context).size.height * (_isMobile ? 0.95 : 0.9),
           maxWidth: _isMobile ? double.infinity : 560,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildHeader(theme),
-            Divider(height: 1, color: theme.colorScheme.border),
+            shadcn.Divider(height: 1),
             Expanded(
               child: _loading
-                  ? const Center(
-                      child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? const Center(child: shadcn.CircularProgressIndicator(strokeWidth: 2))
                   : _error != null
                   ? _buildError(theme)
                   : _buildTabbedBody(theme),
@@ -402,20 +373,11 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
               color: const Color(0xFFEF4444).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: const Icon(
-              shadcn.LucideIcons.arrowUpDown,
-              size: 14,
-              color: Color(0xFFEF4444),
-            ),
+            child: const Icon(shadcn.LucideIcons.arrowUpDown, size: 14, color: Color(0xFFEF4444)),
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              '${d.name} · 参数设置',
-              style: theme.typography.small.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            child: Text('${d.name} · 参数设置', style: theme.typography.small.copyWith(fontWeight: FontWeight.w700)),
           ),
           shadcn.IconButton.ghost(
             onPressed: () => Navigator.of(context).pop(),
@@ -433,18 +395,9 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            shadcn.LucideIcons.info,
-            size: 32,
-            color: theme.colorScheme.mutedForeground.withValues(alpha: 0.3),
-          ),
+          Icon(shadcn.LucideIcons.info, size: 32, color: theme.colorScheme.mutedForeground.withValues(alpha: 0.3)),
           const SizedBox(height: 8),
-          Text(
-            _error!,
-            style: theme.typography.small.copyWith(
-              color: theme.colorScheme.mutedForeground,
-            ),
-          ),
+          Text(_error!, style: theme.typography.small.copyWith(color: theme.colorScheme.mutedForeground)),
         ],
       ),
     );
@@ -472,12 +425,11 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
               child: shadcn.Button.primary(
                 onPressed: _saving ? null : _save,
                 child: _saving
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: shadcn.CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+                    ? const Center(
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: shadcn.CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         ),
                       )
                     : const Center(child: Text('保存')),
@@ -503,34 +455,22 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
             shadcn.AccordionItem(
               expanded: widget.initialIndex == 0,
               trigger: const shadcn.AccordionTrigger(child: Text('下载设置')),
-              content: Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _buildDownloadSection(theme),
-              ),
+              content: Padding(padding: const EdgeInsets.only(bottom: 12), child: _buildDownloadSection(theme)),
             ),
             shadcn.AccordionItem(
               expanded: widget.initialIndex == 1,
               trigger: const shadcn.AccordionTrigger(child: Text('带宽设置')),
-              content: Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _buildBandwidthSection(theme),
-              ),
+              content: Padding(padding: const EdgeInsets.only(bottom: 12), child: _buildBandwidthSection(theme)),
             ),
             shadcn.AccordionItem(
               expanded: widget.initialIndex == 2,
               trigger: const shadcn.AccordionTrigger(child: Text('网络设置')),
-              content: Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _buildNetworkSection(theme),
-              ),
+              content: Padding(padding: const EdgeInsets.only(bottom: 12), child: _buildNetworkSection(theme)),
             ),
             shadcn.AccordionItem(
               expanded: widget.initialIndex == 3,
               trigger: const shadcn.AccordionTrigger(child: Text('队列设置')),
-              content: Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _buildQueueSection(theme),
-              ),
+              content: Padding(padding: const EdgeInsets.only(bottom: 12), child: _buildQueueSection(theme)),
             ),
           ],
         ),
@@ -542,26 +482,12 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         final availableHeight = constraints.maxHeight.isFinite
             ? constraints.maxHeight
             : MediaQuery.of(context).size.height * 0.7;
-        final bodyHeight = (availableHeight - 76)
-            .clamp(120.0, double.infinity)
-            .toDouble();
+        final bodyHeight = (availableHeight - 76).clamp(120.0, double.infinity).toDouble();
         final pages = [
-          _ScrollableSection(
-            height: bodyHeight,
-            child: _buildDownloadSection(theme),
-          ),
-          _ScrollableSection(
-            height: bodyHeight,
-            child: _buildBandwidthSection(theme),
-          ),
-          _ScrollableSection(
-            height: bodyHeight,
-            child: _buildNetworkSection(theme),
-          ),
-          _ScrollableSection(
-            height: bodyHeight,
-            child: _buildQueueSection(theme),
-          ),
+          _ScrollableSection(height: bodyHeight, child: _buildDownloadSection(theme)),
+          _ScrollableSection(height: bodyHeight, child: _buildBandwidthSection(theme)),
+          _ScrollableSection(height: bodyHeight, child: _buildNetworkSection(theme)),
+          _ScrollableSection(height: bodyHeight, child: _buildQueueSection(theme)),
         ];
 
         return Padding(
@@ -600,11 +526,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _DialogTextField(
-          controller: _downloadDirCtrl,
-          label: const Text('默认保存目录'),
-          hint: '/downloads/complete',
-        ),
+        _DialogTextField(controller: _downloadDirCtrl, label: const Text('默认保存目录'), hint: '/downloads/complete'),
         const SizedBox(height: 10),
         _switchTile(
           theme,
@@ -623,11 +545,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         ),
         if (_incompleteDirEnabled) ...[
           const SizedBox(height: 6),
-          _DialogTextField(
-            controller: _incompleteDirCtrl,
-            label: const Text('临时目录'),
-            hint: '/downloads/incomplete',
-          ),
+          _DialogTextField(controller: _incompleteDirCtrl, label: const Text('临时目录'), hint: '/downloads/incomplete'),
         ],
         const SizedBox(height: 10),
         _switchTile(
@@ -682,7 +600,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         ],
 
         const SizedBox(height: 12),
-        const Divider(),
+        const shadcn.Divider(),
         const SizedBox(height: 12),
 
         _sectionLabel(theme, '磁盘'),
@@ -742,7 +660,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         ],
 
         const SizedBox(height: 12),
-        const Divider(),
+        const shadcn.Divider(),
         const SizedBox(height: 12),
 
         // 备用限速
@@ -782,7 +700,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         ],
 
         const SizedBox(height: 12),
-        const Divider(),
+        const shadcn.Divider(),
         const SizedBox(height: 12),
 
         // 自动调度
@@ -817,12 +735,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            '启用日期',
-            style: theme.typography.xSmall.copyWith(
-              color: theme.colorScheme.mutedForeground,
-            ),
-          ),
+          Text('启用日期', style: theme.typography.xSmall.copyWith(color: theme.colorScheme.mutedForeground)),
           const SizedBox(height: 4),
           Wrap(
             spacing: 4,
@@ -833,10 +746,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
                 width: 100,
                 child: _SettingTile(
                   title: Text(labels[i], style: theme.typography.xSmall),
-                  suffix: _SettingSwitch(
-                    value: _isDaySelected(i),
-                    onChange: (v) => _toggleDay(i, v),
-                  ),
+                  suffix: _SettingSwitch(value: _isDaySelected(i), onChange: (v) => _toggleDay(i, v)),
                 ),
               );
             }),
@@ -854,10 +764,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
       children: [
         _DialogTextField(
           controller: _peerPortCtrl,
-          label: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: const Text('连接端口号'),
-          ),
+          label: Padding(padding: const EdgeInsets.only(left: 8.0), child: const Text('连接端口号')),
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         ),
@@ -886,10 +793,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
             Expanded(
               child: _DialogTextField(
                 controller: _peerLimitGlobalCtrl,
-                label: Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: const Text('全局最大连接数'),
-                ),
+                label: Padding(padding: const EdgeInsets.only(left: 8.0), child: const Text('全局最大连接数')),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
@@ -898,10 +802,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
             Expanded(
               child: _DialogTextField(
                 controller: _peerLimitPerTorrentCtrl,
-                label: Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: const Text('单种最大连接数'),
-                ),
+                label: Padding(padding: const EdgeInsets.only(left: 8.0), child: const Text('单种最大连接数')),
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
@@ -910,41 +811,11 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
         ),
 
         const SizedBox(height: 10),
-        _switchTile(
-          theme,
-          shadcn.LucideIcons.share2,
-          '启用用户交换 (PEX)',
-          _pex,
-          (v) => setState(() => _pex = v),
-        ),
-        _switchTile(
-          theme,
-          shadcn.LucideIcons.network,
-          '启用分布式哈希表 (DHT)',
-          _dht,
-          (v) => setState(() => _dht = v),
-        ),
-        _switchTile(
-          theme,
-          shadcn.LucideIcons.radio,
-          '启用本地用户发现 (LPD)',
-          _lpd,
-          (v) => setState(() => _lpd = v),
-        ),
-        _switchTile(
-          theme,
-          shadcn.LucideIcons.zap,
-          '启用带宽管理 (μTP)',
-          _utp,
-          (v) => setState(() => _utp = v),
-        ),
-        _switchTile(
-          theme,
-          shadcn.LucideIcons.globe,
-          '启用 TCP',
-          _tcpEnabled,
-          (v) => setState(() => _tcpEnabled = v),
-        ),
+        _switchTile(theme, shadcn.LucideIcons.share2, '启用用户交换 (PEX)', _pex, (v) => setState(() => _pex = v)),
+        _switchTile(theme, shadcn.LucideIcons.network, '启用分布式哈希表 (DHT)', _dht, (v) => setState(() => _dht = v)),
+        _switchTile(theme, shadcn.LucideIcons.radio, '启用本地用户发现 (LPD)', _lpd, (v) => setState(() => _lpd = v)),
+        _switchTile(theme, shadcn.LucideIcons.zap, '启用带宽管理 (μTP)', _utp, (v) => setState(() => _utp = v)),
+        _switchTile(theme, shadcn.LucideIcons.globe, '启用 TCP', _tcpEnabled, (v) => setState(() => _tcpEnabled = v)),
 
         const SizedBox(height: 10),
         _switchTile(
@@ -1032,44 +903,45 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
   // ═══════════════════════════════════════════
 
   Widget _encryptionSelect(shadcn.ThemeData theme) {
-    return _SettingTile(
-      prefix: const Icon(shadcn.LucideIcons.lock, size: 14),
-      title: const Text('加密'),
-      suffix: SizedBox(
-        width: 132,
-        child: DropdownButtonFormField<String>(
-          initialValue: _encryption,
-          decoration: const InputDecoration(isDense: true),
-          items: const [
-            DropdownMenuItem(value: 'tolerated', child: Text('允许明文')),
-            DropdownMenuItem(value: 'preferred', child: Text('优先加密')),
-            DropdownMenuItem(value: 'required', child: Text('强制加密')),
-          ],
+    final cs = theme.colorScheme;
+    const opts = {'tolerated': '允许明文', 'preferred': '优先加密', 'required': '强制加密'};
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '加密',
+          style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 6),
+        shadcn.Select<String>(
+          value: opts.containsKey(_encryption) ? _encryption : null,
+          placeholder: Text(opts[_encryption] ?? _encryption),
+          itemBuilder: (_, selected) => Text(opts[selected] ?? selected),
+          popupConstraints: const BoxConstraints(maxHeight: 260),
+          popup: shadcn.SelectPopup<String>(
+            items: shadcn.SelectItemList(
+              children: [
+                for (final entry in opts.entries)
+                  shadcn.SelectItemButton<String>(value: entry.key, child: Text(entry.value)),
+              ],
+            ),
+          ).call,
           onChanged: (v) {
             if (v != null) setState(() => _encryption = v);
           },
         ),
-      ),
+      ],
     );
   }
 
   Widget _sectionLabel(shadcn.ThemeData theme, String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        title,
-        style: theme.typography.small.copyWith(fontWeight: FontWeight.w700),
-      ),
+      child: Text(title, style: theme.typography.small.copyWith(fontWeight: FontWeight.w700)),
     );
   }
 
-  Widget _switchTile(
-    shadcn.ThemeData theme,
-    IconData icon,
-    String title,
-    bool value,
-    ValueChanged<bool> onChange,
-  ) {
+  Widget _switchTile(shadcn.ThemeData theme, IconData icon, String title, bool value, ValueChanged<bool> onChange) {
     return _SettingTile(
       prefix: Icon(icon, size: 14),
       title: Text(title),
@@ -1149,10 +1021,7 @@ class _SettingTile extends StatelessWidget {
         children: [
           if (prefix != null) ...[prefix!, const SizedBox(width: 10)],
           Expanded(
-            child: DefaultTextStyle.merge(
-              style: const TextStyle(fontSize: 13),
-              child: title,
-            ),
+            child: DefaultTextStyle.merge(style: const TextStyle(fontSize: 13), child: title),
           ),
           if (suffix != null) ...[const SizedBox(width: 12), suffix!],
         ],
@@ -1169,6 +1038,6 @@ class _SettingSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Switch(value: value, onChanged: onChange);
+    return shadcn.Switch(value: value, onChanged: onChange);
   }
 }

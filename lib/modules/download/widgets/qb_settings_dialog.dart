@@ -429,10 +429,10 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     _proxyBittorrent = p.proxyBittorrent;
     _proxyRss = p.proxyRss;
     _proxyMisc = p.proxyMisc;
-    _dlLimitCtrl.text = p.dlLimit.toString();
-    _upLimitCtrl.text = p.upLimit.toString();
-    _altDlLimitCtrl.text = p.altDlLimit.toString();
-    _altUpLimitCtrl.text = p.altUpLimit.toString();
+    _dlLimitCtrl.text = (p.dlLimit ~/ 1024).toString();
+    _upLimitCtrl.text = (p.upLimit ~/ 1024).toString();
+    _altDlLimitCtrl.text = (p.altDlLimit ~/ 1024).toString();
+    _altUpLimitCtrl.text = (p.altUpLimit ~/ 1024).toString();
     _schedulerEnabled = p.schedulerEnabled;
     _scheduleFromHourCtrl.text = p.scheduleFromHour.toString();
     _scheduleFromMinCtrl.text = p.scheduleFromMin.toString();
@@ -512,7 +512,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     _memoryWorkingSetLimitCtrl.text = p.memoryWorkingSetLimit.toString();
     _saveResumeDataIntervalCtrl.text = p.saveResumeDataInterval.toString();
     _saveStatisticsIntervalCtrl.text = p.saveStatisticsInterval.toString();
-    _torrentFileSizeLimitCtrl.text = p.torrentFileSizeLimit.toString();
+    _torrentFileSizeLimitCtrl.text = (p.torrentFileSizeLimit ~/ 1048576).toString();
     _resolvePeerCountries = p.resolvePeerCountries;
     _reannounceWhenAddressChanged = p.reannounceWhenAddressChanged;
     _ignoreSslErrors = p.ignoreSslErrors;
@@ -525,7 +525,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     _hashingThreadsCtrl.text = p.hashingThreads.toString();
     _filePoolSizeCtrl.text = p.filePoolSize.toString();
     _checkingMemoryUseCtrl.text = p.checkingMemoryUse.toString();
-    _diskQueueSizeCtrl.text = p.diskQueueSize.toString();
+    _diskQueueSizeCtrl.text = (p.diskQueueSize ~/ 1024).toString();
     _diskIoType = p.diskIoType;
     _diskIoReadMode = p.diskIoReadMode;
     _diskIoWriteMode = p.diskIoWriteMode;
@@ -597,7 +597,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
           children: [
             Expanded(child: Text(title, style: const TextStyle(fontSize: 13))),
             const SizedBox(width: 12),
-            Switch(value: v, onChanged: fn),
+            shadcn.Switch(value: v, onChanged: fn),
           ],
         ),
       );
@@ -641,17 +641,51 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     String l,
     String v,
     List<String> opts,
-    ValueChanged<String?> fn,
-  ) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: DropdownButtonFormField<String>(
-      initialValue: opts.contains(v) ? v : null,
-      hint: Text(""),
-      items: opts
-          .map((o) => DropdownMenuItem<String>(value: o, child: Text(o)))
-          .toList(),
-      onChanged: fn,
-    ),
+    ValueChanged<String?> fn, {
+    Map<String, String>? labels,
+  }) => Builder(
+    builder: (context) {
+      final t = shadcn.Theme.of(context);
+      final cs = t.colorScheme;
+      String display(String val) => labels?[val] ?? val;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l,
+              style: t.typography.small.copyWith(
+                color: cs.foreground,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+            SizedBox(
+              width: double.infinity,
+              child: shadcn.Select<String>(
+                value: opts.contains(v) ? v : null,
+                placeholder: Text(display(v)),
+                itemBuilder: (_, selected) => Text(display(selected)),
+                popupConstraints: const BoxConstraints(maxHeight: 260),
+                popup: shadcn.SelectPopup<String>(
+                  items: shadcn.SelectItemList(
+                    children: [
+                      for (final o in opts)
+                        shadcn.SelectItemButton<String>(
+                          value: o,
+                          child: Text(display(o)),
+                        ),
+                    ],
+                  ),
+                ).call,
+                onChanged: fn,
+              ),
+            ),
+          ],
+        ),
+      );
+    },
   );
 
   Widget _note(shadcn.ThemeData t, String s) => Padding(
@@ -679,7 +713,9 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
         'en',
         'ja',
         'ko',
-      ], (v) => setState(() => _locale = v ?? _locale)),
+      ], (v) => setState(() => _locale = v ?? _locale),
+        labels: {'zh_CN': '简体中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어'},
+      ),
       // _sec(t, '界面'),
       // _sel('配色方案', _colorScheme, ['自动', '浅色', '深色'],
       _sec(t, '传输列表'),
@@ -756,6 +792,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
         ['Original', 'Subfolder', 'NoSubfolder'],
         (v) =>
             setState(() => _torrentContentLayout = v ?? _torrentContentLayout),
+        labels: {'Original': '原始', 'Subfolder': '子文件夹', 'NoSubfolder': '无子文件夹'},
       ),
       _sw(
         '添加到队列顶部',
@@ -773,6 +810,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
         ['None', 'MetadataReceived', 'FilesChecked'],
         (v) =>
             setState(() => _torrentStopCondition = v ?? _torrentStopCondition),
+        labels: {'None': '无', 'MetadataReceived': '获取元数据后', 'FilesChecked': '文件校验后'},
       ),
       _sec(t, '当添加重复的 Torrent 时'),
       _sw(
@@ -919,7 +957,9 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
         'SOCKS4',
         'SOCKS5',
         'HTTP',
-      ], (v) => setState(() => _proxyType = v ?? _proxyType)),
+      ], (v) => setState(() => _proxyType = v ?? _proxyType),
+        labels: {'None': '无', 'SOCKS4': 'SOCKS4', 'SOCKS5': 'SOCKS5', 'HTTP': 'HTTP'},
+      ),
       if (_proxyType != 'None') ...[
         _tf(_proxyIpCtrl, 'IP 地址', h: '127.0.0.1'),
         _num(_proxyPortCtrl, '端口', h: '8080'),
@@ -1262,6 +1302,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
         (v) => setState(
           () => _resumeDataStorageType = v ?? _resumeDataStorageType,
         ),
+        labels: {'Legacy': '传统模式', 'SQLite': 'SQLite'},
       ),
       _sel(
         'Torrent 内容删除模式',
@@ -1270,6 +1311,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
         (v) => setState(
           () => _torrentContentRemoveOption = v ?? _torrentContentRemoveOption,
         ),
+        labels: {'Delete': '删除', 'MoveToTrash': '移动到回收站'},
       ),
       _num(_memoryWorkingSetLimitCtrl, '物理内存 (RAM) 使用限制 (MiB)', h: '4096'),
       _num(_saveResumeDataIntervalCtrl, '保存恢复数据间隔 (分钟)', h: '60'),
@@ -1300,7 +1342,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       _num(_hashingThreadsCtrl, '散列线程', h: '1'),
       _num(_filePoolSizeCtrl, '文件池大小', h: '100'),
       _num(_checkingMemoryUseCtrl, '校验时内存使用扩增量 (MiB)', h: '32'),
-      _num(_diskQueueSizeCtrl, '磁盘队列大小 (KiB)', h: '1024'),
+      _num(_diskQueueSizeCtrl, '磁盘队列大小 (KiB)', h: '1'),
       _sec(t, '磁盘 IO'),
       _sel(
         '磁盘 IO 类型',
@@ -1488,7 +1530,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                 ],
               ),
             ),
-            Divider(height: 1, color: t.colorScheme.border),
+            shadcn.Divider(height: 1),
             Expanded(
               child: _loading
                   ? const Center(
@@ -1540,12 +1582,14 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                         child: shadcn.Button.primary(
                           onPressed: _saving ? null : _save,
                           child: _saving
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: shadcn.CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
+                              ? const Center(
+                                  child: SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: shadcn.CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 )
                               : const Center(child: Text('保存')),
@@ -1752,10 +1796,10 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     'proxy_bittorrent': _proxyBittorrent,
     'proxy_rss': _proxyRss,
     'proxy_misc': _proxyMisc,
-    'dl_limit': _pi(_dlLimitCtrl, 0),
-    'up_limit': _pi(_upLimitCtrl, 0),
-    'alt_dl_limit': _pi(_altDlLimitCtrl, 0),
-    'alt_up_limit': _pi(_altUpLimitCtrl, 0),
+    'dl_limit': _pi(_dlLimitCtrl, 0) * 1024,
+    'up_limit': _pi(_upLimitCtrl, 0) * 1024,
+    'alt_dl_limit': _pi(_altDlLimitCtrl, 0) * 1024,
+    'alt_up_limit': _pi(_altUpLimitCtrl, 0) * 1024,
     'scheduler_enabled': _schedulerEnabled,
     'schedule_from_hour': _pi(_scheduleFromHourCtrl, 8),
     'schedule_from_min': _pi(_scheduleFromMinCtrl, 0),
@@ -1833,7 +1877,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     'memory_working_set_limit': _pi(_memoryWorkingSetLimitCtrl, 4096),
     'save_resume_data_interval': _pi(_saveResumeDataIntervalCtrl, 60),
     'save_statistics_interval': _pi(_saveStatisticsIntervalCtrl, 15),
-    'torrent_file_size_limit': _pi(_torrentFileSizeLimitCtrl, 104857600),
+    'torrent_file_size_limit': _pi(_torrentFileSizeLimitCtrl, 100) * 1048576,
     'resolve_peer_countries': _resolvePeerCountries,
     'reannounce_when_address_changed': _reannounceWhenAddressChanged,
     'ignore_ssl_errors': _ignoreSslErrors,
@@ -1846,7 +1890,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
     'hashing_threads': _pi(_hashingThreadsCtrl, 1),
     'file_pool_size': _pi(_filePoolSizeCtrl, 100),
     'checking_memory_use': _pi(_checkingMemoryUseCtrl, 32),
-    'disk_queue_size': _pi(_diskQueueSizeCtrl, 1024),
+    'disk_queue_size': _pi(_diskQueueSizeCtrl, 1) * 1024,
     'disk_io_type': _diskIoType,
     'disk_io_read_mode': _diskIoReadMode,
     'disk_io_write_mode': _diskIoWriteMode,
