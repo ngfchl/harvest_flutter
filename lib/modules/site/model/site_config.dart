@@ -145,6 +145,7 @@ abstract class WebSite with _$WebSite {
     @Default('') String structure,
     @Default('') String type,
     @Default('') String nation,
+    @Default('') @JsonKey(name: 'sign_type') String signType,
     @Default('') @JsonKey(name: 'my_email_rule') String myEmailRule,
     @Default('') @JsonKey(name: 'my_username_rule') String myUsernameRule,
     @Default('') @JsonKey(name: 'buy_page') String buyPage,

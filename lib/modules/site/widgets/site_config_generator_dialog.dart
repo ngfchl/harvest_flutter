@@ -879,11 +879,13 @@ class _TomlSelectOptions {
   final List<String> structures;
   final List<String> types;
   final List<String> nations;
+  final List<String> signTypes;
 
   const _TomlSelectOptions({
     required this.structures,
     required this.types,
     required this.nations,
+    required this.signTypes,
   });
 
   factory _TomlSelectOptions.fromConfigs(List<WebSite> configs) {
@@ -901,6 +903,7 @@ class _TomlSelectOptions {
       structures: values((config) => config.structure),
       types: values((config) => config.type),
       nations: values((config) => config.nation),
+      signTypes: values((config) => config.signType),
     );
   }
 
@@ -908,6 +911,7 @@ class _TomlSelectOptions {
     'structure' => structures,
     'type' => types,
     'nation' => nations,
+    'sign_type' => {..._predefinedSignTypes, ...signTypes}.toList()..sort(),
     _ => const <String>[],
   };
 }
@@ -953,7 +957,7 @@ class _TomlLevelAutocompleteOptions {
   List<String> optionsFor(String key) => values[key] ?? const <String>[];
 }
 
-const _selectFieldKeys = {'structure', 'type', 'nation'};
+const _selectFieldKeys = {'structure', 'type', 'nation', 'sign_type'};
 const _hiddenTopLevelFieldKeys = {'name'};
 const _baseInfoFieldKeys = [
   'url',
@@ -967,6 +971,7 @@ const _baseInfoFieldKeys = [
   'structure',
   'type',
   'nation',
+  'sign_type',
 ];
 const _hrFieldKeys = ['hr', 'hr_rate', 'hr_time'];
 const _functionSwitchFieldKeys = [
@@ -2508,6 +2513,7 @@ String _tomlSelectDisplayLabel(String key, String value) {
   return switch (key) {
     'nation' => _nationDisplayLabel(value),
     'type' => _siteTypeDisplayLabel(value),
+    'sign_type' => _signTypeDisplayLabel(value),
     _ => value,
   };
 }
@@ -2558,6 +2564,64 @@ String _siteTypeDisplayLabel(String value) {
   return switch (normalized) {
     'pt' || 'tracker' || 'torrent' || 'private tracker' || 'pt站点' => 'PT站点',
     'forum' || 'bbs' || 'discuz' || '论坛' => '论坛',
+    _ => text,
+  };
+}
+
+const _predefinedSignTypes = [
+  'NEXUS_SIGN',
+  '52PT_SIGN',
+  'SSD_SIGN',
+  'ENSHAN_SIGN',
+  'ZHUQUE_SIGN',
+  'ROUSI_SIGN',
+  'HARES_SIGN',
+  'HDUPT_SIGN',
+  'HDCHINA_SIGN',
+  'TTG_SIGN',
+  'U2_SIGN',
+  'SIQI_SIGN',
+  'HDSKY_SIGN',
+  'OPENCD_SIGN',
+  'INVITES_SIGN',
+  'PTING_SIGN',
+  'HDAREA_SIGN',
+  'MOOKO_SIGN',
+  'HAIDAN_SIGN',
+  'PTER_SIGN',
+  'YEMA_SIGN',
+  'BTSCHOOL_SIGN',
+  'HDCITY_SIGN',
+  'C411_SIGN',
+];
+
+String _signTypeDisplayLabel(String value) {
+  final text = value.trim();
+  return switch (text) {
+    'NEXUS_SIGN' => 'NEXUS_SIGN (默认)',
+    '52PT_SIGN' => '52PT_SIGN (52PT)',
+    'SSD_SIGN' => 'SSD_SIGN (cnlang)',
+    'ENSHAN_SIGN' => 'ENSHAN_SIGN (恩山论坛)',
+    'ZHUQUE_SIGN' => 'ZHUQUE_SIGN (朱雀)',
+    'ROUSI_SIGN' => 'ROUSI_SIGN (肉丝)',
+    'HARES_SIGN' => 'HARES_SIGN (hares)',
+    'HDUPT_SIGN' => 'HDUPT_SIGN (hdupt.com)',
+    'HDCHINA_SIGN' => 'HDCHINA_SIGN (家园)',
+    'TTG_SIGN' => 'TTG_SIGN (TTG)',
+    'U2_SIGN' => 'U2_SIGN (U2)',
+    'SIQI_SIGN' => 'SIQI_SIGN (思齐/欧申)',
+    'HDSKY_SIGN' => 'HDSKY_SIGN (天空)',
+    'OPENCD_SIGN' => 'OPENCD_SIGN (OpenCD)',
+    'INVITES_SIGN' => 'INVITES_SIGN (invites.fun)',
+    'PTING_SIGN' => 'PTING_SIGN (pting.club)',
+    'HDAREA_SIGN' => 'HDAREA_SIGN (HDArea)',
+    'MOOKO_SIGN' => 'MOOKO_SIGN (Mooko)',
+    'HAIDAN_SIGN' => 'HAIDAN_SIGN (海胆)',
+    'PTER_SIGN' => 'PTER_SIGN (pterclub)',
+    'YEMA_SIGN' => 'YEMA_SIGN (yemapt)',
+    'BTSCHOOL_SIGN' => 'BTSCHOOL_SIGN (btschool)',
+    'HDCITY_SIGN' => 'HDCITY_SIGN (hdcity)',
+    'C411_SIGN' => 'C411_SIGN (c411)',
     _ => text,
   };
 }
@@ -2719,6 +2783,7 @@ String _tomlFieldLabel(String key) {
     'structure': '站点架构',
     'type': '站点类型',
     'nation': '站点地区',
+    'sign_type': '签到类型',
     'buy_page': '魔力兑换页面',
     'level_id': '等级 ID',
     'level': '等级名称',
