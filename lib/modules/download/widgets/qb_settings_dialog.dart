@@ -1061,7 +1061,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       _sw('启用本地用户发现以找到更多用户', _lsd, (v) => setState(() => _lsd = v)),
       _sel(
         '加密模式',
-        ['允许加密', '强制加密', '禁用加密'][_encryption],
+        ['允许加密', '强制加密', '禁用加密'][_encryption.clamp(0, 2)],
         ['允许加密', '强制加密', '禁用加密'],
         (v) => setState(
           () => _encryption = v == '强制加密'
@@ -1346,19 +1346,19 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       _sec(t, '磁盘 IO'),
       _sel(
         '磁盘 IO 类型',
-        ['默认', 'mmap'][_diskIoType],
+        ['默认', 'mmap'][_diskIoType.clamp(0, 1)],
         ['默认', 'mmap'],
         (v) => setState(() => _diskIoType = v == 'mmap' ? 1 : 0),
       ),
       _sel(
         '磁盘 IO 读取模式',
-        ['禁用 OS 缓存', '启用 OS 缓存'][_diskIoReadMode],
+        ['禁用 OS 缓存', '启用 OS 缓存'][_diskIoReadMode.clamp(0, 1)],
         ['禁用 OS 缓存', '启用 OS 缓存'],
         (v) => setState(() => _diskIoReadMode = v == '启用 OS 缓存' ? 1 : 0),
       ),
       _sel(
         '磁盘 IO 写入模式',
-        ['禁用 OS 缓存', '启用 OS 缓存'][_diskIoWriteMode],
+        ['禁用 OS 缓存', '启用 OS 缓存'][_diskIoWriteMode.clamp(0, 1)],
         ['禁用 OS 缓存', '启用 OS 缓存'],
         (v) => setState(() => _diskIoWriteMode = v == '启用 OS 缓存' ? 1 : 0),
       ),
@@ -1390,7 +1390,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
       _num(_peerTosCtrl, 'ToS 值', h: '4'),
       _sel(
         'µTP - TCP 混合模式策略',
-        ['优先使用 TCP', '优先使用 µTP', '仅 TCP'][_utpTcpMixedMode],
+        ['优先使用 TCP', '优先使用 µTP', '仅 TCP'][_utpTcpMixedMode.clamp(0, 2)],
         ['优先使用 TCP', '优先使用 µTP', '仅 TCP'],
         (v) => setState(
           () => _utpTcpMixedMode = v == '优先使用 µTP'
