@@ -21,13 +21,13 @@ import '../shell/widgets/shell_scaffold.dart';
 import 'provider/site_card_style_provider.dart';
 import 'provider/site_filtered_provider.dart';
 import 'provider/site_provider.dart';
+import 'site_timeline_page.dart';
 import 'widgets/site_config_generator_dialog.dart';
 import 'widgets/site_error_view.dart';
 import 'widgets/site_filter_panel.dart';
 import 'widgets/site_form_sheet.dart';
 import 'widgets/site_list_view.dart';
 import 'widgets/site_theme.dart';
-import 'site_timeline_page.dart';
 
 class SitePage extends ConsumerStatefulWidget {
   const SitePage({super.key});
@@ -48,8 +48,7 @@ class _SitePageState extends ConsumerState<SitePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       registerPageScrollController(ref, 1, _scrollController);
-      ref.read(activeScrollControllerProvider.notifier).state =
-          _scrollController;
+      ref.read(activeScrollControllerProvider.notifier).state = _scrollController;
     });
   }
 
@@ -85,27 +84,10 @@ class _SitePageState extends ConsumerState<SitePage> {
         child: Column(
           children: [
             // 筛选面板（桌面端展开时显示）
-            if (!mobile && _showFilter)
-              SiteFilterPanel(
-                onClose: () => setState(() => _showFilter = false),
-              ),
+            if (!mobile && _showFilter) SiteFilterPanel(onClose: () => setState(() => _showFilter = false)),
             // 工具栏统一放顶部
-            _buildToolbar(
-              context,
-              filteredSites.length,
-              totalCount,
-              hasFilters,
-              mobile,
-            ),
-            CacheStatusBanner(
-              info: cacheInfo,
-              margin: EdgeInsets.fromLTRB(
-                mobile ? 12 : 16,
-                0,
-                mobile ? 12 : 16,
-                6,
-              ),
-            ),
+            _buildToolbar(context, filteredSites.length, totalCount, hasFilters, mobile),
+            CacheStatusBanner(info: cacheInfo, margin: EdgeInsets.fromLTRB(mobile ? 12 : 16, 0, mobile ? 12 : 16, 6)),
             Expanded(
               child: EasyRefresh(
                 onRefresh: _refresh,
@@ -115,16 +97,9 @@ class _SitePageState extends ConsumerState<SitePage> {
                   error: (e, _) => SiteErrorView(error: e, onRetry: _refresh),
                   data: (_) {
                     if (filteredSites.isEmpty) {
-                      return _buildEmptyState(
-                        context,
-                        hasFilters: hasFilters,
-                        mobile: mobile,
-                      );
+                      return _buildEmptyState(context, hasFilters: hasFilters, mobile: mobile);
                     }
-                    return SiteListView(
-                      sites: filteredSites,
-                      controller: _scrollController,
-                    );
+                    return SiteListView(sites: filteredSites, controller: _scrollController);
                   },
                 ),
               ),
@@ -150,15 +125,9 @@ class _SitePageState extends ConsumerState<SitePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              shadcn.CircularProgressIndicator(
-                strokeWidth: 2.4,
-                color: cs.primary,
-              ),
+              shadcn.CircularProgressIndicator(strokeWidth: 2.4, color: cs.primary),
               const SizedBox(height: 16),
-              Text(
-                '加载中...',
-                style: TextStyle(color: cs.mutedForeground, fontSize: 13),
-              ),
+              Text('加载中...', style: TextStyle(color: cs.mutedForeground, fontSize: 13)),
             ],
           ),
         ),
@@ -166,17 +135,11 @@ class _SitePageState extends ConsumerState<SitePage> {
     );
   }
 
-  Widget _buildEmptyState(
-    BuildContext context, {
-    required bool hasFilters,
-    required bool mobile,
-  }) {
+  Widget _buildEmptyState(BuildContext context, {required bool hasFilters, required bool mobile}) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final title = hasFilters ? '没有符合筛选条件的站点' : '暂无站点数据';
-    final subtitle = hasFilters
-        ? '当前筛选条件没有匹配结果，可以清除筛选后重新查看。'
-        : '还没有添加站点。可以从内置配置添加站点，或上传自定义 TOML 配置。';
+    final subtitle = hasFilters ? '当前筛选条件没有匹配结果，可以清除筛选后重新查看。' : '还没有添加站点。可以从内置配置添加站点，或上传自定义 TOML 配置。';
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -206,9 +169,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      hasFilters
-                          ? shadcn.LucideIcons.searchX
-                          : shadcn.LucideIcons.panelTopOpen,
+                      hasFilters ? shadcn.LucideIcons.searchX : shadcn.LucideIcons.panelTopOpen,
                       size: 22,
                       color: cs.primary,
                     ),
@@ -217,19 +178,13 @@ class _SitePageState extends ConsumerState<SitePage> {
                   Text(
                     title,
                     textAlign: TextAlign.center,
-                    style: theme.typography.large.copyWith(
-                      color: cs.foreground,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     subtitle,
                     textAlign: TextAlign.center,
-                    style: theme.typography.small.copyWith(
-                      color: cs.mutedForeground,
-                      height: 1.4,
-                    ),
+                    style: theme.typography.small.copyWith(color: cs.mutedForeground, height: 1.4),
                   ),
                   const SizedBox(height: 16),
                   if (hasFilters)
@@ -270,13 +225,7 @@ class _SitePageState extends ConsumerState<SitePage> {
 
   // ── 工具栏 ──
 
-  Widget _buildToolbar(
-    BuildContext context,
-    int current,
-    int total,
-    bool hasFilters,
-    bool mobile,
-  ) {
+  Widget _buildToolbar(BuildContext context, int current, int total, bool hasFilters, bool mobile) {
     final cs = shadcn.Theme.of(context).colorScheme;
 
     return AppSurfaceContainer(
@@ -284,12 +233,8 @@ class _SitePageState extends ConsumerState<SitePage> {
       margin: EdgeInsets.zero,
       height: mobile ? null : 48,
       borderRadius: BorderRadius.zero,
-      color: mobile
-          ? appSurfaceColor(context, cs.background)
-          : Colors.transparent,
-      borderColor: mobile
-          ? Colors.transparent
-          : cs.border.withValues(alpha: 0.4),
+      color: mobile ? appSurfaceColor(context, cs.background) : Colors.transparent,
+      borderColor: mobile ? Colors.transparent : cs.border.withValues(alpha: 0.4),
       child: Row(
         spacing: mobile ? 6 : 8,
         children: [
@@ -298,9 +243,7 @@ class _SitePageState extends ConsumerState<SitePage> {
           _filterButton(
             context,
             hasFilters,
-            mobile
-                ? () => _openFilterSheet(context)
-                : () => setState(() => _showFilter = !_showFilter),
+            mobile ? () => _openFilterSheet(context) : () => setState(() => _showFilter = !_showFilter),
           ),
           _buildCardStyleMenu(context),
           _buildSiteCreateMenu(context),
@@ -311,12 +254,7 @@ class _SitePageState extends ConsumerState<SitePage> {
 
   // ── 计数 ──
 
-  Widget _buildCounter(
-    BuildContext context,
-    int current,
-    int total,
-    bool hasFilters,
-  ) {
+  Widget _buildCounter(BuildContext context, int current, int total, bool hasFilters) {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
@@ -325,10 +263,7 @@ class _SitePageState extends ConsumerState<SitePage> {
         children: [
           TextSpan(
             text: '$current',
-            style: typo.small.copyWith(
-              fontWeight: FontWeight.w700,
-              color: hasFilters ? cs.primary : cs.foreground,
-            ),
+            style: typo.small.copyWith(fontWeight: FontWeight.w700, color: hasFilters ? cs.primary : cs.foreground),
           ),
           TextSpan(
             text: ' / $total',
@@ -353,11 +288,7 @@ class _SitePageState extends ConsumerState<SitePage> {
         features: [
           shadcn.InputFeature.clear(
             visibility: shadcn.InputFeatureVisibility.textNotEmpty,
-            icon: Icon(
-              shadcn.LucideIcons.x,
-              size: 12,
-              color: cs.mutedForeground,
-            ),
+            icon: Icon(shadcn.LucideIcons.x, size: 12, color: cs.mutedForeground),
           ),
         ],
       ),
@@ -366,11 +297,7 @@ class _SitePageState extends ConsumerState<SitePage> {
 
   // ── 筛选按钮 ──
 
-  Widget _filterButton(
-    BuildContext context,
-    bool hasFilters,
-    VoidCallback onTap,
-  ) {
+  Widget _filterButton(BuildContext context, bool hasFilters, VoidCallback onTap) {
     final cs = shadcn.Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
@@ -378,19 +305,13 @@ class _SitePageState extends ConsumerState<SitePage> {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         height: 34,
         decoration: BoxDecoration(
-          color: hasFilters
-              ? cs.primary.withValues(alpha: 0.1)
-              : cs.muted.withValues(alpha: 0.3),
+          color: hasFilters ? cs.primary.withValues(alpha: 0.1) : cs.muted.withValues(alpha: 0.3),
           borderRadius: siteRadius(context, size: "xl"),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              shadcn.LucideIcons.slidersHorizontal,
-              size: 14,
-              color: hasFilters ? cs.primary : cs.mutedForeground,
-            ),
+            Icon(shadcn.LucideIcons.slidersHorizontal, size: 14, color: hasFilters ? cs.primary : cs.mutedForeground),
             const SizedBox(width: 5),
             Text(
               '筛选',
@@ -427,30 +348,10 @@ class _SitePageState extends ConsumerState<SitePage> {
                   children: [
                     shadcn.MenuLabel(child: const Text('卡片样式')),
                     const shadcn.MenuDivider(),
-                    _cardStyleTile(
-                      dropdownContext,
-                      SiteCardStyle.style1,
-                      current,
-                      '样式 1',
-                    ),
-                    _cardStyleTile(
-                      dropdownContext,
-                      SiteCardStyle.style2,
-                      current,
-                      '样式 2',
-                    ),
-                    _cardStyleTile(
-                      dropdownContext,
-                      SiteCardStyle.style3,
-                      current,
-                      '样式 3',
-                    ),
-                    _cardStyleTile(
-                      dropdownContext,
-                      SiteCardStyle.style4,
-                      current,
-                      '样式 4',
-                    ),
+                    _cardStyleTile(dropdownContext, SiteCardStyle.style1, current, '样式 1'),
+                    _cardStyleTile(dropdownContext, SiteCardStyle.style2, current, '样式 2'),
+                    _cardStyleTile(dropdownContext, SiteCardStyle.style3, current, '样式 3'),
+                    _cardStyleTile(dropdownContext, SiteCardStyle.style4, current, '样式 4'),
                   ],
                 );
               },
@@ -465,12 +366,7 @@ class _SitePageState extends ConsumerState<SitePage> {
     );
   }
 
-  shadcn.MenuButton _cardStyleTile(
-    BuildContext context,
-    SiteCardStyle style,
-    SiteCardStyle current,
-    String title,
-  ) {
+  shadcn.MenuButton _cardStyleTile(BuildContext context, SiteCardStyle style, SiteCardStyle current, String title) {
     final selected = style == current;
     final cs = siteColors(context);
     return shadcn.MenuButton(
@@ -481,9 +377,7 @@ class _SitePageState extends ConsumerState<SitePage> {
         height: 62,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: selected
-                ? cs.primary.withValues(alpha: 0.08)
-                : siteTransparent(context),
+            color: selected ? cs.primary.withValues(alpha: 0.08) : siteTransparent(context),
             borderRadius: siteRadius(context, size: "md"),
           ),
           child: Padding(
@@ -504,11 +398,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                 AnimatedOpacity(
                   duration: const Duration(milliseconds: 120),
                   opacity: selected ? 1 : 0,
-                  child: Icon(
-                    shadcn.LucideIcons.check,
-                    size: 16,
-                    color: cs.primary,
-                  ),
+                  child: Icon(shadcn.LucideIcons.check, size: 16, color: cs.primary),
                 ),
               ],
             ),
@@ -526,10 +416,7 @@ class _SitePageState extends ConsumerState<SitePage> {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: cs.brightness == Brightness.dark
-              ? Color.alphaBlend(
-                  cs.muted.withValues(alpha: 0.10),
-                  cs.background,
-                )
+              ? Color.alphaBlend(cs.muted.withValues(alpha: 0.10), cs.background)
               : siteColors(context).background,
           borderRadius: siteRadius(context, size: "md"),
           border: Border.all(color: cs.border, width: 0.8),
@@ -558,11 +445,7 @@ class _SitePageState extends ConsumerState<SitePage> {
             const SizedBox(width: 4),
             _previewLine(width: 28, color: cs.foreground, height: 5),
             const Spacer(),
-            _previewLine(
-              width: 14,
-              color: cs.primary.withValues(alpha: 0.18),
-              height: 6,
-            ),
+            _previewLine(width: 14, color: cs.primary.withValues(alpha: 0.18), height: 6),
           ],
         ),
         const SizedBox(height: 5),
@@ -586,11 +469,7 @@ class _SitePageState extends ConsumerState<SitePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(
             4,
-            (_) => _previewLine(
-              width: 12,
-              color: cs.mutedForeground.withValues(alpha: 0.62),
-              height: 4,
-            ),
+            (_) => _previewLine(width: 12, color: cs.mutedForeground.withValues(alpha: 0.62), height: 4),
           ),
         ),
       ],
@@ -606,56 +485,25 @@ class _SitePageState extends ConsumerState<SitePage> {
             Container(
               width: 14,
               height: 14,
-              decoration: BoxDecoration(
-                color: cs.foreground,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: cs.foreground, shape: BoxShape.circle),
             ),
             const SizedBox(width: 5),
-            Expanded(
-              child: _previewLine(width: 30, color: cs.foreground, height: 5),
-            ),
-            _previewLine(
-              width: 13,
-              color: cs.mutedForeground.withValues(alpha: 0.62),
-              height: 4,
-            ),
+            Expanded(child: _previewLine(width: 30, color: cs.foreground, height: 5)),
+            _previewLine(width: 13, color: cs.mutedForeground.withValues(alpha: 0.62), height: 4),
           ],
         ),
         const SizedBox(height: 7),
         Row(
           children: [
-            Expanded(
-              child: _previewLine(
-                width: 18,
-                color: siteSuccess(context),
-                height: 6,
-              ),
-            ),
-            Expanded(
-              child: _previewLine(
-                width: 18,
-                color: siteDanger(context),
-                height: 6,
-              ),
-            ),
-            Expanded(
-              child: _previewLine(
-                width: 18,
-                color: siteInfo(context),
-                height: 6,
-              ),
-            ),
+            Expanded(child: _previewLine(width: 18, color: siteSuccess(context), height: 6)),
+            Expanded(child: _previewLine(width: 18, color: siteDanger(context), height: 6)),
+            Expanded(child: _previewLine(width: 18, color: siteInfo(context), height: 6)),
           ],
         ),
         const SizedBox(height: 7),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(
-            3,
-            (_) =>
-                _previewLine(width: 15, color: cs.mutedForeground, height: 4),
-          ),
+          children: List.generate(3, (_) => _previewLine(width: 15, color: cs.mutedForeground, height: 4)),
         ),
       ],
     );
@@ -676,14 +524,8 @@ class _SitePageState extends ConsumerState<SitePage> {
               ),
             ),
             const SizedBox(width: 5),
-            Expanded(
-              child: _previewLine(width: 26, color: cs.foreground, height: 5),
-            ),
-            _previewLine(
-              width: 18,
-              color: siteWarning(context, alpha: 0.18),
-              height: 8,
-            ),
+            Expanded(child: _previewLine(width: 26, color: cs.foreground, height: 5)),
+            _previewLine(width: 18, color: siteWarning(context, alpha: 0.18), height: 8),
           ],
         ),
         const SizedBox(height: 6),
@@ -727,20 +569,11 @@ class _SitePageState extends ConsumerState<SitePage> {
             Container(
               width: 16,
               height: 16,
-              decoration: BoxDecoration(
-                color: siteSuccess(context, alpha: 0.18),
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: siteSuccess(context, alpha: 0.18), shape: BoxShape.circle),
             ),
             const SizedBox(width: 5),
-            Expanded(
-              child: _previewLine(width: 28, color: cs.foreground, height: 6),
-            ),
-            _previewLine(
-              width: 18,
-              color: siteSuccess(context, alpha: 0.18),
-              height: 8,
-            ),
+            Expanded(child: _previewLine(width: 28, color: cs.foreground, height: 6)),
+            _previewLine(width: 18, color: siteSuccess(context, alpha: 0.18), height: 8),
           ],
         ),
         const SizedBox(height: 5),
@@ -793,11 +626,7 @@ class _SitePageState extends ConsumerState<SitePage> {
     );
   }
 
-  Widget _previewLine({
-    required double width,
-    required double height,
-    required Color color,
-  }) {
+  Widget _previewLine({required double width, required double height, required Color color}) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
@@ -869,16 +698,8 @@ class _SitePageState extends ConsumerState<SitePage> {
     );
   }
 
-  shadcn.MenuButton _menuAction({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-  }) {
-    return shadcn.MenuButton(
-      leading: Icon(icon),
-      onPressed: (_) => onPressed(),
-      child: Text(label),
-    );
+  shadcn.MenuButton _menuAction({required IconData icon, required String label, required VoidCallback onPressed}) {
+    return shadcn.MenuButton(leading: Icon(icon), onPressed: (_) => onPressed(), child: Text(label));
   }
 
   // ── 移动端筛选弹窗 ──
@@ -899,10 +720,8 @@ class _SitePageState extends ConsumerState<SitePage> {
   }
 
   Future<void> _showSiteTimeline(BuildContext context) async {
-    final websites =
-        ref.read(websiteListProvider).value ?? const <WebSite>[];
-    final mySites =
-        ref.read(siteInfoListProvider).value ?? const <SiteInfo>[];
+    final websites = ref.read(websiteListProvider).value ?? const <WebSite>[];
+    final mySites = ref.read(siteInfoListProvider).value ?? const <SiteInfo>[];
     if (websites.isEmpty) {
       Toast.warning('暂无站点配置');
       return;
@@ -921,13 +740,9 @@ class _SitePageState extends ConsumerState<SitePage> {
     var ownership = _TimelineOwnership.all;
     var inviteFilter = _TimelineInviteFilter.all;
     var ascending = true;
-    final savedShowDurationOnTitle = HiveManager.get<bool>(
-      StorageKeys.siteTimelineTitleShowDuration,
-    );
+    final savedShowDurationOnTitle = HiveManager.get<bool>(StorageKeys.siteTimelineTitleShowDuration);
     var showDurationOnTitle = savedShowDurationOnTitle ?? false;
-    final savedVisibleFields = HiveManager.get<Map>(
-      StorageKeys.siteTimelineVisibleFields,
-    );
+    final savedVisibleFields = HiveManager.get<Map>(StorageKeys.siteTimelineVisibleFields);
     final visibleFields = <String, bool>{
       'duration': false,
       'uploaded': false,
@@ -993,10 +808,8 @@ class _SitePageState extends ConsumerState<SitePage> {
             return ascending ? cmp : -cmp;
           }
 
-          final filteredEnabledOwned =
-              enabledOwnedEntries.where(matches).toList()..sort(sortByTime);
-          final filteredDisabledOwned =
-              disabledOwnedEntries.where(matches).toList()..sort(sortByTime);
+          final filteredEnabledOwned = enabledOwnedEntries.where(matches).toList()..sort(sortByTime);
+          final filteredDisabledOwned = disabledOwnedEntries.where(matches).toList()..sort(sortByTime);
           final filteredUnowned = unownedEntries.where(matches).toList()
             ..sort((a, b) => a.displayName.compareTo(b.displayName));
           final displayList = <_SiteTimelineEntry>[
@@ -1008,9 +821,7 @@ class _SitePageState extends ConsumerState<SitePage> {
           Widget openUnownedAction(_SiteTimelineEntry entry) {
             return shadcn.Button.ghost(
               onPressed: () async {
-                final urls = entry.website.url
-                    .where((e) => e.trim().isNotEmpty)
-                    .toList();
+                final urls = entry.website.url.where((e) => e.trim().isNotEmpty).toList();
                 if (urls.isEmpty) {
                   Toast.warning('该站点未配置可用 URL');
                   return;
@@ -1049,26 +860,18 @@ class _SitePageState extends ConsumerState<SitePage> {
                                   GestureDetector(
                                     onTap: () => Navigator.of(ctx).pop(urls[i]),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 9,
-                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
                                       decoration: BoxDecoration(
                                         color: cs.muted.withValues(alpha: 0.16),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Row(
                                         children: [
-                                          Icon(
-                                            shadcn.LucideIcons.globe,
-                                            size: 15,
-                                            color: cs.mutedForeground,
-                                          ),
+                                          Icon(shadcn.LucideIcons.globe, size: 15, color: cs.mutedForeground),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   _timelineUrlHost(urls[i]),
@@ -1077,33 +880,24 @@ class _SitePageState extends ConsumerState<SitePage> {
                                                     fontWeight: FontWeight.w700,
                                                   ),
                                                   maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                                 const SizedBox(height: 2),
                                                 Text(
                                                   urls[i],
-                                                  style: typo.xSmall.copyWith(
-                                                    color: cs.mutedForeground,
-                                                  ),
+                                                  style: typo.xSmall.copyWith(color: cs.mutedForeground),
                                                   maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          Icon(
-                                            shadcn.LucideIcons.chevronRight,
-                                            size: 15,
-                                            color: cs.mutedForeground,
-                                          ),
+                                          Icon(shadcn.LucideIcons.chevronRight, size: 15, color: cs.mutedForeground),
                                         ],
                                       ),
                                     ),
                                   ),
-                                  if (i != urls.length - 1)
-                                    const SizedBox(height: 6),
+                                  if (i != urls.length - 1) const SizedBox(height: 6),
                                 ],
                               ],
                             ),
@@ -1111,10 +905,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                         ),
                       ),
                       actions: [
-                        shadcn.Button.outline(
-                          onPressed: () => Navigator.of(ctx).pop(),
-                          child: const Text('取消'),
-                        ),
+                        shadcn.Button.outline(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
                       ],
                     );
                   },
@@ -1140,9 +931,7 @@ class _SitePageState extends ConsumerState<SitePage> {
           Widget plainOpenAction(_SiteTimelineEntry entry) {
             return GestureDetector(
               onTap: () async {
-                final urls = entry.website.url
-                    .where((e) => e.trim().isNotEmpty)
-                    .toList();
+                final urls = entry.website.url.where((e) => e.trim().isNotEmpty).toList();
                 if (urls.isEmpty) {
                   Toast.warning('该站点未配置可用 URL');
                   return;
@@ -1181,26 +970,18 @@ class _SitePageState extends ConsumerState<SitePage> {
                                   GestureDetector(
                                     onTap: () => Navigator.of(ctx).pop(urls[i]),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 9,
-                                      ),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
                                       decoration: BoxDecoration(
                                         color: cs.muted.withValues(alpha: 0.16),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: Row(
                                         children: [
-                                          Icon(
-                                            shadcn.LucideIcons.globe,
-                                            size: 15,
-                                            color: cs.mutedForeground,
-                                          ),
+                                          Icon(shadcn.LucideIcons.globe, size: 15, color: cs.mutedForeground),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
                                                   _timelineUrlHost(urls[i]),
@@ -1209,33 +990,24 @@ class _SitePageState extends ConsumerState<SitePage> {
                                                     fontWeight: FontWeight.w700,
                                                   ),
                                                   maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                                 const SizedBox(height: 2),
                                                 Text(
                                                   urls[i],
-                                                  style: typo.xSmall.copyWith(
-                                                    color: cs.mutedForeground,
-                                                  ),
+                                                  style: typo.xSmall.copyWith(color: cs.mutedForeground),
                                                   maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          Icon(
-                                            shadcn.LucideIcons.chevronRight,
-                                            size: 15,
-                                            color: cs.mutedForeground,
-                                          ),
+                                          Icon(shadcn.LucideIcons.chevronRight, size: 15, color: cs.mutedForeground),
                                         ],
                                       ),
                                     ),
                                   ),
-                                  if (i != urls.length - 1)
-                                    const SizedBox(height: 6),
+                                  if (i != urls.length - 1) const SizedBox(height: 6),
                                 ],
                               ],
                             ),
@@ -1243,10 +1015,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                         ),
                       ),
                       actions: [
-                        shadcn.Button.outline(
-                          onPressed: () => Navigator.of(ctx).pop(),
-                          child: const Text('取消'),
-                        ),
+                        shadcn.Button.outline(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
                       ],
                     );
                   },
@@ -1273,11 +1042,9 @@ class _SitePageState extends ConsumerState<SitePage> {
                 ),
                 child: Text(
                   '打开',
-                  style: shadcn.Theme.of(dialogContext).typography.xSmall
-                      .copyWith(
-                        color: cs.foreground,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: shadcn.Theme.of(
+                    dialogContext,
+                  ).typography.xSmall.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                 ),
               ),
             );
@@ -1287,9 +1054,7 @@ class _SitePageState extends ConsumerState<SitePage> {
             for (final entry in displayList)
               shadcn.TimelineData(
                 color: entry.isOwned
-                    ? (entry.isDisabled
-                          ? cs.mutedForeground.withValues(alpha: 0.72)
-                          : cs.primary)
+                    ? (entry.isDisabled ? cs.mutedForeground.withValues(alpha: 0.72) : cs.primary)
                     : cs.mutedForeground.withValues(alpha: 0.42),
                 time: const SizedBox.shrink(),
                 title: const SizedBox.shrink(),
@@ -1317,12 +1082,9 @@ class _SitePageState extends ConsumerState<SitePage> {
                       shadcn.Button.secondary(
                         onPressed: () => setState(() {
                           ownership = switch (ownership) {
-                            _TimelineOwnership.all =>
-                              _TimelineOwnership.ownedOnly,
-                            _TimelineOwnership.ownedOnly =>
-                              _TimelineOwnership.unownedOnly,
-                            _TimelineOwnership.unownedOnly =>
-                              _TimelineOwnership.all,
+                            _TimelineOwnership.all => _TimelineOwnership.ownedOnly,
+                            _TimelineOwnership.ownedOnly => _TimelineOwnership.unownedOnly,
+                            _TimelineOwnership.unownedOnly => _TimelineOwnership.all,
                           };
                         }),
                         child: Text(switch (ownership) {
@@ -1334,12 +1096,9 @@ class _SitePageState extends ConsumerState<SitePage> {
                       shadcn.Button.secondary(
                         onPressed: () => setState(() {
                           inviteFilter = switch (inviteFilter) {
-                            _TimelineInviteFilter.all =>
-                              _TimelineInviteFilter.has,
-                            _TimelineInviteFilter.has =>
-                              _TimelineInviteFilter.none,
-                            _TimelineInviteFilter.none =>
-                              _TimelineInviteFilter.all,
+                            _TimelineInviteFilter.all => _TimelineInviteFilter.has,
+                            _TimelineInviteFilter.has => _TimelineInviteFilter.none,
+                            _TimelineInviteFilter.none => _TimelineInviteFilter.all,
                           };
                         }),
                         child: Text(switch (inviteFilter) {
@@ -1355,19 +1114,13 @@ class _SitePageState extends ConsumerState<SitePage> {
                       shadcn.Button.secondary(
                         onPressed: () => setState(() {
                           showDurationOnTitle = !showDurationOnTitle;
-                          HiveManager.set(
-                            StorageKeys.siteTimelineTitleShowDuration,
-                            showDurationOnTitle,
-                          );
+                          HiveManager.set(StorageKeys.siteTimelineTitleShowDuration, showDurationOnTitle);
                         }),
-                        child: Text(
-                          showDurationOnTitle ? '标题显示：注册时长' : '标题显示：注册日期',
-                        ).xSmall,
+                        child: Text(showDurationOnTitle ? '标题显示：注册时长' : '标题显示：注册日期').xSmall,
                       ),
                       shadcn.OverlayManagerLayer(
                         popoverHandler: const shadcn.PopoverOverlayHandler(),
-                        tooltipHandler:
-                            const shadcn.FixedTooltipOverlayHandler(),
+                        tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
                         menuHandler: const shadcn.PopoverOverlayHandler(),
                         child: Builder(
                           builder: (menuContext) => shadcn.Button.ghost(
@@ -1391,12 +1144,8 @@ class _SitePageState extends ConsumerState<SitePage> {
                                   ])
                                     shadcn.MenuButton(
                                       onPressed: (_) => setState(() {
-                                        visibleFields[item.$1] =
-                                            !(visibleFields[item.$1] ?? true);
-                                        HiveManager.set(
-                                          StorageKeys.siteTimelineVisibleFields,
-                                          visibleFields,
-                                        );
+                                        visibleFields[item.$1] = !(visibleFields[item.$1] ?? true);
+                                        HiveManager.set(StorageKeys.siteTimelineVisibleFields, visibleFields);
                                       }),
                                       child: Row(
                                         children: [
@@ -1429,9 +1178,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                         rowGap: 10,
                         connectorThickness: 1.2,
                         color: cs.border.withValues(alpha: 0.65),
-                        timeConstraints: const BoxConstraints.tightFor(
-                          width: 0,
-                        ),
+                        timeConstraints: const BoxConstraints.tightFor(width: 0),
                       ),
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.only(right: 6),
@@ -1443,10 +1190,7 @@ class _SitePageState extends ConsumerState<SitePage> {
               ),
             ),
             actions: [
-              shadcn.Button.outline(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('关闭'),
-              ),
+              shadcn.Button.outline(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('关闭')),
             ],
           );
         },
@@ -1491,17 +1235,13 @@ class _SitePageState extends ConsumerState<SitePage> {
             if (result == null) return;
             if (!ctx.mounted) return;
 
-            final tomlFiles = result.files
-                .where((file) => file.name.toLowerCase().endsWith('.toml'))
-                .toList();
+            final tomlFiles = result.files.where((file) => file.name.toLowerCase().endsWith('.toml')).toList();
             if (tomlFiles.length != result.files.length) {
               Toast.warning('仅支持 TOML 配置文件');
             }
             if (tomlFiles.isEmpty) return;
 
-            AppLogger.info(
-              '已选择 TOML 配置文件: ${tomlFiles.map((file) => file.name).join(', ')}',
-            );
+            AppLogger.info('已选择 TOML 配置文件: ${tomlFiles.map((file) => file.name).join(', ')}');
             setDialogState(() => files = tomlFiles);
           }
 
@@ -1517,12 +1257,8 @@ class _SitePageState extends ConsumerState<SitePage> {
 
             setDialogState(() => uploading = true);
             try {
-              AppLogger.info(
-                '提交上传 TOML 配置文件: count=${files.length}, overwrite=$overwrite',
-              );
-              await ref
-                  .read(siteInfoListProvider.notifier)
-                  .importCustomSiteToml(files, overwrite: overwrite);
+              AppLogger.info('提交上传 TOML 配置文件: count=${files.length}, overwrite=$overwrite');
+              await ref.read(siteInfoListProvider.notifier).importCustomSiteToml(files, overwrite: overwrite);
               if (ctx.mounted) closeAppSheet(ctx);
               Toast.success('站点配置已上传');
             } catch (e, st) {
@@ -1532,35 +1268,35 @@ class _SitePageState extends ConsumerState<SitePage> {
             }
           }
 
-          return shadcn.AlertDialog(
-            content: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: ctx.isMobile
-                    ? MediaQuery.sizeOf(ctx).width - 40
-                    : 460,
+          return Center(
+            child: shadcn.AlertDialog(
+              title: Text(
+                '上传站点配置',
+                style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
               ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+              actions: [
+                shadcn.Button.ghost(onPressed: uploading ? null : () => closeAppSheet(ctx), child: const Text('取消')),
+                shadcn.Button.primary(
+                  onPressed: uploading ? null : upload,
+                  child: uploading
+                      ? const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(strokeWidth: 2.2))
+                      : Text('上传${files.isEmpty ? '' : ' ${files.length} 个'}'),
+                ),
+              ],
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+              content: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: ctx.isMobile ? MediaQuery.sizeOf(ctx).width - 40 : 460),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      '上传站点配置',
-                      style: theme.typography.large.copyWith(
-                        color: cs.foreground,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
                     const SizedBox(height: 14),
                     Row(
                       children: [
                         Expanded(
                           child: shadcn.Button.outline(
                             onPressed: uploading ? null : selectFiles,
-                            child: Text(
-                              files.isEmpty ? '选择 TOML 文件' : '重新选择 TOML 文件',
-                            ),
+                            child: Text(files.isEmpty ? '选择 TOML 文件' : '重新选择 TOML 文件'),
                           ),
                         ),
                         if (files.isNotEmpty) ...[
@@ -1569,9 +1305,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                             onPressed: uploading
                                 ? null
                                 : () {
-                                    AppLogger.info(
-                                      '清除全部待上传 TOML 配置文件: count=${files.length}',
-                                    );
+                                    AppLogger.info('清除全部待上传 TOML 配置文件: count=${files.length}');
                                     setDialogState(() => files = []);
                                   },
                             child: const Text('一键清除'),
@@ -1586,51 +1320,18 @@ class _SitePageState extends ConsumerState<SitePage> {
                       _TomlFileList(
                         files: files,
                         onRemove: (index) {
-                          AppLogger.info(
-                            '移除待上传 TOML 配置文件: ${files[index].name}',
-                          );
-                          setDialogState(
-                            () => files = [...files]..removeAt(index),
-                          );
+                          AppLogger.info('移除待上传 TOML 配置文件: ${files[index].name}');
+                          setDialogState(() => files = [...files]..removeAt(index));
                         },
                       ),
                     const SizedBox(height: 12),
                     _OverwriteOption(
                       overwrite: overwrite,
                       enabled: !uploading,
-                      onChanged: (value) =>
-                          setDialogState(() => overwrite = value),
+                      onChanged: (value) => setDialogState(() => overwrite = value),
                     ),
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: shadcn.Button.ghost(
-                            onPressed: uploading
-                                ? null
-                                : () => closeAppSheet(ctx),
-                            child: const Text('取消'),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: shadcn.Button.primary(
-                            onPressed: uploading ? null : upload,
-                            child: uploading
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: shadcn.CircularProgressIndicator(
-                                      strokeWidth: 2.2,
-                                    ),
-                                  )
-                                : Text(
-                                    '上传${files.isEmpty ? '' : ' ${files.length} 个'}',
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    Row(children: []),
                   ],
                 ),
               ),
@@ -1647,11 +1348,7 @@ class _OverwriteOption extends StatelessWidget {
   final bool enabled;
   final ValueChanged<bool> onChanged;
 
-  const _OverwriteOption({
-    required this.overwrite,
-    required this.enabled,
-    required this.onChanged,
-  });
+  const _OverwriteOption({required this.overwrite, required this.enabled, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -1673,25 +1370,17 @@ class _OverwriteOption extends StatelessWidget {
               children: [
                 Text(
                   '覆盖同名配置',
-                  style: theme.typography.small.copyWith(
-                    color: cs.foreground,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   overwrite ? '同名文件将被覆盖' : '同名文件保持原样',
-                  style: theme.typography.xSmall.copyWith(
-                    color: cs.mutedForeground,
-                  ),
+                  style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
                 ),
               ],
             ),
           ),
-          shadcn.Switch(
-            value: overwrite,
-            onChanged: enabled ? onChanged : null,
-          ),
+          shadcn.Switch(value: overwrite, onChanged: enabled ? onChanged : null),
         ],
       ),
     );
@@ -1720,10 +1409,7 @@ class _TomlUploadEmptyState extends StatelessWidget {
         children: [
           Icon(shadcn.LucideIcons.fileUp, size: 24, color: cs.mutedForeground),
           const SizedBox(height: 8),
-          Text(
-            '支持多选 .toml 配置文件',
-            style: typo.small.copyWith(color: cs.mutedForeground),
-          ),
+          Text('支持多选 .toml 配置文件', style: typo.small.copyWith(color: cs.mutedForeground)),
         ],
       ),
     );
@@ -1748,10 +1434,7 @@ class _TomlFileList extends StatelessWidget {
           children: [
             for (var i = 0; i < files.length; i++) ...[
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: cs.muted.withValues(alpha: 0.24),
                   borderRadius: siteRadius(context, size: "md"),
@@ -1759,11 +1442,7 @@ class _TomlFileList extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      shadcn.LucideIcons.fileCode,
-                      size: 18,
-                      color: cs.mutedForeground,
-                    ),
+                    Icon(shadcn.LucideIcons.fileCode, size: 18, color: cs.mutedForeground),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -1773,17 +1452,12 @@ class _TomlFileList extends StatelessWidget {
                             files[i].name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: theme.typography.small.copyWith(
-                              color: cs.foreground,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             formatBytes(files[i].size),
-                            style: theme.typography.xSmall.copyWith(
-                              color: cs.mutedForeground,
-                            ),
+                            style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
                           ),
                         ],
                       ),
@@ -1820,16 +1494,12 @@ class _MobileFilterSheet extends ConsumerWidget {
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final media = MediaQuery.of(context);
-    final maxSheetHeight =
-        (media.size.height - media.padding.top - media.viewInsets.bottom) *
-        0.72;
+    final maxSheetHeight = (media.size.height - media.padding.top - media.viewInsets.bottom) * 0.72;
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: maxSheetHeight),
       child: AppSurfaceContainer(
-        borderRadius: BorderRadius.vertical(
-          top: siteRadius(context, size: "xl").topLeft,
-        ),
+        borderRadius: BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft),
         color: appSurfaceColor(context, cs.background),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1866,17 +1536,11 @@ class _MobileFilterSheet extends ConsumerWidget {
                         // 共用
                         hintText: '搜索站点...',
                         maxLines: 1,
-                        onSubmitted: (_) =>
-                            FocusManager.instance.primaryFocus?.unfocus(),
+                        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                         features: [
                           shadcn.InputFeature.clear(
-                            visibility:
-                                shadcn.InputFeatureVisibility.textNotEmpty,
-                            icon: Icon(
-                              shadcn.LucideIcons.x,
-                              size: 12,
-                              color: cs.mutedForeground,
-                            ),
+                            visibility: shadcn.InputFeatureVisibility.textNotEmpty,
+                            icon: Icon(shadcn.LucideIcons.x, size: 12, color: cs.mutedForeground),
                           ),
                         ],
                       ),
@@ -1910,41 +1574,19 @@ Widget _siteTimelineRow({
 }) {
   final theme = shadcn.Theme.of(context);
   final cs = theme.colorScheme;
-  final titleTime = showDurationOnTitle
-      ? entry.durationText
-      : entry.registeredAtText;
+  final titleTime = showDurationOnTitle ? entry.durationText : entry.registeredAtText;
   final showStates = entry.isDisabled || !entry.isOwned;
   final items = <_TimelineMetric>[
     if (visibleFields['uploaded'] == true)
-      _TimelineMetric(
-        label: '上传量',
-        value: entry.uploadedText,
-        icon: shadcn.LucideIcons.upload,
-      ),
+      _TimelineMetric(label: '上传量', value: entry.uploadedText, icon: shadcn.LucideIcons.upload),
     if (visibleFields['downloaded'] == true)
-      _TimelineMetric(
-        label: '下载量',
-        value: entry.downloadedText,
-        icon: shadcn.LucideIcons.download,
-      ),
+      _TimelineMetric(label: '下载量', value: entry.downloadedText, icon: shadcn.LucideIcons.download),
     if (visibleFields['username'] == true)
-      _TimelineMetric(
-        label: '用户名',
-        value: entry.usernameText,
-        icon: shadcn.LucideIcons.userRound,
-      ),
+      _TimelineMetric(label: '用户名', value: entry.usernameText, icon: shadcn.LucideIcons.userRound),
     if (visibleFields['email'] == true)
-      _TimelineMetric(
-        label: '邮箱',
-        value: entry.emailText,
-        icon: shadcn.LucideIcons.mail,
-      ),
+      _TimelineMetric(label: '邮箱', value: entry.emailText, icon: shadcn.LucideIcons.mail),
     if (visibleFields['uid'] == true)
-      _TimelineMetric(
-        label: 'UID',
-        value: entry.uidText,
-        icon: shadcn.LucideIcons.hash,
-      ),
+      _TimelineMetric(label: 'UID', value: entry.uidText, icon: shadcn.LucideIcons.hash),
   ];
 
   return Container(
@@ -1953,13 +1595,7 @@ Widget _siteTimelineRow({
       color: cs.card,
       borderRadius: BorderRadius.circular(12),
       border: Border.all(color: cs.border.withValues(alpha: 0.82)),
-      boxShadow: [
-        BoxShadow(
-          color: cs.foreground.withValues(alpha: 0.04),
-          blurRadius: 12,
-          offset: const Offset(0, 4),
-        ),
-      ],
+      boxShadow: [BoxShadow(color: cs.foreground.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 4))],
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1969,10 +1605,7 @@ Widget _siteTimelineRow({
             Expanded(
               child: Text(
                 entry.displayName,
-                style: theme.typography.small.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: cs.foreground,
-                ),
+                style: theme.typography.small.copyWith(fontWeight: FontWeight.w800, color: cs.foreground),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1982,21 +1615,14 @@ Widget _siteTimelineRow({
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (visibleFields['invitation'] == true) ...[
-                  _timelineInvitationBadge(
-                    context,
-                    count: entry.invitationCount,
-                  ),
+                  _timelineInvitationBadge(context, count: entry.invitationCount),
                   const SizedBox(width: 6),
                 ],
                 _timelineTitleMeta(
                   context,
-                  icon: showDurationOnTitle
-                      ? shadcn.LucideIcons.clock
-                      : shadcn.LucideIcons.calendar,
+                  icon: showDurationOnTitle ? shadcn.LucideIcons.clock : shadcn.LucideIcons.calendar,
                   text: titleTime,
-                  tooltip: showDurationOnTitle
-                      ? '注册时长：$titleTime'
-                      : '注册时间：$titleTime',
+                  tooltip: showDurationOnTitle ? '注册时长：$titleTime' : '注册时间：$titleTime',
                 ),
                 const SizedBox(width: 6),
                 _timelineLinksIndicator(context, entry.website.url),
@@ -2008,10 +1634,7 @@ Widget _siteTimelineRow({
           const SizedBox(height: 8),
           Row(
             children: [
-              if (entry.isDisabled) ...[
-                _timelineStateTag(context, '已禁用'),
-                const SizedBox(width: 6),
-              ],
+              if (entry.isDisabled) ...[_timelineStateTag(context, '已禁用'), const SizedBox(width: 6)],
               if (!entry.isOwned) ...[
                 _timelineStateTag(context, '未添加'),
                 const SizedBox(width: 8),
@@ -2032,9 +1655,7 @@ Widget _siteTimelineRow({
                 Expanded(child: _timelineMetricTile(context, items[i])),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: i + 1 < items.length
-                      ? _timelineMetricTile(context, items[i + 1])
-                      : const SizedBox.shrink(),
+                  child: i + 1 < items.length ? _timelineMetricTile(context, items[i + 1]) : const SizedBox.shrink(),
                 ),
               ],
             ),
@@ -2049,40 +1670,24 @@ Widget _siteTimelineRow({
 Widget _timelineLinksIndicator(BuildContext context, List<String> urls) {
   final theme = shadcn.Theme.of(context);
   final cs = theme.colorScheme;
-  final availableUrls = urls
-      .map((e) => e.trim())
-      .where((e) => e.isNotEmpty)
-      .toList();
+  final availableUrls = urls.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
   final tooltip = availableUrls.isEmpty
       ? '暂无可访问链接'
-      : [
-          '可访问链接',
-          for (final url in availableUrls) '${_timelineUrlHost(url)}\n$url',
-        ].join('\n\n');
+      : ['可访问链接', for (final url in availableUrls) '${_timelineUrlHost(url)}\n$url'].join('\n\n');
   final child = Container(
     width: 20,
     height: 20,
     alignment: Alignment.center,
-    decoration: BoxDecoration(
-      color: cs.muted.withValues(alpha: 0.18),
-      borderRadius: BorderRadius.circular(999),
-    ),
+    decoration: BoxDecoration(color: cs.muted.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(999)),
     child: Icon(
-      availableUrls.isEmpty
-          ? shadcn.LucideIcons.globeLock
-          : shadcn.LucideIcons.globe,
+      availableUrls.isEmpty ? shadcn.LucideIcons.globeLock : shadcn.LucideIcons.globe,
       size: 12,
-      color: availableUrls.isEmpty
-          ? cs.mutedForeground.withValues(alpha: 0.58)
-          : cs.primary,
+      color: availableUrls.isEmpty ? cs.mutedForeground.withValues(alpha: 0.58) : cs.primary,
     ),
   );
 
   return shadcn.Tooltip(
-    tooltip: (_) => Text(
-      tooltip,
-      style: theme.typography.xSmall.copyWith(color: cs.foreground),
-    ),
+    tooltip: (_) => Text(tooltip, style: theme.typography.xSmall.copyWith(color: cs.foreground)),
     child: child,
   );
 }
@@ -2098,11 +1703,7 @@ Widget _timelineInvitationBadge(BuildContext context, {required int count}) {
         const SizedBox(width: 4),
         Text(
           '$count',
-          style: theme.typography.xSmall.copyWith(
-            color: cs.foreground,
-            fontWeight: FontWeight.w800,
-            fontSize: 10.5,
-          ),
+          style: theme.typography.xSmall.copyWith(color: cs.foreground, fontWeight: FontWeight.w800, fontSize: 10.5),
         ),
       ],
     ),
@@ -2122,10 +1723,7 @@ Widget _timelineTitleMeta(
   final child = Container(
     constraints: const BoxConstraints(maxWidth: 120),
     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-    decoration: BoxDecoration(
-      color: cs.muted.withValues(alpha: 0.24),
-      borderRadius: BorderRadius.circular(999),
-    ),
+    decoration: BoxDecoration(color: cs.muted.withValues(alpha: 0.24), borderRadius: BorderRadius.circular(999)),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -2155,11 +1753,7 @@ class _TimelineMetric {
   final String value;
   final IconData icon;
 
-  const _TimelineMetric({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
+  const _TimelineMetric({required this.label, required this.value, required this.icon});
 
   String get tooltip => '$label：$value';
 }
@@ -2179,10 +1773,7 @@ Widget _timelineMetricTile(BuildContext context, _TimelineMetric metric) {
         Container(
           width: 22,
           height: 22,
-          decoration: BoxDecoration(
-            color: cs.primary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(7),
-          ),
+          decoration: BoxDecoration(color: cs.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(7)),
           child: Icon(metric.icon, size: 13, color: cs.primary),
         ),
         const SizedBox(width: 7),
@@ -2234,10 +1825,7 @@ Widget _timelineStateTag(BuildContext context, String text) {
     ),
     child: Text(
       text,
-      style: theme.typography.xSmall.copyWith(
-        color: cs.mutedForeground,
-        fontWeight: FontWeight.w600,
-      ),
+      style: theme.typography.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
     ),
   );
 }
@@ -2259,6 +1847,7 @@ class _SiteTimelineEntry {
   const _SiteTimelineEntry({required this.website, required this.mySite});
 
   bool get isOwned => mySite != null;
+
   bool get isDisabled => mySite?.available == false;
 
   String get displayName {
@@ -2293,19 +1882,13 @@ class _SiteTimelineEntry {
 
   int get invitationCount => mySite?.latestStatus?.invitation ?? 0;
 
-  String get uploadedText =>
-      uploadedBytes > 0 ? formatBytes(uploadedBytes) : '-';
+  String get uploadedText => uploadedBytes > 0 ? formatBytes(uploadedBytes) : '-';
 
-  String get downloadedText =>
-      downloadedBytes > 0 ? formatBytes(downloadedBytes) : '-';
+  String get downloadedText => downloadedBytes > 0 ? formatBytes(downloadedBytes) : '-';
 
-  String get usernameText => mySite?.username?.trim().isNotEmpty == true
-      ? mySite!.username!.trim()
-      : '-';
+  String get usernameText => mySite?.username?.trim().isNotEmpty == true ? mySite!.username!.trim() : '-';
 
-  String get emailText =>
-      mySite?.email?.trim().isNotEmpty == true ? mySite!.email!.trim() : '-';
+  String get emailText => mySite?.email?.trim().isNotEmpty == true ? mySite!.email!.trim() : '-';
 
-  String get uidText =>
-      mySite?.userId?.trim().isNotEmpty == true ? mySite!.userId!.trim() : '-';
+  String get uidText => mySite?.userId?.trim().isNotEmpty == true ? mySite!.userId!.trim() : '-';
 }
