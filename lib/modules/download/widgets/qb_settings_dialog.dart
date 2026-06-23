@@ -1706,12 +1706,10 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
 
   Widget _scroll(Widget child, double height) => SizedBox(
     height: height,
-    child: Scrollbar(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(4, 16, 4, 18),
-        physics: const BouncingScrollPhysics(),
-        child: child,
-      ),
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(4, 16, 4, 18),
+      physics: const BouncingScrollPhysics(),
+      child: child,
     ),
   );
 
