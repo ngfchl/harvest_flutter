@@ -71,8 +71,25 @@ class _LevelInfoSheet extends ConsumerStatefulWidget {
   ConsumerState<_LevelInfoSheet> createState() => _LevelInfoSheetState();
 }
 
-class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
+class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
+    with SingleTickerProviderStateMixin {
   String? _expandedLevelName;
+  late final AnimationController _milestoneController;
+
+  @override
+  void initState() {
+    super.initState();
+    _milestoneController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _milestoneController.dispose();
+    super.dispose();
+  }
 
   Color _levelColorForEntry(MapEntry<String, SiteLevel> entry) {
     final level = entry.value.level.trim();
@@ -95,9 +112,11 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
     final config = configs.firstWhereOrNull((c) => c.name == widget.site.site);
     final status = widget.site.latestStatus;
 
-    // ── 等级列表（按 levelId 降序，高等级在上） ──
+    // ── 等级列表（按 levelId 降序，排除 VIP(levelId==0)，高等级在上） ──
     final levelMap = config?.level ?? <String, SiteLevel>{};
-    final levels = levelMap.entries.toList()
+    final levels = levelMap.entries
+        .where((e) => e.value.levelId != 0)
+        .toList()
       ..sort((a, b) {
         final aid = a.value.levelId;
         final bid = b.value.levelId;
@@ -116,6 +135,12 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
 
     final cs = shadcn.Theme.of(context).colorScheme;
     final currentLevelColor = _levelColorForText(currentName, levels);
+
+    // ── 保号/毕业里程碑 ──
+    final milestone = _siteLevelMilestone(config, status);
+
+    // ── Header 显示 name(level) ──
+    final headerBadge = _buildHeaderBadge(context, currentName, levels, currentLevelColor);
 
     // ── Header ──
     final header = Container(
@@ -143,17 +168,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
           ),
           // 当前等级徽章
           if (status != null && status.myLevel.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: currentLevelColor.withValues(alpha: 0.12),
-                borderRadius: siteRadius(context, size: "xs"),
-              ),
-              child: Text(
-                status.myLevel,
-                style: TextStyle(color: currentLevelColor, fontSize: 12, fontWeight: FontWeight.w700),
-              ),
-            ),
+            headerBadge,
         ],
       ),
     );
@@ -168,6 +183,12 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
         MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom + 16,
       ),
       children: [
+        // ── 里程碑标志 ──
+        if (milestone != null) ...[
+          _milestoneBanner(context, milestone),
+          const SizedBox(height: 14),
+        ],
+
         // ── 无配置 ──
         if (levels.isEmpty)
           Padding(
@@ -177,11 +198,9 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
             ),
           ),
 
-        // ── 统一等级列表 ──
-        if (levels.isNotEmpty) ...[
-          _sectionTitle(context, '等级体系'),
+        // ── 等级列表 ──
+        if (levels.isNotEmpty)
           _buildUnifiedLevels(context, levels, currentName, status, nextEntry),
-        ],
       ],
     );
 
@@ -334,38 +353,8 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
                         ],
                       ),
 
-                      // ── VIP 说明 ──
-                      if (isVip) ...[
-                        const SizedBox(height: 8),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: siteWarning(context).withValues(alpha: 0.06),
-                            borderRadius: siteRadius(context, size: "sm"),
-                            border: Border.all(color: siteWarning(context).withValues(alpha: 0.15)),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.star_rounded, size: 14, color: siteWarning(context)),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  isCurrent ? 'VIP 等级，享有全部权限' : 'VIP 等级，可享有全部权限',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: siteWarning(context),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-
-                      // ── 下一等级的详细进度（VIP 不显示） ──
-                      if (isExpanded && !isVip) ...[
+                      // ── 下一等级的详细进度 ──
+                      if (isExpanded) ...[
                         const SizedBox(height: 12),
                         _buildProgressSection(context, status, lv),
                       ],
@@ -462,7 +451,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '升级进度',
+            '升级条件',
             style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.foreground.withValues(alpha: 0.7)),
           ),
           const SizedBox(height: 8),
@@ -513,19 +502,6 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
           const SizedBox(height: 6),
           ..._buildRightsRows(context, rights, levelColor),
         ],
-      ),
-    );
-  }
-
-  // ────────────── 小标题 ──────────────
-
-  Widget _sectionTitle(BuildContext context, String title) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Text(
-        title,
-        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: cs.foreground),
       ),
     );
   }
@@ -710,5 +686,157 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet> {
   bool _hasEffectiveRight(String value) {
     final right = value.trim();
     return right.isNotEmpty && right != '无' && right != '同上';
+  }
+
+  // ────────────── Header 徽章 name(level) ──────────────
+
+  Widget _buildHeaderBadge(
+    BuildContext context,
+    String currentName,
+    List<MapEntry<String, SiteLevel>> levels,
+    Color fallbackColor,
+  ) {
+    final entry = levels.firstWhereOrNull(
+      (e) =>
+          e.key == currentName ||
+          e.value.displayName == currentName ||
+          e.value.name == currentName ||
+          e.value.level == currentName,
+    );
+    final lv = entry?.value;
+    final name = lv?.displayName.isNotEmpty == true ? lv!.displayName : currentName;
+    final levelText = lv?.level.trim() ?? '';
+    final display = levelText.isNotEmpty ? '$name($levelText)' : name;
+    final color = entry != null ? _levelColorForEntry(entry) : fallbackColor;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: siteRadius(context, size: "xs"),
+      ),
+      child: Text(
+        display,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  // ────────────── 里程碑横幅 ──────────────
+
+  Widget _milestoneBanner(BuildContext context, dynamic milestone) {
+    final isGraduation = milestone == 'graduation';
+    final label = isGraduation ? '毕业' : '保号';
+    final icon = isGraduation
+        ? Icons.school_outlined
+        : Icons.verified_user_outlined;
+    final color = isGraduation
+        ? siteWarning(context)
+        : siteSuccess(context);
+
+    return AnimatedBuilder(
+      animation: _milestoneController,
+      builder: (context, child) {
+        final pulse = (_milestoneController.value * 0.15).clamp(0.0, 0.15);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isGraduation
+                    ? [
+                        siteWarning(context).withValues(alpha: 0.10 + pulse),
+                        siteAccent(context, 4).withValues(alpha: 0.06 + pulse * 0.5),
+                        siteWarning(context).withValues(alpha: 0.10 + pulse),
+                      ]
+                    : [
+                        siteSuccess(context).withValues(alpha: 0.10 + pulse),
+                        siteInfo(context).withValues(alpha: 0.06 + pulse * 0.5),
+                        siteSuccess(context).withValues(alpha: 0.10 + pulse),
+                      ],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: siteRadius(context, size: "md"),
+              border: Border.all(
+                color: color.withValues(alpha: 0.25 + pulse),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.12 + pulse),
+                  blurRadius: 16 + pulse * 40,
+                  spreadRadius: 2 + pulse * 4,
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: color, size: 22),
+                const SizedBox(width: 10),
+                Text(
+                  '🎉 恭喜！已达到 $label 等级',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Icon(icon, color: color, size: 22),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ────────────── 里程碑类型判断 ──────────────
+
+  String? _siteLevelMilestone(
+    WebSite? config,
+    SiteDailyStatus? status,
+  ) {
+    if (config == null || status == null || status.myLevel.trim().isEmpty) {
+      return null;
+    }
+    final currentName = status.myLevel.trim();
+    final levelMap = config.level;
+    if (levelMap.isEmpty) return null;
+
+    MapEntry<String, SiteLevel>? currentEntry;
+    for (final entry in levelMap.entries) {
+      if (entry.key == currentName ||
+          entry.value.displayName == currentName ||
+          entry.value.level == currentName) {
+        currentEntry = entry;
+        break;
+      }
+    }
+    if (currentEntry == null) return null;
+
+    final currentId = currentEntry.value.levelId;
+    final achievedLevels = levelMap.entries
+        .where((entry) {
+          final levelId = entry.value.levelId;
+          if (currentId > 0 && levelId > 0) return levelId <= currentId;
+          return entry.key == currentEntry?.key;
+        })
+        .map((entry) => entry.value)
+        .toList();
+
+    if (achievedLevels.any((level) => level.graduation)) {
+      return 'graduation';
+    }
+    if (achievedLevels.any((level) => level.keepAccount)) {
+      return 'keepAccount';
+    }
+    return null;
   }
 }

@@ -10,6 +10,7 @@ import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+import '../model/site_config.dart';
 import '../model/site_info.dart';
 import '../provider/site_provider.dart';
 import 'site_browser.dart';
@@ -205,7 +206,7 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
             ),
             Expanded(
               child: [
-                _buildBasicTab(context, cs, spFull),
+                _buildBasicTab(context, cs, spFull, config),
                 _buildStatusTab(
                   context,
                   cs,
@@ -240,9 +241,10 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     BuildContext context,
     shadcn.ColorScheme cs,
     double spFull,
+    WebSite? config,
   ) {
     return _buildTabList(context, [
-      _buildUserCard(context, cs, spFull),
+      _buildUserCard(context, cs, spFull, config),
       const SizedBox(height: 12),
       _section(context, '功能开关', shadcn.LucideIcons.settings, [
         _buildFlagsGrid(context, cs),
@@ -2471,6 +2473,7 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     BuildContext context,
     shadcn.ColorScheme cs,
     double spFull,
+    WebSite? config,
   ) {
     final status = site.latestStatus;
     final hasUser = site.username != null && site.username!.isNotEmpty;
@@ -2531,37 +2534,40 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
               ),
               // 等级
               if (status != null && status.myLevel.isNotEmpty)
-                GestureDetector(
-                  onTap: () => openLevelInfo(context, site: site),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: levelColor(status.myLevel).withValues(alpha: 0.12),
-                      borderRadius: siteRadius(context, size: "sm"),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          status.myLevel,
-                          style: TextStyle(
-                            color: levelColor(status.myLevel),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                shadcn.Tooltip(
+                  tooltip: (_) => Text('等级: ${_detailLevelTooltip(config, status)}'),
+                  child: GestureDetector(
+                    onTap: () => openLevelInfo(context, site: site),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: levelColor(status.myLevel).withValues(alpha: 0.12),
+                        borderRadius: siteRadius(context, size: "sm"),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _detailLevelDisplayText(config, status),
+                            style: TextStyle(
+                              color: levelColor(status.myLevel),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 3),
-                        Icon(
-                          Icons.keyboard_arrow_right_rounded,
-                          size: 14,
-                          color: levelColor(
-                            status.myLevel,
-                          ).withValues(alpha: 0.6),
-                        ),
-                      ],
+                          const SizedBox(width: 3),
+                          Icon(
+                            Icons.keyboard_arrow_right_rounded,
+                            size: 14,
+                            color: levelColor(
+                              status.myLevel,
+                            ).withValues(alpha: 0.6),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -3444,4 +3450,39 @@ class _SitePagedTooltipState extends State<_SitePagedTooltip> {
       ),
     );
   }
+}
+
+// ──────────────────── 等级显示辅助函数 ────────────────────
+
+String _detailLevelDisplayText(WebSite? config, SiteDailyStatus status) {
+  final current = status.myLevel.trim();
+  if (current.isEmpty) return current;
+  final levelMap = config?.level ?? const <String, SiteLevel>{};
+  for (final entry in levelMap.entries) {
+    final level = entry.value;
+    if (entry.key == current ||
+        level.name.trim() == current ||
+        level.level.trim() == current) {
+      final display = level.displayName.trim();
+      if (display.isNotEmpty) return display;
+    }
+  }
+  return current;
+}
+
+String _detailLevelTooltip(WebSite? config, SiteDailyStatus status) {
+  final current = status.myLevel.trim();
+  if (current.isEmpty) return current;
+  final levelMap = config?.level ?? const <String, SiteLevel>{};
+  for (final entry in levelMap.entries) {
+    final level = entry.value;
+    if (entry.key == current ||
+        level.name.trim() == current ||
+        level.level.trim() == current) {
+      final name = level.displayName.isNotEmpty ? level.displayName : entry.key;
+      final lv = level.level.trim();
+      return lv.isNotEmpty ? '$name($lv)' : name;
+    }
+  }
+  return current;
 }
