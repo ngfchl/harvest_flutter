@@ -25,7 +25,8 @@ void openLevelInfo(BuildContext context, {required SiteInfo site}) {
         maxChildSize: 0.95,
         minChildSize: 0.4,
         expand: false,
-        builder: (ctx, scrollCtrl) => _LevelInfoSheet(site: site, scrollController: scrollCtrl),
+        builder: (ctx, scrollCtrl) =>
+            _LevelInfoSheet(site: site, scrollController: scrollCtrl),
       ),
     );
   } else {
@@ -42,7 +43,10 @@ void openLevelInfo(BuildContext context, {required SiteInfo site}) {
           elevation: 0,
           clipBehavior: Clip.antiAlias,
           backgroundColor: cs.background,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 32,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: siteRadius(dialogContext, size: "lg"),
             side: BorderSide(color: cs.border.withValues(alpha: 0.65)),
@@ -97,10 +101,17 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     return levelColor(entry.key);
   }
 
-  Color _levelColorForText(String text, List<MapEntry<String, SiteLevel>> levels) {
+  Color _levelColorForText(
+    String text,
+    List<MapEntry<String, SiteLevel>> levels,
+  ) {
     final current = text.trim();
     final entry = levels.firstWhereOrNull(
-      (e) => e.key == current || e.value.displayName == current || e.value.name == current || e.value.level == current,
+      (e) =>
+          e.key == current ||
+          e.value.displayName == current ||
+          e.value.name == current ||
+          e.value.level == current,
     );
     if (entry != null) return _levelColorForEntry(entry);
     return levelColor(current);
@@ -114,9 +125,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
 
     // ── 等级列表（按 levelId 降序，排除 VIP(levelId==0)，高等级在上） ──
     final levelMap = config?.level ?? <String, SiteLevel>{};
-    final levels = levelMap.entries
-        .where((e) => e.value.levelId != 0)
-        .toList()
+    final levels = levelMap.entries.where((e) => e.value.levelId != 0).toList()
       ..sort((a, b) {
         final aid = a.value.levelId;
         final bid = b.value.levelId;
@@ -128,7 +137,10 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     // ── 定位当前等级 ──
     final currentName = status?.myLevel ?? '';
     final currentIdx = levels.indexWhere(
-      (e) => e.key == currentName || e.value.displayName == currentName || e.value.level == currentName,
+      (e) =>
+          e.key == currentName ||
+          e.value.displayName == currentName ||
+          e.value.level == currentName,
     );
     final hasNext = currentIdx > 0;
     final nextEntry = hasNext ? levels[currentIdx - 1] : null;
@@ -140,7 +152,12 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     final milestone = _siteLevelMilestone(config, status);
 
     // ── Header 显示 name(level) ──
-    final headerBadge = _buildHeaderBadge(context, currentName, levels, currentLevelColor);
+    final headerBadge = _buildHeaderBadge(
+      context,
+      currentName,
+      levels,
+      currentLevelColor,
+    );
 
     // ── Header ──
     final header = Container(
@@ -156,19 +173,26 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
             behavior: HitTestBehavior.opaque,
             child: Padding(
               padding: const EdgeInsets.all(4),
-              child: Icon(shadcn.LucideIcons.arrowLeft, size: 20, color: cs.foreground),
+              child: Icon(
+                shadcn.LucideIcons.arrowLeft,
+                size: 20,
+                color: cs.foreground,
+              ),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               '等级信息 · ${widget.site.site}',
-              style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: cs.foreground,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           // 当前等级徽章
-          if (status != null && status.myLevel.isNotEmpty)
-            headerBadge,
+          if (status != null && status.myLevel.isNotEmpty) headerBadge,
         ],
       ),
     );
@@ -180,7 +204,9 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
         16,
         16,
         16,
-        MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom + 16,
+        MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).padding.bottom +
+            16,
       ),
       children: [
         // ── 里程碑标志 ──
@@ -194,7 +220,10 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
           Padding(
             padding: const EdgeInsets.all(24),
             child: Center(
-              child: Text('暂无等级配置', style: TextStyle(fontSize: 14, color: cs.mutedForeground)),
+              child: Text(
+                '暂无等级配置',
+                style: TextStyle(fontSize: 14, color: cs.mutedForeground),
+              ),
             ),
           ),
 
@@ -228,12 +257,19 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     MapEntry<String, SiteLevel>? nextEntry,
   ) {
     final currentIdx = levels.indexWhere(
-      (e) => e.key == currentName || e.value.displayName == currentName || e.value.level == currentName,
+      (e) =>
+          e.key == currentName ||
+          e.value.displayName == currentName ||
+          e.value.level == currentName,
     );
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.4)),
+        border: Border.all(
+          color: shadcn.Theme.of(
+            context,
+          ).colorScheme.border.withValues(alpha: 0.4),
+        ),
         borderRadius: siteRadius(context, size: "md"),
       ),
       child: ClipRRect(
@@ -241,15 +277,22 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
         child: Column(
           children: List.generate(levels.length, (i) {
             final entry = levels[i];
-            final name = entry.value.displayName.isNotEmpty ? entry.value.displayName : entry.key;
+            final name = entry.value.displayName.isNotEmpty
+                ? entry.value.displayName
+                : entry.key;
             final lv = entry.value;
             final isVip = lv.levelId == 0;
-            final isCurrent = entry.key == currentName || lv.displayName == currentName || lv.level == currentName;
+            final isCurrent =
+                entry.key == currentName ||
+                lv.displayName == currentName ||
+                lv.level == currentName;
             final isNext = nextEntry?.key == entry.key;
             final isBelowCurrent = currentIdx >= 0 && i > currentIdx;
             final canShowProgress = status != null && !isVip;
             final isExpanded =
-                canShowProgress && (_expandedLevelName == name || (isNext && _expandedLevelName == null));
+                canShowProgress &&
+                (_expandedLevelName == name ||
+                    (isNext && _expandedLevelName == null));
             final color = _levelColorForEntry(entry);
             final isLast = i == levels.length - 1;
             final nextNewRights = <String>[];
@@ -269,7 +312,9 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
             return InkWell(
               onTap: canShowProgress
                   ? () => setState(() {
-                      _expandedLevelName = _expandedLevelName == name ? null : name;
+                      _expandedLevelName = _expandedLevelName == name
+                          ? null
+                          : name;
                     })
                   : null,
               child: Container(
@@ -279,19 +324,26 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
                       : isExpanded
                       ? color.withValues(alpha: 0.045)
                       : isNext
-                      ? shadcn.Theme.of(context).colorScheme.muted.withValues(alpha: 0.08)
+                      ? shadcn.Theme.of(
+                          context,
+                        ).colorScheme.muted.withValues(alpha: 0.08)
                       : null,
                   border: isLast
                       ? null
                       : Border(
                           bottom: BorderSide(
-                            color: shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.2),
+                            color: shadcn.Theme.of(
+                              context,
+                            ).colorScheme.border.withValues(alpha: 0.2),
                             width: 0.5,
                           ),
                         ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -299,41 +351,70 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.12),
                               borderRadius: siteRadius(context, size: "xs"),
                             ),
                             child: Text(
                               name,
-                              style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w700),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: color,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           if (canShowProgress)
                             Icon(
-                              isExpanded ? shadcn.LucideIcons.chevronDown : shadcn.LucideIcons.chevronRight,
+                              isExpanded
+                                  ? shadcn.LucideIcons.chevronDown
+                                  : shadcn.LucideIcons.chevronRight,
                               size: 14,
-                              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                              color: shadcn.Theme.of(
+                                context,
+                              ).colorScheme.mutedForeground,
                             ),
                           if (canShowProgress) const SizedBox(width: 6),
                           if (isCurrent)
                             _statusTag(context, '当前', color, true)
                           else if (isNext)
-                            _statusTag(context, '下一个', siteWarning(context), false)
+                            _statusTag(
+                              context,
+                              '下一个',
+                              siteWarning(context),
+                              false,
+                            )
                           else if (isBelowCurrent)
-                            _statusTag(context, '已解锁', siteSuccess(context), false)
+                            _statusTag(
+                              context,
+                              '已解锁',
+                              siteSuccess(context),
+                              false,
+                            )
                           else if (currentIdx >= 0 && i < currentIdx)
                             _statusTag(
                               context,
                               '未解锁',
-                              shadcn.Theme.of(context).colorScheme.mutedForeground.withValues(alpha: 0.4),
+                              shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .mutedForeground
+                                  .withValues(alpha: 0.4),
                               false,
                             ),
 
                           const SizedBox(width: 8),
                           if (isVip)
-                            _statusTag(context, '无需求', siteWarning(context), false)
+                            _statusTag(
+                              context,
+                              '无需求',
+                              siteWarning(context),
+                              false,
+                            )
                           else
                             Flexible(
                               child: shadcn.Tooltip(
@@ -345,13 +426,17 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
                                   textAlign: TextAlign.right,
                                   style: TextStyle(
                                     fontSize: 10,
-                                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                                    color: shadcn.Theme.of(
+                                      context,
+                                    ).colorScheme.mutedForeground,
                                   ),
                                 ),
                               ),
                             ),
                         ],
                       ),
+                      const SizedBox(height: 8),
+                      _levelIdentityRow(context, entry),
 
                       // ── 下一等级的详细进度 ──
                       if (isExpanded) ...[
@@ -381,6 +466,65 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     );
   }
 
+  Widget _levelIdentityRow(
+    BuildContext context,
+    MapEntry<String, SiteLevel> entry,
+  ) {
+    final lv = entry.value;
+    final displayName = lv.displayName.isNotEmpty ? lv.displayName : entry.key;
+    final name = lv.name.trim().isNotEmpty ? lv.name.trim() : displayName;
+    final level = lv.level.trim().isNotEmpty ? lv.level.trim() : entry.key;
+    final cs = shadcn.Theme.of(context).colorScheme;
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        _levelMetaChip(context, '等级名称', name, cs.foreground),
+        _levelMetaChip(context, '等级字段', level, _levelColorForEntry(entry)),
+      ],
+    );
+  }
+
+  Widget _levelMetaChip(
+    BuildContext context,
+    String label,
+    String value,
+    Color valueColor,
+  ) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: cs.muted.withValues(alpha: 0.16),
+        borderRadius: siteRadius(context, size: "xs"),
+        border: Border.all(
+          color: cs.border.withValues(alpha: 0.28),
+          width: 0.6,
+        ),
+      ),
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(text: '$label: '),
+            TextSpan(
+              text: value,
+              style: TextStyle(color: valueColor, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 10.5,
+          color: cs.mutedForeground,
+          fontWeight: FontWeight.w500,
+          height: 1.15,
+        ),
+      ),
+    );
+  }
+
   Widget _statusTag(BuildContext context, String text, Color color, bool bold) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -390,12 +534,20 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: 10, color: color, fontWeight: bold ? FontWeight.w700 : FontWeight.normal),
+        style: TextStyle(
+          fontSize: 10,
+          color: color,
+          fontWeight: bold ? FontWeight.w700 : FontWeight.normal,
+        ),
       ),
     );
   }
 
-  Widget _buildProgressSection(BuildContext context, SiteDailyStatus status, SiteLevel nextLevel) {
+  Widget _buildProgressSection(
+    BuildContext context,
+    SiteDailyStatus status,
+    SiteLevel nextLevel,
+  ) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final cfgUp = parseSize(nextLevel.uploaded);
     final cfgDl = parseSize(nextLevel.downloaded);
@@ -405,7 +557,9 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     if (cfgUp > 0) {
       requiredUp = cfgUp;
     } else if (cfgDl > 0 && ratio > 0) {
-      final effectiveDl = status.downloaded >= cfgDl ? status.downloaded : cfgDl;
+      final effectiveDl = status.downloaded >= cfgDl
+          ? status.downloaded
+          : cfgDl;
       requiredUp = (effectiveDl * ratio).round();
     } else {
       requiredUp = 0;
@@ -420,19 +574,59 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     }
 
     if (requiredUp > 0) {
-      addProgressItem(_progressItem(context, '上传量', status.uploaded, requiredUp, (v) => fmtBytes(v.toInt())));
+      addProgressItem(
+        _progressItem(
+          context,
+          '上传量',
+          status.uploaded,
+          requiredUp,
+          (v) => fmtBytes(v.toInt()),
+        ),
+      );
     }
     if (cfgDl > 0) {
-      addProgressItem(_progressItem(context, '下载量', status.downloaded, cfgDl, (v) => fmtBytes(v.toInt())));
+      addProgressItem(
+        _progressItem(
+          context,
+          '下载量',
+          status.downloaded,
+          cfgDl,
+          (v) => fmtBytes(v.toInt()),
+        ),
+      );
     }
     if (nextLevel.score > 0) {
-      addProgressItem(_progressItem(context, '做种积分', status.myScore, nextLevel.score, (v) => fmtCompact(v.toDouble())));
+      addProgressItem(
+        _progressItem(
+          context,
+          '做种积分',
+          status.myScore,
+          nextLevel.score,
+          (v) => fmtCompact(v.toDouble()),
+        ),
+      );
     }
     if (nextLevel.bonus > 0) {
-      addProgressItem(_progressItem(context, '魔力值', status.myBonus, nextLevel.bonus, (v) => fmtCompact(v.toDouble())));
+      addProgressItem(
+        _progressItem(
+          context,
+          '魔力值',
+          status.myBonus,
+          nextLevel.bonus,
+          (v) => fmtCompact(v.toDouble()),
+        ),
+      );
     }
     if (nextLevel.torrents > 0) {
-      addProgressItem(_progressItem(context, '发种数', status.publish, nextLevel.torrents, (v) => '$v'));
+      addProgressItem(
+        _progressItem(
+          context,
+          '发种数',
+          status.publish,
+          nextLevel.torrents,
+          (v) => '$v',
+        ),
+      );
     }
     if (nextLevel.days > 0) {
       addProgressItem(_timeItem(context, nextLevel.days));
@@ -452,7 +646,11 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
         children: [
           Text(
             '升级条件',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.foreground.withValues(alpha: 0.7)),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: cs.foreground.withValues(alpha: 0.7),
+            ),
           ),
           const SizedBox(height: 8),
           ...progressItems,
@@ -461,7 +659,11 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     );
   }
 
-  Widget _buildCurrentRights(BuildContext context, List<MapEntry<String, SiteLevel>> levels, int currentIdx) {
+  Widget _buildCurrentRights(
+    BuildContext context,
+    List<MapEntry<String, SiteLevel>> levels,
+    int currentIdx,
+  ) {
     final rights = <String>[];
     for (var i = currentIdx; i < levels.length; i++) {
       final r = levels[i].value.rights;
@@ -475,7 +677,11 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
       children: [
         Text(
           '已享权利',
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.foreground.withValues(alpha: 0.7)),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: cs.foreground.withValues(alpha: 0.7),
+          ),
         ),
         const SizedBox(height: 6),
         ..._buildRightsRows(context, rights, siteSuccess(context)),
@@ -483,7 +689,11 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     );
   }
 
-  Widget _buildNextRights(BuildContext context, List<String> rights, Color levelColor) {
+  Widget _buildNextRights(
+    BuildContext context,
+    List<String> rights,
+    Color levelColor,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -497,7 +707,11 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
         children: [
           Text(
             '即将获得新增权利',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: levelColor),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: levelColor,
+            ),
           ),
           const SizedBox(height: 6),
           ..._buildRightsRows(context, rights, levelColor),
@@ -508,7 +722,13 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
 
   // ────────────── 进度条 ──────────────
 
-  Widget _progressItem(BuildContext context, String label, num current, num required, String Function(num) fmt) {
+  Widget _progressItem(
+    BuildContext context,
+    String label,
+    num current,
+    num required,
+    String Function(num) fmt,
+  ) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final met = current >= required;
     final ratio = required > 0 ? (current / required).clamp(0.0, 1.0) : 1.0;
@@ -519,7 +739,10 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
       children: [
         Row(
           children: [
-            Text(label, style: TextStyle(fontSize: 11, color: cs.mutedForeground)),
+            Text(
+              label,
+              style: TextStyle(fontSize: 11, color: cs.mutedForeground),
+            ),
             const Spacer(),
             Text(
               '${fmt(current)} / ${fmt(required)}',
@@ -626,7 +849,11 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
 
   // ────────────── 权利列表 ──────────────
 
-  List<Widget> _buildRightsRows(BuildContext context, List<String> rights, Color markerColor) {
+  List<Widget> _buildRightsRows(
+    BuildContext context,
+    List<String> rights,
+    Color markerColor,
+  ) {
     final cs = shadcn.Theme.of(context).colorScheme;
     return rights
         .map(
@@ -640,14 +867,21 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
                   child: Container(
                     width: 4,
                     height: 4,
-                    decoration: BoxDecoration(color: markerColor, shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                      color: markerColor,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     r,
-                    style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.7), height: 1.4),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: cs.foreground.withValues(alpha: 0.7),
+                      height: 1.4,
+                    ),
                   ),
                 ),
               ],
@@ -704,7 +938,9 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
           e.value.level == currentName,
     );
     final lv = entry?.value;
-    final name = lv?.displayName.isNotEmpty == true ? lv!.displayName : currentName;
+    final name = lv?.displayName.isNotEmpty == true
+        ? lv!.displayName
+        : currentName;
     final levelText = lv?.level.trim() ?? '';
     final display = levelText.isNotEmpty ? '$name($levelText)' : name;
     final color = entry != null ? _levelColorForEntry(entry) : fallbackColor;
@@ -733,9 +969,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     final icon = isGraduation
         ? Icons.school_outlined
         : Icons.verified_user_outlined;
-    final color = isGraduation
-        ? siteWarning(context)
-        : siteSuccess(context);
+    final color = isGraduation ? siteWarning(context) : siteSuccess(context);
 
     return AnimatedBuilder(
       animation: _milestoneController,
@@ -750,7 +984,10 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
                 colors: isGraduation
                     ? [
                         siteWarning(context).withValues(alpha: 0.10 + pulse),
-                        siteAccent(context, 4).withValues(alpha: 0.06 + pulse * 0.5),
+                        siteAccent(
+                          context,
+                          4,
+                        ).withValues(alpha: 0.06 + pulse * 0.5),
                         siteWarning(context).withValues(alpha: 0.10 + pulse),
                       ]
                     : [
@@ -799,10 +1036,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
 
   // ────────────── 里程碑类型判断 ──────────────
 
-  String? _siteLevelMilestone(
-    WebSite? config,
-    SiteDailyStatus? status,
-  ) {
+  String? _siteLevelMilestone(WebSite? config, SiteDailyStatus? status) {
     if (config == null || status == null || status.myLevel.trim().isEmpty) {
       return null;
     }

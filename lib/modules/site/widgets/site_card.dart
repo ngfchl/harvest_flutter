@@ -46,6 +46,25 @@ String _siteLevelDisplayText(WebSite? config, SiteDailyStatus status) {
   return current;
 }
 
+Color _siteLevelColor(WebSite? config, SiteDailyStatus status) {
+  final current = status.myLevel.trim();
+  if (current.isEmpty) return levelColor(current);
+  final levels = config?.level;
+  if (levels == null || levels.isEmpty) return levelColor(current);
+
+  for (final entry in levels.entries) {
+    final level = entry.value;
+    if (entry.key == current ||
+        level.name.trim() == current ||
+        level.displayName.trim() == current ||
+        level.level.trim() == current) {
+      final colorKey = level.level.trim();
+      return levelColor(colorKey.isNotEmpty ? colorKey : entry.key);
+    }
+  }
+  return levelColor(current);
+}
+
 /// 获取等级显示的完整文本 name(level)，用于 tooltip
 String _siteLevelFullText(WebSite? config, SiteDailyStatus status) {
   final current = status.myLevel.trim();
@@ -173,6 +192,7 @@ class SiteCard extends ConsumerWidget {
     final levelTooltip = status == null
         ? ''
         : _siteLevelFullText(config, status);
+    final levelColor = status == null ? null : _siteLevelColor(config, status);
     final hasRight = levelText.isNotEmpty || signStatus != null;
     return Row(
       children: [
@@ -209,10 +229,15 @@ class SiteCard extends ConsumerWidget {
         ),
         if (hasRight) ...[
           const SizedBox(width: 6),
-          if (levelText.isNotEmpty) _levelBadge(context, levelText, levelTooltip),
+          if (levelText.isNotEmpty)
+            _levelBadge(context, levelText, levelTooltip, levelColor!),
           if (signStatus != null) ...[
             const SizedBox(width: 4),
-            _signBadge(context, signStatus, onTap: () => openDetail(context, site)),
+            _signBadge(
+              context,
+              signStatus,
+              onTap: () => openDetail(context, site),
+            ),
           ],
         ],
       ],
@@ -591,20 +616,24 @@ class SiteCard extends ConsumerWidget {
     ),
   );
 
-  Widget _levelBadge(BuildContext context, String lv, String tooltip) =>
-      GestureDetector(
-        onTap: () => openLevelInfo(context, site: site),
-        child: _pillBadge(
-          context,
-          icon: Icons.workspace_premium,
-          text: lv,
-          color: levelColor(lv),
-          tooltip: '等级: $tooltip',
-          height: 20,
-          fontSize: 9,
-          iconSize: 11,
-        ),
-      );
+  Widget _levelBadge(
+    BuildContext context,
+    String lv,
+    String tooltip,
+    Color color,
+  ) => GestureDetector(
+    onTap: () => openLevelInfo(context, site: site),
+    child: _pillBadge(
+      context,
+      icon: Icons.workspace_premium,
+      text: lv,
+      color: color,
+      tooltip: '等级: $tooltip',
+      height: 20,
+      fontSize: 9,
+      iconSize: 11,
+    ),
+  );
 
   Widget _levelMilestoneBadge(
     BuildContext context,
@@ -1194,7 +1223,11 @@ Widget _pillBadge(
   );
 }
 
-Widget _siteSignBadge(BuildContext context, String text, {VoidCallback? onTap}) {
+Widget _siteSignBadge(
+  BuildContext context,
+  String text, {
+  VoidCallback? onTap,
+}) {
   final signed = text == '已签到';
   final color = signed ? siteSuccess(context) : siteWarning(context);
   final badge = _pillBadge(
@@ -1445,7 +1478,11 @@ class SiteCard2 extends ConsumerWidget {
                           ],
                           if (signStatus != null) ...[
                             const SizedBox(width: 8),
-                            _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
+                            _siteSignBadge(
+                              context,
+                              signStatus,
+                              onTap: () => openDetail(context, site),
+                            ),
                           ],
                         ],
                       ),
@@ -1492,6 +1529,7 @@ class SiteCard2 extends ConsumerWidget {
     final signStatus = _siteSignStatus(site, config);
     final levelText = _siteLevelDisplayText(config, status);
     final levelTooltip = _siteLevelFullText(config, status);
+    final levelColor = _siteLevelColor(config, status);
     final hasInvite = status.invitation > 0;
     final hasSecondary = _hasSiteUnread(site) || hasInvite || milestone != null;
 
@@ -1511,11 +1549,15 @@ class SiteCard2 extends ConsumerWidget {
                   Expanded(child: _siteTitle(context)),
                   if (levelText.isNotEmpty) ...[
                     const SizedBox(width: 6),
-                    _levelPill(context, levelText, levelTooltip),
+                    _levelPill(context, levelText, levelTooltip, levelColor),
                   ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 6),
-                    _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
+                    _siteSignBadge(
+                      context,
+                      signStatus,
+                      onTap: () => openDetail(context, site),
+                    ),
                   ],
                   const SizedBox(width: 6),
                   Icon(
@@ -1865,15 +1907,19 @@ class SiteCard2 extends ConsumerWidget {
       ? shadcn.Theme.of(context).colorScheme.border.withValues(alpha: 0.9)
       : siteColors(context).background.withValues(alpha: 0.9);
 
-  Widget _levelPill(BuildContext context, String level, String tooltip) {
-    final accent = siteWarning(context);
+  Widget _levelPill(
+    BuildContext context,
+    String level,
+    String tooltip,
+    Color color,
+  ) {
     return GestureDetector(
       onTap: () => openLevelInfo(context, site: site),
       child: _pillBadge(
         context,
         icon: Icons.workspace_premium,
         text: level,
-        color: accent,
+        color: color,
         tooltip: '等级: $tooltip',
         height: 22,
         fontSize: 11,
@@ -2014,7 +2060,11 @@ class SiteCard3 extends ConsumerWidget {
                             Expanded(child: _title(context)),
                             if (signStatus != null) ...[
                               const SizedBox(width: 6),
-                              _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
+                              _siteSignBadge(
+                                context,
+                                signStatus,
+                                onTap: () => openDetail(context, site),
+                              ),
                             ],
                           ],
                         ),
@@ -2062,6 +2112,7 @@ class SiteCard3 extends ConsumerWidget {
     final signStatus = _siteSignStatus(site, config);
     final levelText = _siteLevelDisplayText(config, status);
     final levelTooltip = _siteLevelFullText(config, status);
+    final levelColor = _siteLevelColor(config, status);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2076,11 +2127,15 @@ class SiteCard3 extends ConsumerWidget {
                   Expanded(child: _title(context)),
                   if (levelText.isNotEmpty) ...[
                     const SizedBox(width: 6),
-                    _levelPill(context, levelText, levelTooltip),
+                    _levelPill(context, levelText, levelTooltip, levelColor),
                   ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 6),
-                    _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
+                    _siteSignBadge(
+                      context,
+                      signStatus,
+                      onTap: () => openDetail(context, site),
+                    ),
                   ],
                 ],
               ),
@@ -2527,15 +2582,19 @@ class SiteCard3 extends ConsumerWidget {
     );
   }
 
-  Widget _levelPill(BuildContext context, String level, String tooltip) {
-    final accent = siteWarning(context);
+  Widget _levelPill(
+    BuildContext context,
+    String level,
+    String tooltip,
+    Color color,
+  ) {
     return GestureDetector(
       onTap: () => openLevelInfo(context, site: site),
       child: _pillBadge(
         context,
         icon: Icons.workspace_premium,
         text: level,
-        color: accent,
+        color: color,
         tooltip: '等级: $tooltip',
         height: SiteCard3._statusBadgeHeight,
         fontSize: SiteCard3._statusBadgeFontSize,
@@ -2680,7 +2739,11 @@ class SiteCard4 extends SiteCard3 {
                             Expanded(child: _title(context)),
                             if (signStatus != null) ...[
                               const SizedBox(width: 6),
-                              _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
+                              _siteSignBadge(
+                                context,
+                                signStatus,
+                                onTap: () => openDetail(context, site),
+                              ),
                             ],
                           ],
                         ),
@@ -2732,6 +2795,7 @@ class SiteCard4 extends SiteCard3 {
     final milestone = _siteLevelMilestone(config, status);
     final levelText = _siteLevelDisplayText(config, status);
     final levelTooltip = _siteLevelFullText(config, status);
+    final levelColor = _siteLevelColor(config, status);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2748,11 +2812,15 @@ class SiteCard4 extends SiteCard3 {
                     Expanded(child: _title(context)),
                     if (levelText.isNotEmpty) ...[
                       const SizedBox(width: 6),
-                      _levelPill(context, levelText, levelTooltip),
+                      _levelPill(context, levelText, levelTooltip, levelColor),
                     ],
                     if (signStatus != null) ...[
                       const SizedBox(width: 6),
-                      _siteSignBadge(context, signStatus, onTap: () => openDetail(context, site)),
+                      _siteSignBadge(
+                        context,
+                        signStatus,
+                        onTap: () => openDetail(context, site),
+                      ),
                     ],
                   ],
                 ),
