@@ -229,15 +229,16 @@ class SiteCard extends ConsumerWidget {
         ),
         if (hasRight) ...[
           const SizedBox(width: 6),
-          if (levelText.isNotEmpty)
-            _levelBadge(context, levelText, levelTooltip, levelColor!),
           if (signStatus != null) ...[
-            const SizedBox(width: 4),
             _signBadge(
               context,
               signStatus,
               onTap: () => openDetail(context, site),
             ),
+          ],
+          if (levelText.isNotEmpty) ...[
+            if (signStatus != null) const SizedBox(width: 4),
+            _levelBadge(context, levelText, levelTooltip, levelColor!),
           ],
         ],
       ],
@@ -1430,7 +1431,7 @@ class SiteCard2 extends ConsumerWidget {
                     ),
                     _MinorMetric(
                       Icons.star_outline,
-                      '做种积分',
+                      '积分',
                       fmtCompact(status.myScore),
                       siteWarning(context),
                     ),
@@ -1547,10 +1548,6 @@ class SiteCard2 extends ConsumerWidget {
                   _statusDot(context, site.available),
                   const SizedBox(width: 8),
                   Expanded(child: _siteTitle(context)),
-                  if (levelText.isNotEmpty) ...[
-                    const SizedBox(width: 6),
-                    _levelPill(context, levelText, levelTooltip, levelColor),
-                  ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 6),
                     _siteSignBadge(
@@ -1558,6 +1555,10 @@ class SiteCard2 extends ConsumerWidget {
                       signStatus,
                       onTap: () => openDetail(context, site),
                     ),
+                  ],
+                  if (levelText.isNotEmpty) ...[
+                    const SizedBox(width: 6),
+                    _levelPill(context, levelText, levelTooltip, levelColor),
                   ],
                   const SizedBox(width: 6),
                   Icon(
@@ -1776,7 +1777,7 @@ class SiteCard2 extends ConsumerWidget {
       child: Row(
         children: [
           for (var i = 0; i < items.length; i++) ...[
-            Expanded(child: _minorMetric(context, items[i])),
+            Expanded(child: FittedBox(fit: BoxFit.scaleDown,child: _minorMetric(context, items[i]))),
             if (i != items.length - 1) const SizedBox(width: 8),
           ],
         ],
@@ -2125,10 +2126,6 @@ class SiteCard3 extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(child: _title(context)),
-                  if (levelText.isNotEmpty) ...[
-                    const SizedBox(width: 6),
-                    _levelPill(context, levelText, levelTooltip, levelColor),
-                  ],
                   if (signStatus != null) ...[
                     const SizedBox(width: 6),
                     _siteSignBadge(
@@ -2136,6 +2133,10 @@ class SiteCard3 extends ConsumerWidget {
                       signStatus,
                       onTap: () => openDetail(context, site),
                     ),
+                  ],
+                  if (levelText.isNotEmpty) ...[
+                    const SizedBox(width: 6),
+                    _levelPill(context, levelText, levelTooltip, levelColor),
                   ],
                 ],
               ),
@@ -2464,16 +2465,18 @@ class SiteCard3 extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 2),
-          Text(
-            item.value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: _titleText(context).withValues(alpha: 0.74),
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              height: 1,
+          FittedBox(fit: BoxFit.scaleDown ,
+            child: Text(
+              item.value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: _titleText(context).withValues(alpha: 0.74),
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                height: 1,
+              ),
             ),
           ),
         ],
@@ -2810,10 +2813,6 @@ class SiteCard4 extends SiteCard3 {
                 Row(
                   children: [
                     Expanded(child: _title(context)),
-                    if (levelText.isNotEmpty) ...[
-                      const SizedBox(width: 6),
-                      _levelPill(context, levelText, levelTooltip, levelColor),
-                    ],
                     if (signStatus != null) ...[
                       const SizedBox(width: 6),
                       _siteSignBadge(
@@ -2821,6 +2820,10 @@ class SiteCard4 extends SiteCard3 {
                         signStatus,
                         onTap: () => openDetail(context, site),
                       ),
+                    ],
+                    if (levelText.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      _levelPill(context, levelText, levelTooltip, levelColor),
                     ],
                   ],
                 ),
