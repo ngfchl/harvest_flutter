@@ -85,81 +85,73 @@ class _SitePageState extends ConsumerState<SitePage> {
     final mobile = context.isMobile;
     final cacheInfo = ref.watch(siteInfoCacheInfoProvider);
 
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final pageBackground = appSurfaceColor(context, cs.background);
-
     return AppBackground(
-      child: Material(
-        color: pageBackground,
-        child: Stack(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Column(
           children: [
-            Column(
-              children: [
-                if (!mobile && _showFilter)
-                  SiteFilterPanel(onClose: () => setState(() => _showFilter = false)),
-                _buildToolbar(
-                  context,
-                  filteredSites.length,
-                  totalCount,
-                  hasFilters,
-                  mobile,
-                ),
-                CacheStatusBanner(
-                  info: cacheInfo,
-                  margin: EdgeInsets.fromLTRB(
-                    mobile ? 12 : 16,
-                    0,
-                    mobile ? 12 : 16,
-                    6,
-                  ),
-                ),
-                Expanded(
-                  child: EasyRefresh(
-                    onRefresh: _refresh,
-                    header: appRefreshHeader(context),
-                    child: sitesAsync.when(
-                      loading: () => _buildLoading(context),
-                      error: (e, _) =>
-                          SiteErrorView(error: e, onRetry: _refresh),
-                      data: (_) {
-                        if (filteredSites.isEmpty) {
-                          return _buildEmptyState(
-                            context,
-                            hasFilters: hasFilters,
-                            mobile: mobile,
-                          );
-                        }
-                        return SiteListView(
-                          sites: filteredSites,
-                          controller: _scrollController,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
+            if (!mobile && _showFilter)
+              SiteFilterPanel(
+                onClose: () => setState(() => _showFilter = false),
+              ),
+            _buildToolbar(
+              context,
+              filteredSites.length,
+              totalCount,
+              hasFilters,
+              mobile,
             ),
-            if (_showScrollToTop)
-              Positioned(
-                right: 16,
-                bottom: MediaQuery.of(context).padding.bottom + 72,
-                child: shadcn.Tooltip(
-                  tooltip: (_) => const Text('回到顶部'),
-                  child: FloatingActionButton.small(
-                    heroTag: 'site_scroll_to_top',
-                    onPressed: () {
-                      _scrollController.animateTo(
-                        0,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOut,
+            CacheStatusBanner(
+              info: cacheInfo,
+              margin: EdgeInsets.fromLTRB(
+                mobile ? 12 : 16,
+                0,
+                mobile ? 12 : 16,
+                6,
+              ),
+            ),
+            Expanded(
+              child: EasyRefresh(
+                onRefresh: _refresh,
+                header: appRefreshHeader(context),
+                child: sitesAsync.when(
+                  loading: () => _buildLoading(context),
+                  error: (e, _) =>
+                      SiteErrorView(error: e, onRetry: _refresh),
+                  data: (_) {
+                    if (filteredSites.isEmpty) {
+                      return _buildEmptyState(
+                        context,
+                        hasFilters: hasFilters,
+                        mobile: mobile,
                       );
-                    },
-                    child: const Icon(shadcn.LucideIcons.arrowUp, size: 18),
-                  ),
+                    }
+                    return SiteListView(
+                      sites: filteredSites,
+                      controller: _scrollController,
+                    );
+                  },
                 ),
               ),
+            ),
           ],
         ),
+        floatingActionButton: _showScrollToTop
+            ? shadcn.Tooltip(
+                tooltip: (_) => const Text('回到顶部'),
+                child: shadcn.Button.ghost(
+                  onPressed: () {
+                    _scrollController.animateTo(
+                      0,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  },
+                  child: const Icon(shadcn.LucideIcons.arrowUp, size: 18),
+                ),
+              )
+            : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }

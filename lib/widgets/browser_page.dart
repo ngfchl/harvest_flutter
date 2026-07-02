@@ -253,6 +253,16 @@ class _BrowserPageState extends State<BrowserPage> {
   String? _error;
   bool _extractingTorrentList = false;
   bool _extractingUserProfile = false;
+  bool _bonusExchanging = false;
+  double _bonusCurrent = 0;
+  bool _bonusPaused = false;
+  bool _bonusCancelled = false;
+  String _bonusItemName = '';
+  int _bonusCurrentIdx = 0;
+  int _bonusTotal = 0;
+  double _bonusRemaining = 0;
+  int _bonusCountdown = 0;
+  int _bonusDelaySeconds = 15;
   bool _websiteConfigsLoadingStarted = false;
   List<WebSite> _websiteConfigs = const <WebSite>[];
   List<SiteInfo> _siteInfos = const <SiteInfo>[];
@@ -823,6 +833,8 @@ class _BrowserPageState extends State<BrowserPage> {
         !_closing &&
         !_isLoading;
     final showUserProfileFab = userWebsite != null && !_closing && !_isLoading;
+    final bonusWebsite = _currentBonusWebsiteConfig();
+    final showBonusFab = bonusWebsite != null && !_closing && !_isLoading;
 
     final pageBackground = appSurfaceColor(context, cs.background);
 
@@ -866,6 +878,30 @@ class _BrowserPageState extends State<BrowserPage> {
                     _buildBottomBar(cs),
                   ],
                 ),
+                if (showBonusFab && !_bonusExchanging)
+                  Positioned(
+                    right: 16,
+                    bottom: MediaQuery.of(context).size.height / 2 - 24,
+                    child: GestureDetector(
+                      onTap: () => _showBonusExchangeSheet(bonusWebsite),
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF59E0B),
+                          shape: BoxShape.circle,
+                          boxShadow: [BoxShadow(color: Color(0x66F59E0B), blurRadius: 8, offset: Offset(0, 2))],
+                        ),
+                        child: const Icon(shadcn.LucideIcons.gem, size: 22, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                if (_bonusExchanging)
+                  Positioned(
+                    right: 16,
+                    bottom: MediaQuery.of(context).size.height / 2 - 24,
+                    child: _buildBonusFlutterOverlay(cs),
+                  ),
                 if (showTorrentFab || showUserProfileFab)
                   Positioned(
                     right: 16,
@@ -2194,6 +2230,19 @@ JSON.stringify({
         pageControlPanel.isNotEmpty &&
         _matchesWebsitePage(currentUrl, pageControlPanel);
     return matchesUser || matchesControlPanel ? website : null;
+  }
+
+  WebSite? _currentBonusWebsiteConfig() {
+    final currentUrl = _currentUrl.trim();
+    if (currentUrl.isEmpty || !mounted) return null;
+    final website = _websiteConfigForCurrentSite();
+    if (website == null) return null;
+    final pageMybonus = website.pageMybonus.trim();
+    final buyPage = website.buyPage.trim();
+    if (pageMybonus.isEmpty && buyPage.isEmpty) return null;
+    if (pageMybonus.isNotEmpty && _matchesWebsitePage(currentUrl, pageMybonus)) return website;
+    if (buyPage.isNotEmpty && _matchesWebsitePage(currentUrl, buyPage)) return website;
+    return null;
   }
 
   bool _hasUserProfileRules(WebSite website) {
@@ -5407,7 +5456,294 @@ JSON.stringify({
       ),
     );
   }
+
+  Future<void> _showBonusExchangeSheet(WebSite website) async {
+    if (!mounted || _closing) return;
+    final controller = _controller;
+    if (controller == null) return;
+    try {
+      final rawData = await controller.evaluateJavascript(source: _buildBonusPageExtractScript());
+      if (!mounted || _closing) return;
+      final parsed = _parseBonusPageData(rawData);
+      if (parsed == null) { Toast.warning('无法识别魔力值兑换页面结构'); return; }
+      final items = parsed.items;
+      var currentBonus = parsed.currentBonus;
+      if (website.myBonusRule.trim().isNotEmpty) {
+        final ruleBonus = await _extractBonusByRule(website.myBonusRule.trim());
+        if (ruleBonus > 0) currentBonus = ruleBonus;
+      }
+      _bonusCurrent = currentBonus;
+      AppLogger.info('魔力值页面提取: bonus=$currentBonus, items=${items.length}');
+      if (items.isEmpty) { Toast.warning('未找到可兑换项目'); return; }
+      final cookie = await _cookieHeaderFor(_currentUrl);
+      if (!mounted || _closing) return;
+      final result = await showDialog<_BonusExchangeResult>(
+        context: context,
+        builder: (_) => _BonusExchangeDialog(items: items, currentBonus: currentBonus,
+          onExchange: (item, quantity, delaySeconds) async {
+            Navigator.pop(context);
+            await _executeBonusExchange(website: website, item: item, quantity: quantity, cookie: cookie, delaySeconds: delaySeconds);
+          },
+        ),
+      );
+    } catch (e, st) { AppLogger.error('提取魔力值页面信息失败', e, st); if (mounted) Toast.error('提取魔力值页面信息失败'); }
+  }
+
+  String _buildBonusPageExtractScript() {
+    return r'''
+(() => {
+  const cleanText = (v) => (v || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
+  const parseNum = (t) => { const s = (t || '').replace(/,/g, '').replace(/[^0-9.]/g, ''); const m = s.match(/(\d+\.?\d*)/); return m ? parseFloat(m[1]) : 0; };
+  let currentBonus = 0;
+  const bodyText = document.body ? document.body.innerText : '';
+  const bonusMatch = bodyText.match(/([\d,]+\.?\d*)\s*(魔力|bonus|karma|积分|爆米花)/i) || bodyText.match(/(魔力|bonus|karma|积分|爆米花)[：:\s]*([\d,]+\.?\d*)/i) || bodyText.match(/(当前|可用|余额|Your)[：:\s]*([\d,]+\.?\d*)/i);
+  if (bonusMatch) currentBonus = parseNum(bonusMatch[1] || bonusMatch[2] || '');
+  if (currentBonus <= 0) { const allNums = bodyText.match(/[\d,]+\.\d+/g) || []; for (const n of allNums) { const v = parseNum(n); if (v > 0 && v < 10000000) { currentBonus = v; break; } } }
+  const items = []; const seen = new Set();
+  const btnTexts = ['exchange','兑换','购买','buy','赠送','捐赠','慈善捐赠','交换'];
+  const isExchangeForm = (form) => {
+    const action = (form.getAttribute('action') || '').toLowerCase();
+    const method = (form.getAttribute('method') || '').toLowerCase();
+    if (method !== 'post') return false;
+    if (action.includes('exchange') || action.includes('buy') || action.includes('bonus')) return true;
+    const btn = form.querySelector('input[type="submit"], button[type="submit"]');
+    if (btn) { const txt = cleanText(btn.value || btn.innerText).toLowerCase(); if (btnTexts.some(k => txt.includes(k))) return true; }
+    return false;
+  };
+  const findOptionInTr = (tr) => {
+    if (!tr) return '';
+    const optInput = tr.querySelector('input[name="option"]');
+    if (optInput && optInput.value) return optInput.value;
+    const firstCell = tr.querySelector('td');
+    if (firstCell) { const t = cleanText(firstCell.innerText); if (/^\d+$/.test(t)) return t; }
+    return '';
+  };
+  const extractName = (el) => {
+    if (!el) return '';
+    const h = el.querySelector('h1, h2, h3'); if (h) return cleanText(h.innerText);
+    const div = el.querySelector('.font-bold, [class*="title"], [class*="name"]'); if (div) { const t = cleanText(div.innerText); if (t.length > 1 && t.length <= 60) return t; }
+    const b = el.querySelector('b, strong'); if (b) { const t = cleanText(b.innerText); if (t.length > 1 && t.length <= 60 && !t.includes('注意')) return t; }
+    return '';
+  };
+  const extractCost = (el) => {
+    if (!el) return 0;
+    const pe = el.querySelector('.mybonus-exchange-card__points span, .mybonus-exchange-card__points strong');
+    if (pe) { const v = parseNum(cleanText(pe.innerText)); if (v > 0) return v; }
+    const spans = el.querySelectorAll('span.red, span[class*="price"], span[class*="cost"], .break-all');
+    for (const s of spans) { const v = parseNum(cleanText(s.innerText)); if (v > 0 && v < 100000000) return v; }
+    const elText = cleanText(el.innerText);
+    const cm = elText.match(/([\d,]+\.?\d*)\s*(Points?|魔力|bonus|karma|爆米花|积分|憨豆)/i) || elText.match(/(魔力|bonus|karma|积分|爆米花|憨豆)[：:\s]*([\d,]+\.?\d*)/i);
+    if (cm) { const v = parseNum(cm[1] || cm[2] || ''); if (v > 0) return v; }
+    const nums = elText.match(/\d[\d,]+/g) || [];
+    for (const n of nums) { const v = parseNum(n); if (v >= 25 && v < 100000000) return v; }
+    return 0;
+  };
+    const extractItem = (form, ov, container) => {
+      if (!ov || seen.has(ov)) return;
+      let submit = form.querySelector('input[type="submit"], button[type="submit"]');
+      let btnText = submit ? cleanText(submit.value || submit.innerText) : '';
+      let isDisabled = submit ? submit.disabled : false;
+      if (!submit && container) {
+        submit = container.querySelector('input[type="submit"], button[type="submit"]');
+        if (submit) { btnText = cleanText(submit.value || submit.innerText); isDisabled = submit.disabled; }
+      }
+      const itemName = extractName(container || form);
+      if (itemName.includes('赠送') || itemName.includes('慈善') || itemName.includes('消除') || itemName.includes('头衔') || itemName.toLowerCase().includes('h&r')) return;
+      const cost = extractCost(container || form);
+    const hi = {}; form.querySelectorAll('input[type="hidden"]').forEach(h => { if (h.name) hi[h.name] = h.value; });
+    if (!hi['option'] && ov) hi['option'] = ov;
+    seen.add(ov);
+    items.push({ name: itemName || 'Option ' + ov, cost, optionValue: ov, formAction: form.getAttribute('action') || '?action=exchange', disabled: isDisabled, buttonText: btnText, hiddenInputs: hi });
+  };
+  document.querySelectorAll('form.mybonus-exchange-card, form[class*="mybonus-exchange-card"]').forEach(form => {
+    const optInput = form.querySelector('input[name="option"]'); if (!optInput) return;
+    extractItem(form, optInput.value, form);
+  });
+  document.querySelectorAll('form').forEach(form => {
+    if (!isExchangeForm(form)) return;
+    const optInput = form.querySelector('input[name="option"]');
+    if (!optInput || !optInput.value) return;
+    if (form.closest('tr')) return;
+    extractItem(form, optInput.value, form);
+  });
+  if (items.length === 0) {
+    document.querySelectorAll('tr').forEach(tr => {
+      const form = tr.querySelector('form');
+      if (!form || !isExchangeForm(form)) return;
+      const ov = findOptionInTr(tr);
+      if (!ov || seen.has(ov)) return;
+      extractItem(form, ov, tr);
+    });
+  }
+  if (items.length === 0) {
+    document.querySelectorAll('tr').forEach(tr => {
+      const form = tr.querySelector('form');
+      if (!form) return;
+      const ov = findOptionInTr(tr);
+      if (!ov || seen.has(ov)) return;
+      extractItem(form, ov, tr);
+    });
+  }
+  return JSON.stringify({ currentBonus, items });
+})();
+''';
+  }
+
+  _BonusPageData? _parseBonusPageData(Object? raw) {
+    if (raw == null) return null;
+    String jsonStr;
+    if (raw is String) { jsonStr = raw; } else { jsonStr = raw.toString(); }
+    if (jsonStr.startsWith('"') && jsonStr.endsWith('"')) { try { jsonStr = jsonDecode(jsonStr) as String; } catch (_) {} }
+    try {
+      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+      final itemsRaw = map['items'] as List<dynamic>? ?? [];
+      final items = itemsRaw.map((e) {
+        final m = e as Map<String, dynamic>;
+        final hiddenRaw = m['hiddenInputs'] as Map<String, dynamic>? ?? {};
+        return _BonusItem(name: m['name']?.toString() ?? '', cost: (m['cost'] as num?)?.toDouble() ?? 0, optionValue: m['optionValue']?.toString() ?? '', formAction: m['formAction']?.toString() ?? '', disabled: m['disabled'] == true, buttonText: m['buttonText']?.toString() ?? '', hiddenInputs: hiddenRaw.map((k, v) => MapEntry(k.toString(), v.toString())));
+      }).where((i) => i.name.isNotEmpty).toList();
+      return _BonusPageData(currentBonus: (map['currentBonus'] as num?)?.toDouble() ?? 0, items: items);
+    } catch (e) { AppLogger.warn('解析魔力值页面数据失败: $e'); return null; }
+  }
+
+  Future<void> _executeBonusExchange({required WebSite website, required _BonusItem item, required int quantity, required String? cookie, required int delaySeconds}) async {
+    final controller = _controller;
+    if (controller == null || _closing || !mounted) return;
+    setState(() { _bonusExchanging = true; _bonusPaused = false; _bonusCancelled = false; });
+    try {
+      setState(() { _bonusItemName = item.name; _bonusCurrentIdx = 1; _bonusTotal = quantity; _bonusRemaining = _bonusCurrent; _bonusCountdown = 0; _bonusDelaySeconds = delaySeconds; });
+      for (var i = 0; i < quantity; i++) {
+        if (!mounted || _closing || _bonusCancelled) break;
+        while (_bonusPaused && mounted && !_closing && !_bonusCancelled) { await Future.delayed(const Duration(milliseconds: 300)); }
+        if (_bonusCancelled) break;
+        setState(() { _bonusCurrentIdx = i + 1; _bonusCountdown = 0; });
+        final result = await controller.evaluateJavascript(source: _buildBonusSubmitScript(item, i + 1));
+        final resultStr = result?.toString() ?? '';
+        AppLogger.info('魔力值兑换 [$i/$quantity]: $resultStr');
+        if (resultStr.contains('error') || resultStr.contains('fail')) { if (mounted) Toast.warning('第 ${i + 1} 次兑换可能失败'); break; }
+        final afterBonus = _bonusCurrent - item.cost * (i + 1);
+        setState(() => _bonusRemaining = afterBonus > 0 ? afterBonus : 0);
+        if (afterBonus < item.cost) { if (mounted) Toast.info('魔力值不足，停止兑换'); break; }
+        await Future.delayed(const Duration(milliseconds: 1000));
+        if (!mounted || _closing || _bonusCancelled) break;
+        if (i < quantity - 1) {
+          for (var d = delaySeconds; d > 0; d--) {
+            if (!mounted || _closing || _bonusCancelled) break;
+            while (_bonusPaused && mounted && !_closing && !_bonusCancelled) { setState(() => _bonusCountdown = d); await Future.delayed(const Duration(milliseconds: 300)); }
+            if (_bonusCancelled) break;
+            setState(() => _bonusCountdown = d);
+            await Future.delayed(const Duration(seconds: 1));
+          }
+        }
+      }
+    } catch (e, st) { AppLogger.error('执行魔力值兑换失败', e, st); if (mounted) Toast.error('兑换失败'); }
+    finally {
+      if (mounted) {
+        setState(() { _bonusExchanging = false; _bonusPaused = false; _bonusCancelled = false; _bonusCountdown = 0; });
+        _controller?.reload().then((_) async {
+          if (!mounted || _closing) return;
+          final ws = _websiteConfigForCurrentSite();
+          if (ws != null && ws.myBonusRule.trim().isNotEmpty) {
+            final bonus = await _extractBonusByRule(ws.myBonusRule.trim());
+            if (bonus > 0 && mounted) setState(() => _bonusCurrent = bonus);
+          }
+        });
+      }
+    }
+  }
+
+  String _buildBonusSubmitScript(_BonusItem item, int index) {
+    final formAction = item.formAction.isNotEmpty ? item.formAction : '?action=exchange';
+    final allInputs = <String, String>{}..addAll(item.hiddenInputs)..['option'] = item.optionValue;
+    final inputsJson = jsonEncode(allInputs);
+    return '''
+(() => {
+  try {
+    const inputs = $inputsJson;
+    const trs = document.querySelectorAll('tr');
+    for (const tr of trs) {
+      const cells = tr.querySelectorAll('td');
+      if (cells.length < 1) continue;
+      const firstCell = (cells[0].innerText || '').trim().split(/\\s/)[0];
+      if (firstCell === '${item.optionValue}') {
+        const btn = tr.querySelector('input[type="submit"], button[type="submit"]');
+        if (btn && !btn.disabled) { btn.click(); return 'clicked_' + $index; }
+      }
+    }
+    const forms = document.querySelectorAll('form');
+    for (const form of forms) {
+      const optIn = form.querySelector('input[name="option"]');
+      if (optIn && optIn.value === '${item.optionValue}') {
+        const btn = form.querySelector('input[type="submit"], button[type="submit"]');
+        if (btn && !btn.disabled) { btn.click(); return 'form_click_' + $index; }
+      }
+    }
+    const f = document.createElement('form');
+    f.method = 'POST'; f.action = '$formAction';
+    for (const [k, v] of Object.entries(inputs)) { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; f.appendChild(i); }
+    document.body.appendChild(f); f.submit();
+    return 'fallback_' + $index;
+  } catch (e) { return 'error: ' + e.message; }
+})();
+''';
+  }
+
+  Future<double> _extractBonusByRule(String rule) async {
+    final controller = _controller;
+    if (controller == null || rule.isEmpty) return 0;
+    try {
+      final escaped = jsonEncode(rule);
+      final raw = await controller.evaluateJavascript(source: '''
+(() => {
+  try {
+    const rule = $escaped;
+    const result = document.evaluate(rule, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+    const el = result.singleNodeValue;
+    if (!el) return '';
+    const text = (el.innerText || el.textContent || '').trim();
+    const cleaned = text.replace(/,/g, '').replace(/[^0-9.]/g, '');
+    const m = cleaned.match(/(\\d+\\.?\\d*)/);
+    return m ? m[1] : '';
+  } catch (_) { return ''; }
+})();
+''');
+      final str = raw?.toString().replaceAll('"', '').trim() ?? '';
+      if (str.isNotEmpty) { final v = double.tryParse(str); if (v != null && v > 0) return v; }
+    } catch (_) {}
+    return 0;
+  }
+
+  Widget _buildBonusFlutterOverlay(shadcn.ColorScheme cs) {
+    final progress = _bonusTotal > 0 ? (_bonusCurrentIdx / _bonusTotal * 100).toInt() : 0;
+    return Container(
+      width: 200, padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(color: Colors.black.withOpacity(0.88), borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 12)]),
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          shadcn.Icon(_bonusPaused ? shadcn.LucideIcons.pause : shadcn.LucideIcons.play, size: 14, color: _bonusPaused ? Colors.redAccent : const Color(0xFF10B981)),
+          const SizedBox(width: 4),
+          Expanded(child: Text(_bonusItemName, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis)),
+          Text('$_bonusCurrentIdx/$_bonusTotal', style: const TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.w600)),
+        ]),
+        const SizedBox(height: 6),
+        shadcn.LinearProgressIndicator(value: progress / 100.0, minHeight: 4, backgroundColor: Colors.white.withOpacity(0.15), color: const Color(0xFFF59E0B)),
+        const SizedBox(height: 6),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text('剩余魔力 ${_bonusRemaining.toStringAsFixed(1)}', style: const TextStyle(color: Color(0xFF10B981), fontSize: 10)),
+          if (_bonusCountdown > 0) Text('⏱ ${_bonusCountdown}s', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 10)),
+        ]),
+        const SizedBox(height: 8),
+        Row(children: [
+          Expanded(child: GestureDetector(onTap: () => setState(() => _bonusPaused = !_bonusPaused), child: Container(padding: const EdgeInsets.symmetric(vertical: 6), decoration: BoxDecoration(color: _bonusPaused ? const Color(0xFF10B981) : const Color(0xFFF59E0B), borderRadius: BorderRadius.circular(6)), child: Center(child: Text(_bonusPaused ? '▶ 继续' : '⏸ 暂停', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))))),
+          const SizedBox(width: 6),
+          Expanded(child: GestureDetector(onTap: () => setState(() => _bonusCancelled = true), child: Container(padding: const EdgeInsets.symmetric(vertical: 6), decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(6)), child: const Center(child: Text('⏹ 停止', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))))),
+        ]),
+      ]),
+    );
+  }
 }
+
+// ────────────────── 魔力值兑换数据类 ──────────────────
 
 enum _TimelineOwnership { all, ownedOnly, unownedOnly }
 
@@ -5677,5 +6013,141 @@ class _BrowserExtractedTorrent {
       );
     }
     return bytes > 0 ? formatBytes(bytes) : text;
+  }
+}
+
+class _BonusItem {
+  final String name;
+  final double cost;
+  final String optionValue;
+  final String formAction;
+  final bool disabled;
+  final String buttonText;
+  final Map<String, String> hiddenInputs;
+  const _BonusItem({required this.name, required this.cost, required this.optionValue, required this.formAction, required this.disabled, required this.buttonText, required this.hiddenInputs});
+}
+
+class _BonusPageData {
+  final double currentBonus;
+  final List<_BonusItem> items;
+  const _BonusPageData({required this.currentBonus, required this.items});
+}
+
+class _BonusExchangeResult {
+  final _BonusItem item;
+  final int quantity;
+  final int delaySeconds;
+  const _BonusExchangeResult({required this.item, required this.quantity, required this.delaySeconds});
+}
+
+class _BonusExchangeDialog extends StatefulWidget {
+  final List<_BonusItem> items;
+  final double currentBonus;
+  final Future<void> Function(_BonusItem item, int quantity, int delaySeconds) onExchange;
+  const _BonusExchangeDialog({required this.items, required this.currentBonus, required this.onExchange});
+  @override
+  State<_BonusExchangeDialog> createState() => _BonusExchangeDialogState();
+}
+
+class _BonusExchangeDialogState extends State<_BonusExchangeDialog> {
+  int _selectedIndex = 0;
+  final TextEditingController _qtyController = TextEditingController(text: '1');
+  final TextEditingController _delayController = TextEditingController(text: '15');
+  List<_BonusItem> get _exchangeable => widget.items.where((i) => !i.disabled).toList();
+
+  @override
+  void initState() { super.initState(); if (_exchangeable.isNotEmpty) _selectedIndex = 0; }
+  @override
+  void dispose() { _qtyController.dispose(); _delayController.dispose(); super.dispose(); }
+  int _maxQty(_BonusItem item) => item.cost <= 0 ? 0 : (widget.currentBonus / item.cost).floor();
+  int _parseQty() => int.tryParse(_qtyController.text.trim()) ?? 0;
+  void _changeQty(int delta) { final cur = int.tryParse(_qtyController.text.trim()) ?? 0; final max = _exchangeable.isNotEmpty ? _maxQty(_exchangeable[_selectedIndex]) : 0; _qtyController.text = (cur + delta).clamp(1, max > 0 ? max : 1).toString(); setState(() {}); }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = shadcn.Theme.of(context).colorScheme;
+    final exchangeable = _exchangeable;
+    if (exchangeable.isEmpty) {
+      return Dialog(child: Container(width: 480, padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text('没有可兑换的项目', style: TextStyle(color: cs.foreground)),
+        const SizedBox(height: 16),
+        shadcn.Button.secondary(onPressed: () => Navigator.pop(context), child: const Text('关闭')),
+      ])));
+    }
+    final si = _selectedIndex.clamp(0, exchangeable.length - 1);
+    if (_selectedIndex != si) _selectedIndex = si;
+    final item = exchangeable[_selectedIndex];
+    final max = _maxQty(item);
+    return Dialog(
+      child: Container(
+        width: 480,
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              shadcn.Icon(shadcn.LucideIcons.gem, size: 18, color: const Color(0xFFF59E0B)),
+              const SizedBox(width: 8),
+              Text('魔力值兑换', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: cs.foreground)),
+              const Spacer(),
+              Text('当前: ${widget.currentBonus.toStringAsFixed(1)}', style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.5))),
+            ]),
+            const SizedBox(height: 12),
+            Flexible(child: ListView.separated(
+              shrinkWrap: true, itemCount: exchangeable.length, separatorBuilder: (_, _) => const SizedBox(height: 3),
+              itemBuilder: (_, index) {
+                final it = exchangeable[index]; final sel = index == _selectedIndex; final mq = _maxQty(it);
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedIndex = index),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: sel ? cs.primary.withValues(alpha: 0.12) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: sel ? cs.primary : cs.border, width: sel ? 1.5 : 1),
+                    ),
+                    child: Row(children: [
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(it.name, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: cs.foreground)),
+                        const SizedBox(height: 2),
+                        Text('魔力 ${it.cost.toStringAsFixed(1)} / 次', style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.5))),
+                      ])),
+                      Text(mq > 0 ? 'x$mq' : '不足', style: TextStyle(fontSize: 11, color: mq > 0 ? const Color(0xFF10B981) : cs.foreground.withValues(alpha: 0.3))),
+                    ]),
+                  ),
+                );
+              },
+            )),
+            const SizedBox(height: 10),
+            Row(children: [
+              Text('数量:', style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.6))),
+              const SizedBox(width: 6),
+              GestureDetector(onTap: () => _changeQty(-1), child: Container(width: 28, height: 28, decoration: BoxDecoration(border: Border.all(color: cs.border), borderRadius: BorderRadius.circular(4)), child: shadcn.Icon(shadcn.LucideIcons.minus, size: 14, color: cs.foreground.withValues(alpha: 0.6)))),
+              const SizedBox(width: 4),
+              SizedBox(width: 48, height: 28, child: TextField(controller: _qtyController, keyboardType: TextInputType.number, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: cs.foreground), decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2), border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: cs.border))), onChanged: (_) => setState(() {}))),
+              const SizedBox(width: 4),
+              GestureDetector(onTap: () => _changeQty(1), child: Container(width: 28, height: 28, decoration: BoxDecoration(border: Border.all(color: cs.border), borderRadius: BorderRadius.circular(4)), child: shadcn.Icon(shadcn.LucideIcons.plus, size: 14, color: cs.foreground.withValues(alpha: 0.6)))),
+              const SizedBox(width: 6),
+              GestureDetector(onTap: () { _qtyController.text = max.toString(); setState(() {}); }, child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: cs.primary.withOpacity(0.15), borderRadius: BorderRadius.circular(4)), child: Text('MAX', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.primary)))),
+              const Spacer(),
+              Text('间隔:', style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.5))),
+              const SizedBox(width: 4),
+              SizedBox(width: 40, height: 28, child: TextField(controller: _delayController, keyboardType: TextInputType.number, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: cs.foreground), decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2), border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: cs.border))))),
+              Text('s', style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.4))),
+            ]),
+            const SizedBox(height: 10),
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              shadcn.Button.secondary(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+              const SizedBox(width: 8),
+              shadcn.Button.primary(
+                onPressed: max > 0 && _parseQty() > 0 ? () { final qty = _parseQty(); if (qty > 0) { final d = (int.tryParse(_delayController.text.trim()) ?? 15).clamp(12, 120); Navigator.pop(context, _BonusExchangeResult(item: item, quantity: qty, delaySeconds: d)); } } : null,
+                child: const Text('兑换'),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
   }
 }
