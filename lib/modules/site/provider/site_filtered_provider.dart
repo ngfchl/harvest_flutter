@@ -145,7 +145,11 @@ bool _matchesSiteQuery(SiteInfo site, WebSite? config, String query) {
 
   bool contains(String? value) {
     final text = value?.trim().toLowerCase();
-    return text != null && text.isNotEmpty && text.contains(q);
+    if (text == null || text.isEmpty) return false;
+    if (text.contains(q)) return true;
+    final stripped = _stripSymbols(text);
+    final strippedQuery = _stripSymbols(q);
+    return strippedQuery.isNotEmpty && stripped.contains(strippedQuery);
   }
 
   if (contains(site.site)) return true;
@@ -161,6 +165,9 @@ bool _matchesSiteQuery(SiteInfo site, WebSite? config, String query) {
 
   return false;
 }
+
+String _stripSymbols(String text) =>
+    text.replaceAll(RegExp(r'[_\-\.\s·]'), '');
 
 bool _matchesIdentity(String selectedValue, String? value) {
   final selected = _normalizeIdentity(selectedValue);
