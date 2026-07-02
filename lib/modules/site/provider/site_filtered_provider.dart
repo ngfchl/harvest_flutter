@@ -167,7 +167,7 @@ bool _matchesSiteQuery(SiteInfo site, WebSite? config, String query) {
 }
 
 String _stripSymbols(String text) =>
-    text.replaceAll(RegExp(r'[_\-\.\s·]'), '');
+    text.replaceAll(RegExp(r'[^a-zA-Z0-9\u4e00-\u9fff]'), '');
 
 bool _matchesIdentity(String selectedValue, String? value) {
   final selected = _normalizeIdentity(selectedValue);
