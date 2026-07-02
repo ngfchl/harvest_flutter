@@ -38,6 +38,7 @@ class SitePage extends ConsumerStatefulWidget {
 
 class _SitePageState extends ConsumerState<SitePage> {
   bool _showFilter = false;
+  bool _showScrollToTop = false;
   final _searchCtrl = TextEditingController();
   final _scrollController = ScrollController();
 
@@ -45,6 +46,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   void initState() {
     super.initState();
     _searchCtrl.addListener(_onSearchTextChanged);
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       registerPageScrollController(ref, 1, _scrollController);
@@ -56,6 +58,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   void dispose() {
     _searchCtrl.removeListener(_onSearchTextChanged);
     _searchCtrl.dispose();
+    _scrollController.removeListener(_onScroll);
     unregisterPageScrollController(ref, 1, _scrollController);
     _scrollController.dispose();
     super.dispose();
@@ -63,6 +66,13 @@ class _SitePageState extends ConsumerState<SitePage> {
 
   void _onSearchTextChanged() {
     ref.read(siteFilterStateProvider).setSiteNameQuery(_searchCtrl.text);
+  }
+
+  void _onScroll() {
+    final show = _scrollController.offset > 300;
+    if (show != _showScrollToTop) {
+      setState(() => _showScrollToTop = show);
+    }
   }
 
   @override
@@ -81,29 +91,73 @@ class _SitePageState extends ConsumerState<SitePage> {
     return AppBackground(
       child: Material(
         color: pageBackground,
-        child: Column(
+        child: Stack(
           children: [
-            // 筛选面板（桌面端展开时显示）
-            if (!mobile && _showFilter) SiteFilterPanel(onClose: () => setState(() => _showFilter = false)),
-            // 工具栏统一放顶部
-            _buildToolbar(context, filteredSites.length, totalCount, hasFilters, mobile),
-            CacheStatusBanner(info: cacheInfo, margin: EdgeInsets.fromLTRB(mobile ? 12 : 16, 0, mobile ? 12 : 16, 6)),
-            Expanded(
-              child: EasyRefresh(
-                onRefresh: _refresh,
-                header: appRefreshHeader(context),
-                child: sitesAsync.when(
-                  loading: () => _buildLoading(context),
-                  error: (e, _) => SiteErrorView(error: e, onRetry: _refresh),
-                  data: (_) {
-                    if (filteredSites.isEmpty) {
-                      return _buildEmptyState(context, hasFilters: hasFilters, mobile: mobile);
-                    }
-                    return SiteListView(sites: filteredSites, controller: _scrollController);
-                  },
+            Column(
+              children: [
+                if (!mobile && _showFilter)
+                  SiteFilterPanel(onClose: () => setState(() => _showFilter = false)),
+                _buildToolbar(
+                  context,
+                  filteredSites.length,
+                  totalCount,
+                  hasFilters,
+                  mobile,
+                ),
+                CacheStatusBanner(
+                  info: cacheInfo,
+                  margin: EdgeInsets.fromLTRB(
+                    mobile ? 12 : 16,
+                    0,
+                    mobile ? 12 : 16,
+                    6,
+                  ),
+                ),
+                Expanded(
+                  child: EasyRefresh(
+                    onRefresh: _refresh,
+                    header: appRefreshHeader(context),
+                    child: sitesAsync.when(
+                      loading: () => _buildLoading(context),
+                      error: (e, _) =>
+                          SiteErrorView(error: e, onRetry: _refresh),
+                      data: (_) {
+                        if (filteredSites.isEmpty) {
+                          return _buildEmptyState(
+                            context,
+                            hasFilters: hasFilters,
+                            mobile: mobile,
+                          );
+                        }
+                        return SiteListView(
+                          sites: filteredSites,
+                          controller: _scrollController,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (_showScrollToTop)
+              Positioned(
+                right: 16,
+                bottom: MediaQuery.of(context).padding.bottom + 72,
+                child: shadcn.Tooltip(
+                  tooltip: (_) => const Text('回到顶部'),
+                  child: FloatingActionButton.small(
+                    heroTag: 'site_scroll_to_top',
+                    onPressed: () {
+                      _scrollController.animateTo(
+                        0,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                    child: const Icon(shadcn.LucideIcons.arrowUp, size: 18),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
