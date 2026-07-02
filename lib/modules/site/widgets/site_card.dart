@@ -46,7 +46,11 @@ String _siteLevelDisplayText(WebSite? config, SiteDailyStatus status) {
   return current;
 }
 
-Color _siteLevelColor(WebSite? config, SiteDailyStatus status) {
+Color _siteLevelColor(
+  WebSite? config,
+  SiteDailyStatus status, {
+  List<WebSite> allConfigs = const [],
+}) {
   final current = status.myLevel.trim();
   if (current.isEmpty) return levelColor(current);
   final levels = config?.level;
@@ -59,7 +63,22 @@ Color _siteLevelColor(WebSite? config, SiteDailyStatus status) {
         level.displayName.trim() == current ||
         level.level.trim() == current) {
       final colorKey = level.level.trim();
-      return levelColor(colorKey.isNotEmpty ? colorKey : entry.key);
+      final localKey = colorKey.isNotEmpty ? colorKey : entry.key;
+      if (level.levelId == 0) return levelColor(localKey);
+      final npConfig = allConfigs.firstWhereOrNull(
+        (c) => c.name == 'NP模板',
+      );
+      if (npConfig != null) {
+        final npLevels = npConfig.level;
+        final npEntry = npLevels.entries.firstWhereOrNull(
+          (e) => e.value.levelId == level.levelId,
+        );
+        if (npEntry != null) {
+          final npKey = npEntry.value.level.trim();
+          if (npKey.isNotEmpty) return levelColor(npKey);
+        }
+      }
+      return levelColor(localKey);
     }
   }
   return levelColor(current);
@@ -145,7 +164,7 @@ class SiteCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: compact ? 5 : 8),
-                _firstRow(context, status, config, privacy),
+                _firstRow(context, status, config, privacy, allConfigs: configs),
                 SizedBox(height: compact ? 2 : 3),
                 _secondRow(context, status, config),
                 if (status != null) ...[
@@ -183,8 +202,9 @@ class SiteCard extends ConsumerWidget {
     BuildContext context,
     SiteDailyStatus? status,
     WebSite? config,
-    bool privacy,
-  ) {
+    bool privacy, {
+    List<WebSite> allConfigs = const [],
+  }) {
     final signStatus = _siteSignStatus(site, config);
     final levelText = status == null
         ? ''
@@ -192,7 +212,9 @@ class SiteCard extends ConsumerWidget {
     final levelTooltip = status == null
         ? ''
         : _siteLevelFullText(config, status);
-    final levelColor = status == null ? null : _siteLevelColor(config, status);
+    final levelColor = status == null
+        ? null
+        : _siteLevelColor(config, status, allConfigs: allConfigs);
     final hasRight = levelText.isNotEmpty || signStatus != null;
     return Row(
       children: [
@@ -1396,7 +1418,7 @@ class SiteCard2 extends ConsumerWidget {
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _header(context, status, config),
+                  _header(context, status, config, allConfigs: configs),
                   const SizedBox(height: 9),
                   _mainMetrics(context, status, delta),
                   const SizedBox(height: 6),
@@ -1524,13 +1546,14 @@ class SiteCard2 extends ConsumerWidget {
   Widget _header(
     BuildContext context,
     SiteDailyStatus status,
-    WebSite? config,
-  ) {
+    WebSite? config, {
+    List<WebSite> allConfigs = const [],
+  }) {
     final milestone = _siteLevelMilestone(config, status);
     final signStatus = _siteSignStatus(site, config);
     final levelText = _siteLevelDisplayText(config, status);
     final levelTooltip = _siteLevelFullText(config, status);
-    final levelColor = _siteLevelColor(config, status);
+    final levelColor = _siteLevelColor(config, status, allConfigs: allConfigs);
     final hasInvite = status.invitation > 0;
     final hasSecondary = _hasSiteUnread(site) || hasInvite || milestone != null;
 
@@ -1977,7 +2000,7 @@ class SiteCard3 extends ConsumerWidget {
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _top(context, status, config),
+                  _top(context, status, config, allConfigs: configs),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -2108,12 +2131,17 @@ class SiteCard3 extends ConsumerWidget {
     );
   }
 
-  Widget _top(BuildContext context, SiteDailyStatus status, WebSite? config) {
+  Widget _top(
+    BuildContext context,
+    SiteDailyStatus status,
+    WebSite? config, {
+    List<WebSite> allConfigs = const [],
+  }) {
     final milestone = _siteLevelMilestone(config, status);
     final signStatus = _siteSignStatus(site, config);
     final levelText = _siteLevelDisplayText(config, status);
     final levelTooltip = _siteLevelFullText(config, status);
-    final levelColor = _siteLevelColor(config, status);
+    final levelColor = _siteLevelColor(config, status, allConfigs: allConfigs);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2662,7 +2690,7 @@ class SiteCard4 extends SiteCard3 {
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _hero(context, status, config),
+                  _hero(context, status, config, allConfigs: configs),
                   const SizedBox(height: 6),
                   Row(
                     children: [
@@ -2793,12 +2821,17 @@ class SiteCard4 extends SiteCard3 {
     );
   }
 
-  Widget _hero(BuildContext context, SiteDailyStatus status, WebSite? config) {
+  Widget _hero(
+    BuildContext context,
+    SiteDailyStatus status,
+    WebSite? config, {
+    List<WebSite> allConfigs = const [],
+  }) {
     final signStatus = _siteSignStatus(site, config);
     final milestone = _siteLevelMilestone(config, status);
     final levelText = _siteLevelDisplayText(config, status);
     final levelTooltip = _siteLevelFullText(config, status);
-    final levelColor = _siteLevelColor(config, status);
+    final levelColor = _siteLevelColor(config, status, allConfigs: allConfigs);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

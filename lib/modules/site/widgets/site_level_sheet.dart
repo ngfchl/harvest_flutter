@@ -95,16 +95,33 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     super.dispose();
   }
 
-  Color _levelColorForEntry(MapEntry<String, SiteLevel> entry) {
+  Color _levelColorForEntry(
+    MapEntry<String, SiteLevel> entry, {
+    List<WebSite> allConfigs = const [],
+  }) {
     final level = entry.value.level.trim();
-    if (level.isNotEmpty) return levelColor(level);
-    return levelColor(entry.key);
+    final localKey = level.isNotEmpty ? level : entry.key;
+    if (entry.value.levelId == 0) return levelColor(localKey);
+    final npConfig = allConfigs.firstWhereOrNull(
+      (c) => c.name == 'NP模板',
+    );
+    if (npConfig != null) {
+      final npEntry = npConfig.level.entries.firstWhereOrNull(
+        (e) => e.value.levelId == entry.value.levelId,
+      );
+      if (npEntry != null) {
+        final npKey = npEntry.value.level.trim();
+        if (npKey.isNotEmpty) return levelColor(npKey);
+      }
+    }
+    return levelColor(localKey);
   }
 
   Color _levelColorForText(
     String text,
-    List<MapEntry<String, SiteLevel>> levels,
-  ) {
+    List<MapEntry<String, SiteLevel>> levels, {
+    List<WebSite> allConfigs = const [],
+  }) {
     final current = text.trim();
     final entry = levels.firstWhereOrNull(
       (e) =>
@@ -113,7 +130,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
           e.value.name == current ||
           e.value.level == current,
     );
-    if (entry != null) return _levelColorForEntry(entry);
+    if (entry != null) return _levelColorForEntry(entry, allConfigs: allConfigs);
     return levelColor(current);
   }
 
@@ -146,7 +163,11 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     final nextEntry = hasNext ? levels[currentIdx - 1] : null;
 
     final cs = shadcn.Theme.of(context).colorScheme;
-    final currentLevelColor = _levelColorForText(currentName, levels);
+    final currentLevelColor = _levelColorForText(
+      currentName,
+      levels,
+      allConfigs: configs,
+    );
 
     // ── 保号/毕业里程碑 ──
     final milestone = _siteLevelMilestone(config, status);
@@ -157,6 +178,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
       currentName,
       levels,
       currentLevelColor,
+      allConfigs: configs,
     );
 
     // ── Header ──
@@ -229,7 +251,14 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
 
         // ── 等级列表 ──
         if (levels.isNotEmpty)
-          _buildUnifiedLevels(context, levels, currentName, status, nextEntry),
+          _buildUnifiedLevels(
+            context,
+            levels,
+            currentName,
+            status,
+            nextEntry,
+            allConfigs: configs,
+          ),
       ],
     );
 
@@ -254,8 +283,9 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     List<MapEntry<String, SiteLevel>> levels,
     String currentName,
     SiteDailyStatus? status,
-    MapEntry<String, SiteLevel>? nextEntry,
-  ) {
+    MapEntry<String, SiteLevel>? nextEntry, {
+    List<WebSite> allConfigs = const [],
+  }) {
     final currentIdx = levels.indexWhere(
       (e) =>
           e.key == currentName ||
@@ -293,7 +323,7 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
                 canShowProgress &&
                 (_expandedLevelName == name ||
                     (isNext && _expandedLevelName == null));
-            final color = _levelColorForEntry(entry);
+            final color = _levelColorForEntry(entry, allConfigs: allConfigs);
             final isLast = i == levels.length - 1;
             final nextNewRights = <String>[];
             if (isNext && currentIdx >= 0) {
@@ -436,7 +466,11 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
                         ],
                       ),
                       const SizedBox(height: 8),
-                      _levelIdentityRow(context, entry),
+                      _levelIdentityRow(
+                        context,
+                        entry,
+                        allConfigs: allConfigs,
+                      ),
 
                       // ── 下一等级的详细进度 ──
                       if (isExpanded) ...[
@@ -468,8 +502,9 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
 
   Widget _levelIdentityRow(
     BuildContext context,
-    MapEntry<String, SiteLevel> entry,
-  ) {
+    MapEntry<String, SiteLevel> entry, {
+    List<WebSite> allConfigs = const [],
+  }) {
     final lv = entry.value;
     final displayName = lv.displayName.isNotEmpty ? lv.displayName : entry.key;
     final name = lv.name.trim().isNotEmpty ? lv.name.trim() : displayName;
@@ -481,7 +516,12 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
       runSpacing: 6,
       children: [
         _levelMetaChip(context, '等级名称', name, cs.foreground),
-        _levelMetaChip(context, '等级字段', level, _levelColorForEntry(entry)),
+        _levelMetaChip(
+          context,
+          '等级字段',
+          level,
+          _levelColorForEntry(entry, allConfigs: allConfigs),
+        ),
       ],
     );
   }
@@ -928,8 +968,9 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
     BuildContext context,
     String currentName,
     List<MapEntry<String, SiteLevel>> levels,
-    Color fallbackColor,
-  ) {
+    Color fallbackColor, {
+    List<WebSite> allConfigs = const [],
+  }) {
     final entry = levels.firstWhereOrNull(
       (e) =>
           e.key == currentName ||
@@ -943,7 +984,9 @@ class _LevelInfoSheetState extends ConsumerState<_LevelInfoSheet>
         : currentName;
     final levelText = lv?.level.trim() ?? '';
     final display = levelText.isNotEmpty ? '$name($levelText)' : name;
-    final color = entry != null ? _levelColorForEntry(entry) : fallbackColor;
+    final color = entry != null
+        ? _levelColorForEntry(entry, allConfigs: allConfigs)
+        : fallbackColor;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
