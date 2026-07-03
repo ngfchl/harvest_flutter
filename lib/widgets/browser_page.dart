@@ -834,7 +834,7 @@ class _BrowserPageState extends State<BrowserPage> {
         !_isLoading;
     final showUserProfileFab = userWebsite != null && !_closing && !_isLoading;
     final bonusWebsite = _currentBonusWebsiteConfig();
-    final showBonusFab = bonusWebsite != null && !_closing && !_isLoading;
+    final showBonusFab = bonusWebsite != null && !_closing && (_progress >= 0.5 || !_isLoading);
 
     final pageBackground = appSurfaceColor(context, cs.background);
 
@@ -2242,6 +2242,8 @@ JSON.stringify({
     if (pageMybonus.isEmpty && buyPage.isEmpty) return null;
     if (pageMybonus.isNotEmpty && _matchesWebsitePage(currentUrl, pageMybonus)) return website;
     if (buyPage.isNotEmpty && _matchesWebsitePage(currentUrl, buyPage)) return website;
+    final uri = Uri.tryParse(currentUrl);
+    if (uri != null && uri.path.endsWith('/bonusshop.php')) return website;
     return null;
   }
 
@@ -5481,11 +5483,13 @@ JSON.stringify({
         context: context,
         builder: (_) => _BonusExchangeDialog(items: items, currentBonus: currentBonus,
           onExchange: (item, quantity, delaySeconds) async {
-            Navigator.pop(context);
-            await _executeBonusExchange(website: website, item: item, quantity: quantity, cookie: cookie, delaySeconds: delaySeconds);
+            Navigator.pop(context, _BonusExchangeResult(item: item, quantity: quantity, delaySeconds: delaySeconds));
           },
         ),
       );
+      if (result != null && mounted && !_closing) {
+        await _executeBonusExchange(website: website, item: result.item, quantity: result.quantity, cookie: cookie, delaySeconds: result.delaySeconds);
+      }
     } catch (e, st) { AppLogger.error('提取魔力值页面信息失败', e, st); if (mounted) Toast.error('提取魔力值页面信息失败'); }
   }
 
@@ -5496,9 +5500,11 @@ JSON.stringify({
   const parseNum = (t) => { const s = (t || '').replace(/,/g, '').replace(/[^0-9.]/g, ''); const m = s.match(/(\d+\.?\d*)/); return m ? parseFloat(m[1]) : 0; };
   let currentBonus = 0;
   const bodyText = document.body ? document.body.innerText : '';
-  const bonusMatch = bodyText.match(/([\d,]+\.?\d*)\s*(魔力|bonus|karma|积分|爆米花)/i) || bodyText.match(/(魔力|bonus|karma|积分|爆米花)[：:\s]*([\d,]+\.?\d*)/i) || bodyText.match(/(当前|可用|余额|Your)[：:\s]*([\d,]+\.?\d*)/i);
+  const balEl = document.querySelector('.bonus-shop__balance-value, [class*="balance-value"], [class*="balance"] [class*="value"]');
+  if (balEl) { currentBonus = parseNum(balEl.innerText); }
+  if (currentBonus <= 0) { const bonusMatch = bodyText.match(/([\d,]+\.?\d*)\s*(魔力|bonus|karma|积分|爆米花|幸运星|猫粮|啤酒瓶)/i) || bodyText.match(/(魔力|bonus|karma|积分|爆米花|幸运星|猫粮|啤酒瓶)[：:\s]*([\d,]+\.?\d*)/i) || bodyText.match(/(当前|可用|余额|Your)[：:\s]*([\d,]+\.?\d*)/i);
   if (bonusMatch) currentBonus = parseNum(bonusMatch[1] || bonusMatch[2] || '');
-  if (currentBonus <= 0) { const allNums = bodyText.match(/[\d,]+\.\d+/g) || []; for (const n of allNums) { const v = parseNum(n); if (v > 0 && v < 10000000) { currentBonus = v; break; } } }
+  if (currentBonus <= 0) { const allNums = bodyText.match(/[\d,]+\.\d+/g) || []; for (const n of allNums) { const v = parseNum(n); if (v > 0 && v < 10000000) { currentBonus = v; break; } } } }
   const items = []; const seen = new Set();
   const btnTexts = ['exchange','兑换','购买','buy','赠送','捐赠','慈善捐赠','交换'];
   const isExchangeForm = (form) => {
@@ -5513,7 +5519,7 @@ JSON.stringify({
   const findOptionInTr = (tr) => {
     if (!tr) return '';
     const optInput = tr.querySelector('input[name="option"]');
-    if (optInput && optInput.value) return optInput.value;
+    if (optInput && optInput.value !== '') return optInput.value;
     const firstCell = tr.querySelector('td');
     if (firstCell) { const t = cleanText(firstCell.innerText); if (/^\d+$/.test(t)) return t; }
     return '';
@@ -5522,6 +5528,7 @@ JSON.stringify({
     if (!el) return '';
     const h = el.querySelector('h1, h2, h3'); if (h) return cleanText(h.innerText);
     const div = el.querySelector('.font-bold, [class*="title"], [class*="name"]'); if (div) { const t = cleanText(div.innerText); if (t.length > 1 && t.length <= 60) return t; }
+    const dt = el.querySelector('dt'); if (dt) { const t = cleanText(dt.innerText); if (t.length > 1 && t.length <= 60) return t; }
     const b = el.querySelector('b, strong'); if (b) { const t = cleanText(b.innerText); if (t.length > 1 && t.length <= 60 && !t.includes('注意')) return t; }
     return '';
   };
@@ -5529,10 +5536,16 @@ JSON.stringify({
     if (!el) return 0;
     const pe = el.querySelector('.mybonus-exchange-card__points span, .mybonus-exchange-card__points strong');
     if (pe) { const v = parseNum(cleanText(pe.innerText)); if (v > 0) return v; }
-    const spans = el.querySelectorAll('span.red, span[class*="price"], span[class*="cost"], .break-all');
+    const spans = el.querySelectorAll('span.red, span[class*="price"], span[class*="cost"], span.bonus-card__price, .break-all');
     for (const s of spans) { const v = parseNum(cleanText(s.innerText)); if (v > 0 && v < 100000000) return v; }
+    const tds = el.querySelectorAll('td');
+    let allTds = tds;
+    if (tds.length === 0) { const f = el.querySelector('form'); if (f) allTds = f.querySelectorAll('td'); }
+    let lastTd = 0; let tdIdx = 0;
+    for (const td of allTds) { tdIdx++; if (tdIdx <= 1) continue; if (td.querySelector('input[name="option"]')) continue; const text = cleanText(td.innerText); const v = parseNum(text); if (v > 0 && v < 100000000) { lastTd = v; if (/^[\d,.\s]+$/.test(text) && /[\d]/.test(text) && !/[a-zA-Z\u4e00-\u9fff]/.test(text)) return v; } }
+    if (lastTd > 0) return lastTd;
     const elText = cleanText(el.innerText);
-    const cm = elText.match(/([\d,]+\.?\d*)\s*(Points?|魔力|bonus|karma|爆米花|积分|憨豆)/i) || elText.match(/(魔力|bonus|karma|积分|爆米花|憨豆)[：:\s]*([\d,]+\.?\d*)/i);
+    const cm = elText.match(/([\d,]+\.?\d*)\s*(Points?|魔力|bonus|karma|爆米花|积分|憨豆|啤酒瓶)/i) || elText.match(/(魔力|bonus|karma|积分|爆米花|憨豆|啤酒瓶)[：:\s]*([\d,]+\.?\d*)/i);
     if (cm) { const v = parseNum(cm[1] || cm[2] || ''); if (v > 0) return v; }
     const nums = elText.match(/\d[\d,]+/g) || [];
     for (const n of nums) { const v = parseNum(n); if (v >= 25 && v < 100000000) return v; }
@@ -5548,14 +5561,15 @@ JSON.stringify({
         if (submit) { btnText = cleanText(submit.value || submit.innerText); isDisabled = submit.disabled; }
       }
       const itemName = extractName(container || form);
-      if (itemName.includes('赠送') || itemName.includes('慈善') || itemName.includes('消除') || itemName.includes('头衔') || itemName.toLowerCase().includes('h&r')) return;
+      if (itemName.includes('赠送') || itemName.includes('慈善') || itemName.includes('消除') || itemName.includes('头衔') || itemName.includes('免费') || itemName.includes('置顶') || itemName.toLowerCase().includes('h&r')) return;
       const cost = extractCost(container || form);
+      if (cost <= 0) return;
     const hi = {}; form.querySelectorAll('input[type="hidden"]').forEach(h => { if (h.name) hi[h.name] = h.value; });
     if (!hi['option'] && ov) hi['option'] = ov;
     seen.add(ov);
     items.push({ name: itemName || 'Option ' + ov, cost, optionValue: ov, formAction: form.getAttribute('action') || '?action=exchange', disabled: isDisabled, buttonText: btnText, hiddenInputs: hi });
   };
-  document.querySelectorAll('form.mybonus-exchange-card, form[class*="mybonus-exchange-card"]').forEach(form => {
+  document.querySelectorAll('form.mybonus-exchange-card, form[class*="mybonus-exchange-card"], form.bonus-card').forEach(form => {
     const optInput = form.querySelector('input[name="option"]'); if (!optInput) return;
     extractItem(form, optInput.value, form);
   });
@@ -5579,6 +5593,17 @@ JSON.stringify({
     document.querySelectorAll('tr').forEach(tr => {
       const form = tr.querySelector('form');
       if (!form) return;
+      const ov = findOptionInTr(tr);
+      if (!ov || seen.has(ov)) return;
+      extractItem(form, ov, tr);
+    });
+  }
+  if (items.length === 0) {
+    document.querySelectorAll('tr').forEach(tr => {
+      const form = tr.querySelector('form');
+      if (!form) return;
+      const action = (form.getAttribute('action') || '').toLowerCase();
+      if (!action.includes('exchange') && !action.includes('buy') && !action.includes('bonus')) return;
       const ov = findOptionInTr(tr);
       if (!ov || seen.has(ov)) return;
       extractItem(form, ov, tr);
@@ -5659,6 +5684,7 @@ JSON.stringify({
     return '''
 (() => {
   try {
+    if (window.jQuery || window.\$) { try { (window.jQuery || window.\$).document.off('submit'); } catch(e) {} }
     const inputs = $inputsJson;
     const trs = document.querySelectorAll('tr');
     for (const tr of trs) {
@@ -6056,7 +6082,13 @@ class _BonusExchangeDialogState extends State<_BonusExchangeDialog> {
   List<_BonusItem> get _exchangeable => widget.items.where((i) => !i.disabled).toList();
 
   @override
-  void initState() { super.initState(); if (_exchangeable.isNotEmpty) _selectedIndex = 0; }
+  void initState() {
+    super.initState();
+    if (_exchangeable.isNotEmpty) {
+      _selectedIndex = _exchangeable.indexWhere((i) => i.name.contains('100') && i.name.contains('上传'));
+      if (_selectedIndex < 0) _selectedIndex = 0;
+    }
+  }
   @override
   void dispose() { _qtyController.dispose(); _delayController.dispose(); super.dispose(); }
   int _maxQty(_BonusItem item) => item.cost <= 0 ? 0 : (widget.currentBonus / item.cost).floor();
