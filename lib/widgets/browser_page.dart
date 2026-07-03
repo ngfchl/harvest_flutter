@@ -260,7 +260,7 @@ class _BrowserPageState extends State<BrowserPage> {
   int _bonusTotal = 0;
   double _bonusRemaining = 0;
   int _bonusCountdown = 0;
-  int _bonusDelaySeconds = 15;
+  int _bonusDelaySeconds = 12;
   bool _websiteConfigsLoadingStarted = false;
   List<WebSite> _websiteConfigs = const <WebSite>[];
   List<SiteInfo> _siteInfos = const <SiteInfo>[];
@@ -5820,7 +5820,7 @@ JSON.stringify({
         shadcn.LinearProgressIndicator(value: progress / 100.0, minHeight: 4, backgroundColor: Colors.white.withOpacity(0.15), color: const Color(0xFFF59E0B)),
         const SizedBox(height: 6),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text('剩余魔力 ${_bonusRemaining.toStringAsFixed(1)}', style: const TextStyle(color: Color(0xFF10B981), fontSize: 10)),
+          Text('剩余魔力 ${fmtCompact(_bonusRemaining)}', style: const TextStyle(color: Color(0xFF10B981), fontSize: 10)),
           if (_bonusCountdown > 0) Text('⏱ ${_bonusCountdown}s', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 10)),
         ]),
         const SizedBox(height: 8),
@@ -6143,7 +6143,7 @@ class _BonusExchangeDialog extends StatefulWidget {
 class _BonusExchangeDialogState extends State<_BonusExchangeDialog> {
   int _selectedIndex = 0;
   final TextEditingController _qtyController = TextEditingController(text: '1');
-  final TextEditingController _delayController = TextEditingController(text: '15');
+  final TextEditingController _delayController = TextEditingController(text: '12');
   List<_BonusItem> get _exchangeable => widget.items.where((i) => !i.disabled).toList();
 
   @override
@@ -6188,7 +6188,7 @@ class _BonusExchangeDialogState extends State<_BonusExchangeDialog> {
               const SizedBox(width: 8),
               Text('魔力值兑换', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: cs.foreground)),
               const Spacer(),
-              Text('当前: ${widget.currentBonus.toStringAsFixed(1)}', style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.5))),
+              Text('当前: ${fmtCompact(widget.currentBonus)}', style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.5))),
             ]),
             const SizedBox(height: 12),
             Flexible(child: ListView.separated(
@@ -6208,7 +6208,7 @@ class _BonusExchangeDialogState extends State<_BonusExchangeDialog> {
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(it.name, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: cs.foreground)),
                         const SizedBox(height: 2),
-                        Text('魔力 ${it.cost.toStringAsFixed(1)} / 次', style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.5))),
+                        Text('魔力 ${fmtCompact(it.cost)} / 次', style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.5))),
                       ])),
                       Text(mq > 0 ? 'x$mq' : '不足', style: TextStyle(fontSize: 11, color: mq > 0 ? const Color(0xFF10B981) : cs.foreground.withValues(alpha: 0.3))),
                     ]),
@@ -6238,7 +6238,7 @@ class _BonusExchangeDialogState extends State<_BonusExchangeDialog> {
               shadcn.Button.secondary(onPressed: () => Navigator.pop(context), child: const Text('取消')),
               const SizedBox(width: 8),
               shadcn.Button.primary(
-                onPressed: max > 0 && _parseQty() > 0 ? () { final qty = _parseQty(); if (qty > 0) { final d = (int.tryParse(_delayController.text.trim()) ?? 15).clamp(12, 120); Navigator.pop(context, _BonusExchangeResult(item: item, quantity: qty, delaySeconds: d)); } } : null,
+                onPressed: max > 0 && _parseQty() > 0 ? () { final qty = _parseQty(); if (qty > 0) { final d = (int.tryParse(_delayController.text.trim()) ?? 12).clamp(12, 120); Navigator.pop(context, _BonusExchangeResult(item: item, quantity: qty, delaySeconds: d)); } } : null,
                 child: const Text('兑换'),
               ),
             ]),
