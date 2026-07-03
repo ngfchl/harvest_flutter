@@ -5500,9 +5500,9 @@ JSON.stringify({
   const parseNum = (t) => { const s = (t || '').replace(/,/g, '').replace(/[^0-9.]/g, ''); const m = s.match(/(\d+\.?\d*)/); return m ? parseFloat(m[1]) : 0; };
   let currentBonus = 0;
   const bodyText = document.body ? document.body.innerText : '';
-  const balEl = document.querySelector('.bonus-shop__balance-value, [class*="balance-value"], [class*="balance"] [class*="value"]');
+  const balEl = document.querySelector('#self_bonus, .bonus-shop__balance-value, [class*="balance-value"], [class*="balance"] [class*="value"]');
   if (balEl) { currentBonus = parseNum(balEl.innerText); }
-  if (currentBonus <= 0) { const bonusMatch = bodyText.match(/([\d,]+\.?\d*)\s*(魔力|bonus|karma|积分|爆米花|幸运星|猫粮|啤酒瓶)/i) || bodyText.match(/(魔力|bonus|karma|积分|爆米花|幸运星|猫粮|啤酒瓶)[：:\s]*([\d,]+\.?\d*)/i) || bodyText.match(/(当前|可用|余额|Your)[：:\s]*([\d,]+\.?\d*)/i);
+  if (currentBonus <= 0) { const bonusMatch = bodyText.match(/([\d,]+\.?\d*)\s*(魔力|bonus|karma|积分|爆米花|幸运星|猫粮|啤酒瓶|电力值|电力)/i) || bodyText.match(/(魔力|bonus|karma|积分|爆米花|幸运星|猫粮|啤酒瓶|电力值|电力)[：:\s]*([\d,]+\.?\d*)/i) || bodyText.match(/(当前|可用|余额|Your)[：:\s]*([\d,]+\.?\d*)/i);
   if (bonusMatch) currentBonus = parseNum(bonusMatch[1] || bonusMatch[2] || '');
   if (currentBonus <= 0) { const allNums = bodyText.match(/[\d,]+\.\d+/g) || []; for (const n of allNums) { const v = parseNum(n); if (v > 0 && v < 10000000) { currentBonus = v; break; } } } }
   const items = []; const seen = new Set();
@@ -5545,7 +5545,7 @@ JSON.stringify({
     for (const td of allTds) { tdIdx++; if (tdIdx <= 1) continue; if (td.querySelector('input[name="option"]')) continue; const text = cleanText(td.innerText); const v = parseNum(text); if (v > 0 && v < 100000000) { lastTd = v; if (/^[\d,.\s]+$/.test(text) && /[\d]/.test(text) && !/[a-zA-Z\u4e00-\u9fff]/.test(text)) return v; } }
     if (lastTd > 0) return lastTd;
     const elText = cleanText(el.innerText);
-    const cm = elText.match(/([\d,]+\.?\d*)\s*(Points?|魔力|bonus|karma|爆米花|积分|憨豆|啤酒瓶)/i) || elText.match(/(魔力|bonus|karma|积分|爆米花|憨豆|啤酒瓶)[：:\s]*([\d,]+\.?\d*)/i);
+    const cm = elText.match(/([\d,]+\.?\d*)\s*(Points?|魔力|bonus|karma|爆米花|积分|憨豆|啤酒瓶|电力值|电力)/i) || elText.match(/(魔力|bonus|karma|积分|爆米花|憨豆|啤酒瓶|电力值|电力)[：:\s]*([\d,]+\.?\d*)/i);
     if (cm) { const v = parseNum(cm[1] || cm[2] || ''); if (v > 0) return v; }
     const nums = elText.match(/\d[\d,]+/g) || [];
     for (const n of nums) { const v = parseNum(n); if (v >= 25 && v < 100000000) return v; }
