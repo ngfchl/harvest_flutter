@@ -17,7 +17,7 @@ import 'package:harvest/modules/site/model/site_config.dart';
 import 'package:harvest/modules/site/model/site_info.dart';
 import 'package:harvest/modules/site/provider/site_provider.dart';
 import 'package:harvest/modules/site/widgets/site_browser.dart';
-import 'package:harvest/modules/site/widgets/site_card.dart';
+import 'package:harvest/modules/site/widgets/site_level_sheet.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
@@ -169,38 +169,35 @@ class BrowserCookieQuickMenu extends StatelessWidget {
   }
 
   Widget _defaultCookieBadge(bool hasTargets) {
+    const color = Color(0xFF10B981);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+      height: 22,
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF10B981).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withValues(alpha: 0.20), width: 0.8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 5,
-            height: 5,
-            decoration: const BoxDecoration(
-              color: Color(0xFF10B981),
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 4),
+          const Icon(shadcn.LucideIcons.cookie, size: 12, color: color),
+          const SizedBox(width: 3),
           const Text(
             'Cookie',
             style: TextStyle(
-              color: Color(0xFF10B981),
-              fontSize: 9,
-              fontWeight: FontWeight.w600,
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              height: 1,
             ),
           ),
           if (hasTargets) ...[
-            const SizedBox(width: 3),
+            const SizedBox(width: 2),
             const Icon(
               shadcn.LucideIcons.chevronDown,
               size: 10,
-              color: Color(0xFF10B981),
+              color: color,
             ),
           ],
         ],
@@ -1039,24 +1036,9 @@ class _BrowserPageState extends State<BrowserPage> {
               ],
             ),
           ),
-          // 站点信息按钮
+          // 等级信息按钮
           if (_shouldShowCookieQuickMenu()) ...[
-            GestureDetector(
-              onTap: _showSiteInfoCard,
-              child: Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: cs.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Icon(
-                  shadcn.LucideIcons.circleInfo,
-                  size: 13,
-                  color: cs.primary,
-                ),
-              ),
-            ),
+            _buildLevelBadge(cs),
             const SizedBox(width: 6),
           ],
           // Cookie 指示
@@ -1094,23 +1076,63 @@ class _BrowserPageState extends State<BrowserPage> {
     );
   }
 
-  void _showSiteInfoCard() {
+  Widget _buildLevelBadge(shadcn.ColorScheme cs) {
     final website = _websiteConfigForCurrentSite();
     final siteInfo = _currentSiteInfoForQuickLinks(website);
-    if (siteInfo == null) {
-      Toast.warning('未找到站点信息');
-      return;
+    if (siteInfo == null) return const SizedBox.shrink();
+    final status = siteInfo.latestStatus;
+    final configs = ProviderScope.containerOf(context, listen: false).read(websiteListProvider).value ?? [];
+    WebSite? config;
+    for (final c in configs) { if (c.name == siteInfo.site) { config = c; break; } }
+
+    String levelText = status?.myLevel ?? '-';
+    Color badgeColor = shadcn.Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
+    final levels = config?.level;
+    if (levels != null && levels.isNotEmpty && status != null) {
+      for (final entry in levels.entries) {
+        final lv = entry.value;
+        if (entry.key == levelText || lv.name.trim() == levelText || lv.level.trim() == levelText) {
+          final display = lv.displayName.trim();
+          if (display.isNotEmpty) levelText = display;
+          final colorKey = lv.level.trim().isNotEmpty ? lv.level.trim() : entry.key;
+          badgeColor = levelColor(colorKey);
+          break;
+        }
+      }
     }
-    showDialog(
-      context: context,
-      builder: (_) => Dialog(
+
+    final isDark = shadcn.Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: () => openLevelInfo(context, site: siteInfo),
+      child: Tooltip(
+        message: '等级: ${status?.myLevel ?? "-"}',
+        preferBelow: false,
         child: Container(
-          width: 380,
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.7,
+          height: 22,
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          decoration: BoxDecoration(
+            color: badgeColor.withValues(alpha: isDark ? 0.14 : 0.10),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: badgeColor.withValues(alpha: 0.20), width: 0.8),
           ),
-          padding: const EdgeInsets.all(12),
-          child: SiteCard(site: siteInfo),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.workspace_premium, size: 12, color: badgeColor),
+              const SizedBox(width: 3),
+              Text(
+                levelText,
+                style: TextStyle(
+                  color: badgeColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
