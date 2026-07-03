@@ -17,6 +17,7 @@ import 'package:harvest/modules/site/model/site_config.dart';
 import 'package:harvest/modules/site/model/site_info.dart';
 import 'package:harvest/modules/site/provider/site_provider.dart';
 import 'package:harvest/modules/site/widgets/site_browser.dart';
+import 'package:harvest/modules/site/widgets/site_card.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
@@ -1038,6 +1039,26 @@ class _BrowserPageState extends State<BrowserPage> {
               ],
             ),
           ),
+          // 站点信息按钮
+          if (_shouldShowCookieQuickMenu()) ...[
+            GestureDetector(
+              onTap: _showSiteInfoCard,
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: cs.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Icon(
+                  shadcn.LucideIcons.circleInfo,
+                  size: 13,
+                  color: cs.primary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+          ],
           // Cookie 指示
           if (_shouldShowCookieQuickMenu()) _buildCookieQuickMenu(cs),
           // 加载状态
@@ -1070,6 +1091,28 @@ class _BrowserPageState extends State<BrowserPage> {
     return BrowserCookieQuickMenu(
       targets: targets,
       onSelected: _openQuickBrowseTarget,
+    );
+  }
+
+  void _showSiteInfoCard() {
+    final website = _websiteConfigForCurrentSite();
+    final siteInfo = _currentSiteInfoForQuickLinks(website);
+    if (siteInfo == null) {
+      Toast.warning('未找到站点信息');
+      return;
+    }
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        child: Container(
+          width: 380,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.7,
+          ),
+          padding: const EdgeInsets.all(12),
+          child: SiteCard(site: siteInfo),
+        ),
+      ),
     );
   }
 
