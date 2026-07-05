@@ -5751,24 +5751,82 @@ JSON.stringify({
   try {
     if (window.jQuery || window.\$) { try { (window.jQuery || window.\$).document.off('submit'); } catch(e) {} }
     const inputs = $inputsJson;
+    const optionValue = '${item.optionValue}';
+    const cleanText = (v) => (v || '').replace(/\\u00a0/g, ' ').replace(/\\s+/g, ' ').trim();
+
+    const findSubmitInContext = (ctx) => {
+      const btn = ctx.querySelector('input[type="submit"], button[type="submit"]');
+      if (btn && !btn.disabled) return btn;
+      return null;
+    };
+
+    const matchAllHiddenInputs = (form) => {
+      for (const [k, v] of Object.entries(inputs)) {
+        const inp = form.querySelector('input[name="' + k + '"]');
+        if (!inp || inp.value !== v) return false;
+      }
+      return true;
+    };
+
+    const forms = document.querySelectorAll('form');
+    for (const form of forms) {
+      if (matchAllHiddenInputs(form)) {
+        const btn = findSubmitInContext(form);
+        if (btn) { btn.click(); return 'form_exact_' + $index; }
+      }
+    }
+
+    for (const form of forms) {
+      const optIn = form.querySelector('input[name="option"]');
+      if (optIn && optIn.value === optionValue) {
+        const btn = findSubmitInContext(form);
+        if (btn) { btn.click(); return 'form_opt_' + $index; }
+      }
+    }
+
     const trs = document.querySelectorAll('tr');
+    for (const tr of trs) {
+      const form = tr.querySelector('form');
+      if (form && matchAllHiddenInputs(form)) {
+        const btn = findSubmitInContext(form);
+        if (btn) { btn.click(); return 'tr_exact_' + $index; }
+      }
+    }
+
+    for (const tr of trs) {
+      const optIn = tr.querySelector('input[name="option"]');
+      if (optIn && optIn.value === optionValue) {
+        const btn = findSubmitInContext(tr);
+        if (btn) { btn.click(); return 'tr_opt_' + $index; }
+      }
+    }
+
     for (const tr of trs) {
       const cells = tr.querySelectorAll('td');
       if (cells.length < 1) continue;
-      const firstCell = (cells[0].innerText || '').trim().split(/\\s/)[0];
-      if (firstCell === '${item.optionValue}') {
-        const btn = tr.querySelector('input[type="submit"], button[type="submit"]');
-        if (btn && !btn.disabled) { btn.click(); return 'clicked_' + $index; }
+      const firstCell = cleanText(cells[0].innerText).split(/\\s/)[0];
+      if (firstCell === optionValue) {
+        const btn = findSubmitInContext(tr);
+        if (btn) { btn.click(); return 'tr_cell_' + $index; }
       }
     }
-    const forms = document.querySelectorAll('form');
-    for (const form of forms) {
-      const optIn = form.querySelector('input[name="option"]');
-      if (optIn && optIn.value === '${item.optionValue}') {
-        const btn = form.querySelector('input[type="submit"], button[type="submit"]');
-        if (btn && !btn.disabled) { btn.click(); return 'form_click_' + $index; }
+
+    const cards = document.querySelectorAll('[class*="mybonus-exchange-card"], [class*="bonus-card"], [class*="exchange"]');
+    for (const card of cards) {
+      if (matchAllHiddenInputs(card)) {
+        const btn = findSubmitInContext(card);
+        if (btn) { btn.click(); return 'card_exact_' + $index; }
       }
     }
+
+    for (const card of cards) {
+      const optIn = card.querySelector('input[name="option"]');
+      if (optIn && optIn.value === optionValue) {
+        const btn = findSubmitInContext(card);
+        if (btn) { btn.click(); return 'card_opt_' + $index; }
+      }
+    }
+
     const f = document.createElement('form');
     f.method = 'POST'; f.action = '$formAction';
     for (const [k, v] of Object.entries(inputs)) { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; f.appendChild(i); }
