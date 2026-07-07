@@ -1370,7 +1370,8 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     history: state.history,
                     valueOf: (item) => item.cpu.percent,
                     color: _blue,
-                    displayValue: '${(data?.cpu.percent ?? 0).toStringAsFixed(2)}%',
+                    displayValue:
+                        '${(data?.cpu.percent ?? 0).toStringAsFixed(2)}%',
                     formatY: (v) => '${v.toStringAsFixed(0)}%',
                   ),
                 ),
@@ -1382,20 +1383,18 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     history: state.history,
                     valueOf: (item) => item.memory.workingSet.toDouble(),
                     color: _violet,
-                    displayValue: '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)}',
+                    displayValue:
+                        '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)}',
                     formatY: formatBytes,
                   ),
                 ),
                 tokens.hGap(10),
                 Expanded(
-                  child: _serverResourceUsageChart(
-                    title: '内存占用',
-                    value: data?.memory.percent ?? 0,
+                  child: _serverResourceNetworkChart(
+                    title: '网络流量',
                     displayValue:
-                        '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)} · ${(data?.memory.percent ?? 0).toStringAsFixed(2)}%',
+                        '↑ ${formatSpeed(data?.network.uploadSpeed ?? 0)} / ↓ ${formatSpeed(data?.network.downloadSpeed ?? 0)}',
                     history: state.history,
-                    valueOf: (item) => item.memory.percent,
-                    color: _violet,
                   ),
                 ),
               ],
@@ -1421,7 +1420,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         ? 0.0
         : points.map((p) => p.value).reduce((a, b) => a > b ? a : b);
     final maxValue = dataMax <= 0 ? 100.0 : dataMax * 2;
-    final interval = maxValue <= 30 ? 10.0 : maxValue <= 60 ? 20.0 : maxValue <= 200 ? 50.0 : maxValue / 5;
+    final interval = maxValue <= 30
+        ? 10.0
+        : maxValue <= 60
+        ? 20.0
+        : maxValue <= 200
+        ? 50.0
+        : maxValue / 5;
     final valueText = displayValue ?? '${value.toStringAsFixed(1)}%';
 
     return Container(
@@ -1515,6 +1520,133 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
+  Widget _serverResourceNetworkChart({
+    required String title,
+    required String displayValue,
+    required List<ServerResourceStatus> history,
+  }) {
+    final tokens = _tokens;
+    final uploadPoints = _serverResourceUsagePoints(
+      history,
+      (item) => item.network.uploadSpeed.toDouble(),
+    );
+    final downloadPoints = _serverResourceUsagePoints(
+      history,
+      (item) => item.network.downloadSpeed.toDouble(),
+    );
+    final values = [
+      ...uploadPoints.map((p) => p.value),
+      ...downloadPoints.map((p) => p.value),
+    ];
+    final dataMax = values.isEmpty
+        ? 0.0
+        : values.reduce((a, b) => a > b ? a : b);
+    final maxValue = dataMax <= 0 ? 1024.0 : dataMax * 1.8;
+    final interval = maxValue <= 1024
+        ? 256.0
+        : maxValue <= 1024 * 1024
+        ? maxValue / 4
+        : maxValue / 5;
+
+    return Container(
+      padding: tokens.edgeLTRB(10, 9, 10, 6),
+      decoration: BoxDecoration(
+        color: _green.withValues(alpha: 0.06),
+        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+        border: Border.all(color: _green.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: _text,
+                    fontSize: tokens.font(12),
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              tokens.hGap(8),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    displayValue,
+                    maxLines: 1,
+                    style: TextStyle(
+                      color: _green,
+                      fontSize: tokens.font(12),
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          tokens.vGap(6),
+          Expanded(
+            child: uploadPoints.isEmpty && downloadPoints.isEmpty
+                ? Center(
+                    child: Text(
+                      '等待数据',
+                      style: TextStyle(
+                        color: _muted,
+                        fontSize: tokens.font(11),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  )
+                : SfCartesianChart(
+                    plotAreaBorderWidth: 0,
+                    margin: EdgeInsets.zero,
+                    primaryXAxis: CategoryAxis(
+                      isVisible: false,
+                      majorGridLines: const MajorGridLines(width: 0),
+                    ),
+                    primaryYAxis: NumericAxis(
+                      minimum: 0,
+                      maximum: maxValue,
+                      interval: interval,
+                      isVisible: false,
+                      axisLine: const AxisLine(width: 0),
+                      majorTickLines: const MajorTickLines(size: 0),
+                      majorGridLines: MajorGridLines(
+                        width: 0.6,
+                        color: _line.withValues(alpha: 0.55),
+                      ),
+                    ),
+                    series: <CartesianSeries>[
+                      SplineSeries<_ServerResourceUsagePoint, String>(
+                        dataSource: uploadPoints,
+                        xValueMapper: (point, _) => point.label,
+                        yValueMapper: (point, _) => point.value,
+                        color: _green,
+                        width: 2,
+                        name: '上传',
+                      ),
+                      SplineSeries<_ServerResourceUsagePoint, String>(
+                        dataSource: downloadPoints,
+                        xValueMapper: (point, _) => point.label,
+                        yValueMapper: (point, _) => point.value,
+                        color: _red,
+                        width: 2,
+                        name: '下载',
+                      ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<_ServerResourceUsagePoint> _serverResourceUsagePoints(
     List<ServerResourceStatus> history,
     double Function(ServerResourceStatus item) valueOf,
@@ -1524,10 +1656,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       final label = time == null
           ? '${entry.key + 1}'
           : '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
-      return _ServerResourceUsagePoint(
-        label,
-        valueOf(entry.value).toDouble(),
-      );
+      return _ServerResourceUsagePoint(label, valueOf(entry.value).toDouble());
     }).toList();
   }
 
