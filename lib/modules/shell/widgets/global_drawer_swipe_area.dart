@@ -242,6 +242,7 @@ class GlobalNavigationSidebar extends StatelessWidget {
     final cs = tokens.cs;
     final user = ref.watch(authProvider).user;
     final authInfo = ref.watch(authInfoProvider).value;
+    final isSuperuser = user?.isSuperuser == true;
     final showAdminUser = canOpenAdminUsers(authInfo);
     final showNews = ref.watch(mediaInfoSettingsProvider).enabled;
     final showAccountSwitcher = ref.watch(loginHistoryProvider).length >= 2;
@@ -329,12 +330,13 @@ class GlobalNavigationSidebar extends StatelessWidget {
                     shadcn.NavigationDivider(
                       color: cs.border.withValues(alpha: 0.72),
                     ),
-                    _navButton(
-                      context,
-                      label: '服务重启',
-                      icon: shadcn.LucideIcons.serverCog,
-                      onPressed: _restartServer,
-                    ),
+                    if (isSuperuser)
+                      _navButton(
+                        context,
+                        label: '服务重启',
+                        icon: shadcn.LucideIcons.serverCog,
+                        onPressed: _restartServer,
+                      ),
                     if (showAccountSwitcher)
                       _navButton(
                         context,
@@ -352,13 +354,14 @@ class GlobalNavigationSidebar extends StatelessWidget {
                   ],
                   children: [
                     _navSectionLabel(context, '常用入口'),
-                    _navItem(
-                      context,
-                      key: 'dashboard',
-                      label: '数据仪表',
-                      icon: shadcn.LucideIcons.layoutDashboard,
-                      onTap: () => _go('/dashboard'),
-                    ),
+                    if (isSuperuser)
+                      _navItem(
+                        context,
+                        key: 'dashboard',
+                        label: '数据仪表',
+                        icon: shadcn.LucideIcons.layoutDashboard,
+                        onTap: () => _go('/dashboard'),
+                      ),
                     _navItem(
                       context,
                       key: 'search',
@@ -366,9 +369,7 @@ class GlobalNavigationSidebar extends StatelessWidget {
                       icon: shadcn.LucideIcons.search,
                       onTap: () => _go('/search'),
                     ),
-                    _navGap(context, 8),
-                    _navSectionLabel(context, '站点内容'),
-                    if (showNews)
+                    if (!isSuperuser && showNews)
                       _navItem(
                         context,
                         key: 'news',
@@ -376,19 +377,31 @@ class GlobalNavigationSidebar extends StatelessWidget {
                         icon: shadcn.LucideIcons.newspaper,
                         onTap: () => _go('/home'),
                       ),
-                    _navItem(
-                      context,
-                      key: 'sites',
-                      label: '站点数据',
-                      icon: shadcn.LucideIcons.globe,
-                      onTap: () => _go('/sites'),
-                    ),
-                    _navButton(
-                      context,
-                      label: '站点动态',
-                      icon: shadcn.LucideIcons.gitBranchPlus,
-                      onPressed: () => _push(const SiteTimelinePage()),
-                    ),
+                    if (isSuperuser) ...[
+                      _navGap(context, 8),
+                      _navSectionLabel(context, '站点内容'),
+                      if (showNews)
+                        _navItem(
+                          context,
+                          key: 'news',
+                          label: '资讯中心',
+                          icon: shadcn.LucideIcons.newspaper,
+                          onTap: () => _go('/home'),
+                        ),
+                      _navItem(
+                        context,
+                        key: 'sites',
+                        label: '站点数据',
+                        icon: shadcn.LucideIcons.globe,
+                        onTap: () => _go('/sites'),
+                      ),
+                      _navButton(
+                        context,
+                        label: '站点动态',
+                        icon: shadcn.LucideIcons.gitBranchPlus,
+                        onPressed: () => _push(const SiteTimelinePage()),
+                      ),
+                    ],
                     _navGap(context, 8),
                     _navSectionLabel(context, '下载任务'),
                     _navItem(
@@ -398,61 +411,66 @@ class GlobalNavigationSidebar extends StatelessWidget {
                       icon: shadcn.LucideIcons.download,
                       onTap: () => _go('/downloads'),
                     ),
-                    _navItem(
-                      context,
-                      key: 'tasks',
-                      label: '任务列表',
-                      icon: shadcn.LucideIcons.listTodo,
-                      onTap: () => _go('/tasks'),
-                    ),
-                    _navGap(context, 8),
-                    _navSectionLabel(context, '系统维护'),
-                    _navButton(
-                      context,
-                      label: '设置中心',
-                      icon: shadcn.LucideIcons.settings,
-                      onPressed: () => _push(const OptionPage()),
-                    ),
-                    _navButton(
-                      context,
-                      label: '程序更新',
-                      icon: shadcn.LucideIcons.arrowUpFromLine,
-                      onPressed: () => _push(const UpdatePage()),
-                    ),
-                    if (!kIsWeb)
+                    if (isSuperuser)
+                      _navItem(
+                        context,
+                        key: 'tasks',
+                        label: '任务列表',
+                        icon: shadcn.LucideIcons.listTodo,
+                        onTap: () => _go('/tasks'),
+                      ),
+                    if (isSuperuser) ...[
+                      _navGap(context, 8),
+                      _navSectionLabel(context, '系统维护'),
                       _navButton(
                         context,
-                        label: '应用升级',
-                        icon: shadcn.LucideIcons.circleArrowUp,
-                        onPressed: () => _pushRoute('/app-upgrade'),
+                        label: '设置中心',
+                        icon: shadcn.LucideIcons.settings,
+                        onPressed: () => _push(const OptionPage()),
                       ),
-                    _navButton(
-                      context,
-                      label: '日志中心',
-                      icon: shadcn.LucideIcons.scrollText,
-                      onPressed: _openLogCenter,
-                    ),
-                    _navButton(
-                      context,
-                      label: '日志浮窗',
-                      icon: shadcn.LucideIcons.terminal,
-                      onPressed: _openLogs,
-                    ),
-                    _navGap(context, 8),
-                    _navSectionLabel(context, '用户权限'),
-                    _navButton(
-                      context,
-                      label: '用户中心',
-                      icon: shadcn.LucideIcons.user,
-                      onPressed: () => _push(const UserManagementPage()),
-                    ),
-                    if (showAdminUser)
                       _navButton(
                         context,
-                        label: '授权管理',
-                        icon: shadcn.LucideIcons.shieldCheck,
-                        onPressed: () => _push(const AdminUserPage()),
+                        label: '程序更新',
+                        icon: shadcn.LucideIcons.arrowUpFromLine,
+                        onPressed: () => _push(const UpdatePage()),
                       ),
+                      if (!kIsWeb)
+                        _navButton(
+                          context,
+                          label: '应用升级',
+                          icon: shadcn.LucideIcons.circleArrowUp,
+                          onPressed: () => _pushRoute('/app-upgrade'),
+                        ),
+                      _navButton(
+                        context,
+                        label: '日志中心',
+                        icon: shadcn.LucideIcons.scrollText,
+                        onPressed: _openLogCenter,
+                      ),
+                      _navButton(
+                        context,
+                        label: '日志浮窗',
+                        icon: shadcn.LucideIcons.terminal,
+                        onPressed: _openLogs,
+                      ),
+                    ],
+                    if (isSuperuser) ...[
+                      _navGap(context, 8),
+                      _navSectionLabel(context, '用户权限'),
+                      _navButton(
+                        context,
+                        label: '用户中心',
+                        icon: shadcn.LucideIcons.user,
+                        onPressed: () => _push(const UserManagementPage()),
+                      ),
+                      if (showAdminUser)
+                        _navButton(
+                          context,
+                          label: '授权管理',
+                          icon: shadcn.LucideIcons.shieldCheck,
+                          onPressed: () => _push(const AdminUserPage()),
+                        ),
+                    ],
                   ],
                 );
               },
