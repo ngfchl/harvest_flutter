@@ -803,6 +803,7 @@ class _TomlFieldList extends StatelessWidget {
         child: _TomlSelectField(
           field: field,
           options: selectOptions.optionsFor(field.key),
+          onChanged: onChanged,
         ),
       );
     }
@@ -990,8 +991,13 @@ const _functionSwitchFieldKeys = [
 class _TomlSelectField extends StatelessWidget {
   final _TomlField field;
   final List<String> options;
+  final VoidCallback onChanged;
 
-  const _TomlSelectField({required this.field, required this.options});
+  const _TomlSelectField({
+    required this.field,
+    required this.options,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1027,6 +1033,7 @@ class _TomlSelectField extends StatelessWidget {
       onChanged: (value) {
         if (value == null) return;
         field.controller.text = value;
+        onChanged();
       },
     );
   }
