@@ -65,7 +65,9 @@ class _ShellPageState extends ConsumerState<ShellPage> {
   ];
   static const _primaryPageCount = 5;
   static const _defaultPrimaryPageIndex = 2;
+  static const _newsPageIndex = 0;
   static const _searchPageIndex = 5;
+  static const _downloadsPageIndex = 3;
   static const _pageTitles = ['资讯', '站点', '仪表盘', '下载器', '任务中心', '搜索'];
   static const _pageSubtitles = [
     '跟踪最新动态与公告',
@@ -105,8 +107,14 @@ class _ShellPageState extends ConsumerState<ShellPage> {
   }
 
   void _closeSearchPage() {
-    final target = _lastPrimaryIndex.clamp(0, _primaryPageCount - 1).toInt();
-    _onTap(target);
+    final isSuperuser = ref.read(authProvider).user?.isSuperuser == true;
+    final last = _lastPrimaryIndex.clamp(0, _primaryPageCount - 1).toInt();
+    if (isSuperuser) {
+      _onTap(last);
+      return;
+    }
+    final allowed = last == _newsPageIndex || last == _downloadsPageIndex;
+    _onTap(allowed ? last : _downloadsPageIndex);
   }
 
   List<Widget> _buildPages() {
@@ -290,6 +298,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).user;
+    final isSuperuser = user?.isSuperuser == true;
     final currentIndex = _getCurrentIndex();
     final authInfo = ref.watch(authInfoProvider).value;
     final showAdminUser = canOpenAdminUsers(authInfo);
@@ -325,6 +334,15 @@ class _ShellPageState extends ConsumerState<ShellPage> {
         context.go('/dashboard');
       });
     }
+    if (!isSuperuser &&
+        currentIndex != _searchPageIndex &&
+        currentIndex != _downloadsPageIndex &&
+        currentIndex != _newsPageIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context.go('/downloads');
+      });
+    }
 
     return PopScope(
       canPop: false,
@@ -341,6 +359,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
           dashboardChrome: false,
           showBottomControls: !isSearchPage,
           showNews: showNews,
+          restricted: !isSuperuser,
           header: isSearchPage
               ? const SizedBox.shrink()
               : _ShellHeader(
@@ -360,6 +379,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                   updateState: updateState,
                   avatar: _AccountMenuButton(
                     user: user,
+                    isSuperuser: isSuperuser,
                     showAdminUser: showAdminUser,
                     showAccountSwitcher:
                         ref.watch(loginHistoryProvider).length >= 2,
@@ -1011,6 +1031,7 @@ class _HeaderUpdateIconFrame extends StatelessWidget {
 
 class _AccountMenuButton extends ConsumerWidget {
   final dynamic user;
+  final bool isSuperuser;
   final bool showAdminUser;
   final bool showAccountSwitcher;
   final bool hasAppUpgrade;
@@ -1020,6 +1041,7 @@ class _AccountMenuButton extends ConsumerWidget {
 
   const _AccountMenuButton({
     required this.user,
+    required this.isSuperuser,
     required this.showAdminUser,
     required this.showAccountSwitcher,
     required this.hasAppUpgrade,
@@ -1034,7 +1056,7 @@ class _AccountMenuButton extends ConsumerWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => _showMenu(context, ref),
+      onTap: isSuperuser ? () => _showMenu(context, ref) : null,
       child: shadcn.Avatar(
         initials: user?.username?.substring(0, 1).toUpperCase() ?? '?',
         size: 32,
@@ -1066,16 +1088,17 @@ class _AccountMenuButton extends ConsumerWidget {
           child: shadcn.DropdownMenu(
             children: [
               shadcn.MenuLabel(child: const Text('账号')),
-              _item(
-                context,
-                icon: shadcn.LucideIcons.user,
-                title: '用户中心',
-                onTap: () => Navigator.push(
+              if (isSuperuser)
+                _item(
                   context,
-                  MaterialPageRoute(builder: (_) => const UserManagementPage()),
+                  icon: shadcn.LucideIcons.user,
+                  title: '用户中心',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const UserManagementPage()),
+                  ),
                 ),
-              ),
-              if (showAdminUser)
+              if (isSuperuser && showAdminUser)
                 _item(
                   context,
                   icon: shadcn.LucideIcons.shieldCheck,
@@ -1085,12 +1108,13 @@ class _AccountMenuButton extends ConsumerWidget {
                     MaterialPageRoute(builder: (_) => const AdminUserPage()),
                   ),
                 ),
-              _item(
-                context,
-                icon: shadcn.LucideIcons.userPlus,
-                title: '邀请用户',
-                onTap: () => showInviteUserDialog(context),
-              ),
+              if (isSuperuser)
+                _item(
+                  context,
+                  icon: shadcn.LucideIcons.userPlus,
+                  title: '邀请用户',
+                  onTap: () => showInviteUserDialog(context),
+                ),
               if (showAccountSwitcher)
                 _item(
                   context,
