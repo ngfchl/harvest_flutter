@@ -14,6 +14,7 @@ class ShellScaffold extends ConsumerWidget {
   final bool dashboardChrome;
   final bool showBottomControls;
   final bool showNews;
+  final bool restricted;
 
   const ShellScaffold({
     super.key,
@@ -26,6 +27,7 @@ class ShellScaffold extends ConsumerWidget {
     this.dashboardChrome = false,
     this.showBottomControls = true,
     this.showNews = true,
+    this.restricted = false,
   });
 
   @override
@@ -60,6 +62,7 @@ class ShellScaffold extends ConsumerWidget {
               onSearchPress: onSearchPress,
               dashboardChrome: dashboardChrome,
               showNews: showNews,
+              restricted: restricted,
             ),
           ),
       ],

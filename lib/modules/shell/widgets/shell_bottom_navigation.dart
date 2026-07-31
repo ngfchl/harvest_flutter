@@ -11,6 +11,7 @@ class ShellBottomNavigation extends StatefulWidget {
   final bool dashboardChrome;
   final bool showNews;
   final bool useShaderLiquidGlass;
+  final bool restricted;
 
   static const _barHeight = 58.0;
   static const _horizontalMargin = 12.0;
@@ -25,6 +26,7 @@ class ShellBottomNavigation extends StatefulWidget {
     this.dashboardChrome = false,
     this.showNews = true,
     this.useShaderLiquidGlass = false,
+    this.restricted = false,
   });
 
   static double reservedHeight(BuildContext context) {
@@ -45,6 +47,7 @@ class ShellBottomControls extends StatelessWidget {
   final bool dashboardChrome;
   final bool showNews;
   final bool useShaderLiquidGlass;
+  final bool restricted;
 
   static const _maxWidth = 720.0;
 
@@ -56,6 +59,7 @@ class ShellBottomControls extends StatelessWidget {
     this.dashboardChrome = false,
     this.showNews = true,
     this.useShaderLiquidGlass = false,
+    this.restricted = false,
   });
 
   @override
@@ -74,6 +78,7 @@ class ShellBottomControls extends StatelessWidget {
                 dashboardChrome: dashboardChrome,
                 showNews: showNews,
                 useShaderLiquidGlass: useShaderLiquidGlass,
+                restricted: restricted,
               ),
             ),
             ShellSearchButton(
@@ -105,6 +110,8 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation>
     _ShellNavItem(label: '下载', icon: shadcn.LucideIcons.download, pageIndex: 3),
     _ShellNavItem(label: '任务', icon: shadcn.LucideIcons.listTodo, pageIndex: 4),
   ];
+  static const _newsPageIndex = 0;
+  static const _downloadsPageIndex = 3;
   static const _dragDwellDuration = Duration(milliseconds: 420);
   static const _dashboardPanel = Color(0xFF0D1B2E);
   static const _dashboardPanelSoft = Color(0xFF10243B);
@@ -118,8 +125,21 @@ class _ShellBottomNavigationState extends State<ShellBottomNavigation>
   int? _dragTargetIndex;
   Timer? _dragDwellTimer;
 
-  List<_ShellNavItem> get _items =>
-      widget.showNews ? _allItems : _allItems.skip(1).toList(growable: false);
+  List<_ShellNavItem> get _items {
+    var items = widget.showNews
+        ? _allItems
+        : _allItems.skip(1).toList(growable: false);
+    if (widget.restricted) {
+      items = items
+          .where(
+            (item) =>
+                item.pageIndex == _newsPageIndex ||
+                item.pageIndex == _downloadsPageIndex,
+          )
+          .toList(growable: false);
+    }
+    return items;
+  }
 
   int get _widgetIndex {
     final index = _items.indexWhere((item) => item.pageIndex == widget.index);

@@ -15,6 +15,7 @@ class ShellScaffold extends ConsumerWidget {
   final bool dashboardChrome;
   final bool showBottomControls;
   final bool showNews;
+  final bool restricted;
 
   const ShellScaffold({
     super.key,
@@ -27,9 +28,12 @@ class ShellScaffold extends ConsumerWidget {
     this.dashboardChrome = false,
     this.showBottomControls = true,
     this.showNews = true,
+    this.restricted = false,
   });
 
   static const _routeItemCount = 5;
+  static const _newsPageIndex = 0;
+  static const _downloadsPageIndex = 3;
 
   static const _items = [
     _AdaptiveShellNavItem(
@@ -83,9 +87,22 @@ class ShellScaffold extends ConsumerWidget {
     ),
   ];
 
-  List<_AdaptiveShellNavItem> get _visibleItems => showNews
-      ? _items
-      : _items.where((item) => item.pageIndex != 0).toList(growable: false);
+  List<_AdaptiveShellNavItem> get _visibleItems {
+    var items = showNews
+        ? _items
+        : _items.where((item) => item.pageIndex != 0).toList(growable: false);
+    if (restricted) {
+      items = items
+          .where(
+            (item) =>
+                item.pageIndex == _newsPageIndex ||
+                item.pageIndex == _downloadsPageIndex ||
+                item.isSearch,
+          )
+          .toList(growable: false);
+    }
+    return items;
+  }
 
   int get _selectedPageIndex => index.clamp(0, _routeItemCount - 1).toInt();
 
@@ -166,6 +183,7 @@ class ShellScaffold extends ConsumerWidget {
       showBottomControls: showBottomControls,
       showNews: showNews,
       useShaderLiquidGlass: false,
+      restricted: restricted,
       child: child,
     );
   }
@@ -181,6 +199,7 @@ class _CustomShellScaffoldBody extends ConsumerWidget {
   final bool showBottomControls;
   final bool showNews;
   final bool useShaderLiquidGlass;
+  final bool restricted;
 
   const _CustomShellScaffoldBody({
     required this.header,
@@ -192,6 +211,7 @@ class _CustomShellScaffoldBody extends ConsumerWidget {
     required this.showBottomControls,
     required this.showNews,
     required this.useShaderLiquidGlass,
+    required this.restricted,
   });
 
   @override
@@ -228,6 +248,7 @@ class _CustomShellScaffoldBody extends ConsumerWidget {
               dashboardChrome: dashboardChrome,
               showNews: showNews,
               useShaderLiquidGlass: useShaderLiquidGlass,
+              restricted: restricted,
             ),
           ),
       ],
