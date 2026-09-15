@@ -1,3 +1,4 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/http/api.dart';
@@ -33,13 +34,12 @@ void showDashboardCacheClearPopover(
   BuildContext anchorContext, {
   bool above = false,
 }) {
-  shadcn.showPopover<void>(
+  showPopover<void>(
     context: anchorContext,
     alignment: above ? Alignment.bottomRight : Alignment.topRight,
     anchorAlignment: above ? Alignment.topRight : Alignment.bottomRight,
     offset: const Offset(0, 8),
     consumeOutsideTaps: false,
-    handler: const shadcn.PopoverOverlayHandler(),
     builder: (context) => const DashboardCacheClearPopover(),
   );
 }

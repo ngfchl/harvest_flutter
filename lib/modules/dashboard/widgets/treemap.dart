@@ -1,3 +1,4 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -159,9 +160,8 @@ class _TreemapSectionState extends State<TreemapSection> {
   }
 
   void _showTreemapTooltip(BuildContext anchorContext) {
-    shadcn.showPopover<void>(
+    showPopover<void>(
       context: anchorContext,
-      handler: const shadcn.PopoverOverlayHandler(),
       alignment: Alignment.topCenter,
       anchorAlignment: Alignment.bottomCenter,
       offset: const Offset(0, 8),

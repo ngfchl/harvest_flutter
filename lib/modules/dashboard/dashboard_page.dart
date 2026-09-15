@@ -1,9 +1,11 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:async';
 
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/cache/session_cache.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/config/app_config.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/hooks.dart';
@@ -94,9 +96,9 @@ class _DashboardIconTooltip extends StatelessWidget {
 }
 
 void _showDashboardIconTooltip(BuildContext anchorContext, String message) {
-  shadcn.showPopover<void>(
+  showPopover<void>(
     context: anchorContext,
-    handler: const shadcn.PopoverOverlayHandler(),
+    handler: const PopoverOverlayHandler(),
     alignment: Alignment.topCenter,
     anchorAlignment: Alignment.bottomCenter,
     offset: const Offset(0, 8),
@@ -307,7 +309,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     BuildContext anchorContext, {
     bool allowReorder = true,
   }) {
-    shadcn.showDialog<void>(
+    appShowDialog<void>(
       context: context,
       builder: (ctx) => ChartSettingsDialog(
         order: _chartOrder,
@@ -1488,9 +1490,9 @@ class _DesignationCardState extends State<_DesignationCard>
     final typo = shadcn.Theme.of(context).typography;
 
     return GestureDetector(
-      onTap: () => shadcn.showPopover(
+      onTap: () => showPopover(
         context: context,
-        handler: shadcn.PopoverOverlayHandler(),
+        handler: PopoverOverlayHandler(),
         // Position the popover above the button, shifted by 8px.
         alignment: Alignment.topCenter,
         offset: const Offset(0, 8),

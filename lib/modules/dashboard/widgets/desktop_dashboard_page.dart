@@ -1,3 +1,4 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:collection';
 import 'dart:math' as math;
 
@@ -14,6 +15,7 @@ import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/theme/theme_provider.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/cache_status_banner.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -45,9 +47,8 @@ class _DesktopDashboardIconTooltip extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => shadcn.showPopover<void>(
+      onTap: () => showPopover<void>(
         context: context,
-        handler: const shadcn.PopoverOverlayHandler(),
         alignment: Alignment.topCenter,
         anchorAlignment: Alignment.bottomCenter,
         offset: const Offset(0, 8),
@@ -233,7 +234,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   bool _anyChartVisible(Iterable<String> ids) => ids.any(_isChartVisible);
 
   void _showChartSettings(BuildContext anchorContext) {
-    shadcn.showDialog<void>(
+    appShowDialog<void>(
       context: context,
       builder: (ctx) => ChartSettingsDialog(
         order: DashboardChartConfig.desktopOrder,
