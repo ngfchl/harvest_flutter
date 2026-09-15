@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'option_model.dart';
@@ -9,6 +9,7 @@ part of 'option_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $OptionValueCopyWith<OptionValue> get copyWith => _$OptionValueCopyWithImpl<Opti
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OptionValue&&(identical(other.token, token) || other.token == token)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.server, server) || other.server == server)&&(identical(other.key, key) || other.key == key)&&(identical(other.password, password) || other.password == password)&&(identical(other.apiKey, apiKey) || other.apiKey == apiKey)&&(identical(other.secretKey, secretKey) || other.secretKey == secretKey)&&(identical(other.appId, appId) || other.appId == appId)&&(identical(other.uids, uids) || other.uids == uids)&&(identical(other.pushKey, pushKey) || other.pushKey == pushKey)&&(identical(other.deviceKey, deviceKey) || other.deviceKey == deviceKey)&&(identical(other.repeat, repeat) || other.repeat == repeat)&&(identical(other.welfare, welfare) || other.welfare == welfare)&&(identical(other.proxy, proxy) || other.proxy == proxy)&&(identical(other.telegramToken, telegramToken) || other.telegramToken == telegramToken)&&(identical(other.telegramChatId, telegramChatId) || other.telegramChatId == telegramChatId)&&(identical(other.template, template) || other.template == template)&&(identical(other.corpId, corpId) || other.corpId == corpId)&&(identical(other.corpSecret, corpSecret) || other.corpSecret == corpSecret)&&(identical(other.agentId, agentId) || other.agentId == agentId)&&(identical(other.toUid, toUid) || other.toUid == toUid)&&(identical(other.username, username) || other.username == username)&&(identical(other.cookie, cookie) || other.cookie == cookie)&&(identical(other.userAgent, userAgent) || other.userAgent == userAgent)&&(identical(other.todaySay, todaySay) || other.todaySay == todaySay)&&(identical(other.aliyundriveNotice, aliyundriveNotice) || other.aliyundriveNotice == aliyundriveNotice)&&(identical(other.siteData, siteData) || other.siteData == siteData)&&(identical(other.siteDataSuccess, siteDataSuccess) || other.siteDataSuccess == siteDataSuccess)&&(identical(other.todayData, todayData) || other.todayData == todayData)&&(identical(other.packageTorrent, packageTorrent) || other.packageTorrent == packageTorrent)&&(identical(other.deleteTorrent, deleteTorrent) || other.deleteTorrent == deleteTorrent)&&(identical(other.rssTorrent, rssTorrent) || other.rssTorrent == rssTorrent)&&(identical(other.pushTorrent, pushTorrent) || other.pushTorrent == pushTorrent)&&(identical(other.programUpgrade, programUpgrade) || other.programUpgrade == programUpgrade)&&(identical(other.ptppImport, ptppImport) || other.ptppImport == ptppImport)&&(identical(other.announcement, announcement) || other.announcement == announcement)&&(identical(other.message, message) || other.message == message)&&(identical(other.signInSuccess, signInSuccess) || other.signInSuccess == signInSuccess)&&(identical(other.cookieSync, cookieSync) || other.cookieSync == cookieSync)&&(identical(other.level, level) || other.level == level)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.perBonus, perBonus) || other.perBonus == perBonus)&&(identical(other.score, score) || other.score == score)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.seedingVol, seedingVol) || other.seedingVol == seedingVol)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded)&&(identical(other.seeding, seeding) || other.seeding == seeding)&&(identical(other.leeching, leeching) || other.leeching == leeching)&&(identical(other.invite, invite) || other.invite == invite)&&(identical(other.hr, hr) || other.hr == hr)&&(identical(other.count, count) || other.count == count)&&(identical(other.maxCount, maxCount) || other.maxCount == maxCount)&&(identical(other.limit, limit) || other.limit == limit));
+  final _this = this as OptionValue;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OptionValue&&(identical(other.token, _this.token) || other.token == _this.token)&&(identical(other.refreshToken, _this.refreshToken) || other.refreshToken == _this.refreshToken)&&(identical(other.server, _this.server) || other.server == _this.server)&&(identical(other.key, _this.key) || other.key == _this.key)&&(identical(other.password, _this.password) || other.password == _this.password)&&(identical(other.apiKey, _this.apiKey) || other.apiKey == _this.apiKey)&&(identical(other.secretKey, _this.secretKey) || other.secretKey == _this.secretKey)&&(identical(other.appId, _this.appId) || other.appId == _this.appId)&&(identical(other.uids, _this.uids) || other.uids == _this.uids)&&(identical(other.pushKey, _this.pushKey) || other.pushKey == _this.pushKey)&&(identical(other.deviceKey, _this.deviceKey) || other.deviceKey == _this.deviceKey)&&(identical(other.repeat, _this.repeat) || other.repeat == _this.repeat)&&(identical(other.welfare, _this.welfare) || other.welfare == _this.welfare)&&(identical(other.proxy, _this.proxy) || other.proxy == _this.proxy)&&(identical(other.telegramToken, _this.telegramToken) || other.telegramToken == _this.telegramToken)&&(identical(other.telegramChatId, _this.telegramChatId) || other.telegramChatId == _this.telegramChatId)&&(identical(other.template, _this.template) || other.template == _this.template)&&(identical(other.corpId, _this.corpId) || other.corpId == _this.corpId)&&(identical(other.corpSecret, _this.corpSecret) || other.corpSecret == _this.corpSecret)&&(identical(other.agentId, _this.agentId) || other.agentId == _this.agentId)&&(identical(other.toUid, _this.toUid) || other.toUid == _this.toUid)&&(identical(other.username, _this.username) || other.username == _this.username)&&(identical(other.cookie, _this.cookie) || other.cookie == _this.cookie)&&(identical(other.userAgent, _this.userAgent) || other.userAgent == _this.userAgent)&&(identical(other.todaySay, _this.todaySay) || other.todaySay == _this.todaySay)&&(identical(other.aliyundriveNotice, _this.aliyundriveNotice) || other.aliyundriveNotice == _this.aliyundriveNotice)&&(identical(other.siteData, _this.siteData) || other.siteData == _this.siteData)&&(identical(other.siteDataSuccess, _this.siteDataSuccess) || other.siteDataSuccess == _this.siteDataSuccess)&&(identical(other.todayData, _this.todayData) || other.todayData == _this.todayData)&&(identical(other.packageTorrent, _this.packageTorrent) || other.packageTorrent == _this.packageTorrent)&&(identical(other.deleteTorrent, _this.deleteTorrent) || other.deleteTorrent == _this.deleteTorrent)&&(identical(other.rssTorrent, _this.rssTorrent) || other.rssTorrent == _this.rssTorrent)&&(identical(other.pushTorrent, _this.pushTorrent) || other.pushTorrent == _this.pushTorrent)&&(identical(other.programUpgrade, _this.programUpgrade) || other.programUpgrade == _this.programUpgrade)&&(identical(other.ptppImport, _this.ptppImport) || other.ptppImport == _this.ptppImport)&&(identical(other.announcement, _this.announcement) || other.announcement == _this.announcement)&&(identical(other.message, _this.message) || other.message == _this.message)&&(identical(other.signInSuccess, _this.signInSuccess) || other.signInSuccess == _this.signInSuccess)&&(identical(other.cookieSync, _this.cookieSync) || other.cookieSync == _this.cookieSync)&&(identical(other.level, _this.level) || other.level == _this.level)&&(identical(other.bonus, _this.bonus) || other.bonus == _this.bonus)&&(identical(other.perBonus, _this.perBonus) || other.perBonus == _this.perBonus)&&(identical(other.score, _this.score) || other.score == _this.score)&&(identical(other.ratio, _this.ratio) || other.ratio == _this.ratio)&&(identical(other.seedingVol, _this.seedingVol) || other.seedingVol == _this.seedingVol)&&(identical(other.uploaded, _this.uploaded) || other.uploaded == _this.uploaded)&&(identical(other.downloaded, _this.downloaded) || other.downloaded == _this.downloaded)&&(identical(other.seeding, _this.seeding) || other.seeding == _this.seeding)&&(identical(other.leeching, _this.leeching) || other.leeching == _this.leeching)&&(identical(other.invite, _this.invite) || other.invite == _this.invite)&&(identical(other.hr, _this.hr) || other.hr == _this.hr)&&(identical(other.count, _this.count) || other.count == _this.count)&&(identical(other.maxCount, _this.maxCount) || other.maxCount == _this.maxCount)&&(identical(other.limit, _this.limit) || other.limit == _this.limit));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,token,refreshToken,server,key,password,apiKey,secretKey,appId,uids,pushKey,deviceKey,repeat,welfare,proxy,telegramToken,telegramChatId,template,corpId,corpSecret,agentId,toUid,username,cookie,userAgent,todaySay,aliyundriveNotice,siteData,siteDataSuccess,todayData,packageTorrent,deleteTorrent,rssTorrent,pushTorrent,programUpgrade,ptppImport,announcement,message,signInSuccess,cookieSync,level,bonus,perBonus,score,ratio,seedingVol,uploaded,downloaded,seeding,leeching,invite,hr,count,maxCount,limit]);
+int get hashCode {
+  final _this = this as OptionValue;
+  return Object.hashAll([runtimeType,_this.token,_this.refreshToken,_this.server,_this.key,_this.password,_this.apiKey,_this.secretKey,_this.appId,_this.uids,_this.pushKey,_this.deviceKey,_this.repeat,_this.welfare,_this.proxy,_this.telegramToken,_this.telegramChatId,_this.template,_this.corpId,_this.corpSecret,_this.agentId,_this.toUid,_this.username,_this.cookie,_this.userAgent,_this.todaySay,_this.aliyundriveNotice,_this.siteData,_this.siteDataSuccess,_this.todayData,_this.packageTorrent,_this.deleteTorrent,_this.rssTorrent,_this.pushTorrent,_this.programUpgrade,_this.ptppImport,_this.announcement,_this.message,_this.signInSuccess,_this.cookieSync,_this.level,_this.bonus,_this.perBonus,_this.score,_this.ratio,_this.seedingVol,_this.uploaded,_this.downloaded,_this.seeding,_this.leeching,_this.invite,_this.hr,_this.count,_this.maxCount,_this.limit]);
+}
 
 @override
 String toString() {
-  return 'OptionValue(token: $token, refreshToken: $refreshToken, server: $server, key: $key, password: $password, apiKey: $apiKey, secretKey: $secretKey, appId: $appId, uids: $uids, pushKey: $pushKey, deviceKey: $deviceKey, repeat: $repeat, welfare: $welfare, proxy: $proxy, telegramToken: $telegramToken, telegramChatId: $telegramChatId, template: $template, corpId: $corpId, corpSecret: $corpSecret, agentId: $agentId, toUid: $toUid, username: $username, cookie: $cookie, userAgent: $userAgent, todaySay: $todaySay, aliyundriveNotice: $aliyundriveNotice, siteData: $siteData, siteDataSuccess: $siteDataSuccess, todayData: $todayData, packageTorrent: $packageTorrent, deleteTorrent: $deleteTorrent, rssTorrent: $rssTorrent, pushTorrent: $pushTorrent, programUpgrade: $programUpgrade, ptppImport: $ptppImport, announcement: $announcement, message: $message, signInSuccess: $signInSuccess, cookieSync: $cookieSync, level: $level, bonus: $bonus, perBonus: $perBonus, score: $score, ratio: $ratio, seedingVol: $seedingVol, uploaded: $uploaded, downloaded: $downloaded, seeding: $seeding, leeching: $leeching, invite: $invite, hr: $hr, count: $count, maxCount: $maxCount, limit: $limit)';
+  final _this = this as OptionValue;
+  return 'OptionValue(token: ${_this.token}, refreshToken: ${_this.refreshToken}, server: ${_this.server}, key: ${_this.key}, password: ${_this.password}, apiKey: ${_this.apiKey}, secretKey: ${_this.secretKey}, appId: ${_this.appId}, uids: ${_this.uids}, pushKey: ${_this.pushKey}, deviceKey: ${_this.deviceKey}, repeat: ${_this.repeat}, welfare: ${_this.welfare}, proxy: ${_this.proxy}, telegramToken: ${_this.telegramToken}, telegramChatId: ${_this.telegramChatId}, template: ${_this.template}, corpId: ${_this.corpId}, corpSecret: ${_this.corpSecret}, agentId: ${_this.agentId}, toUid: ${_this.toUid}, username: ${_this.username}, cookie: ${_this.cookie}, userAgent: ${_this.userAgent}, todaySay: ${_this.todaySay}, aliyundriveNotice: ${_this.aliyundriveNotice}, siteData: ${_this.siteData}, siteDataSuccess: ${_this.siteDataSuccess}, todayData: ${_this.todayData}, packageTorrent: ${_this.packageTorrent}, deleteTorrent: ${_this.deleteTorrent}, rssTorrent: ${_this.rssTorrent}, pushTorrent: ${_this.pushTorrent}, programUpgrade: ${_this.programUpgrade}, ptppImport: ${_this.ptppImport}, announcement: ${_this.announcement}, message: ${_this.message}, signInSuccess: ${_this.signInSuccess}, cookieSync: ${_this.cookieSync}, level: ${_this.level}, bonus: ${_this.bonus}, perBonus: ${_this.perBonus}, score: ${_this.score}, ratio: ${_this.ratio}, seedingVol: ${_this.seedingVol}, uploaded: ${_this.uploaded}, downloaded: ${_this.downloaded}, seeding: ${_this.seeding}, leeching: ${_this.leeching}, invite: ${_this.invite}, hr: ${_this.hr}, count: ${_this.count}, maxCount: ${_this.maxCount}, limit: ${_this.limit})';
 }
 
 
@@ -66,7 +72,7 @@ class _$OptionValueCopyWithImpl<$Res>
 /// Create a copy of OptionValue
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? token = freezed,Object? refreshToken = freezed,Object? server = freezed,Object? key = freezed,Object? password = freezed,Object? apiKey = freezed,Object? secretKey = freezed,Object? appId = freezed,Object? uids = freezed,Object? pushKey = freezed,Object? deviceKey = freezed,Object? repeat = freezed,Object? welfare = freezed,Object? proxy = freezed,Object? telegramToken = freezed,Object? telegramChatId = freezed,Object? template = freezed,Object? corpId = freezed,Object? corpSecret = freezed,Object? agentId = freezed,Object? toUid = freezed,Object? username = freezed,Object? cookie = freezed,Object? userAgent = freezed,Object? todaySay = freezed,Object? aliyundriveNotice = freezed,Object? siteData = freezed,Object? siteDataSuccess = freezed,Object? todayData = freezed,Object? packageTorrent = freezed,Object? deleteTorrent = freezed,Object? rssTorrent = freezed,Object? pushTorrent = freezed,Object? programUpgrade = freezed,Object? ptppImport = freezed,Object? announcement = freezed,Object? message = freezed,Object? signInSuccess = freezed,Object? cookieSync = freezed,Object? level = freezed,Object? bonus = freezed,Object? perBonus = freezed,Object? score = freezed,Object? ratio = freezed,Object? seedingVol = freezed,Object? uploaded = freezed,Object? downloaded = freezed,Object? seeding = freezed,Object? leeching = freezed,Object? invite = freezed,Object? hr = freezed,Object? count = freezed,Object? maxCount = freezed,Object? limit = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(OptionValue(
 token: freezed == token ? _self.token : token // ignore: cast_nullable_to_non_nullable
 as String?,refreshToken: freezed == refreshToken ? _self.refreshToken : refreshToken // ignore: cast_nullable_to_non_nullable
 as String?,server: freezed == server ? _self.server : server // ignore: cast_nullable_to_non_nullable
@@ -333,16 +339,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OptionValue&&(identical(other.token, token) || other.token == token)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.server, server) || other.server == server)&&(identical(other.key, key) || other.key == key)&&(identical(other.password, password) || other.password == password)&&(identical(other.apiKey, apiKey) || other.apiKey == apiKey)&&(identical(other.secretKey, secretKey) || other.secretKey == secretKey)&&(identical(other.appId, appId) || other.appId == appId)&&(identical(other.uids, uids) || other.uids == uids)&&(identical(other.pushKey, pushKey) || other.pushKey == pushKey)&&(identical(other.deviceKey, deviceKey) || other.deviceKey == deviceKey)&&(identical(other.repeat, repeat) || other.repeat == repeat)&&(identical(other.welfare, welfare) || other.welfare == welfare)&&(identical(other.proxy, proxy) || other.proxy == proxy)&&(identical(other.telegramToken, telegramToken) || other.telegramToken == telegramToken)&&(identical(other.telegramChatId, telegramChatId) || other.telegramChatId == telegramChatId)&&(identical(other.template, template) || other.template == template)&&(identical(other.corpId, corpId) || other.corpId == corpId)&&(identical(other.corpSecret, corpSecret) || other.corpSecret == corpSecret)&&(identical(other.agentId, agentId) || other.agentId == agentId)&&(identical(other.toUid, toUid) || other.toUid == toUid)&&(identical(other.username, username) || other.username == username)&&(identical(other.cookie, cookie) || other.cookie == cookie)&&(identical(other.userAgent, userAgent) || other.userAgent == userAgent)&&(identical(other.todaySay, todaySay) || other.todaySay == todaySay)&&(identical(other.aliyundriveNotice, aliyundriveNotice) || other.aliyundriveNotice == aliyundriveNotice)&&(identical(other.siteData, siteData) || other.siteData == siteData)&&(identical(other.siteDataSuccess, siteDataSuccess) || other.siteDataSuccess == siteDataSuccess)&&(identical(other.todayData, todayData) || other.todayData == todayData)&&(identical(other.packageTorrent, packageTorrent) || other.packageTorrent == packageTorrent)&&(identical(other.deleteTorrent, deleteTorrent) || other.deleteTorrent == deleteTorrent)&&(identical(other.rssTorrent, rssTorrent) || other.rssTorrent == rssTorrent)&&(identical(other.pushTorrent, pushTorrent) || other.pushTorrent == pushTorrent)&&(identical(other.programUpgrade, programUpgrade) || other.programUpgrade == programUpgrade)&&(identical(other.ptppImport, ptppImport) || other.ptppImport == ptppImport)&&(identical(other.announcement, announcement) || other.announcement == announcement)&&(identical(other.message, message) || other.message == message)&&(identical(other.signInSuccess, signInSuccess) || other.signInSuccess == signInSuccess)&&(identical(other.cookieSync, cookieSync) || other.cookieSync == cookieSync)&&(identical(other.level, level) || other.level == level)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.perBonus, perBonus) || other.perBonus == perBonus)&&(identical(other.score, score) || other.score == score)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.seedingVol, seedingVol) || other.seedingVol == seedingVol)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded)&&(identical(other.seeding, seeding) || other.seeding == seeding)&&(identical(other.leeching, leeching) || other.leeching == leeching)&&(identical(other.invite, invite) || other.invite == invite)&&(identical(other.hr, hr) || other.hr == hr)&&(identical(other.count, count) || other.count == count)&&(identical(other.maxCount, maxCount) || other.maxCount == maxCount)&&(identical(other.limit, limit) || other.limit == limit));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _OptionValue&&(identical(other.token, token) || other.token == token)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.server, server) || other.server == server)&&(identical(other.key, key) || other.key == key)&&(identical(other.password, password) || other.password == password)&&(identical(other.apiKey, apiKey) || other.apiKey == apiKey)&&(identical(other.secretKey, secretKey) || other.secretKey == secretKey)&&(identical(other.appId, appId) || other.appId == appId)&&(identical(other.uids, uids) || other.uids == uids)&&(identical(other.pushKey, pushKey) || other.pushKey == pushKey)&&(identical(other.deviceKey, deviceKey) || other.deviceKey == deviceKey)&&(identical(other.repeat, repeat) || other.repeat == repeat)&&(identical(other.welfare, welfare) || other.welfare == welfare)&&(identical(other.proxy, proxy) || other.proxy == proxy)&&(identical(other.telegramToken, telegramToken) || other.telegramToken == telegramToken)&&(identical(other.telegramChatId, telegramChatId) || other.telegramChatId == telegramChatId)&&(identical(other.template, template) || other.template == template)&&(identical(other.corpId, corpId) || other.corpId == corpId)&&(identical(other.corpSecret, corpSecret) || other.corpSecret == corpSecret)&&(identical(other.agentId, agentId) || other.agentId == agentId)&&(identical(other.toUid, toUid) || other.toUid == toUid)&&(identical(other.username, username) || other.username == username)&&(identical(other.cookie, cookie) || other.cookie == cookie)&&(identical(other.userAgent, userAgent) || other.userAgent == userAgent)&&(identical(other.todaySay, todaySay) || other.todaySay == todaySay)&&(identical(other.aliyundriveNotice, aliyundriveNotice) || other.aliyundriveNotice == aliyundriveNotice)&&(identical(other.siteData, siteData) || other.siteData == siteData)&&(identical(other.siteDataSuccess, siteDataSuccess) || other.siteDataSuccess == siteDataSuccess)&&(identical(other.todayData, todayData) || other.todayData == todayData)&&(identical(other.packageTorrent, packageTorrent) || other.packageTorrent == packageTorrent)&&(identical(other.deleteTorrent, deleteTorrent) || other.deleteTorrent == deleteTorrent)&&(identical(other.rssTorrent, rssTorrent) || other.rssTorrent == rssTorrent)&&(identical(other.pushTorrent, pushTorrent) || other.pushTorrent == pushTorrent)&&(identical(other.programUpgrade, programUpgrade) || other.programUpgrade == programUpgrade)&&(identical(other.ptppImport, ptppImport) || other.ptppImport == ptppImport)&&(identical(other.announcement, announcement) || other.announcement == announcement)&&(identical(other.message, message) || other.message == message)&&(identical(other.signInSuccess, signInSuccess) || other.signInSuccess == signInSuccess)&&(identical(other.cookieSync, cookieSync) || other.cookieSync == cookieSync)&&(identical(other.level, level) || other.level == level)&&(identical(other.bonus, bonus) || other.bonus == bonus)&&(identical(other.perBonus, perBonus) || other.perBonus == perBonus)&&(identical(other.score, score) || other.score == score)&&(identical(other.ratio, ratio) || other.ratio == ratio)&&(identical(other.seedingVol, seedingVol) || other.seedingVol == seedingVol)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded)&&(identical(other.seeding, seeding) || other.seeding == seeding)&&(identical(other.leeching, leeching) || other.leeching == leeching)&&(identical(other.invite, invite) || other.invite == invite)&&(identical(other.hr, hr) || other.hr == hr)&&(identical(other.count, count) || other.count == count)&&(identical(other.maxCount, maxCount) || other.maxCount == maxCount)&&(identical(other.limit, limit) || other.limit == limit));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,token,refreshToken,server,key,password,apiKey,secretKey,appId,uids,pushKey,deviceKey,repeat,welfare,proxy,telegramToken,telegramChatId,template,corpId,corpSecret,agentId,toUid,username,cookie,userAgent,todaySay,aliyundriveNotice,siteData,siteDataSuccess,todayData,packageTorrent,deleteTorrent,rssTorrent,pushTorrent,programUpgrade,ptppImport,announcement,message,signInSuccess,cookieSync,level,bonus,perBonus,score,ratio,seedingVol,uploaded,downloaded,seeding,leeching,invite,hr,count,maxCount,limit]);
+int get hashCode {
+    return Object.hashAll([runtimeType,token,refreshToken,server,key,password,apiKey,secretKey,appId,uids,pushKey,deviceKey,repeat,welfare,proxy,telegramToken,telegramChatId,template,corpId,corpSecret,agentId,toUid,username,cookie,userAgent,todaySay,aliyundriveNotice,siteData,siteDataSuccess,todayData,packageTorrent,deleteTorrent,rssTorrent,pushTorrent,programUpgrade,ptppImport,announcement,message,signInSuccess,cookieSync,level,bonus,perBonus,score,ratio,seedingVol,uploaded,downloaded,seeding,leeching,invite,hr,count,maxCount,limit]);
+}
 
 @override
 String toString() {
-  return 'OptionValue(token: $token, refreshToken: $refreshToken, server: $server, key: $key, password: $password, apiKey: $apiKey, secretKey: $secretKey, appId: $appId, uids: $uids, pushKey: $pushKey, deviceKey: $deviceKey, repeat: $repeat, welfare: $welfare, proxy: $proxy, telegramToken: $telegramToken, telegramChatId: $telegramChatId, template: $template, corpId: $corpId, corpSecret: $corpSecret, agentId: $agentId, toUid: $toUid, username: $username, cookie: $cookie, userAgent: $userAgent, todaySay: $todaySay, aliyundriveNotice: $aliyundriveNotice, siteData: $siteData, siteDataSuccess: $siteDataSuccess, todayData: $todayData, packageTorrent: $packageTorrent, deleteTorrent: $deleteTorrent, rssTorrent: $rssTorrent, pushTorrent: $pushTorrent, programUpgrade: $programUpgrade, ptppImport: $ptppImport, announcement: $announcement, message: $message, signInSuccess: $signInSuccess, cookieSync: $cookieSync, level: $level, bonus: $bonus, perBonus: $perBonus, score: $score, ratio: $ratio, seedingVol: $seedingVol, uploaded: $uploaded, downloaded: $downloaded, seeding: $seeding, leeching: $leeching, invite: $invite, hr: $hr, count: $count, maxCount: $maxCount, limit: $limit)';
+    return 'OptionValue(token: $token, refreshToken: $refreshToken, server: $server, key: $key, password: $password, apiKey: $apiKey, secretKey: $secretKey, appId: $appId, uids: $uids, pushKey: $pushKey, deviceKey: $deviceKey, repeat: $repeat, welfare: $welfare, proxy: $proxy, telegramToken: $telegramToken, telegramChatId: $telegramChatId, template: $template, corpId: $corpId, corpSecret: $corpSecret, agentId: $agentId, toUid: $toUid, username: $username, cookie: $cookie, userAgent: $userAgent, todaySay: $todaySay, aliyundriveNotice: $aliyundriveNotice, siteData: $siteData, siteDataSuccess: $siteDataSuccess, todayData: $todayData, packageTorrent: $packageTorrent, deleteTorrent: $deleteTorrent, rssTorrent: $rssTorrent, pushTorrent: $pushTorrent, programUpgrade: $programUpgrade, ptppImport: $ptppImport, announcement: $announcement, message: $message, signInSuccess: $signInSuccess, cookieSync: $cookieSync, level: $level, bonus: $bonus, perBonus: $perBonus, score: $score, ratio: $ratio, seedingVol: $seedingVol, uploaded: $uploaded, downloaded: $downloaded, seeding: $seeding, leeching: $leeching, invite: $invite, hr: $hr, count: $count, maxCount: $maxCount, limit: $limit)';
 }
 
 
@@ -450,16 +458,21 @@ $OptionCopyWith<Option> get copyWith => _$OptionCopyWithImpl<Option>(this as Opt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Option&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.value, value) || other.value == value)&&(identical(other.isActive, isActive) || other.isActive == isActive));
+  final _this = this as Option;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Option&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.value, _this.value) || other.value == _this.value)&&(identical(other.isActive, _this.isActive) || other.isActive == _this.isActive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,value,isActive);
+int get hashCode {
+  final _this = this as Option;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.value,_this.isActive);
+}
 
 @override
 String toString() {
-  return 'Option(id: $id, name: $name, value: $value, isActive: $isActive)';
+  final _this = this as Option;
+  return 'Option(id: ${_this.id}, name: ${_this.name}, value: ${_this.value}, isActive: ${_this.isActive})';
 }
 
 
@@ -488,7 +501,7 @@ class _$OptionCopyWithImpl<$Res>
 /// Create a copy of Option
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? value = null,Object? isActive = null,}) {
-  return _then(_self.copyWith(
+  return _then(Option(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
@@ -664,16 +677,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Option&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.value, value) || other.value == value)&&(identical(other.isActive, isActive) || other.isActive == isActive));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Option&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.value, value) || other.value == value)&&(identical(other.isActive, isActive) || other.isActive == isActive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,value,isActive);
+int get hashCode {
+    return Object.hash(runtimeType,id,name,value,isActive);
+}
 
 @override
 String toString() {
-  return 'Option(id: $id, name: $name, value: $value, isActive: $isActive)';
+    return 'Option(id: $id, name: $name, value: $value, isActive: $isActive)';
 }
 
 
@@ -740,16 +755,21 @@ $SelectOptionCopyWith<SelectOption> get copyWith => _$SelectOptionCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SelectOption&&(identical(other.name, name) || other.name == name)&&(identical(other.value, value) || other.value == value));
+  final _this = this as SelectOption;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SelectOption&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.value, _this.value) || other.value == _this.value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,value);
+int get hashCode {
+  final _this = this as SelectOption;
+  return Object.hash(runtimeType,_this.name,_this.value);
+}
 
 @override
 String toString() {
-  return 'SelectOption(name: $name, value: $value)';
+  final _this = this as SelectOption;
+  return 'SelectOption(name: ${_this.name}, value: ${_this.value})';
 }
 
 
@@ -778,7 +798,7 @@ class _$SelectOptionCopyWithImpl<$Res>
 /// Create a copy of SelectOption
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? value = null,}) {
-  return _then(_self.copyWith(
+  return _then(SelectOption(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
 as String,
@@ -941,16 +961,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SelectOption&&(identical(other.name, name) || other.name == name)&&(identical(other.value, value) || other.value == value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SelectOption&&(identical(other.name, name) || other.name == name)&&(identical(other.value, value) || other.value == value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,value);
+int get hashCode {
+    return Object.hash(runtimeType,name,value);
+}
 
 @override
 String toString() {
-  return 'SelectOption(name: $name, value: $value)';
+    return 'SelectOption(name: $name, value: $value)';
 }
 
 

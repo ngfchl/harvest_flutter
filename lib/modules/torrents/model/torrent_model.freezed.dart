@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'torrent_model.dart';
@@ -9,6 +9,7 @@ part of 'torrent_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $TrackerStatCopyWith<TrackerStat> get copyWith => _$TrackerStatCopyWithImpl<Trac
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TrackerStat&&(identical(other.id, id) || other.id == id)&&(identical(other.host, host) || other.host == host)&&(identical(other.sitename, sitename) || other.sitename == sitename)&&(identical(other.announce, announce) || other.announce == announce)&&(identical(other.seederCount, seederCount) || other.seederCount == seederCount)&&(identical(other.leecherCount, leecherCount) || other.leecherCount == leecherCount)&&(identical(other.downloadCount, downloadCount) || other.downloadCount == downloadCount)&&(identical(other.lastAnnounceSucceeded, lastAnnounceSucceeded) || other.lastAnnounceSucceeded == lastAnnounceSucceeded)&&(identical(other.lastAnnounceResult, lastAnnounceResult) || other.lastAnnounceResult == lastAnnounceResult)&&(identical(other.lastAnnounceTime, lastAnnounceTime) || other.lastAnnounceTime == lastAnnounceTime)&&(identical(other.nextAnnounceTime, nextAnnounceTime) || other.nextAnnounceTime == nextAnnounceTime)&&(identical(other.isBackup, isBackup) || other.isBackup == isBackup));
+  final _this = this as TrackerStat;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TrackerStat&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.host, _this.host) || other.host == _this.host)&&(identical(other.sitename, _this.sitename) || other.sitename == _this.sitename)&&(identical(other.announce, _this.announce) || other.announce == _this.announce)&&(identical(other.seederCount, _this.seederCount) || other.seederCount == _this.seederCount)&&(identical(other.leecherCount, _this.leecherCount) || other.leecherCount == _this.leecherCount)&&(identical(other.downloadCount, _this.downloadCount) || other.downloadCount == _this.downloadCount)&&(identical(other.lastAnnounceSucceeded, _this.lastAnnounceSucceeded) || other.lastAnnounceSucceeded == _this.lastAnnounceSucceeded)&&(identical(other.lastAnnounceResult, _this.lastAnnounceResult) || other.lastAnnounceResult == _this.lastAnnounceResult)&&(identical(other.lastAnnounceTime, _this.lastAnnounceTime) || other.lastAnnounceTime == _this.lastAnnounceTime)&&(identical(other.nextAnnounceTime, _this.nextAnnounceTime) || other.nextAnnounceTime == _this.nextAnnounceTime)&&(identical(other.isBackup, _this.isBackup) || other.isBackup == _this.isBackup));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,host,sitename,announce,seederCount,leecherCount,downloadCount,lastAnnounceSucceeded,lastAnnounceResult,lastAnnounceTime,nextAnnounceTime,isBackup);
+int get hashCode {
+  final _this = this as TrackerStat;
+  return Object.hash(runtimeType,_this.id,_this.host,_this.sitename,_this.announce,_this.seederCount,_this.leecherCount,_this.downloadCount,_this.lastAnnounceSucceeded,_this.lastAnnounceResult,_this.lastAnnounceTime,_this.nextAnnounceTime,_this.isBackup);
+}
 
 @override
 String toString() {
-  return 'TrackerStat(id: $id, host: $host, sitename: $sitename, announce: $announce, seederCount: $seederCount, leecherCount: $leecherCount, downloadCount: $downloadCount, lastAnnounceSucceeded: $lastAnnounceSucceeded, lastAnnounceResult: $lastAnnounceResult, lastAnnounceTime: $lastAnnounceTime, nextAnnounceTime: $nextAnnounceTime, isBackup: $isBackup)';
+  final _this = this as TrackerStat;
+  return 'TrackerStat(id: ${_this.id}, host: ${_this.host}, sitename: ${_this.sitename}, announce: ${_this.announce}, seederCount: ${_this.seederCount}, leecherCount: ${_this.leecherCount}, downloadCount: ${_this.downloadCount}, lastAnnounceSucceeded: ${_this.lastAnnounceSucceeded}, lastAnnounceResult: ${_this.lastAnnounceResult}, lastAnnounceTime: ${_this.lastAnnounceTime}, nextAnnounceTime: ${_this.nextAnnounceTime}, isBackup: ${_this.isBackup})';
 }
 
 
@@ -63,7 +69,7 @@ class _$TrackerStatCopyWithImpl<$Res>
 /// Create a copy of TrackerStat
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? host = null,Object? sitename = null,Object? announce = null,Object? seederCount = null,Object? leecherCount = null,Object? downloadCount = null,Object? lastAnnounceSucceeded = null,Object? lastAnnounceResult = null,Object? lastAnnounceTime = null,Object? nextAnnounceTime = null,Object? isBackup = null,}) {
-  return _then(_self.copyWith(
+  return _then(TrackerStat(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,host: null == host ? _self.host : host // ignore: cast_nullable_to_non_nullable
 as String,sitename: null == sitename ? _self.sitename : sitename // ignore: cast_nullable_to_non_nullable
@@ -243,16 +249,18 @@ _$TrackerStatCopyWith<_TrackerStat> get copyWith => __$TrackerStatCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TrackerStat&&(identical(other.id, id) || other.id == id)&&(identical(other.host, host) || other.host == host)&&(identical(other.sitename, sitename) || other.sitename == sitename)&&(identical(other.announce, announce) || other.announce == announce)&&(identical(other.seederCount, seederCount) || other.seederCount == seederCount)&&(identical(other.leecherCount, leecherCount) || other.leecherCount == leecherCount)&&(identical(other.downloadCount, downloadCount) || other.downloadCount == downloadCount)&&(identical(other.lastAnnounceSucceeded, lastAnnounceSucceeded) || other.lastAnnounceSucceeded == lastAnnounceSucceeded)&&(identical(other.lastAnnounceResult, lastAnnounceResult) || other.lastAnnounceResult == lastAnnounceResult)&&(identical(other.lastAnnounceTime, lastAnnounceTime) || other.lastAnnounceTime == lastAnnounceTime)&&(identical(other.nextAnnounceTime, nextAnnounceTime) || other.nextAnnounceTime == nextAnnounceTime)&&(identical(other.isBackup, isBackup) || other.isBackup == isBackup));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TrackerStat&&(identical(other.id, id) || other.id == id)&&(identical(other.host, host) || other.host == host)&&(identical(other.sitename, sitename) || other.sitename == sitename)&&(identical(other.announce, announce) || other.announce == announce)&&(identical(other.seederCount, seederCount) || other.seederCount == seederCount)&&(identical(other.leecherCount, leecherCount) || other.leecherCount == leecherCount)&&(identical(other.downloadCount, downloadCount) || other.downloadCount == downloadCount)&&(identical(other.lastAnnounceSucceeded, lastAnnounceSucceeded) || other.lastAnnounceSucceeded == lastAnnounceSucceeded)&&(identical(other.lastAnnounceResult, lastAnnounceResult) || other.lastAnnounceResult == lastAnnounceResult)&&(identical(other.lastAnnounceTime, lastAnnounceTime) || other.lastAnnounceTime == lastAnnounceTime)&&(identical(other.nextAnnounceTime, nextAnnounceTime) || other.nextAnnounceTime == nextAnnounceTime)&&(identical(other.isBackup, isBackup) || other.isBackup == isBackup));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,host,sitename,announce,seederCount,leecherCount,downloadCount,lastAnnounceSucceeded,lastAnnounceResult,lastAnnounceTime,nextAnnounceTime,isBackup);
+int get hashCode {
+    return Object.hash(runtimeType,id,host,sitename,announce,seederCount,leecherCount,downloadCount,lastAnnounceSucceeded,lastAnnounceResult,lastAnnounceTime,nextAnnounceTime,isBackup);
+}
 
 @override
 String toString() {
-  return 'TrackerStat(id: $id, host: $host, sitename: $sitename, announce: $announce, seederCount: $seederCount, leecherCount: $leecherCount, downloadCount: $downloadCount, lastAnnounceSucceeded: $lastAnnounceSucceeded, lastAnnounceResult: $lastAnnounceResult, lastAnnounceTime: $lastAnnounceTime, nextAnnounceTime: $nextAnnounceTime, isBackup: $isBackup)';
+    return 'TrackerStat(id: $id, host: $host, sitename: $sitename, announce: $announce, seederCount: $seederCount, leecherCount: $leecherCount, downloadCount: $downloadCount, lastAnnounceSucceeded: $lastAnnounceSucceeded, lastAnnounceResult: $lastAnnounceResult, lastAnnounceTime: $lastAnnounceTime, nextAnnounceTime: $nextAnnounceTime, isBackup: $isBackup)';
 }
 
 
@@ -315,16 +323,21 @@ $TorrentCopyWith<Torrent> get copyWith => _$TorrentCopyWithImpl<Torrent>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Torrent&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.hashString, hashString) || other.hashString == hashString)&&(identical(other.percentDone, percentDone) || other.percentDone == percentDone)&&(identical(other.percentComplete, percentComplete) || other.percentComplete == percentComplete)&&(identical(other.status, status) || other.status == status)&&(identical(other.rateDownload, rateDownload) || other.rateDownload == rateDownload)&&(identical(other.rateUpload, rateUpload) || other.rateUpload == rateUpload)&&(identical(other.sizeWhenDone, sizeWhenDone) || other.sizeWhenDone == sizeWhenDone)&&(identical(other.totalSize, totalSize) || other.totalSize == totalSize)&&(identical(other.downloadedEver, downloadedEver) || other.downloadedEver == downloadedEver)&&(identical(other.uploadedEver, uploadedEver) || other.uploadedEver == uploadedEver)&&(identical(other.uploadRatio, uploadRatio) || other.uploadRatio == uploadRatio)&&(identical(other.addedDate, addedDate) || other.addedDate == addedDate)&&(identical(other.activityDate, activityDate) || other.activityDate == activityDate)&&(identical(other.doneDate, doneDate) || other.doneDate == doneDate)&&(identical(other.secondsSeeding, secondsSeeding) || other.secondsSeeding == secondsSeeding)&&(identical(other.secondsDownloading, secondsDownloading) || other.secondsDownloading == secondsDownloading)&&(identical(other.queuePosition, queuePosition) || other.queuePosition == queuePosition)&&(identical(other.isFinished, isFinished) || other.isFinished == isFinished)&&(identical(other.isStalled, isStalled) || other.isStalled == isStalled)&&(identical(other.downloadLimited, downloadLimited) || other.downloadLimited == downloadLimited)&&(identical(other.uploadLimited, uploadLimited) || other.uploadLimited == uploadLimited)&&(identical(other.forceStart, forceStart) || other.forceStart == forceStart)&&(identical(other.autoTmm, autoTmm) || other.autoTmm == autoTmm)&&(identical(other.superSeeding, superSeeding) || other.superSeeding == superSeeding)&&(identical(other.contentPath, contentPath) || other.contentPath == contentPath)&&(identical(other.downloadLimit, downloadLimit) || other.downloadLimit == downloadLimit)&&(identical(other.uploadLimit, uploadLimit) || other.uploadLimit == uploadLimit)&&(identical(other.seedRatioLimit, seedRatioLimit) || other.seedRatioLimit == seedRatioLimit)&&(identical(other.seedRatioMode, seedRatioMode) || other.seedRatioMode == seedRatioMode)&&(identical(other.leftUntilDone, leftUntilDone) || other.leftUntilDone == leftUntilDone)&&(identical(other.error, error) || other.error == error)&&(identical(other.errorString, errorString) || other.errorString == errorString)&&(identical(other.downloadDir, downloadDir) || other.downloadDir == downloadDir)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.magnetLink, magnetLink) || other.magnetLink == magnetLink)&&(identical(other.torrentFile, torrentFile) || other.torrentFile == torrentFile)&&const DeepCollectionEquality().equals(other.labels, labels)&&const DeepCollectionEquality().equals(other.trackerStats, trackerStats)&&(identical(other.peersGettingFromUs, peersGettingFromUs) || other.peersGettingFromUs == peersGettingFromUs)&&(identical(other.peersSendingToUs, peersSendingToUs) || other.peersSendingToUs == peersSendingToUs)&&(identical(other.bandwidthPriority, bandwidthPriority) || other.bandwidthPriority == bandwidthPriority)&&(identical(other.recheckProgress, recheckProgress) || other.recheckProgress == recheckProgress)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.trackerUrl, trackerUrl) || other.trackerUrl == trackerUrl));
+  final _this = this as Torrent;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Torrent&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.category, _this.category) || other.category == _this.category)&&(identical(other.hashString, _this.hashString) || other.hashString == _this.hashString)&&(identical(other.percentDone, _this.percentDone) || other.percentDone == _this.percentDone)&&(identical(other.percentComplete, _this.percentComplete) || other.percentComplete == _this.percentComplete)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.rateDownload, _this.rateDownload) || other.rateDownload == _this.rateDownload)&&(identical(other.rateUpload, _this.rateUpload) || other.rateUpload == _this.rateUpload)&&(identical(other.sizeWhenDone, _this.sizeWhenDone) || other.sizeWhenDone == _this.sizeWhenDone)&&(identical(other.totalSize, _this.totalSize) || other.totalSize == _this.totalSize)&&(identical(other.downloadedEver, _this.downloadedEver) || other.downloadedEver == _this.downloadedEver)&&(identical(other.uploadedEver, _this.uploadedEver) || other.uploadedEver == _this.uploadedEver)&&(identical(other.uploadRatio, _this.uploadRatio) || other.uploadRatio == _this.uploadRatio)&&(identical(other.addedDate, _this.addedDate) || other.addedDate == _this.addedDate)&&(identical(other.activityDate, _this.activityDate) || other.activityDate == _this.activityDate)&&(identical(other.doneDate, _this.doneDate) || other.doneDate == _this.doneDate)&&(identical(other.secondsSeeding, _this.secondsSeeding) || other.secondsSeeding == _this.secondsSeeding)&&(identical(other.secondsDownloading, _this.secondsDownloading) || other.secondsDownloading == _this.secondsDownloading)&&(identical(other.queuePosition, _this.queuePosition) || other.queuePosition == _this.queuePosition)&&(identical(other.isFinished, _this.isFinished) || other.isFinished == _this.isFinished)&&(identical(other.isStalled, _this.isStalled) || other.isStalled == _this.isStalled)&&(identical(other.downloadLimited, _this.downloadLimited) || other.downloadLimited == _this.downloadLimited)&&(identical(other.uploadLimited, _this.uploadLimited) || other.uploadLimited == _this.uploadLimited)&&(identical(other.forceStart, _this.forceStart) || other.forceStart == _this.forceStart)&&(identical(other.autoTmm, _this.autoTmm) || other.autoTmm == _this.autoTmm)&&(identical(other.superSeeding, _this.superSeeding) || other.superSeeding == _this.superSeeding)&&(identical(other.contentPath, _this.contentPath) || other.contentPath == _this.contentPath)&&(identical(other.downloadLimit, _this.downloadLimit) || other.downloadLimit == _this.downloadLimit)&&(identical(other.uploadLimit, _this.uploadLimit) || other.uploadLimit == _this.uploadLimit)&&(identical(other.seedRatioLimit, _this.seedRatioLimit) || other.seedRatioLimit == _this.seedRatioLimit)&&(identical(other.seedRatioMode, _this.seedRatioMode) || other.seedRatioMode == _this.seedRatioMode)&&(identical(other.leftUntilDone, _this.leftUntilDone) || other.leftUntilDone == _this.leftUntilDone)&&(identical(other.error, _this.error) || other.error == _this.error)&&(identical(other.errorString, _this.errorString) || other.errorString == _this.errorString)&&(identical(other.downloadDir, _this.downloadDir) || other.downloadDir == _this.downloadDir)&&(identical(other.comment, _this.comment) || other.comment == _this.comment)&&(identical(other.magnetLink, _this.magnetLink) || other.magnetLink == _this.magnetLink)&&(identical(other.torrentFile, _this.torrentFile) || other.torrentFile == _this.torrentFile)&&const DeepCollectionEquality().equals(other.labels, _this.labels)&&const DeepCollectionEquality().equals(other.trackerStats, _this.trackerStats)&&(identical(other.peersGettingFromUs, _this.peersGettingFromUs) || other.peersGettingFromUs == _this.peersGettingFromUs)&&(identical(other.peersSendingToUs, _this.peersSendingToUs) || other.peersSendingToUs == _this.peersSendingToUs)&&(identical(other.bandwidthPriority, _this.bandwidthPriority) || other.bandwidthPriority == _this.bandwidthPriority)&&(identical(other.recheckProgress, _this.recheckProgress) || other.recheckProgress == _this.recheckProgress)&&(identical(other.startDate, _this.startDate) || other.startDate == _this.startDate)&&(identical(other.trackerUrl, _this.trackerUrl) || other.trackerUrl == _this.trackerUrl));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,name,category,hashString,percentDone,percentComplete,status,rateDownload,rateUpload,sizeWhenDone,totalSize,downloadedEver,uploadedEver,uploadRatio,addedDate,activityDate,doneDate,secondsSeeding,secondsDownloading,queuePosition,isFinished,isStalled,downloadLimited,uploadLimited,forceStart,autoTmm,superSeeding,contentPath,downloadLimit,uploadLimit,seedRatioLimit,seedRatioMode,leftUntilDone,error,errorString,downloadDir,comment,magnetLink,torrentFile,const DeepCollectionEquality().hash(labels),const DeepCollectionEquality().hash(trackerStats),peersGettingFromUs,peersSendingToUs,bandwidthPriority,recheckProgress,startDate,trackerUrl]);
+int get hashCode {
+  final _this = this as Torrent;
+  return Object.hashAll([runtimeType,_this.id,_this.name,_this.category,_this.hashString,_this.percentDone,_this.percentComplete,_this.status,_this.rateDownload,_this.rateUpload,_this.sizeWhenDone,_this.totalSize,_this.downloadedEver,_this.uploadedEver,_this.uploadRatio,_this.addedDate,_this.activityDate,_this.doneDate,_this.secondsSeeding,_this.secondsDownloading,_this.queuePosition,_this.isFinished,_this.isStalled,_this.downloadLimited,_this.uploadLimited,_this.forceStart,_this.autoTmm,_this.superSeeding,_this.contentPath,_this.downloadLimit,_this.uploadLimit,_this.seedRatioLimit,_this.seedRatioMode,_this.leftUntilDone,_this.error,_this.errorString,_this.downloadDir,_this.comment,_this.magnetLink,_this.torrentFile,const DeepCollectionEquality().hash(_this.labels),const DeepCollectionEquality().hash(_this.trackerStats),_this.peersGettingFromUs,_this.peersSendingToUs,_this.bandwidthPriority,_this.recheckProgress,_this.startDate,_this.trackerUrl]);
+}
 
 @override
 String toString() {
-  return 'Torrent(id: $id, name: $name, category: $category, hashString: $hashString, percentDone: $percentDone, percentComplete: $percentComplete, status: $status, rateDownload: $rateDownload, rateUpload: $rateUpload, sizeWhenDone: $sizeWhenDone, totalSize: $totalSize, downloadedEver: $downloadedEver, uploadedEver: $uploadedEver, uploadRatio: $uploadRatio, addedDate: $addedDate, activityDate: $activityDate, doneDate: $doneDate, secondsSeeding: $secondsSeeding, secondsDownloading: $secondsDownloading, queuePosition: $queuePosition, isFinished: $isFinished, isStalled: $isStalled, downloadLimited: $downloadLimited, uploadLimited: $uploadLimited, forceStart: $forceStart, autoTmm: $autoTmm, superSeeding: $superSeeding, contentPath: $contentPath, downloadLimit: $downloadLimit, uploadLimit: $uploadLimit, seedRatioLimit: $seedRatioLimit, seedRatioMode: $seedRatioMode, leftUntilDone: $leftUntilDone, error: $error, errorString: $errorString, downloadDir: $downloadDir, comment: $comment, magnetLink: $magnetLink, torrentFile: $torrentFile, labels: $labels, trackerStats: $trackerStats, peersGettingFromUs: $peersGettingFromUs, peersSendingToUs: $peersSendingToUs, bandwidthPriority: $bandwidthPriority, recheckProgress: $recheckProgress, startDate: $startDate, trackerUrl: $trackerUrl)';
+  final _this = this as Torrent;
+  return 'Torrent(id: ${_this.id}, name: ${_this.name}, category: ${_this.category}, hashString: ${_this.hashString}, percentDone: ${_this.percentDone}, percentComplete: ${_this.percentComplete}, status: ${_this.status}, rateDownload: ${_this.rateDownload}, rateUpload: ${_this.rateUpload}, sizeWhenDone: ${_this.sizeWhenDone}, totalSize: ${_this.totalSize}, downloadedEver: ${_this.downloadedEver}, uploadedEver: ${_this.uploadedEver}, uploadRatio: ${_this.uploadRatio}, addedDate: ${_this.addedDate}, activityDate: ${_this.activityDate}, doneDate: ${_this.doneDate}, secondsSeeding: ${_this.secondsSeeding}, secondsDownloading: ${_this.secondsDownloading}, queuePosition: ${_this.queuePosition}, isFinished: ${_this.isFinished}, isStalled: ${_this.isStalled}, downloadLimited: ${_this.downloadLimited}, uploadLimited: ${_this.uploadLimited}, forceStart: ${_this.forceStart}, autoTmm: ${_this.autoTmm}, superSeeding: ${_this.superSeeding}, contentPath: ${_this.contentPath}, downloadLimit: ${_this.downloadLimit}, uploadLimit: ${_this.uploadLimit}, seedRatioLimit: ${_this.seedRatioLimit}, seedRatioMode: ${_this.seedRatioMode}, leftUntilDone: ${_this.leftUntilDone}, error: ${_this.error}, errorString: ${_this.errorString}, downloadDir: ${_this.downloadDir}, comment: ${_this.comment}, magnetLink: ${_this.magnetLink}, torrentFile: ${_this.torrentFile}, labels: ${_this.labels}, trackerStats: ${_this.trackerStats}, peersGettingFromUs: ${_this.peersGettingFromUs}, peersSendingToUs: ${_this.peersSendingToUs}, bandwidthPriority: ${_this.bandwidthPriority}, recheckProgress: ${_this.recheckProgress}, startDate: ${_this.startDate}, trackerUrl: ${_this.trackerUrl})';
 }
 
 
@@ -353,7 +366,7 @@ class _$TorrentCopyWithImpl<$Res>
 /// Create a copy of Torrent
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? category = null,Object? hashString = null,Object? percentDone = null,Object? percentComplete = null,Object? status = null,Object? rateDownload = null,Object? rateUpload = null,Object? sizeWhenDone = null,Object? totalSize = null,Object? downloadedEver = null,Object? uploadedEver = null,Object? uploadRatio = null,Object? addedDate = null,Object? activityDate = null,Object? doneDate = null,Object? secondsSeeding = null,Object? secondsDownloading = null,Object? queuePosition = null,Object? isFinished = null,Object? isStalled = null,Object? downloadLimited = null,Object? uploadLimited = null,Object? forceStart = null,Object? autoTmm = null,Object? superSeeding = null,Object? contentPath = null,Object? downloadLimit = null,Object? uploadLimit = null,Object? seedRatioLimit = null,Object? seedRatioMode = null,Object? leftUntilDone = null,Object? error = null,Object? errorString = null,Object? downloadDir = null,Object? comment = null,Object? magnetLink = null,Object? torrentFile = null,Object? labels = null,Object? trackerStats = null,Object? peersGettingFromUs = null,Object? peersSendingToUs = null,Object? bandwidthPriority = null,Object? recheckProgress = null,Object? startDate = null,Object? trackerUrl = null,}) {
-  return _then(_self.copyWith(
+  return _then(Torrent(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
@@ -542,7 +555,7 @@ return $default(_that.id,_that.name,_that.category,_that.hashString,_that.percen
 
 
 class _Torrent extends Torrent {
-  const _Torrent({this.id = 0, this.name = '', this.category = '', this.hashString = '', this.percentDone = 0.0, this.percentComplete = 0.0, this.status = 0, this.rateDownload = 0, this.rateUpload = 0, this.sizeWhenDone = 0, this.totalSize = 0, this.downloadedEver = 0, this.uploadedEver = 0, this.uploadRatio = 0.0, this.addedDate = 0, this.activityDate = 0, this.doneDate = 0, this.secondsSeeding = 0, this.secondsDownloading = 0, this.queuePosition = 0, this.isFinished = false, this.isStalled = false, this.downloadLimited = false, this.uploadLimited = false, this.forceStart = false, this.autoTmm = false, this.superSeeding = false, this.contentPath = '', this.downloadLimit = 0, this.uploadLimit = 0, this.seedRatioLimit = 0.0, this.seedRatioMode = 0, this.leftUntilDone = 0, this.error = 0, this.errorString = '', this.downloadDir = '', this.comment = '', this.magnetLink = '', this.torrentFile = '', final  List<String> labels = const [], final  List<TrackerStat> trackerStats = const [], this.peersGettingFromUs = 0, this.peersSendingToUs = 0, this.bandwidthPriority = 0, this.recheckProgress = 0.0, this.startDate = 0, this.trackerUrl = ''}): _labels = labels,_trackerStats = trackerStats,super._();
+  const _Torrent({this.id = 0, this.name = '', this.category = '', this.hashString = '', this.percentDone = 0.0, this.percentComplete = 0.0, this.status = 0, this.rateDownload = 0, this.rateUpload = 0, this.sizeWhenDone = 0, this.totalSize = 0, this.downloadedEver = 0, this.uploadedEver = 0, this.uploadRatio = 0.0, this.addedDate = 0, this.activityDate = 0, this.doneDate = 0, this.secondsSeeding = 0, this.secondsDownloading = 0, this.queuePosition = 0, this.isFinished = false, this.isStalled = false, this.downloadLimited = false, this.uploadLimited = false, this.forceStart = false, this.autoTmm = false, this.superSeeding = false, this.contentPath = '', this.downloadLimit = 0, this.uploadLimit = 0, this.seedRatioLimit = 0.0, this.seedRatioMode = 0, this.leftUntilDone = 0, this.error = 0, this.errorString = '', this.downloadDir = '', this.comment = '', this.magnetLink = '', this.torrentFile = '',  List<String> labels = const [],  List<TrackerStat> trackerStats = const [], this.peersGettingFromUs = 0, this.peersSendingToUs = 0, this.bandwidthPriority = 0, this.recheckProgress = 0.0, this.startDate = 0, this.trackerUrl = ''}): _labels = labels,_trackerStats = trackerStats,super._();
   
 
 @override@JsonKey() final  int id;
@@ -615,16 +628,18 @@ _$TorrentCopyWith<_Torrent> get copyWith => __$TorrentCopyWithImpl<_Torrent>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Torrent&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.hashString, hashString) || other.hashString == hashString)&&(identical(other.percentDone, percentDone) || other.percentDone == percentDone)&&(identical(other.percentComplete, percentComplete) || other.percentComplete == percentComplete)&&(identical(other.status, status) || other.status == status)&&(identical(other.rateDownload, rateDownload) || other.rateDownload == rateDownload)&&(identical(other.rateUpload, rateUpload) || other.rateUpload == rateUpload)&&(identical(other.sizeWhenDone, sizeWhenDone) || other.sizeWhenDone == sizeWhenDone)&&(identical(other.totalSize, totalSize) || other.totalSize == totalSize)&&(identical(other.downloadedEver, downloadedEver) || other.downloadedEver == downloadedEver)&&(identical(other.uploadedEver, uploadedEver) || other.uploadedEver == uploadedEver)&&(identical(other.uploadRatio, uploadRatio) || other.uploadRatio == uploadRatio)&&(identical(other.addedDate, addedDate) || other.addedDate == addedDate)&&(identical(other.activityDate, activityDate) || other.activityDate == activityDate)&&(identical(other.doneDate, doneDate) || other.doneDate == doneDate)&&(identical(other.secondsSeeding, secondsSeeding) || other.secondsSeeding == secondsSeeding)&&(identical(other.secondsDownloading, secondsDownloading) || other.secondsDownloading == secondsDownloading)&&(identical(other.queuePosition, queuePosition) || other.queuePosition == queuePosition)&&(identical(other.isFinished, isFinished) || other.isFinished == isFinished)&&(identical(other.isStalled, isStalled) || other.isStalled == isStalled)&&(identical(other.downloadLimited, downloadLimited) || other.downloadLimited == downloadLimited)&&(identical(other.uploadLimited, uploadLimited) || other.uploadLimited == uploadLimited)&&(identical(other.forceStart, forceStart) || other.forceStart == forceStart)&&(identical(other.autoTmm, autoTmm) || other.autoTmm == autoTmm)&&(identical(other.superSeeding, superSeeding) || other.superSeeding == superSeeding)&&(identical(other.contentPath, contentPath) || other.contentPath == contentPath)&&(identical(other.downloadLimit, downloadLimit) || other.downloadLimit == downloadLimit)&&(identical(other.uploadLimit, uploadLimit) || other.uploadLimit == uploadLimit)&&(identical(other.seedRatioLimit, seedRatioLimit) || other.seedRatioLimit == seedRatioLimit)&&(identical(other.seedRatioMode, seedRatioMode) || other.seedRatioMode == seedRatioMode)&&(identical(other.leftUntilDone, leftUntilDone) || other.leftUntilDone == leftUntilDone)&&(identical(other.error, error) || other.error == error)&&(identical(other.errorString, errorString) || other.errorString == errorString)&&(identical(other.downloadDir, downloadDir) || other.downloadDir == downloadDir)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.magnetLink, magnetLink) || other.magnetLink == magnetLink)&&(identical(other.torrentFile, torrentFile) || other.torrentFile == torrentFile)&&const DeepCollectionEquality().equals(other._labels, _labels)&&const DeepCollectionEquality().equals(other._trackerStats, _trackerStats)&&(identical(other.peersGettingFromUs, peersGettingFromUs) || other.peersGettingFromUs == peersGettingFromUs)&&(identical(other.peersSendingToUs, peersSendingToUs) || other.peersSendingToUs == peersSendingToUs)&&(identical(other.bandwidthPriority, bandwidthPriority) || other.bandwidthPriority == bandwidthPriority)&&(identical(other.recheckProgress, recheckProgress) || other.recheckProgress == recheckProgress)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.trackerUrl, trackerUrl) || other.trackerUrl == trackerUrl));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Torrent&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.hashString, hashString) || other.hashString == hashString)&&(identical(other.percentDone, percentDone) || other.percentDone == percentDone)&&(identical(other.percentComplete, percentComplete) || other.percentComplete == percentComplete)&&(identical(other.status, status) || other.status == status)&&(identical(other.rateDownload, rateDownload) || other.rateDownload == rateDownload)&&(identical(other.rateUpload, rateUpload) || other.rateUpload == rateUpload)&&(identical(other.sizeWhenDone, sizeWhenDone) || other.sizeWhenDone == sizeWhenDone)&&(identical(other.totalSize, totalSize) || other.totalSize == totalSize)&&(identical(other.downloadedEver, downloadedEver) || other.downloadedEver == downloadedEver)&&(identical(other.uploadedEver, uploadedEver) || other.uploadedEver == uploadedEver)&&(identical(other.uploadRatio, uploadRatio) || other.uploadRatio == uploadRatio)&&(identical(other.addedDate, addedDate) || other.addedDate == addedDate)&&(identical(other.activityDate, activityDate) || other.activityDate == activityDate)&&(identical(other.doneDate, doneDate) || other.doneDate == doneDate)&&(identical(other.secondsSeeding, secondsSeeding) || other.secondsSeeding == secondsSeeding)&&(identical(other.secondsDownloading, secondsDownloading) || other.secondsDownloading == secondsDownloading)&&(identical(other.queuePosition, queuePosition) || other.queuePosition == queuePosition)&&(identical(other.isFinished, isFinished) || other.isFinished == isFinished)&&(identical(other.isStalled, isStalled) || other.isStalled == isStalled)&&(identical(other.downloadLimited, downloadLimited) || other.downloadLimited == downloadLimited)&&(identical(other.uploadLimited, uploadLimited) || other.uploadLimited == uploadLimited)&&(identical(other.forceStart, forceStart) || other.forceStart == forceStart)&&(identical(other.autoTmm, autoTmm) || other.autoTmm == autoTmm)&&(identical(other.superSeeding, superSeeding) || other.superSeeding == superSeeding)&&(identical(other.contentPath, contentPath) || other.contentPath == contentPath)&&(identical(other.downloadLimit, downloadLimit) || other.downloadLimit == downloadLimit)&&(identical(other.uploadLimit, uploadLimit) || other.uploadLimit == uploadLimit)&&(identical(other.seedRatioLimit, seedRatioLimit) || other.seedRatioLimit == seedRatioLimit)&&(identical(other.seedRatioMode, seedRatioMode) || other.seedRatioMode == seedRatioMode)&&(identical(other.leftUntilDone, leftUntilDone) || other.leftUntilDone == leftUntilDone)&&(identical(other.error, error) || other.error == error)&&(identical(other.errorString, errorString) || other.errorString == errorString)&&(identical(other.downloadDir, downloadDir) || other.downloadDir == downloadDir)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.magnetLink, magnetLink) || other.magnetLink == magnetLink)&&(identical(other.torrentFile, torrentFile) || other.torrentFile == torrentFile)&&const DeepCollectionEquality().equals(other.labels, _labels)&&const DeepCollectionEquality().equals(other.trackerStats, _trackerStats)&&(identical(other.peersGettingFromUs, peersGettingFromUs) || other.peersGettingFromUs == peersGettingFromUs)&&(identical(other.peersSendingToUs, peersSendingToUs) || other.peersSendingToUs == peersSendingToUs)&&(identical(other.bandwidthPriority, bandwidthPriority) || other.bandwidthPriority == bandwidthPriority)&&(identical(other.recheckProgress, recheckProgress) || other.recheckProgress == recheckProgress)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.trackerUrl, trackerUrl) || other.trackerUrl == trackerUrl));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,name,category,hashString,percentDone,percentComplete,status,rateDownload,rateUpload,sizeWhenDone,totalSize,downloadedEver,uploadedEver,uploadRatio,addedDate,activityDate,doneDate,secondsSeeding,secondsDownloading,queuePosition,isFinished,isStalled,downloadLimited,uploadLimited,forceStart,autoTmm,superSeeding,contentPath,downloadLimit,uploadLimit,seedRatioLimit,seedRatioMode,leftUntilDone,error,errorString,downloadDir,comment,magnetLink,torrentFile,const DeepCollectionEquality().hash(_labels),const DeepCollectionEquality().hash(_trackerStats),peersGettingFromUs,peersSendingToUs,bandwidthPriority,recheckProgress,startDate,trackerUrl]);
+int get hashCode {
+    return Object.hashAll([runtimeType,id,name,category,hashString,percentDone,percentComplete,status,rateDownload,rateUpload,sizeWhenDone,totalSize,downloadedEver,uploadedEver,uploadRatio,addedDate,activityDate,doneDate,secondsSeeding,secondsDownloading,queuePosition,isFinished,isStalled,downloadLimited,uploadLimited,forceStart,autoTmm,superSeeding,contentPath,downloadLimit,uploadLimit,seedRatioLimit,seedRatioMode,leftUntilDone,error,errorString,downloadDir,comment,magnetLink,torrentFile,const DeepCollectionEquality().hash(_labels),const DeepCollectionEquality().hash(_trackerStats),peersGettingFromUs,peersSendingToUs,bandwidthPriority,recheckProgress,startDate,trackerUrl]);
+}
 
 @override
 String toString() {
-  return 'Torrent(id: $id, name: $name, category: $category, hashString: $hashString, percentDone: $percentDone, percentComplete: $percentComplete, status: $status, rateDownload: $rateDownload, rateUpload: $rateUpload, sizeWhenDone: $sizeWhenDone, totalSize: $totalSize, downloadedEver: $downloadedEver, uploadedEver: $uploadedEver, uploadRatio: $uploadRatio, addedDate: $addedDate, activityDate: $activityDate, doneDate: $doneDate, secondsSeeding: $secondsSeeding, secondsDownloading: $secondsDownloading, queuePosition: $queuePosition, isFinished: $isFinished, isStalled: $isStalled, downloadLimited: $downloadLimited, uploadLimited: $uploadLimited, forceStart: $forceStart, autoTmm: $autoTmm, superSeeding: $superSeeding, contentPath: $contentPath, downloadLimit: $downloadLimit, uploadLimit: $uploadLimit, seedRatioLimit: $seedRatioLimit, seedRatioMode: $seedRatioMode, leftUntilDone: $leftUntilDone, error: $error, errorString: $errorString, downloadDir: $downloadDir, comment: $comment, magnetLink: $magnetLink, torrentFile: $torrentFile, labels: $labels, trackerStats: $trackerStats, peersGettingFromUs: $peersGettingFromUs, peersSendingToUs: $peersSendingToUs, bandwidthPriority: $bandwidthPriority, recheckProgress: $recheckProgress, startDate: $startDate, trackerUrl: $trackerUrl)';
+    return 'Torrent(id: $id, name: $name, category: $category, hashString: $hashString, percentDone: $percentDone, percentComplete: $percentComplete, status: $status, rateDownload: $rateDownload, rateUpload: $rateUpload, sizeWhenDone: $sizeWhenDone, totalSize: $totalSize, downloadedEver: $downloadedEver, uploadedEver: $uploadedEver, uploadRatio: $uploadRatio, addedDate: $addedDate, activityDate: $activityDate, doneDate: $doneDate, secondsSeeding: $secondsSeeding, secondsDownloading: $secondsDownloading, queuePosition: $queuePosition, isFinished: $isFinished, isStalled: $isStalled, downloadLimited: $downloadLimited, uploadLimited: $uploadLimited, forceStart: $forceStart, autoTmm: $autoTmm, superSeeding: $superSeeding, contentPath: $contentPath, downloadLimit: $downloadLimit, uploadLimit: $uploadLimit, seedRatioLimit: $seedRatioLimit, seedRatioMode: $seedRatioMode, leftUntilDone: $leftUntilDone, error: $error, errorString: $errorString, downloadDir: $downloadDir, comment: $comment, magnetLink: $magnetLink, torrentFile: $torrentFile, labels: $labels, trackerStats: $trackerStats, peersGettingFromUs: $peersGettingFromUs, peersSendingToUs: $peersSendingToUs, bandwidthPriority: $bandwidthPriority, recheckProgress: $recheckProgress, startDate: $startDate, trackerUrl: $trackerUrl)';
 }
 
 
@@ -722,16 +737,21 @@ $SessionStatsCopyWith<SessionStats> get copyWith => _$SessionStatsCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionStats&&(identical(other.downloadedBytes, downloadedBytes) || other.downloadedBytes == downloadedBytes)&&(identical(other.uploadedBytes, uploadedBytes) || other.uploadedBytes == uploadedBytes)&&(identical(other.filesAdded, filesAdded) || other.filesAdded == filesAdded)&&(identical(other.secondsActive, secondsActive) || other.secondsActive == secondsActive)&&(identical(other.sessionCount, sessionCount) || other.sessionCount == sessionCount));
+  final _this = this as SessionStats;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionStats&&(identical(other.downloadedBytes, _this.downloadedBytes) || other.downloadedBytes == _this.downloadedBytes)&&(identical(other.uploadedBytes, _this.uploadedBytes) || other.uploadedBytes == _this.uploadedBytes)&&(identical(other.filesAdded, _this.filesAdded) || other.filesAdded == _this.filesAdded)&&(identical(other.secondsActive, _this.secondsActive) || other.secondsActive == _this.secondsActive)&&(identical(other.sessionCount, _this.sessionCount) || other.sessionCount == _this.sessionCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,downloadedBytes,uploadedBytes,filesAdded,secondsActive,sessionCount);
+int get hashCode {
+  final _this = this as SessionStats;
+  return Object.hash(runtimeType,_this.downloadedBytes,_this.uploadedBytes,_this.filesAdded,_this.secondsActive,_this.sessionCount);
+}
 
 @override
 String toString() {
-  return 'SessionStats(downloadedBytes: $downloadedBytes, uploadedBytes: $uploadedBytes, filesAdded: $filesAdded, secondsActive: $secondsActive, sessionCount: $sessionCount)';
+  final _this = this as SessionStats;
+  return 'SessionStats(downloadedBytes: ${_this.downloadedBytes}, uploadedBytes: ${_this.uploadedBytes}, filesAdded: ${_this.filesAdded}, secondsActive: ${_this.secondsActive}, sessionCount: ${_this.sessionCount})';
 }
 
 
@@ -760,7 +780,7 @@ class _$SessionStatsCopyWithImpl<$Res>
 /// Create a copy of SessionStats
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? downloadedBytes = null,Object? uploadedBytes = null,Object? filesAdded = null,Object? secondsActive = null,Object? sessionCount = null,}) {
-  return _then(_self.copyWith(
+  return _then(SessionStats(
 downloadedBytes: null == downloadedBytes ? _self.downloadedBytes : downloadedBytes // ignore: cast_nullable_to_non_nullable
 as int,uploadedBytes: null == uploadedBytes ? _self.uploadedBytes : uploadedBytes // ignore: cast_nullable_to_non_nullable
 as int,filesAdded: null == filesAdded ? _self.filesAdded : filesAdded // ignore: cast_nullable_to_non_nullable
@@ -926,16 +946,18 @@ _$SessionStatsCopyWith<_SessionStats> get copyWith => __$SessionStatsCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionStats&&(identical(other.downloadedBytes, downloadedBytes) || other.downloadedBytes == downloadedBytes)&&(identical(other.uploadedBytes, uploadedBytes) || other.uploadedBytes == uploadedBytes)&&(identical(other.filesAdded, filesAdded) || other.filesAdded == filesAdded)&&(identical(other.secondsActive, secondsActive) || other.secondsActive == secondsActive)&&(identical(other.sessionCount, sessionCount) || other.sessionCount == sessionCount));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionStats&&(identical(other.downloadedBytes, downloadedBytes) || other.downloadedBytes == downloadedBytes)&&(identical(other.uploadedBytes, uploadedBytes) || other.uploadedBytes == uploadedBytes)&&(identical(other.filesAdded, filesAdded) || other.filesAdded == filesAdded)&&(identical(other.secondsActive, secondsActive) || other.secondsActive == secondsActive)&&(identical(other.sessionCount, sessionCount) || other.sessionCount == sessionCount));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,downloadedBytes,uploadedBytes,filesAdded,secondsActive,sessionCount);
+int get hashCode {
+    return Object.hash(runtimeType,downloadedBytes,uploadedBytes,filesAdded,secondsActive,sessionCount);
+}
 
 @override
 String toString() {
-  return 'SessionStats(downloadedBytes: $downloadedBytes, uploadedBytes: $uploadedBytes, filesAdded: $filesAdded, secondsActive: $secondsActive, sessionCount: $sessionCount)';
+    return 'SessionStats(downloadedBytes: $downloadedBytes, uploadedBytes: $uploadedBytes, filesAdded: $filesAdded, secondsActive: $secondsActive, sessionCount: $sessionCount)';
 }
 
 
@@ -991,16 +1013,21 @@ $DownloaderStatusCopyWith<DownloaderStatus> get copyWith => _$DownloaderStatusCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloaderStatus&&(identical(other.activeTorrentCount, activeTorrentCount) || other.activeTorrentCount == activeTorrentCount)&&(identical(other.pausedTorrentCount, pausedTorrentCount) || other.pausedTorrentCount == pausedTorrentCount)&&(identical(other.torrentCount, torrentCount) || other.torrentCount == torrentCount)&&(identical(other.downloadSpeed, downloadSpeed) || other.downloadSpeed == downloadSpeed)&&(identical(other.uploadSpeed, uploadSpeed) || other.uploadSpeed == uploadSpeed)&&(identical(other.cumulativeStats, cumulativeStats) || other.cumulativeStats == cumulativeStats)&&(identical(other.currentStats, currentStats) || other.currentStats == currentStats));
+  final _this = this as DownloaderStatus;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloaderStatus&&(identical(other.activeTorrentCount, _this.activeTorrentCount) || other.activeTorrentCount == _this.activeTorrentCount)&&(identical(other.pausedTorrentCount, _this.pausedTorrentCount) || other.pausedTorrentCount == _this.pausedTorrentCount)&&(identical(other.torrentCount, _this.torrentCount) || other.torrentCount == _this.torrentCount)&&(identical(other.downloadSpeed, _this.downloadSpeed) || other.downloadSpeed == _this.downloadSpeed)&&(identical(other.uploadSpeed, _this.uploadSpeed) || other.uploadSpeed == _this.uploadSpeed)&&(identical(other.cumulativeStats, _this.cumulativeStats) || other.cumulativeStats == _this.cumulativeStats)&&(identical(other.currentStats, _this.currentStats) || other.currentStats == _this.currentStats));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,activeTorrentCount,pausedTorrentCount,torrentCount,downloadSpeed,uploadSpeed,cumulativeStats,currentStats);
+int get hashCode {
+  final _this = this as DownloaderStatus;
+  return Object.hash(runtimeType,_this.activeTorrentCount,_this.pausedTorrentCount,_this.torrentCount,_this.downloadSpeed,_this.uploadSpeed,_this.cumulativeStats,_this.currentStats);
+}
 
 @override
 String toString() {
-  return 'DownloaderStatus(activeTorrentCount: $activeTorrentCount, pausedTorrentCount: $pausedTorrentCount, torrentCount: $torrentCount, downloadSpeed: $downloadSpeed, uploadSpeed: $uploadSpeed, cumulativeStats: $cumulativeStats, currentStats: $currentStats)';
+  final _this = this as DownloaderStatus;
+  return 'DownloaderStatus(activeTorrentCount: ${_this.activeTorrentCount}, pausedTorrentCount: ${_this.pausedTorrentCount}, torrentCount: ${_this.torrentCount}, downloadSpeed: ${_this.downloadSpeed}, uploadSpeed: ${_this.uploadSpeed}, cumulativeStats: ${_this.cumulativeStats}, currentStats: ${_this.currentStats})';
 }
 
 
@@ -1029,7 +1056,7 @@ class _$DownloaderStatusCopyWithImpl<$Res>
 /// Create a copy of DownloaderStatus
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? activeTorrentCount = null,Object? pausedTorrentCount = null,Object? torrentCount = null,Object? downloadSpeed = null,Object? uploadSpeed = null,Object? cumulativeStats = null,Object? currentStats = null,}) {
-  return _then(_self.copyWith(
+  return _then(DownloaderStatus(
 activeTorrentCount: null == activeTorrentCount ? _self.activeTorrentCount : activeTorrentCount // ignore: cast_nullable_to_non_nullable
 as int,pausedTorrentCount: null == pausedTorrentCount ? _self.pausedTorrentCount : pausedTorrentCount // ignore: cast_nullable_to_non_nullable
 as int,torrentCount: null == torrentCount ? _self.torrentCount : torrentCount // ignore: cast_nullable_to_non_nullable
@@ -1217,16 +1244,18 @@ _$DownloaderStatusCopyWith<_DownloaderStatus> get copyWith => __$DownloaderStatu
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DownloaderStatus&&(identical(other.activeTorrentCount, activeTorrentCount) || other.activeTorrentCount == activeTorrentCount)&&(identical(other.pausedTorrentCount, pausedTorrentCount) || other.pausedTorrentCount == pausedTorrentCount)&&(identical(other.torrentCount, torrentCount) || other.torrentCount == torrentCount)&&(identical(other.downloadSpeed, downloadSpeed) || other.downloadSpeed == downloadSpeed)&&(identical(other.uploadSpeed, uploadSpeed) || other.uploadSpeed == uploadSpeed)&&(identical(other.cumulativeStats, cumulativeStats) || other.cumulativeStats == cumulativeStats)&&(identical(other.currentStats, currentStats) || other.currentStats == currentStats));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DownloaderStatus&&(identical(other.activeTorrentCount, activeTorrentCount) || other.activeTorrentCount == activeTorrentCount)&&(identical(other.pausedTorrentCount, pausedTorrentCount) || other.pausedTorrentCount == pausedTorrentCount)&&(identical(other.torrentCount, torrentCount) || other.torrentCount == torrentCount)&&(identical(other.downloadSpeed, downloadSpeed) || other.downloadSpeed == downloadSpeed)&&(identical(other.uploadSpeed, uploadSpeed) || other.uploadSpeed == uploadSpeed)&&(identical(other.cumulativeStats, cumulativeStats) || other.cumulativeStats == cumulativeStats)&&(identical(other.currentStats, currentStats) || other.currentStats == currentStats));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,activeTorrentCount,pausedTorrentCount,torrentCount,downloadSpeed,uploadSpeed,cumulativeStats,currentStats);
+int get hashCode {
+    return Object.hash(runtimeType,activeTorrentCount,pausedTorrentCount,torrentCount,downloadSpeed,uploadSpeed,cumulativeStats,currentStats);
+}
 
 @override
 String toString() {
-  return 'DownloaderStatus(activeTorrentCount: $activeTorrentCount, pausedTorrentCount: $pausedTorrentCount, torrentCount: $torrentCount, downloadSpeed: $downloadSpeed, uploadSpeed: $uploadSpeed, cumulativeStats: $cumulativeStats, currentStats: $currentStats)';
+    return 'DownloaderStatus(activeTorrentCount: $activeTorrentCount, pausedTorrentCount: $pausedTorrentCount, torrentCount: $torrentCount, downloadSpeed: $downloadSpeed, uploadSpeed: $uploadSpeed, cumulativeStats: $cumulativeStats, currentStats: $currentStats)';
 }
 
 
@@ -1302,16 +1331,21 @@ $DownloaderDataCopyWith<DownloaderData> get copyWith => _$DownloaderDataCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloaderData&&const DeepCollectionEquality().equals(other.torrents, torrents)&&(identical(other.status, status) || other.status == status));
+  final _this = this as DownloaderData;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DownloaderData&&const DeepCollectionEquality().equals(other.torrents, _this.torrents)&&(identical(other.status, _this.status) || other.status == _this.status));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(torrents),status);
+int get hashCode {
+  final _this = this as DownloaderData;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.torrents),_this.status);
+}
 
 @override
 String toString() {
-  return 'DownloaderData(torrents: $torrents, status: $status)';
+  final _this = this as DownloaderData;
+  return 'DownloaderData(torrents: ${_this.torrents}, status: ${_this.status})';
 }
 
 
@@ -1340,7 +1374,7 @@ class _$DownloaderDataCopyWithImpl<$Res>
 /// Create a copy of DownloaderData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? torrents = null,Object? status = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(DownloaderData(
 torrents: null == torrents ? _self.torrents : torrents // ignore: cast_nullable_to_non_nullable
 as List<Torrent>,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as DownloaderStatus?,
@@ -1496,7 +1530,7 @@ return $default(_that.torrents,_that.status);case _:
 
 
 class _DownloaderData implements DownloaderData {
-  const _DownloaderData({final  List<Torrent> torrents = const [], this.status}): _torrents = torrents;
+  const _DownloaderData({ List<Torrent> torrents = const [], this.status}): _torrents = torrents;
   
 
  final  List<Torrent> _torrents;
@@ -1518,16 +1552,18 @@ _$DownloaderDataCopyWith<_DownloaderData> get copyWith => __$DownloaderDataCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DownloaderData&&const DeepCollectionEquality().equals(other._torrents, _torrents)&&(identical(other.status, status) || other.status == status));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DownloaderData&&const DeepCollectionEquality().equals(other.torrents, _torrents)&&(identical(other.status, status) || other.status == status));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_torrents),status);
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_torrents),status);
+}
 
 @override
 String toString() {
-  return 'DownloaderData(torrents: $torrents, status: $status)';
+    return 'DownloaderData(torrents: $torrents, status: $status)';
 }
 
 

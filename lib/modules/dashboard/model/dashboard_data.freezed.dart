@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'dashboard_data.dart';
@@ -9,6 +9,7 @@ part of 'dashboard_data.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $EarliestSiteCopyWith<EarliestSite> get copyWith => _$EarliestSiteCopyWithImpl<E
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is EarliestSite&&(identical(other.id, id) || other.id == id)&&(identical(other.site, site) || other.site == site)&&(identical(other.timeJoin, timeJoin) || other.timeJoin == timeJoin)&&(identical(other.latestActive, latestActive) || other.latestActive == latestActive));
+  final _this = this as EarliestSite;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is EarliestSite&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.site, _this.site) || other.site == _this.site)&&(identical(other.timeJoin, _this.timeJoin) || other.timeJoin == _this.timeJoin)&&(identical(other.latestActive, _this.latestActive) || other.latestActive == _this.latestActive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,site,timeJoin,latestActive);
+int get hashCode {
+  final _this = this as EarliestSite;
+  return Object.hash(runtimeType,_this.id,_this.site,_this.timeJoin,_this.latestActive);
+}
 
 @override
 String toString() {
-  return 'EarliestSite(id: $id, site: $site, timeJoin: $timeJoin, latestActive: $latestActive)';
+  final _this = this as EarliestSite;
+  return 'EarliestSite(id: ${_this.id}, site: ${_this.site}, timeJoin: ${_this.timeJoin}, latestActive: ${_this.latestActive})';
 }
 
 
@@ -66,7 +72,7 @@ class _$EarliestSiteCopyWithImpl<$Res>
 /// Create a copy of EarliestSite
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? site = null,Object? timeJoin = freezed,Object? latestActive = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(EarliestSite(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,site: null == site ? _self.site : site // ignore: cast_nullable_to_non_nullable
 as String,timeJoin: freezed == timeJoin ? _self.timeJoin : timeJoin // ignore: cast_nullable_to_non_nullable
@@ -233,16 +239,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _EarliestSite&&(identical(other.id, id) || other.id == id)&&(identical(other.site, site) || other.site == site)&&(identical(other.timeJoin, timeJoin) || other.timeJoin == timeJoin)&&(identical(other.latestActive, latestActive) || other.latestActive == latestActive));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _EarliestSite&&(identical(other.id, id) || other.id == id)&&(identical(other.site, site) || other.site == site)&&(identical(other.timeJoin, timeJoin) || other.timeJoin == timeJoin)&&(identical(other.latestActive, latestActive) || other.latestActive == latestActive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,site,timeJoin,latestActive);
+int get hashCode {
+    return Object.hash(runtimeType,id,site,timeJoin,latestActive);
+}
 
 @override
 String toString() {
-  return 'EarliestSite(id: $id, site: $site, timeJoin: $timeJoin, latestActive: $latestActive)';
+    return 'EarliestSite(id: $id, site: $site, timeJoin: $timeJoin, latestActive: $latestActive)';
 }
 
 
@@ -300,16 +308,21 @@ $StatusRecordCopyWith<StatusRecord> get copyWith => _$StatusRecordCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is StatusRecord&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded)&&(identical(other.published, published) || other.published == published));
+  final _this = this as StatusRecord;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is StatusRecord&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.uploaded, _this.uploaded) || other.uploaded == _this.uploaded)&&(identical(other.downloaded, _this.downloaded) || other.downloaded == _this.downloaded)&&(identical(other.published, _this.published) || other.published == _this.published));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,createdAt,uploaded,downloaded,published);
+int get hashCode {
+  final _this = this as StatusRecord;
+  return Object.hash(runtimeType,_this.createdAt,_this.uploaded,_this.downloaded,_this.published);
+}
 
 @override
 String toString() {
-  return 'StatusRecord(createdAt: $createdAt, uploaded: $uploaded, downloaded: $downloaded, published: $published)';
+  final _this = this as StatusRecord;
+  return 'StatusRecord(createdAt: ${_this.createdAt}, uploaded: ${_this.uploaded}, downloaded: ${_this.downloaded}, published: ${_this.published})';
 }
 
 
@@ -338,7 +351,7 @@ class _$StatusRecordCopyWithImpl<$Res>
 /// Create a copy of StatusRecord
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? createdAt = null,Object? uploaded = null,Object? downloaded = null,Object? published = null,}) {
-  return _then(_self.copyWith(
+  return _then(StatusRecord(
 createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as String,uploaded: null == uploaded ? _self.uploaded : uploaded // ignore: cast_nullable_to_non_nullable
 as num,downloaded: null == downloaded ? _self.downloaded : downloaded // ignore: cast_nullable_to_non_nullable
@@ -505,16 +518,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StatusRecord&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded)&&(identical(other.published, published) || other.published == published));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _StatusRecord&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded)&&(identical(other.published, published) || other.published == published));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,createdAt,uploaded,downloaded,published);
+int get hashCode {
+    return Object.hash(runtimeType,createdAt,uploaded,downloaded,published);
+}
 
 @override
 String toString() {
-  return 'StatusRecord(createdAt: $createdAt, uploaded: $uploaded, downloaded: $downloaded, published: $published)';
+    return 'StatusRecord(createdAt: $createdAt, uploaded: $uploaded, downloaded: $downloaded, published: $published)';
 }
 
 
@@ -572,16 +587,21 @@ $UploadRecordCopyWith<UploadRecord> get copyWith => _$UploadRecordCopyWithImpl<U
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UploadRecord&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded));
+  final _this = this as UploadRecord;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UploadRecord&&(identical(other.createdAt, _this.createdAt) || other.createdAt == _this.createdAt)&&(identical(other.uploaded, _this.uploaded) || other.uploaded == _this.uploaded)&&(identical(other.downloaded, _this.downloaded) || other.downloaded == _this.downloaded));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,createdAt,uploaded,downloaded);
+int get hashCode {
+  final _this = this as UploadRecord;
+  return Object.hash(runtimeType,_this.createdAt,_this.uploaded,_this.downloaded);
+}
 
 @override
 String toString() {
-  return 'UploadRecord(createdAt: $createdAt, uploaded: $uploaded, downloaded: $downloaded)';
+  final _this = this as UploadRecord;
+  return 'UploadRecord(createdAt: ${_this.createdAt}, uploaded: ${_this.uploaded}, downloaded: ${_this.downloaded})';
 }
 
 
@@ -610,7 +630,7 @@ class _$UploadRecordCopyWithImpl<$Res>
 /// Create a copy of UploadRecord
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? createdAt = null,Object? uploaded = null,Object? downloaded = null,}) {
-  return _then(_self.copyWith(
+  return _then(UploadRecord(
 createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as String,uploaded: null == uploaded ? _self.uploaded : uploaded // ignore: cast_nullable_to_non_nullable
 as num,downloaded: null == downloaded ? _self.downloaded : downloaded // ignore: cast_nullable_to_non_nullable
@@ -775,16 +795,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UploadRecord&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _UploadRecord&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.uploaded, uploaded) || other.uploaded == uploaded)&&(identical(other.downloaded, downloaded) || other.downloaded == downloaded));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,createdAt,uploaded,downloaded);
+int get hashCode {
+    return Object.hash(runtimeType,createdAt,uploaded,downloaded);
+}
 
 @override
 String toString() {
-  return 'UploadRecord(createdAt: $createdAt, uploaded: $uploaded, downloaded: $downloaded)';
+    return 'UploadRecord(createdAt: $createdAt, uploaded: $uploaded, downloaded: $downloaded)';
 }
 
 
@@ -841,16 +863,21 @@ $MonthSiteDataCopyWith<MonthSiteData> get copyWith => _$MonthSiteDataCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MonthSiteData&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.value, value));
+  final _this = this as MonthSiteData;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MonthSiteData&&(identical(other.name, _this.name) || other.name == _this.name)&&const DeepCollectionEquality().equals(other.value, _this.value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,const DeepCollectionEquality().hash(value));
+int get hashCode {
+  final _this = this as MonthSiteData;
+  return Object.hash(runtimeType,_this.name,const DeepCollectionEquality().hash(_this.value));
+}
 
 @override
 String toString() {
-  return 'MonthSiteData(name: $name, value: $value)';
+  final _this = this as MonthSiteData;
+  return 'MonthSiteData(name: ${_this.name}, value: ${_this.value})';
 }
 
 
@@ -879,7 +906,7 @@ class _$MonthSiteDataCopyWithImpl<$Res>
 /// Create a copy of MonthSiteData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? value = null,}) {
-  return _then(_self.copyWith(
+  return _then(MonthSiteData(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
 as List<StatusRecord>,
@@ -1023,7 +1050,7 @@ return $default(_that.name,_that.value);case _:
 @JsonSerializable()
 
 class _MonthSiteData implements MonthSiteData {
-  const _MonthSiteData({required this.name, final  List<StatusRecord> value = const []}): _value = value;
+  const _MonthSiteData({required this.name,  List<StatusRecord> value = const []}): _value = value;
   factory _MonthSiteData.fromJson(Map<String, dynamic> json) => _$MonthSiteDataFromJson(json);
 
 @override final  String name;
@@ -1048,16 +1075,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MonthSiteData&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other._value, _value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MonthSiteData&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.value, _value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,const DeepCollectionEquality().hash(_value));
+int get hashCode {
+    return Object.hash(runtimeType,name,const DeepCollectionEquality().hash(_value));
+}
 
 @override
 String toString() {
-  return 'MonthSiteData(name: $name, value: $value)';
+    return 'MonthSiteData(name: $name, value: $value)';
 }
 
 
@@ -1113,16 +1142,21 @@ $SiteStatusDataCopyWith<SiteStatusData> get copyWith => _$SiteStatusDataCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SiteStatusData&&(identical(other.name, name) || other.name == name)&&(identical(other.value, value) || other.value == value));
+  final _this = this as SiteStatusData;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SiteStatusData&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.value, _this.value) || other.value == _this.value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,value);
+int get hashCode {
+  final _this = this as SiteStatusData;
+  return Object.hash(runtimeType,_this.name,_this.value);
+}
 
 @override
 String toString() {
-  return 'SiteStatusData(name: $name, value: $value)';
+  final _this = this as SiteStatusData;
+  return 'SiteStatusData(name: ${_this.name}, value: ${_this.value})';
 }
 
 
@@ -1151,7 +1185,7 @@ class _$SiteStatusDataCopyWithImpl<$Res>
 /// Create a copy of SiteStatusData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? value = null,}) {
-  return _then(_self.copyWith(
+  return _then(SiteStatusData(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
 as StatusRecord,
@@ -1323,16 +1357,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SiteStatusData&&(identical(other.name, name) || other.name == name)&&(identical(other.value, value) || other.value == value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SiteStatusData&&(identical(other.name, name) || other.name == name)&&(identical(other.value, value) || other.value == value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,value);
+int get hashCode {
+    return Object.hash(runtimeType,name,value);
+}
 
 @override
 String toString() {
-  return 'SiteStatusData(name: $name, value: $value)';
+    return 'SiteStatusData(name: $name, value: $value)';
 }
 
 
@@ -1397,16 +1433,21 @@ $StackSiteDataCopyWith<StackSiteData> get copyWith => _$StackSiteDataCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is StackSiteData&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.value, value));
+  final _this = this as StackSiteData;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is StackSiteData&&(identical(other.name, _this.name) || other.name == _this.name)&&const DeepCollectionEquality().equals(other.value, _this.value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,const DeepCollectionEquality().hash(value));
+int get hashCode {
+  final _this = this as StackSiteData;
+  return Object.hash(runtimeType,_this.name,const DeepCollectionEquality().hash(_this.value));
+}
 
 @override
 String toString() {
-  return 'StackSiteData(name: $name, value: $value)';
+  final _this = this as StackSiteData;
+  return 'StackSiteData(name: ${_this.name}, value: ${_this.value})';
 }
 
 
@@ -1435,7 +1476,7 @@ class _$StackSiteDataCopyWithImpl<$Res>
 /// Create a copy of StackSiteData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? value = null,}) {
-  return _then(_self.copyWith(
+  return _then(StackSiteData(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
 as List<UploadRecord>,
@@ -1579,7 +1620,7 @@ return $default(_that.name,_that.value);case _:
 @JsonSerializable()
 
 class _StackSiteData implements StackSiteData {
-  const _StackSiteData({required this.name, final  List<UploadRecord> value = const []}): _value = value;
+  const _StackSiteData({required this.name,  List<UploadRecord> value = const []}): _value = value;
   factory _StackSiteData.fromJson(Map<String, dynamic> json) => _$StackSiteDataFromJson(json);
 
 @override final  String name;
@@ -1604,16 +1645,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StackSiteData&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other._value, _value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _StackSiteData&&(identical(other.name, name) || other.name == name)&&const DeepCollectionEquality().equals(other.value, _value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name,const DeepCollectionEquality().hash(_value));
+int get hashCode {
+    return Object.hash(runtimeType,name,const DeepCollectionEquality().hash(_value));
+}
 
 @override
 String toString() {
-  return 'StackSiteData(name: $name, value: $value)';
+    return 'StackSiteData(name: $name, value: $value)';
 }
 
 
@@ -1669,16 +1712,21 @@ $DashboardDataCopyWith<DashboardData> get copyWith => _$DashboardDataCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DashboardData&&const DeepCollectionEquality().equals(other.emailCount, emailCount)&&const DeepCollectionEquality().equals(other.usernameCount, usernameCount)&&(identical(other.totalUploaded, totalUploaded) || other.totalUploaded == totalUploaded)&&(identical(other.totalDownloaded, totalDownloaded) || other.totalDownloaded == totalDownloaded)&&(identical(other.totalSeedVol, totalSeedVol) || other.totalSeedVol == totalSeedVol)&&(identical(other.totalSeeding, totalSeeding) || other.totalSeeding == totalSeeding)&&(identical(other.totalLeeching, totalLeeching) || other.totalLeeching == totalLeeching)&&(identical(other.todayUploadIncrement, todayUploadIncrement) || other.todayUploadIncrement == todayUploadIncrement)&&(identical(other.todayDownloadIncrement, todayDownloadIncrement) || other.todayDownloadIncrement == todayDownloadIncrement)&&(identical(other.totalPublished, totalPublished) || other.totalPublished == totalPublished)&&const DeepCollectionEquality().equals(other.uploadIncrementDataList, uploadIncrementDataList)&&const DeepCollectionEquality().equals(other.downloadIncrementDataList, downloadIncrementDataList)&&const DeepCollectionEquality().equals(other.uploadMonthIncrementDataList, uploadMonthIncrementDataList)&&const DeepCollectionEquality().equals(other.statusList, statusList)&&const DeepCollectionEquality().equals(other.stackChartDataList, stackChartDataList)&&const DeepCollectionEquality().equals(other.seedDataList, seedDataList)&&(identical(other.siteCount, siteCount) || other.siteCount == siteCount)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.earliestSite, earliestSite) || other.earliestSite == earliestSite));
+  final _this = this as DashboardData;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DashboardData&&const DeepCollectionEquality().equals(other.emailCount, _this.emailCount)&&const DeepCollectionEquality().equals(other.usernameCount, _this.usernameCount)&&(identical(other.totalUploaded, _this.totalUploaded) || other.totalUploaded == _this.totalUploaded)&&(identical(other.totalDownloaded, _this.totalDownloaded) || other.totalDownloaded == _this.totalDownloaded)&&(identical(other.totalSeedVol, _this.totalSeedVol) || other.totalSeedVol == _this.totalSeedVol)&&(identical(other.totalSeeding, _this.totalSeeding) || other.totalSeeding == _this.totalSeeding)&&(identical(other.totalLeeching, _this.totalLeeching) || other.totalLeeching == _this.totalLeeching)&&(identical(other.todayUploadIncrement, _this.todayUploadIncrement) || other.todayUploadIncrement == _this.todayUploadIncrement)&&(identical(other.todayDownloadIncrement, _this.todayDownloadIncrement) || other.todayDownloadIncrement == _this.todayDownloadIncrement)&&(identical(other.totalPublished, _this.totalPublished) || other.totalPublished == _this.totalPublished)&&const DeepCollectionEquality().equals(other.uploadIncrementDataList, _this.uploadIncrementDataList)&&const DeepCollectionEquality().equals(other.downloadIncrementDataList, _this.downloadIncrementDataList)&&const DeepCollectionEquality().equals(other.uploadMonthIncrementDataList, _this.uploadMonthIncrementDataList)&&const DeepCollectionEquality().equals(other.statusList, _this.statusList)&&const DeepCollectionEquality().equals(other.stackChartDataList, _this.stackChartDataList)&&const DeepCollectionEquality().equals(other.seedDataList, _this.seedDataList)&&(identical(other.siteCount, _this.siteCount) || other.siteCount == _this.siteCount)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt)&&(identical(other.earliestSite, _this.earliestSite) || other.earliestSite == _this.earliestSite));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,const DeepCollectionEquality().hash(emailCount),const DeepCollectionEquality().hash(usernameCount),totalUploaded,totalDownloaded,totalSeedVol,totalSeeding,totalLeeching,todayUploadIncrement,todayDownloadIncrement,totalPublished,const DeepCollectionEquality().hash(uploadIncrementDataList),const DeepCollectionEquality().hash(downloadIncrementDataList),const DeepCollectionEquality().hash(uploadMonthIncrementDataList),const DeepCollectionEquality().hash(statusList),const DeepCollectionEquality().hash(stackChartDataList),const DeepCollectionEquality().hash(seedDataList),siteCount,updatedAt,earliestSite]);
+int get hashCode {
+  final _this = this as DashboardData;
+  return Object.hashAll([runtimeType,const DeepCollectionEquality().hash(_this.emailCount),const DeepCollectionEquality().hash(_this.usernameCount),_this.totalUploaded,_this.totalDownloaded,_this.totalSeedVol,_this.totalSeeding,_this.totalLeeching,_this.todayUploadIncrement,_this.todayDownloadIncrement,_this.totalPublished,const DeepCollectionEquality().hash(_this.uploadIncrementDataList),const DeepCollectionEquality().hash(_this.downloadIncrementDataList),const DeepCollectionEquality().hash(_this.uploadMonthIncrementDataList),const DeepCollectionEquality().hash(_this.statusList),const DeepCollectionEquality().hash(_this.stackChartDataList),const DeepCollectionEquality().hash(_this.seedDataList),_this.siteCount,_this.updatedAt,_this.earliestSite]);
+}
 
 @override
 String toString() {
-  return 'DashboardData(emailCount: $emailCount, usernameCount: $usernameCount, totalUploaded: $totalUploaded, totalDownloaded: $totalDownloaded, totalSeedVol: $totalSeedVol, totalSeeding: $totalSeeding, totalLeeching: $totalLeeching, todayUploadIncrement: $todayUploadIncrement, todayDownloadIncrement: $todayDownloadIncrement, totalPublished: $totalPublished, uploadIncrementDataList: $uploadIncrementDataList, downloadIncrementDataList: $downloadIncrementDataList, uploadMonthIncrementDataList: $uploadMonthIncrementDataList, statusList: $statusList, stackChartDataList: $stackChartDataList, seedDataList: $seedDataList, siteCount: $siteCount, updatedAt: $updatedAt, earliestSite: $earliestSite)';
+  final _this = this as DashboardData;
+  return 'DashboardData(emailCount: ${_this.emailCount}, usernameCount: ${_this.usernameCount}, totalUploaded: ${_this.totalUploaded}, totalDownloaded: ${_this.totalDownloaded}, totalSeedVol: ${_this.totalSeedVol}, totalSeeding: ${_this.totalSeeding}, totalLeeching: ${_this.totalLeeching}, todayUploadIncrement: ${_this.todayUploadIncrement}, todayDownloadIncrement: ${_this.todayDownloadIncrement}, totalPublished: ${_this.totalPublished}, uploadIncrementDataList: ${_this.uploadIncrementDataList}, downloadIncrementDataList: ${_this.downloadIncrementDataList}, uploadMonthIncrementDataList: ${_this.uploadMonthIncrementDataList}, statusList: ${_this.statusList}, stackChartDataList: ${_this.stackChartDataList}, seedDataList: ${_this.seedDataList}, siteCount: ${_this.siteCount}, updatedAt: ${_this.updatedAt}, earliestSite: ${_this.earliestSite})';
 }
 
 
@@ -1707,7 +1755,7 @@ class _$DashboardDataCopyWithImpl<$Res>
 /// Create a copy of DashboardData
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? emailCount = null,Object? usernameCount = null,Object? totalUploaded = null,Object? totalDownloaded = null,Object? totalSeedVol = null,Object? totalSeeding = null,Object? totalLeeching = null,Object? todayUploadIncrement = null,Object? todayDownloadIncrement = null,Object? totalPublished = null,Object? uploadIncrementDataList = null,Object? downloadIncrementDataList = null,Object? uploadMonthIncrementDataList = null,Object? statusList = null,Object? stackChartDataList = null,Object? seedDataList = null,Object? siteCount = null,Object? updatedAt = freezed,Object? earliestSite = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(DashboardData(
 emailCount: null == emailCount ? _self.emailCount : emailCount // ignore: cast_nullable_to_non_nullable
 as List<KV>,usernameCount: null == usernameCount ? _self.usernameCount : usernameCount // ignore: cast_nullable_to_non_nullable
 as List<KV>,totalUploaded: null == totalUploaded ? _self.totalUploaded : totalUploaded // ignore: cast_nullable_to_non_nullable
@@ -1880,7 +1928,7 @@ return $default(_that.emailCount,_that.usernameCount,_that.totalUploaded,_that.t
 @JsonSerializable()
 
 class _DashboardData implements DashboardData {
-  const _DashboardData({final  List<KV> emailCount = const [], final  List<KV> usernameCount = const [], this.totalUploaded = 0, this.totalDownloaded = 0, this.totalSeedVol = 0, this.totalSeeding = 0, this.totalLeeching = 0, this.todayUploadIncrement = 0, this.todayDownloadIncrement = 0, this.totalPublished = 0, final  List<KV> uploadIncrementDataList = const [], final  List<KV> downloadIncrementDataList = const [], final  List<MonthSiteData> uploadMonthIncrementDataList = const [], final  List<SiteStatusData> statusList = const [], final  List<StackSiteData> stackChartDataList = const [], final  List<KV> seedDataList = const [], this.siteCount = 0, this.updatedAt, this.earliestSite}): _emailCount = emailCount,_usernameCount = usernameCount,_uploadIncrementDataList = uploadIncrementDataList,_downloadIncrementDataList = downloadIncrementDataList,_uploadMonthIncrementDataList = uploadMonthIncrementDataList,_statusList = statusList,_stackChartDataList = stackChartDataList,_seedDataList = seedDataList;
+  const _DashboardData({ List<KV> emailCount = const [],  List<KV> usernameCount = const [], this.totalUploaded = 0, this.totalDownloaded = 0, this.totalSeedVol = 0, this.totalSeeding = 0, this.totalLeeching = 0, this.todayUploadIncrement = 0, this.todayDownloadIncrement = 0, this.totalPublished = 0,  List<KV> uploadIncrementDataList = const [],  List<KV> downloadIncrementDataList = const [],  List<MonthSiteData> uploadMonthIncrementDataList = const [],  List<SiteStatusData> statusList = const [],  List<StackSiteData> stackChartDataList = const [],  List<KV> seedDataList = const [], this.siteCount = 0, this.updatedAt, this.earliestSite}): _emailCount = emailCount,_usernameCount = usernameCount,_uploadIncrementDataList = uploadIncrementDataList,_downloadIncrementDataList = downloadIncrementDataList,_uploadMonthIncrementDataList = uploadMonthIncrementDataList,_statusList = statusList,_stackChartDataList = stackChartDataList,_seedDataList = seedDataList;
   factory _DashboardData.fromJson(Map<String, dynamic> json) => _$DashboardDataFromJson(json);
 
  final  List<KV> _emailCount;
@@ -1964,16 +2012,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DashboardData&&const DeepCollectionEquality().equals(other._emailCount, _emailCount)&&const DeepCollectionEquality().equals(other._usernameCount, _usernameCount)&&(identical(other.totalUploaded, totalUploaded) || other.totalUploaded == totalUploaded)&&(identical(other.totalDownloaded, totalDownloaded) || other.totalDownloaded == totalDownloaded)&&(identical(other.totalSeedVol, totalSeedVol) || other.totalSeedVol == totalSeedVol)&&(identical(other.totalSeeding, totalSeeding) || other.totalSeeding == totalSeeding)&&(identical(other.totalLeeching, totalLeeching) || other.totalLeeching == totalLeeching)&&(identical(other.todayUploadIncrement, todayUploadIncrement) || other.todayUploadIncrement == todayUploadIncrement)&&(identical(other.todayDownloadIncrement, todayDownloadIncrement) || other.todayDownloadIncrement == todayDownloadIncrement)&&(identical(other.totalPublished, totalPublished) || other.totalPublished == totalPublished)&&const DeepCollectionEquality().equals(other._uploadIncrementDataList, _uploadIncrementDataList)&&const DeepCollectionEquality().equals(other._downloadIncrementDataList, _downloadIncrementDataList)&&const DeepCollectionEquality().equals(other._uploadMonthIncrementDataList, _uploadMonthIncrementDataList)&&const DeepCollectionEquality().equals(other._statusList, _statusList)&&const DeepCollectionEquality().equals(other._stackChartDataList, _stackChartDataList)&&const DeepCollectionEquality().equals(other._seedDataList, _seedDataList)&&(identical(other.siteCount, siteCount) || other.siteCount == siteCount)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.earliestSite, earliestSite) || other.earliestSite == earliestSite));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DashboardData&&const DeepCollectionEquality().equals(other.emailCount, _emailCount)&&const DeepCollectionEquality().equals(other.usernameCount, _usernameCount)&&(identical(other.totalUploaded, totalUploaded) || other.totalUploaded == totalUploaded)&&(identical(other.totalDownloaded, totalDownloaded) || other.totalDownloaded == totalDownloaded)&&(identical(other.totalSeedVol, totalSeedVol) || other.totalSeedVol == totalSeedVol)&&(identical(other.totalSeeding, totalSeeding) || other.totalSeeding == totalSeeding)&&(identical(other.totalLeeching, totalLeeching) || other.totalLeeching == totalLeeching)&&(identical(other.todayUploadIncrement, todayUploadIncrement) || other.todayUploadIncrement == todayUploadIncrement)&&(identical(other.todayDownloadIncrement, todayDownloadIncrement) || other.todayDownloadIncrement == todayDownloadIncrement)&&(identical(other.totalPublished, totalPublished) || other.totalPublished == totalPublished)&&const DeepCollectionEquality().equals(other.uploadIncrementDataList, _uploadIncrementDataList)&&const DeepCollectionEquality().equals(other.downloadIncrementDataList, _downloadIncrementDataList)&&const DeepCollectionEquality().equals(other.uploadMonthIncrementDataList, _uploadMonthIncrementDataList)&&const DeepCollectionEquality().equals(other.statusList, _statusList)&&const DeepCollectionEquality().equals(other.stackChartDataList, _stackChartDataList)&&const DeepCollectionEquality().equals(other.seedDataList, _seedDataList)&&(identical(other.siteCount, siteCount) || other.siteCount == siteCount)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.earliestSite, earliestSite) || other.earliestSite == earliestSite));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,const DeepCollectionEquality().hash(_emailCount),const DeepCollectionEquality().hash(_usernameCount),totalUploaded,totalDownloaded,totalSeedVol,totalSeeding,totalLeeching,todayUploadIncrement,todayDownloadIncrement,totalPublished,const DeepCollectionEquality().hash(_uploadIncrementDataList),const DeepCollectionEquality().hash(_downloadIncrementDataList),const DeepCollectionEquality().hash(_uploadMonthIncrementDataList),const DeepCollectionEquality().hash(_statusList),const DeepCollectionEquality().hash(_stackChartDataList),const DeepCollectionEquality().hash(_seedDataList),siteCount,updatedAt,earliestSite]);
+int get hashCode {
+    return Object.hashAll([runtimeType,const DeepCollectionEquality().hash(_emailCount),const DeepCollectionEquality().hash(_usernameCount),totalUploaded,totalDownloaded,totalSeedVol,totalSeeding,totalLeeching,todayUploadIncrement,todayDownloadIncrement,totalPublished,const DeepCollectionEquality().hash(_uploadIncrementDataList),const DeepCollectionEquality().hash(_downloadIncrementDataList),const DeepCollectionEquality().hash(_uploadMonthIncrementDataList),const DeepCollectionEquality().hash(_statusList),const DeepCollectionEquality().hash(_stackChartDataList),const DeepCollectionEquality().hash(_seedDataList),siteCount,updatedAt,earliestSite]);
+}
 
 @override
 String toString() {
-  return 'DashboardData(emailCount: $emailCount, usernameCount: $usernameCount, totalUploaded: $totalUploaded, totalDownloaded: $totalDownloaded, totalSeedVol: $totalSeedVol, totalSeeding: $totalSeeding, totalLeeching: $totalLeeching, todayUploadIncrement: $todayUploadIncrement, todayDownloadIncrement: $todayDownloadIncrement, totalPublished: $totalPublished, uploadIncrementDataList: $uploadIncrementDataList, downloadIncrementDataList: $downloadIncrementDataList, uploadMonthIncrementDataList: $uploadMonthIncrementDataList, statusList: $statusList, stackChartDataList: $stackChartDataList, seedDataList: $seedDataList, siteCount: $siteCount, updatedAt: $updatedAt, earliestSite: $earliestSite)';
+    return 'DashboardData(emailCount: $emailCount, usernameCount: $usernameCount, totalUploaded: $totalUploaded, totalDownloaded: $totalDownloaded, totalSeedVol: $totalSeedVol, totalSeeding: $totalSeeding, totalLeeching: $totalLeeching, todayUploadIncrement: $todayUploadIncrement, todayDownloadIncrement: $todayDownloadIncrement, totalPublished: $totalPublished, uploadIncrementDataList: $uploadIncrementDataList, downloadIncrementDataList: $downloadIncrementDataList, uploadMonthIncrementDataList: $uploadMonthIncrementDataList, statusList: $statusList, stackChartDataList: $stackChartDataList, seedDataList: $seedDataList, siteCount: $siteCount, updatedAt: $updatedAt, earliestSite: $earliestSite)';
 }
 
 

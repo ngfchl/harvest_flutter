@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'search_result.dart';
@@ -9,6 +9,7 @@ part of 'search_result.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $DoubanRatingCopyWith<DoubanRating> get copyWith => _$DoubanRatingCopyWithImpl<D
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DoubanRating&&(identical(other.count, count) || other.count == count)&&(identical(other.max, max) || other.max == max)&&(identical(other.starCount, starCount) || other.starCount == starCount)&&(identical(other.value, value) || other.value == value));
+  final _this = this as DoubanRating;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DoubanRating&&(identical(other.count, _this.count) || other.count == _this.count)&&(identical(other.max, _this.max) || other.max == _this.max)&&(identical(other.starCount, _this.starCount) || other.starCount == _this.starCount)&&(identical(other.value, _this.value) || other.value == _this.value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,count,max,starCount,value);
+int get hashCode {
+  final _this = this as DoubanRating;
+  return Object.hash(runtimeType,_this.count,_this.max,_this.starCount,_this.value);
+}
 
 @override
 String toString() {
-  return 'DoubanRating(count: $count, max: $max, starCount: $starCount, value: $value)';
+  final _this = this as DoubanRating;
+  return 'DoubanRating(count: ${_this.count}, max: ${_this.max}, starCount: ${_this.starCount}, value: ${_this.value})';
 }
 
 
@@ -66,7 +72,7 @@ class _$DoubanRatingCopyWithImpl<$Res>
 /// Create a copy of DoubanRating
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? count = null,Object? max = null,Object? starCount = null,Object? value = null,}) {
-  return _then(_self.copyWith(
+  return _then(DoubanRating(
 count: null == count ? _self.count : count // ignore: cast_nullable_to_non_nullable
 as int,max: null == max ? _self.max : max // ignore: cast_nullable_to_non_nullable
 as int,starCount: null == starCount ? _self.starCount : starCount // ignore: cast_nullable_to_non_nullable
@@ -233,16 +239,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DoubanRating&&(identical(other.count, count) || other.count == count)&&(identical(other.max, max) || other.max == max)&&(identical(other.starCount, starCount) || other.starCount == starCount)&&(identical(other.value, value) || other.value == value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DoubanRating&&(identical(other.count, count) || other.count == count)&&(identical(other.max, max) || other.max == max)&&(identical(other.starCount, starCount) || other.starCount == starCount)&&(identical(other.value, value) || other.value == value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,count,max,starCount,value);
+int get hashCode {
+    return Object.hash(runtimeType,count,max,starCount,value);
+}
 
 @override
 String toString() {
-  return 'DoubanRating(count: $count, max: $max, starCount: $starCount, value: $value)';
+    return 'DoubanRating(count: $count, max: $max, starCount: $starCount, value: $value)';
 }
 
 
@@ -300,16 +308,21 @@ $SearchTargetCopyWith<SearchTarget> get copyWith => _$SearchTargetCopyWithImpl<S
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchTarget&&(identical(other.abstract, abstract) || other.abstract == abstract)&&(identical(other.cardSubtitle, cardSubtitle) || other.cardSubtitle == cardSubtitle)&&(identical(other.controversyReason, controversyReason) || other.controversyReason == controversyReason)&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.hasLinewatch, hasLinewatch) || other.hasLinewatch == hasLinewatch)&&(identical(other.id, id) || other.id == id)&&(identical(other.nullRatingReason, nullRatingReason) || other.nullRatingReason == nullRatingReason)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.title, title) || other.title == title)&&(identical(other.uri, uri) || other.uri == uri)&&(identical(other.year, year) || other.year == year));
+  final _this = this as SearchTarget;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchTarget&&(identical(other.abstract, _this.abstract) || other.abstract == _this.abstract)&&(identical(other.cardSubtitle, _this.cardSubtitle) || other.cardSubtitle == _this.cardSubtitle)&&(identical(other.controversyReason, _this.controversyReason) || other.controversyReason == _this.controversyReason)&&(identical(other.coverUrl, _this.coverUrl) || other.coverUrl == _this.coverUrl)&&(identical(other.hasLinewatch, _this.hasLinewatch) || other.hasLinewatch == _this.hasLinewatch)&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.nullRatingReason, _this.nullRatingReason) || other.nullRatingReason == _this.nullRatingReason)&&(identical(other.rating, _this.rating) || other.rating == _this.rating)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.uri, _this.uri) || other.uri == _this.uri)&&(identical(other.year, _this.year) || other.year == _this.year));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,abstract,cardSubtitle,controversyReason,coverUrl,hasLinewatch,id,nullRatingReason,rating,title,uri,year);
+int get hashCode {
+  final _this = this as SearchTarget;
+  return Object.hash(runtimeType,_this.abstract,_this.cardSubtitle,_this.controversyReason,_this.coverUrl,_this.hasLinewatch,_this.id,_this.nullRatingReason,_this.rating,_this.title,_this.uri,_this.year);
+}
 
 @override
 String toString() {
-  return 'SearchTarget(abstract: $abstract, cardSubtitle: $cardSubtitle, controversyReason: $controversyReason, coverUrl: $coverUrl, hasLinewatch: $hasLinewatch, id: $id, nullRatingReason: $nullRatingReason, rating: $rating, title: $title, uri: $uri, year: $year)';
+  final _this = this as SearchTarget;
+  return 'SearchTarget(abstract: ${_this.abstract}, cardSubtitle: ${_this.cardSubtitle}, controversyReason: ${_this.controversyReason}, coverUrl: ${_this.coverUrl}, hasLinewatch: ${_this.hasLinewatch}, id: ${_this.id}, nullRatingReason: ${_this.nullRatingReason}, rating: ${_this.rating}, title: ${_this.title}, uri: ${_this.uri}, year: ${_this.year})';
 }
 
 
@@ -338,7 +351,7 @@ class _$SearchTargetCopyWithImpl<$Res>
 /// Create a copy of SearchTarget
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? abstract = null,Object? cardSubtitle = null,Object? controversyReason = null,Object? coverUrl = null,Object? hasLinewatch = null,Object? id = null,Object? nullRatingReason = null,Object? rating = null,Object? title = null,Object? uri = null,Object? year = null,}) {
-  return _then(_self.copyWith(
+  return _then(SearchTarget(
 abstract: null == abstract ? _self.abstract : abstract // ignore: cast_nullable_to_non_nullable
 as String,cardSubtitle: null == cardSubtitle ? _self.cardSubtitle : cardSubtitle // ignore: cast_nullable_to_non_nullable
 as String,controversyReason: null == controversyReason ? _self.controversyReason : controversyReason // ignore: cast_nullable_to_non_nullable
@@ -528,16 +541,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchTarget&&(identical(other.abstract, abstract) || other.abstract == abstract)&&(identical(other.cardSubtitle, cardSubtitle) || other.cardSubtitle == cardSubtitle)&&(identical(other.controversyReason, controversyReason) || other.controversyReason == controversyReason)&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.hasLinewatch, hasLinewatch) || other.hasLinewatch == hasLinewatch)&&(identical(other.id, id) || other.id == id)&&(identical(other.nullRatingReason, nullRatingReason) || other.nullRatingReason == nullRatingReason)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.title, title) || other.title == title)&&(identical(other.uri, uri) || other.uri == uri)&&(identical(other.year, year) || other.year == year));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchTarget&&(identical(other.abstract, abstract) || other.abstract == abstract)&&(identical(other.cardSubtitle, cardSubtitle) || other.cardSubtitle == cardSubtitle)&&(identical(other.controversyReason, controversyReason) || other.controversyReason == controversyReason)&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.hasLinewatch, hasLinewatch) || other.hasLinewatch == hasLinewatch)&&(identical(other.id, id) || other.id == id)&&(identical(other.nullRatingReason, nullRatingReason) || other.nullRatingReason == nullRatingReason)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.title, title) || other.title == title)&&(identical(other.uri, uri) || other.uri == uri)&&(identical(other.year, year) || other.year == year));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,abstract,cardSubtitle,controversyReason,coverUrl,hasLinewatch,id,nullRatingReason,rating,title,uri,year);
+int get hashCode {
+    return Object.hash(runtimeType,abstract,cardSubtitle,controversyReason,coverUrl,hasLinewatch,id,nullRatingReason,rating,title,uri,year);
+}
 
 @override
 String toString() {
-  return 'SearchTarget(abstract: $abstract, cardSubtitle: $cardSubtitle, controversyReason: $controversyReason, coverUrl: $coverUrl, hasLinewatch: $hasLinewatch, id: $id, nullRatingReason: $nullRatingReason, rating: $rating, title: $title, uri: $uri, year: $year)';
+    return 'SearchTarget(abstract: $abstract, cardSubtitle: $cardSubtitle, controversyReason: $controversyReason, coverUrl: $coverUrl, hasLinewatch: $hasLinewatch, id: $id, nullRatingReason: $nullRatingReason, rating: $rating, title: $title, uri: $uri, year: $year)';
 }
 
 
@@ -611,16 +626,21 @@ $DoubanSearchResultCopyWith<DoubanSearchResult> get copyWith => _$DoubanSearchRe
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DoubanSearchResult&&(identical(other.layout, layout) || other.layout == layout)&&(identical(other.target, target) || other.target == target)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.targetType, targetType) || other.targetType == targetType)&&(identical(other.typeName, typeName) || other.typeName == typeName));
+  final _this = this as DoubanSearchResult;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DoubanSearchResult&&(identical(other.layout, _this.layout) || other.layout == _this.layout)&&(identical(other.target, _this.target) || other.target == _this.target)&&(identical(other.targetId, _this.targetId) || other.targetId == _this.targetId)&&(identical(other.targetType, _this.targetType) || other.targetType == _this.targetType)&&(identical(other.typeName, _this.typeName) || other.typeName == _this.typeName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,layout,target,targetId,targetType,typeName);
+int get hashCode {
+  final _this = this as DoubanSearchResult;
+  return Object.hash(runtimeType,_this.layout,_this.target,_this.targetId,_this.targetType,_this.typeName);
+}
 
 @override
 String toString() {
-  return 'DoubanSearchResult(layout: $layout, target: $target, targetId: $targetId, targetType: $targetType, typeName: $typeName)';
+  final _this = this as DoubanSearchResult;
+  return 'DoubanSearchResult(layout: ${_this.layout}, target: ${_this.target}, targetId: ${_this.targetId}, targetType: ${_this.targetType}, typeName: ${_this.typeName})';
 }
 
 
@@ -649,7 +669,7 @@ class _$DoubanSearchResultCopyWithImpl<$Res>
 /// Create a copy of DoubanSearchResult
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? layout = null,Object? target = null,Object? targetId = null,Object? targetType = null,Object? typeName = null,}) {
-  return _then(_self.copyWith(
+  return _then(DoubanSearchResult(
 layout: null == layout ? _self.layout : layout // ignore: cast_nullable_to_non_nullable
 as String,target: null == target ? _self.target : target // ignore: cast_nullable_to_non_nullable
 as SearchTarget,targetId: null == targetId ? _self.targetId : targetId // ignore: cast_nullable_to_non_nullable
@@ -827,16 +847,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DoubanSearchResult&&(identical(other.layout, layout) || other.layout == layout)&&(identical(other.target, target) || other.target == target)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.targetType, targetType) || other.targetType == targetType)&&(identical(other.typeName, typeName) || other.typeName == typeName));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DoubanSearchResult&&(identical(other.layout, layout) || other.layout == layout)&&(identical(other.target, target) || other.target == target)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.targetType, targetType) || other.targetType == targetType)&&(identical(other.typeName, typeName) || other.typeName == typeName));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,layout,target,targetId,targetType,typeName);
+int get hashCode {
+    return Object.hash(runtimeType,layout,target,targetId,targetType,typeName);
+}
 
 @override
 String toString() {
-  return 'DoubanSearchResult(layout: $layout, target: $target, targetId: $targetId, targetType: $targetType, typeName: $typeName)';
+    return 'DoubanSearchResult(layout: $layout, target: $target, targetId: $targetId, targetType: $targetType, typeName: $typeName)';
 }
 
 

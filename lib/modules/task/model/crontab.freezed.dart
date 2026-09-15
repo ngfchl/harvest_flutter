@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'crontab.dart';
@@ -9,6 +9,7 @@ part of 'crontab.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $CrontabItemCopyWith<CrontabItem> get copyWith => _$CrontabItemCopyWithImpl<Cron
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CrontabItem&&(identical(other.id, id) || other.id == id)&&(identical(other.express, express) || other.express == express)&&(identical(other.minute, minute) || other.minute == minute)&&(identical(other.hour, hour) || other.hour == hour)&&(identical(other.dayOfMonth, dayOfMonth) || other.dayOfMonth == dayOfMonth)&&(identical(other.monthOfYear, monthOfYear) || other.monthOfYear == monthOfYear)&&(identical(other.dayOfWeek, dayOfWeek) || other.dayOfWeek == dayOfWeek));
+  final _this = this as CrontabItem;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CrontabItem&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.express, _this.express) || other.express == _this.express)&&(identical(other.minute, _this.minute) || other.minute == _this.minute)&&(identical(other.hour, _this.hour) || other.hour == _this.hour)&&(identical(other.dayOfMonth, _this.dayOfMonth) || other.dayOfMonth == _this.dayOfMonth)&&(identical(other.monthOfYear, _this.monthOfYear) || other.monthOfYear == _this.monthOfYear)&&(identical(other.dayOfWeek, _this.dayOfWeek) || other.dayOfWeek == _this.dayOfWeek));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,express,minute,hour,dayOfMonth,monthOfYear,dayOfWeek);
+int get hashCode {
+  final _this = this as CrontabItem;
+  return Object.hash(runtimeType,_this.id,_this.express,_this.minute,_this.hour,_this.dayOfMonth,_this.monthOfYear,_this.dayOfWeek);
+}
 
 @override
 String toString() {
-  return 'CrontabItem(id: $id, express: $express, minute: $minute, hour: $hour, dayOfMonth: $dayOfMonth, monthOfYear: $monthOfYear, dayOfWeek: $dayOfWeek)';
+  final _this = this as CrontabItem;
+  return 'CrontabItem(id: ${_this.id}, express: ${_this.express}, minute: ${_this.minute}, hour: ${_this.hour}, dayOfMonth: ${_this.dayOfMonth}, monthOfYear: ${_this.monthOfYear}, dayOfWeek: ${_this.dayOfWeek})';
 }
 
 
@@ -66,7 +72,7 @@ class _$CrontabItemCopyWithImpl<$Res>
 /// Create a copy of CrontabItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? express = null,Object? minute = null,Object? hour = null,Object? dayOfMonth = null,Object? monthOfYear = null,Object? dayOfWeek = null,}) {
-  return _then(_self.copyWith(
+  return _then(CrontabItem(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,express: null == express ? _self.express : express // ignore: cast_nullable_to_non_nullable
 as String,minute: null == minute ? _self.minute : minute // ignore: cast_nullable_to_non_nullable
@@ -239,16 +245,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CrontabItem&&(identical(other.id, id) || other.id == id)&&(identical(other.express, express) || other.express == express)&&(identical(other.minute, minute) || other.minute == minute)&&(identical(other.hour, hour) || other.hour == hour)&&(identical(other.dayOfMonth, dayOfMonth) || other.dayOfMonth == dayOfMonth)&&(identical(other.monthOfYear, monthOfYear) || other.monthOfYear == monthOfYear)&&(identical(other.dayOfWeek, dayOfWeek) || other.dayOfWeek == dayOfWeek));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _CrontabItem&&(identical(other.id, id) || other.id == id)&&(identical(other.express, express) || other.express == express)&&(identical(other.minute, minute) || other.minute == minute)&&(identical(other.hour, hour) || other.hour == hour)&&(identical(other.dayOfMonth, dayOfMonth) || other.dayOfMonth == dayOfMonth)&&(identical(other.monthOfYear, monthOfYear) || other.monthOfYear == monthOfYear)&&(identical(other.dayOfWeek, dayOfWeek) || other.dayOfWeek == dayOfWeek));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,express,minute,hour,dayOfMonth,monthOfYear,dayOfWeek);
+int get hashCode {
+    return Object.hash(runtimeType,id,express,minute,hour,dayOfMonth,monthOfYear,dayOfWeek);
+}
 
 @override
 String toString() {
-  return 'CrontabItem(id: $id, express: $express, minute: $minute, hour: $hour, dayOfMonth: $dayOfMonth, monthOfYear: $monthOfYear, dayOfWeek: $dayOfWeek)';
+    return 'CrontabItem(id: $id, express: $express, minute: $minute, hour: $hour, dayOfMonth: $dayOfMonth, monthOfYear: $monthOfYear, dayOfWeek: $dayOfWeek)';
 }
 
 

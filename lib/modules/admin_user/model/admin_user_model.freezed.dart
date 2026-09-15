@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'admin_user_model.dart';
@@ -9,6 +9,7 @@ part of 'admin_user_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $AdminUserCopyWith<AdminUser> get copyWith => _$AdminUserCopyWithImpl<AdminUser>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminUser&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.email, email) || other.email == email)&&(identical(other.pay, pay) || other.pay == pay)&&(identical(other.invite, invite) || other.invite == invite)&&(identical(other.tryUser, tryUser) || other.tryUser == tryUser)&&(identical(other.marked, marked) || other.marked == marked)&&(identical(other.expire, expire) || other.expire == expire)&&(identical(other.timeExpire, timeExpire) || other.timeExpire == timeExpire)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  final _this = this as AdminUser;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminUser&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.username, _this.username) || other.username == _this.username)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.pay, _this.pay) || other.pay == _this.pay)&&(identical(other.invite, _this.invite) || other.invite == _this.invite)&&(identical(other.tryUser, _this.tryUser) || other.tryUser == _this.tryUser)&&(identical(other.marked, _this.marked) || other.marked == _this.marked)&&(identical(other.expire, _this.expire) || other.expire == _this.expire)&&(identical(other.timeExpire, _this.timeExpire) || other.timeExpire == _this.timeExpire)&&(identical(other.updatedAt, _this.updatedAt) || other.updatedAt == _this.updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,email,pay,invite,tryUser,marked,expire,timeExpire,updatedAt);
+int get hashCode {
+  final _this = this as AdminUser;
+  return Object.hash(runtimeType,_this.id,_this.username,_this.email,_this.pay,_this.invite,_this.tryUser,_this.marked,_this.expire,_this.timeExpire,_this.updatedAt);
+}
 
 @override
 String toString() {
-  return 'AdminUser(id: $id, username: $username, email: $email, pay: $pay, invite: $invite, tryUser: $tryUser, marked: $marked, expire: $expire, timeExpire: $timeExpire, updatedAt: $updatedAt)';
+  final _this = this as AdminUser;
+  return 'AdminUser(id: ${_this.id}, username: ${_this.username}, email: ${_this.email}, pay: ${_this.pay}, invite: ${_this.invite}, tryUser: ${_this.tryUser}, marked: ${_this.marked}, expire: ${_this.expire}, timeExpire: ${_this.timeExpire}, updatedAt: ${_this.updatedAt})';
 }
 
 
@@ -66,7 +72,7 @@ class _$AdminUserCopyWithImpl<$Res>
 /// Create a copy of AdminUser
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? username = freezed,Object? email = null,Object? pay = null,Object? invite = null,Object? tryUser = null,Object? marked = freezed,Object? expire = null,Object? timeExpire = null,Object? updatedAt = null,}) {
-  return _then(_self.copyWith(
+  return _then(AdminUser(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,username: freezed == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String?,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -245,16 +251,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminUser&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.email, email) || other.email == email)&&(identical(other.pay, pay) || other.pay == pay)&&(identical(other.invite, invite) || other.invite == invite)&&(identical(other.tryUser, tryUser) || other.tryUser == tryUser)&&(identical(other.marked, marked) || other.marked == marked)&&(identical(other.expire, expire) || other.expire == expire)&&(identical(other.timeExpire, timeExpire) || other.timeExpire == timeExpire)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminUser&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.email, email) || other.email == email)&&(identical(other.pay, pay) || other.pay == pay)&&(identical(other.invite, invite) || other.invite == invite)&&(identical(other.tryUser, tryUser) || other.tryUser == tryUser)&&(identical(other.marked, marked) || other.marked == marked)&&(identical(other.expire, expire) || other.expire == expire)&&(identical(other.timeExpire, timeExpire) || other.timeExpire == timeExpire)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,email,pay,invite,tryUser,marked,expire,timeExpire,updatedAt);
+int get hashCode {
+    return Object.hash(runtimeType,id,username,email,pay,invite,tryUser,marked,expire,timeExpire,updatedAt);
+}
 
 @override
 String toString() {
-  return 'AdminUser(id: $id, username: $username, email: $email, pay: $pay, invite: $invite, tryUser: $tryUser, marked: $marked, expire: $expire, timeExpire: $timeExpire, updatedAt: $updatedAt)';
+    return 'AdminUser(id: $id, username: $username, email: $email, pay: $pay, invite: $invite, tryUser: $tryUser, marked: $marked, expire: $expire, timeExpire: $timeExpire, updatedAt: $updatedAt)';
 }
 
 
@@ -318,16 +326,21 @@ $AdminUserEditPayloadCopyWith<AdminUserEditPayload> get copyWith => _$AdminUserE
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminUserEditPayload&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.email, email) || other.email == email)&&(identical(other.pay, pay) || other.pay == pay)&&(identical(other.invite, invite) || other.invite == invite)&&(identical(other.tryUser, tryUser) || other.tryUser == tryUser)&&(identical(other.marked, marked) || other.marked == marked)&&(identical(other.expire, expire) || other.expire == expire));
+  final _this = this as AdminUserEditPayload;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminUserEditPayload&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.username, _this.username) || other.username == _this.username)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.pay, _this.pay) || other.pay == _this.pay)&&(identical(other.invite, _this.invite) || other.invite == _this.invite)&&(identical(other.tryUser, _this.tryUser) || other.tryUser == _this.tryUser)&&(identical(other.marked, _this.marked) || other.marked == _this.marked)&&(identical(other.expire, _this.expire) || other.expire == _this.expire));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,email,pay,invite,tryUser,marked,expire);
+int get hashCode {
+  final _this = this as AdminUserEditPayload;
+  return Object.hash(runtimeType,_this.id,_this.username,_this.email,_this.pay,_this.invite,_this.tryUser,_this.marked,_this.expire);
+}
 
 @override
 String toString() {
-  return 'AdminUserEditPayload(id: $id, username: $username, email: $email, pay: $pay, invite: $invite, tryUser: $tryUser, marked: $marked, expire: $expire)';
+  final _this = this as AdminUserEditPayload;
+  return 'AdminUserEditPayload(id: ${_this.id}, username: ${_this.username}, email: ${_this.email}, pay: ${_this.pay}, invite: ${_this.invite}, tryUser: ${_this.tryUser}, marked: ${_this.marked}, expire: ${_this.expire})';
 }
 
 
@@ -356,7 +369,7 @@ class _$AdminUserEditPayloadCopyWithImpl<$Res>
 /// Create a copy of AdminUserEditPayload
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? username = freezed,Object? email = null,Object? pay = freezed,Object? invite = freezed,Object? tryUser = freezed,Object? marked = freezed,Object? expire = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(AdminUserEditPayload(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,username: freezed == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
 as String?,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
@@ -531,16 +544,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminUserEditPayload&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.email, email) || other.email == email)&&(identical(other.pay, pay) || other.pay == pay)&&(identical(other.invite, invite) || other.invite == invite)&&(identical(other.tryUser, tryUser) || other.tryUser == tryUser)&&(identical(other.marked, marked) || other.marked == marked)&&(identical(other.expire, expire) || other.expire == expire));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminUserEditPayload&&(identical(other.id, id) || other.id == id)&&(identical(other.username, username) || other.username == username)&&(identical(other.email, email) || other.email == email)&&(identical(other.pay, pay) || other.pay == pay)&&(identical(other.invite, invite) || other.invite == invite)&&(identical(other.tryUser, tryUser) || other.tryUser == tryUser)&&(identical(other.marked, marked) || other.marked == marked)&&(identical(other.expire, expire) || other.expire == expire));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,username,email,pay,invite,tryUser,marked,expire);
+int get hashCode {
+    return Object.hash(runtimeType,id,username,email,pay,invite,tryUser,marked,expire);
+}
 
 @override
 String toString() {
-  return 'AdminUserEditPayload(id: $id, username: $username, email: $email, pay: $pay, invite: $invite, tryUser: $tryUser, marked: $marked, expire: $expire)';
+    return 'AdminUserEditPayload(id: $id, username: $username, email: $email, pay: $pay, invite: $invite, tryUser: $tryUser, marked: $marked, expire: $expire)';
 }
 
 
@@ -602,16 +617,21 @@ $AdminUserResetTokenPayloadCopyWith<AdminUserResetTokenPayload> get copyWith => 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminUserResetTokenPayload&&(identical(other.expire, expire) || other.expire == expire)&&(identical(other.pay, pay) || other.pay == pay)&&(identical(other.tryUser, tryUser) || other.tryUser == tryUser));
+  final _this = this as AdminUserResetTokenPayload;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AdminUserResetTokenPayload&&(identical(other.expire, _this.expire) || other.expire == _this.expire)&&(identical(other.pay, _this.pay) || other.pay == _this.pay)&&(identical(other.tryUser, _this.tryUser) || other.tryUser == _this.tryUser));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,expire,pay,tryUser);
+int get hashCode {
+  final _this = this as AdminUserResetTokenPayload;
+  return Object.hash(runtimeType,_this.expire,_this.pay,_this.tryUser);
+}
 
 @override
 String toString() {
-  return 'AdminUserResetTokenPayload(expire: $expire, pay: $pay, tryUser: $tryUser)';
+  final _this = this as AdminUserResetTokenPayload;
+  return 'AdminUserResetTokenPayload(expire: ${_this.expire}, pay: ${_this.pay}, tryUser: ${_this.tryUser})';
 }
 
 
@@ -640,7 +660,7 @@ class _$AdminUserResetTokenPayloadCopyWithImpl<$Res>
 /// Create a copy of AdminUserResetTokenPayload
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? expire = null,Object? pay = null,Object? tryUser = null,}) {
-  return _then(_self.copyWith(
+  return _then(AdminUserResetTokenPayload(
 expire: null == expire ? _self.expire : expire // ignore: cast_nullable_to_non_nullable
 as int,pay: null == pay ? _self.pay : pay // ignore: cast_nullable_to_non_nullable
 as int,tryUser: null == tryUser ? _self.tryUser : tryUser // ignore: cast_nullable_to_non_nullable
@@ -805,16 +825,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminUserResetTokenPayload&&(identical(other.expire, expire) || other.expire == expire)&&(identical(other.pay, pay) || other.pay == pay)&&(identical(other.tryUser, tryUser) || other.tryUser == tryUser));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AdminUserResetTokenPayload&&(identical(other.expire, expire) || other.expire == expire)&&(identical(other.pay, pay) || other.pay == pay)&&(identical(other.tryUser, tryUser) || other.tryUser == tryUser));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,expire,pay,tryUser);
+int get hashCode {
+    return Object.hash(runtimeType,expire,pay,tryUser);
+}
 
 @override
 String toString() {
-  return 'AdminUserResetTokenPayload(expire: $expire, pay: $pay, tryUser: $tryUser)';
+    return 'AdminUserResetTokenPayload(expire: $expire, pay: $pay, tryUser: $tryUser)';
 }
 
 

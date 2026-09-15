@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'production.dart';
@@ -9,6 +9,7 @@ part of 'production.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $ProductionCompanyCopyWith<ProductionCompany> get copyWith => _$ProductionCompan
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductionCompany&&(identical(other.id, id) || other.id == id)&&(identical(other.logoPath, logoPath) || other.logoPath == logoPath)&&(identical(other.name, name) || other.name == name)&&(identical(other.originCountry, originCountry) || other.originCountry == originCountry));
+  final _this = this as ProductionCompany;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductionCompany&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.logoPath, _this.logoPath) || other.logoPath == _this.logoPath)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.originCountry, _this.originCountry) || other.originCountry == _this.originCountry));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,logoPath,name,originCountry);
+int get hashCode {
+  final _this = this as ProductionCompany;
+  return Object.hash(runtimeType,_this.id,_this.logoPath,_this.name,_this.originCountry);
+}
 
 @override
 String toString() {
-  return 'ProductionCompany(id: $id, logoPath: $logoPath, name: $name, originCountry: $originCountry)';
+  final _this = this as ProductionCompany;
+  return 'ProductionCompany(id: ${_this.id}, logoPath: ${_this.logoPath}, name: ${_this.name}, originCountry: ${_this.originCountry})';
 }
 
 
@@ -66,7 +72,7 @@ class _$ProductionCompanyCopyWithImpl<$Res>
 /// Create a copy of ProductionCompany
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? logoPath = freezed,Object? name = null,Object? originCountry = null,}) {
-  return _then(_self.copyWith(
+  return _then(ProductionCompany(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,logoPath: freezed == logoPath ? _self.logoPath : logoPath // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -233,16 +239,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductionCompany&&(identical(other.id, id) || other.id == id)&&(identical(other.logoPath, logoPath) || other.logoPath == logoPath)&&(identical(other.name, name) || other.name == name)&&(identical(other.originCountry, originCountry) || other.originCountry == originCountry));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductionCompany&&(identical(other.id, id) || other.id == id)&&(identical(other.logoPath, logoPath) || other.logoPath == logoPath)&&(identical(other.name, name) || other.name == name)&&(identical(other.originCountry, originCountry) || other.originCountry == originCountry));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,logoPath,name,originCountry);
+int get hashCode {
+    return Object.hash(runtimeType,id,logoPath,name,originCountry);
+}
 
 @override
 String toString() {
-  return 'ProductionCompany(id: $id, logoPath: $logoPath, name: $name, originCountry: $originCountry)';
+    return 'ProductionCompany(id: $id, logoPath: $logoPath, name: $name, originCountry: $originCountry)';
 }
 
 
@@ -300,16 +308,21 @@ $ProductionCountryCopyWith<ProductionCountry> get copyWith => _$ProductionCountr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductionCountry&&(identical(other.iso31661, iso31661) || other.iso31661 == iso31661)&&(identical(other.name, name) || other.name == name));
+  final _this = this as ProductionCountry;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductionCountry&&(identical(other.iso31661, _this.iso31661) || other.iso31661 == _this.iso31661)&&(identical(other.name, _this.name) || other.name == _this.name));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,iso31661,name);
+int get hashCode {
+  final _this = this as ProductionCountry;
+  return Object.hash(runtimeType,_this.iso31661,_this.name);
+}
 
 @override
 String toString() {
-  return 'ProductionCountry(iso31661: $iso31661, name: $name)';
+  final _this = this as ProductionCountry;
+  return 'ProductionCountry(iso31661: ${_this.iso31661}, name: ${_this.name})';
 }
 
 
@@ -338,7 +351,7 @@ class _$ProductionCountryCopyWithImpl<$Res>
 /// Create a copy of ProductionCountry
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? iso31661 = null,Object? name = null,}) {
-  return _then(_self.copyWith(
+  return _then(ProductionCountry(
 iso31661: null == iso31661 ? _self.iso31661 : iso31661 // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,
@@ -501,16 +514,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductionCountry&&(identical(other.iso31661, iso31661) || other.iso31661 == iso31661)&&(identical(other.name, name) || other.name == name));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductionCountry&&(identical(other.iso31661, iso31661) || other.iso31661 == iso31661)&&(identical(other.name, name) || other.name == name));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,iso31661,name);
+int get hashCode {
+    return Object.hash(runtimeType,iso31661,name);
+}
 
 @override
 String toString() {
-  return 'ProductionCountry(iso31661: $iso31661, name: $name)';
+    return 'ProductionCountry(iso31661: $iso31661, name: $name)';
 }
 
 
@@ -566,16 +581,21 @@ $SpokenLanguageCopyWith<SpokenLanguage> get copyWith => _$SpokenLanguageCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SpokenLanguage&&(identical(other.englishName, englishName) || other.englishName == englishName)&&(identical(other.iso6391, iso6391) || other.iso6391 == iso6391)&&(identical(other.name, name) || other.name == name));
+  final _this = this as SpokenLanguage;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SpokenLanguage&&(identical(other.englishName, _this.englishName) || other.englishName == _this.englishName)&&(identical(other.iso6391, _this.iso6391) || other.iso6391 == _this.iso6391)&&(identical(other.name, _this.name) || other.name == _this.name));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,englishName,iso6391,name);
+int get hashCode {
+  final _this = this as SpokenLanguage;
+  return Object.hash(runtimeType,_this.englishName,_this.iso6391,_this.name);
+}
 
 @override
 String toString() {
-  return 'SpokenLanguage(englishName: $englishName, iso6391: $iso6391, name: $name)';
+  final _this = this as SpokenLanguage;
+  return 'SpokenLanguage(englishName: ${_this.englishName}, iso6391: ${_this.iso6391}, name: ${_this.name})';
 }
 
 
@@ -604,7 +624,7 @@ class _$SpokenLanguageCopyWithImpl<$Res>
 /// Create a copy of SpokenLanguage
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? englishName = null,Object? iso6391 = null,Object? name = null,}) {
-  return _then(_self.copyWith(
+  return _then(SpokenLanguage(
 englishName: null == englishName ? _self.englishName : englishName // ignore: cast_nullable_to_non_nullable
 as String,iso6391: null == iso6391 ? _self.iso6391 : iso6391 // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -769,16 +789,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SpokenLanguage&&(identical(other.englishName, englishName) || other.englishName == englishName)&&(identical(other.iso6391, iso6391) || other.iso6391 == iso6391)&&(identical(other.name, name) || other.name == name));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SpokenLanguage&&(identical(other.englishName, englishName) || other.englishName == englishName)&&(identical(other.iso6391, iso6391) || other.iso6391 == iso6391)&&(identical(other.name, name) || other.name == name));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,englishName,iso6391,name);
+int get hashCode {
+    return Object.hash(runtimeType,englishName,iso6391,name);
+}
 
 @override
 String toString() {
-  return 'SpokenLanguage(englishName: $englishName, iso6391: $iso6391, name: $name)';
+    return 'SpokenLanguage(englishName: $englishName, iso6391: $iso6391, name: $name)';
 }
 
 
@@ -835,16 +857,21 @@ $NetworkCopyWith<Network> get copyWith => _$NetworkCopyWithImpl<Network>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Network&&(identical(other.id, id) || other.id == id)&&(identical(other.logoPath, logoPath) || other.logoPath == logoPath)&&(identical(other.name, name) || other.name == name)&&(identical(other.originCountry, originCountry) || other.originCountry == originCountry));
+  final _this = this as Network;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Network&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.logoPath, _this.logoPath) || other.logoPath == _this.logoPath)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.originCountry, _this.originCountry) || other.originCountry == _this.originCountry));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,logoPath,name,originCountry);
+int get hashCode {
+  final _this = this as Network;
+  return Object.hash(runtimeType,_this.id,_this.logoPath,_this.name,_this.originCountry);
+}
 
 @override
 String toString() {
-  return 'Network(id: $id, logoPath: $logoPath, name: $name, originCountry: $originCountry)';
+  final _this = this as Network;
+  return 'Network(id: ${_this.id}, logoPath: ${_this.logoPath}, name: ${_this.name}, originCountry: ${_this.originCountry})';
 }
 
 
@@ -873,7 +900,7 @@ class _$NetworkCopyWithImpl<$Res>
 /// Create a copy of Network
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? logoPath = null,Object? name = null,Object? originCountry = null,}) {
-  return _then(_self.copyWith(
+  return _then(Network(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,logoPath: null == logoPath ? _self.logoPath : logoPath // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -1040,16 +1067,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Network&&(identical(other.id, id) || other.id == id)&&(identical(other.logoPath, logoPath) || other.logoPath == logoPath)&&(identical(other.name, name) || other.name == name)&&(identical(other.originCountry, originCountry) || other.originCountry == originCountry));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Network&&(identical(other.id, id) || other.id == id)&&(identical(other.logoPath, logoPath) || other.logoPath == logoPath)&&(identical(other.name, name) || other.name == name)&&(identical(other.originCountry, originCountry) || other.originCountry == originCountry));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,logoPath,name,originCountry);
+int get hashCode {
+    return Object.hash(runtimeType,id,logoPath,name,originCountry);
+}
 
 @override
 String toString() {
-  return 'Network(id: $id, logoPath: $logoPath, name: $name, originCountry: $originCountry)';
+    return 'Network(id: $id, logoPath: $logoPath, name: $name, originCountry: $originCountry)';
 }
 
 

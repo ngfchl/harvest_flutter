@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'option_provider.dart';
@@ -9,6 +9,7 @@ part of 'option_provider.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $OptionStateCopyWith<OptionState> get copyWith => _$OptionStateCopyWithImpl<Opti
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OptionState&&const DeepCollectionEquality().equals(other.options, options)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error));
+  final _this = this as OptionState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OptionState&&const DeepCollectionEquality().equals(other.options, _this.options)&&(identical(other.isLoading, _this.isLoading) || other.isLoading == _this.isLoading)&&(identical(other.error, _this.error) || other.error == _this.error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(options),isLoading,error);
+int get hashCode {
+  final _this = this as OptionState;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.options),_this.isLoading,_this.error);
+}
 
 @override
 String toString() {
-  return 'OptionState(options: $options, isLoading: $isLoading, error: $error)';
+  final _this = this as OptionState;
+  return 'OptionState(options: ${_this.options}, isLoading: ${_this.isLoading}, error: ${_this.error})';
 }
 
 
@@ -63,7 +69,7 @@ class _$OptionStateCopyWithImpl<$Res>
 /// Create a copy of OptionState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? options = null,Object? isLoading = null,Object? error = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(OptionState(
 options: null == options ? _self.options : options // ignore: cast_nullable_to_non_nullable
 as List<Option>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
@@ -208,7 +214,7 @@ return $default(_that.options,_that.isLoading,_that.error);case _:
 
 
 class _OptionState extends OptionState {
-  const _OptionState({final  List<Option> options = const [], this.isLoading = false, this.error}): _options = options,super._();
+  const _OptionState({ List<Option> options = const [], this.isLoading = false, this.error}): _options = options,super._();
   
 
  final  List<Option> _options;
@@ -231,16 +237,18 @@ _$OptionStateCopyWith<_OptionState> get copyWith => __$OptionStateCopyWithImpl<_
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OptionState&&const DeepCollectionEquality().equals(other._options, _options)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _OptionState&&const DeepCollectionEquality().equals(other.options, _options)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_options),isLoading,error);
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_options),isLoading,error);
+}
 
 @override
 String toString() {
-  return 'OptionState(options: $options, isLoading: $isLoading, error: $error)';
+    return 'OptionState(options: $options, isLoading: $isLoading, error: $error)';
 }
 
 

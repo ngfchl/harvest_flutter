@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'hot_media.dart';
@@ -9,6 +9,7 @@ part of 'hot_media.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $HotMediaCopyWith<HotMedia> get copyWith => _$HotMediaCopyWithImpl<HotMedia>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HotMedia&&(identical(other.title, title) || other.title == title)&&(identical(other.doubanUrl, doubanUrl) || other.doubanUrl == doubanUrl)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.playable, playable) || other.playable == playable)&&(identical(other.id, id) || other.id == id)&&(identical(other.rate, rate) || other.rate == rate)&&(identical(other.coverX, coverX) || other.coverX == coverX)&&(identical(other.coverY, coverY) || other.coverY == coverY)&&(identical(other.isNew, isNew) || other.isNew == isNew)&&(identical(other.episodesInfo, episodesInfo) || other.episodesInfo == episodesInfo)&&(identical(other.cookie, cookie) || other.cookie == cookie));
+  final _this = this as HotMedia;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HotMedia&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.doubanUrl, _this.doubanUrl) || other.doubanUrl == _this.doubanUrl)&&(identical(other.poster, _this.poster) || other.poster == _this.poster)&&(identical(other.playable, _this.playable) || other.playable == _this.playable)&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.rate, _this.rate) || other.rate == _this.rate)&&(identical(other.coverX, _this.coverX) || other.coverX == _this.coverX)&&(identical(other.coverY, _this.coverY) || other.coverY == _this.coverY)&&(identical(other.isNew, _this.isNew) || other.isNew == _this.isNew)&&(identical(other.episodesInfo, _this.episodesInfo) || other.episodesInfo == _this.episodesInfo)&&(identical(other.cookie, _this.cookie) || other.cookie == _this.cookie));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,doubanUrl,poster,playable,id,rate,coverX,coverY,isNew,episodesInfo,cookie);
+int get hashCode {
+  final _this = this as HotMedia;
+  return Object.hash(runtimeType,_this.title,_this.doubanUrl,_this.poster,_this.playable,_this.id,_this.rate,_this.coverX,_this.coverY,_this.isNew,_this.episodesInfo,_this.cookie);
+}
 
 @override
 String toString() {
-  return 'HotMedia(title: $title, doubanUrl: $doubanUrl, poster: $poster, playable: $playable, id: $id, rate: $rate, coverX: $coverX, coverY: $coverY, isNew: $isNew, episodesInfo: $episodesInfo, cookie: $cookie)';
+  final _this = this as HotMedia;
+  return 'HotMedia(title: ${_this.title}, doubanUrl: ${_this.doubanUrl}, poster: ${_this.poster}, playable: ${_this.playable}, id: ${_this.id}, rate: ${_this.rate}, coverX: ${_this.coverX}, coverY: ${_this.coverY}, isNew: ${_this.isNew}, episodesInfo: ${_this.episodesInfo}, cookie: ${_this.cookie})';
 }
 
 
@@ -66,7 +72,7 @@ class _$HotMediaCopyWithImpl<$Res>
 /// Create a copy of HotMedia
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? title = null,Object? doubanUrl = null,Object? poster = null,Object? playable = null,Object? id = null,Object? rate = null,Object? coverX = null,Object? coverY = null,Object? isNew = null,Object? episodesInfo = null,Object? cookie = null,}) {
-  return _then(_self.copyWith(
+  return _then(HotMedia(
 title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,doubanUrl: null == doubanUrl ? _self.doubanUrl : doubanUrl // ignore: cast_nullable_to_non_nullable
 as String,poster: null == poster ? _self.poster : poster // ignore: cast_nullable_to_non_nullable
@@ -247,16 +253,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HotMedia&&(identical(other.title, title) || other.title == title)&&(identical(other.doubanUrl, doubanUrl) || other.doubanUrl == doubanUrl)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.playable, playable) || other.playable == playable)&&(identical(other.id, id) || other.id == id)&&(identical(other.rate, rate) || other.rate == rate)&&(identical(other.coverX, coverX) || other.coverX == coverX)&&(identical(other.coverY, coverY) || other.coverY == coverY)&&(identical(other.isNew, isNew) || other.isNew == isNew)&&(identical(other.episodesInfo, episodesInfo) || other.episodesInfo == episodesInfo)&&(identical(other.cookie, cookie) || other.cookie == cookie));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _HotMedia&&(identical(other.title, title) || other.title == title)&&(identical(other.doubanUrl, doubanUrl) || other.doubanUrl == doubanUrl)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.playable, playable) || other.playable == playable)&&(identical(other.id, id) || other.id == id)&&(identical(other.rate, rate) || other.rate == rate)&&(identical(other.coverX, coverX) || other.coverX == coverX)&&(identical(other.coverY, coverY) || other.coverY == coverY)&&(identical(other.isNew, isNew) || other.isNew == isNew)&&(identical(other.episodesInfo, episodesInfo) || other.episodesInfo == episodesInfo)&&(identical(other.cookie, cookie) || other.cookie == cookie));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,title,doubanUrl,poster,playable,id,rate,coverX,coverY,isNew,episodesInfo,cookie);
+int get hashCode {
+    return Object.hash(runtimeType,title,doubanUrl,poster,playable,id,rate,coverX,coverY,isNew,episodesInfo,cookie);
+}
 
 @override
 String toString() {
-  return 'HotMedia(title: $title, doubanUrl: $doubanUrl, poster: $poster, playable: $playable, id: $id, rate: $rate, coverX: $coverX, coverY: $coverY, isNew: $isNew, episodesInfo: $episodesInfo, cookie: $cookie)';
+    return 'HotMedia(title: $title, doubanUrl: $doubanUrl, poster: $poster, playable: $playable, id: $id, rate: $rate, coverX: $coverX, coverY: $coverY, isNew: $isNew, episodesInfo: $episodesInfo, cookie: $cookie)';
 }
 
 

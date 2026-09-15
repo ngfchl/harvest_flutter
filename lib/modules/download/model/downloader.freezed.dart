@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'downloader.dart';
@@ -9,6 +9,7 @@ part of 'downloader.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $DownloaderCopyWith<Downloader> get copyWith => _$DownloaderCopyWithImpl<Downloa
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Downloader&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.protocol, protocol) || other.protocol == protocol)&&(identical(other.username, username) || other.username == username)&&(identical(other.password, password) || other.password == password)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.host, host) || other.host == host)&&(identical(other.port, port) || other.port == port)&&(identical(other.externalHost, externalHost) || other.externalHost == externalHost)&&(identical(other.sortId, sortId) || other.sortId == sortId)&&(identical(other.brush, brush) || other.brush == brush)&&(identical(other.torrentPath, torrentPath) || other.torrentPath == torrentPath)&&const DeepCollectionEquality().equals(other.prefs, prefs)&&const DeepCollectionEquality().equals(other.status, status));
+  final _this = this as Downloader;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Downloader&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.category, _this.category) || other.category == _this.category)&&(identical(other.protocol, _this.protocol) || other.protocol == _this.protocol)&&(identical(other.username, _this.username) || other.username == _this.username)&&(identical(other.password, _this.password) || other.password == _this.password)&&(identical(other.isActive, _this.isActive) || other.isActive == _this.isActive)&&(identical(other.host, _this.host) || other.host == _this.host)&&(identical(other.port, _this.port) || other.port == _this.port)&&(identical(other.externalHost, _this.externalHost) || other.externalHost == _this.externalHost)&&(identical(other.sortId, _this.sortId) || other.sortId == _this.sortId)&&(identical(other.brush, _this.brush) || other.brush == _this.brush)&&(identical(other.torrentPath, _this.torrentPath) || other.torrentPath == _this.torrentPath)&&const DeepCollectionEquality().equals(other.prefs, _this.prefs)&&const DeepCollectionEquality().equals(other.status, _this.status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,category,protocol,username,password,isActive,host,port,externalHost,sortId,brush,torrentPath,const DeepCollectionEquality().hash(prefs),const DeepCollectionEquality().hash(status));
+int get hashCode {
+  final _this = this as Downloader;
+  return Object.hash(runtimeType,_this.id,_this.name,_this.category,_this.protocol,_this.username,_this.password,_this.isActive,_this.host,_this.port,_this.externalHost,_this.sortId,_this.brush,_this.torrentPath,const DeepCollectionEquality().hash(_this.prefs),const DeepCollectionEquality().hash(_this.status));
+}
 
 @override
 String toString() {
-  return 'Downloader(id: $id, name: $name, category: $category, protocol: $protocol, username: $username, password: $password, isActive: $isActive, host: $host, port: $port, externalHost: $externalHost, sortId: $sortId, brush: $brush, torrentPath: $torrentPath, prefs: $prefs, status: $status)';
+  final _this = this as Downloader;
+  return 'Downloader(id: ${_this.id}, name: ${_this.name}, category: ${_this.category}, protocol: ${_this.protocol}, username: ${_this.username}, password: ${_this.password}, isActive: ${_this.isActive}, host: ${_this.host}, port: ${_this.port}, externalHost: ${_this.externalHost}, sortId: ${_this.sortId}, brush: ${_this.brush}, torrentPath: ${_this.torrentPath}, prefs: ${_this.prefs}, status: ${_this.status})';
 }
 
 
@@ -66,7 +72,7 @@ class _$DownloaderCopyWithImpl<$Res>
 /// Create a copy of Downloader
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? category = null,Object? protocol = null,Object? username = null,Object? password = null,Object? isActive = null,Object? host = null,Object? port = null,Object? externalHost = null,Object? sortId = null,Object? brush = null,Object? torrentPath = null,Object? prefs = freezed,Object? status = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(Downloader(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,category: null == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
@@ -223,7 +229,7 @@ return $default(_that.id,_that.name,_that.category,_that.protocol,_that.username
 @JsonSerializable()
 
 class _Downloader extends Downloader {
-  const _Downloader({this.id = 0, this.name = '', this.category = '', this.protocol = 'http', this.username = '', this.password = '', @JsonKey(name: 'is_active') this.isActive = true, this.host = '', this.port = 0, @JsonKey(name: 'external_host') this.externalHost = '', @JsonKey(name: 'sort_id') this.sortId = 0, this.brush = false, @JsonKey(name: 'torrent_path') this.torrentPath = '', final  Map<String, dynamic>? prefs, final  Map<String, dynamic>? status}): _prefs = prefs,_status = status,super._();
+  const _Downloader({this.id = 0, this.name = '', this.category = '', this.protocol = 'http', this.username = '', this.password = '', @JsonKey(name: 'is_active') this.isActive = true, this.host = '', this.port = 0, @JsonKey(name: 'external_host') this.externalHost = '', @JsonKey(name: 'sort_id') this.sortId = 0, this.brush = false, @JsonKey(name: 'torrent_path') this.torrentPath = '',  Map<String, dynamic>? prefs,  Map<String, dynamic>? status}): _prefs = prefs,_status = status,super._();
   factory _Downloader.fromJson(Map<String, dynamic> json) => _$DownloaderFromJson(json);
 
 @override@JsonKey() final  int id;
@@ -271,16 +277,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Downloader&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.protocol, protocol) || other.protocol == protocol)&&(identical(other.username, username) || other.username == username)&&(identical(other.password, password) || other.password == password)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.host, host) || other.host == host)&&(identical(other.port, port) || other.port == port)&&(identical(other.externalHost, externalHost) || other.externalHost == externalHost)&&(identical(other.sortId, sortId) || other.sortId == sortId)&&(identical(other.brush, brush) || other.brush == brush)&&(identical(other.torrentPath, torrentPath) || other.torrentPath == torrentPath)&&const DeepCollectionEquality().equals(other._prefs, _prefs)&&const DeepCollectionEquality().equals(other._status, _status));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Downloader&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.protocol, protocol) || other.protocol == protocol)&&(identical(other.username, username) || other.username == username)&&(identical(other.password, password) || other.password == password)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.host, host) || other.host == host)&&(identical(other.port, port) || other.port == port)&&(identical(other.externalHost, externalHost) || other.externalHost == externalHost)&&(identical(other.sortId, sortId) || other.sortId == sortId)&&(identical(other.brush, brush) || other.brush == brush)&&(identical(other.torrentPath, torrentPath) || other.torrentPath == torrentPath)&&const DeepCollectionEquality().equals(other.prefs, _prefs)&&const DeepCollectionEquality().equals(other.status, _status));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,category,protocol,username,password,isActive,host,port,externalHost,sortId,brush,torrentPath,const DeepCollectionEquality().hash(_prefs),const DeepCollectionEquality().hash(_status));
+int get hashCode {
+    return Object.hash(runtimeType,id,name,category,protocol,username,password,isActive,host,port,externalHost,sortId,brush,torrentPath,const DeepCollectionEquality().hash(_prefs),const DeepCollectionEquality().hash(_status));
+}
 
 @override
 String toString() {
-  return 'Downloader(id: $id, name: $name, category: $category, protocol: $protocol, username: $username, password: $password, isActive: $isActive, host: $host, port: $port, externalHost: $externalHost, sortId: $sortId, brush: $brush, torrentPath: $torrentPath, prefs: $prefs, status: $status)';
+    return 'Downloader(id: $id, name: $name, category: $category, protocol: $protocol, username: $username, password: $password, isActive: $isActive, host: $host, port: $port, externalHost: $externalHost, sortId: $sortId, brush: $brush, torrentPath: $torrentPath, prefs: $prefs, status: $status)';
 }
 
 

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'person.dart';
@@ -9,6 +9,7 @@ part of 'person.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $PersonCopyWith<Person> get copyWith => _$PersonCopyWithImpl<Person>(this as Per
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Person&&(identical(other.id, id) || other.id == id)&&(identical(other.posterPath, posterPath) || other.posterPath == posterPath)&&(identical(other.adult, adult) || other.adult == adult)&&(identical(other.popularity, popularity) || other.popularity == popularity)&&(identical(other.backdropPath, backdropPath) || other.backdropPath == backdropPath)&&(identical(other.voteAverage, voteAverage) || other.voteAverage == voteAverage)&&(identical(other.overview, overview) || other.overview == overview)&&(identical(other.firstAirDate, firstAirDate) || other.firstAirDate == firstAirDate)&&const DeepCollectionEquality().equals(other.originCountry, originCountry)&&const DeepCollectionEquality().equals(other.genreIds, genreIds)&&(identical(other.originalLanguage, originalLanguage) || other.originalLanguage == originalLanguage)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.name, name) || other.name == name)&&(identical(other.originalName, originalName) || other.originalName == originalName)&&(identical(other.mediaType, mediaType) || other.mediaType == mediaType)&&(identical(other.profilePath, profilePath) || other.profilePath == profilePath)&&const DeepCollectionEquality().equals(other.knownFor, knownFor)&&(identical(other.knownForDepartment, knownForDepartment) || other.knownForDepartment == knownForDepartment)&&(identical(other.gender, gender) || other.gender == gender));
+  final _this = this as Person;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Person&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.posterPath, _this.posterPath) || other.posterPath == _this.posterPath)&&(identical(other.adult, _this.adult) || other.adult == _this.adult)&&(identical(other.popularity, _this.popularity) || other.popularity == _this.popularity)&&(identical(other.backdropPath, _this.backdropPath) || other.backdropPath == _this.backdropPath)&&(identical(other.voteAverage, _this.voteAverage) || other.voteAverage == _this.voteAverage)&&(identical(other.overview, _this.overview) || other.overview == _this.overview)&&(identical(other.firstAirDate, _this.firstAirDate) || other.firstAirDate == _this.firstAirDate)&&const DeepCollectionEquality().equals(other.originCountry, _this.originCountry)&&const DeepCollectionEquality().equals(other.genreIds, _this.genreIds)&&(identical(other.originalLanguage, _this.originalLanguage) || other.originalLanguage == _this.originalLanguage)&&(identical(other.voteCount, _this.voteCount) || other.voteCount == _this.voteCount)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.originalName, _this.originalName) || other.originalName == _this.originalName)&&(identical(other.mediaType, _this.mediaType) || other.mediaType == _this.mediaType)&&(identical(other.profilePath, _this.profilePath) || other.profilePath == _this.profilePath)&&const DeepCollectionEquality().equals(other.knownFor, _this.knownFor)&&(identical(other.knownForDepartment, _this.knownForDepartment) || other.knownForDepartment == _this.knownForDepartment)&&(identical(other.gender, _this.gender) || other.gender == _this.gender));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,posterPath,adult,popularity,backdropPath,voteAverage,overview,firstAirDate,const DeepCollectionEquality().hash(originCountry),const DeepCollectionEquality().hash(genreIds),originalLanguage,voteCount,name,originalName,mediaType,profilePath,const DeepCollectionEquality().hash(knownFor),knownForDepartment,gender]);
+int get hashCode {
+  final _this = this as Person;
+  return Object.hashAll([runtimeType,_this.id,_this.posterPath,_this.adult,_this.popularity,_this.backdropPath,_this.voteAverage,_this.overview,_this.firstAirDate,const DeepCollectionEquality().hash(_this.originCountry),const DeepCollectionEquality().hash(_this.genreIds),_this.originalLanguage,_this.voteCount,_this.name,_this.originalName,_this.mediaType,_this.profilePath,const DeepCollectionEquality().hash(_this.knownFor),_this.knownForDepartment,_this.gender]);
+}
 
 @override
 String toString() {
-  return 'Person(id: $id, posterPath: $posterPath, adult: $adult, popularity: $popularity, backdropPath: $backdropPath, voteAverage: $voteAverage, overview: $overview, firstAirDate: $firstAirDate, originCountry: $originCountry, genreIds: $genreIds, originalLanguage: $originalLanguage, voteCount: $voteCount, name: $name, originalName: $originalName, mediaType: $mediaType, profilePath: $profilePath, knownFor: $knownFor, knownForDepartment: $knownForDepartment, gender: $gender)';
+  final _this = this as Person;
+  return 'Person(id: ${_this.id}, posterPath: ${_this.posterPath}, adult: ${_this.adult}, popularity: ${_this.popularity}, backdropPath: ${_this.backdropPath}, voteAverage: ${_this.voteAverage}, overview: ${_this.overview}, firstAirDate: ${_this.firstAirDate}, originCountry: ${_this.originCountry}, genreIds: ${_this.genreIds}, originalLanguage: ${_this.originalLanguage}, voteCount: ${_this.voteCount}, name: ${_this.name}, originalName: ${_this.originalName}, mediaType: ${_this.mediaType}, profilePath: ${_this.profilePath}, knownFor: ${_this.knownFor}, knownForDepartment: ${_this.knownForDepartment}, gender: ${_this.gender})';
 }
 
 
@@ -66,7 +72,7 @@ class _$PersonCopyWithImpl<$Res>
 /// Create a copy of Person
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? posterPath = freezed,Object? adult = null,Object? popularity = null,Object? backdropPath = freezed,Object? voteAverage = freezed,Object? overview = freezed,Object? firstAirDate = freezed,Object? originCountry = freezed,Object? genreIds = freezed,Object? originalLanguage = freezed,Object? voteCount = freezed,Object? name = null,Object? originalName = null,Object? mediaType = null,Object? profilePath = null,Object? knownFor = null,Object? knownForDepartment = null,Object? gender = null,}) {
-  return _then(_self.copyWith(
+  return _then(Person(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,posterPath: freezed == posterPath ? _self.posterPath : posterPath // ignore: cast_nullable_to_non_nullable
 as String?,adult: null == adult ? _self.adult : adult // ignore: cast_nullable_to_non_nullable
@@ -227,7 +233,7 @@ return $default(_that.id,_that.posterPath,_that.adult,_that.popularity,_that.bac
 @JsonSerializable()
 
 class _Person implements Person {
-  const _Person({this.id = 0, @JsonKey(name: 'poster_path') this.posterPath, this.adult = false, this.popularity = 0.0, @JsonKey(name: 'backdrop_path') this.backdropPath, @JsonKey(name: 'vote_average') this.voteAverage = 0.0, this.overview, @JsonKey(name: 'first_air_date') this.firstAirDate, @JsonKey(name: 'origin_country') final  List<String>? originCountry = const [], @JsonKey(name: 'genre_ids') final  List<int>? genreIds = const [], @JsonKey(name: 'original_language') this.originalLanguage, @JsonKey(name: 'vote_count') this.voteCount, this.name = '', @JsonKey(name: 'original_name') this.originalName = '', @JsonKey(name: 'media_type') this.mediaType = '', @JsonKey(name: 'profile_path') this.profilePath = '', @JsonKey(name: 'known_for') final  List<KnownFor> knownFor = const [], @JsonKey(name: 'known_for_department') this.knownForDepartment = '', this.gender = 0}): _originCountry = originCountry,_genreIds = genreIds,_knownFor = knownFor;
+  const _Person({this.id = 0, @JsonKey(name: 'poster_path') this.posterPath, this.adult = false, this.popularity = 0.0, @JsonKey(name: 'backdrop_path') this.backdropPath, @JsonKey(name: 'vote_average') this.voteAverage = 0.0, this.overview, @JsonKey(name: 'first_air_date') this.firstAirDate, @JsonKey(name: 'origin_country')  List<String>? originCountry = const [], @JsonKey(name: 'genre_ids')  List<int>? genreIds = const [], @JsonKey(name: 'original_language') this.originalLanguage, @JsonKey(name: 'vote_count') this.voteCount, this.name = '', @JsonKey(name: 'original_name') this.originalName = '', @JsonKey(name: 'media_type') this.mediaType = '', @JsonKey(name: 'profile_path') this.profilePath = '', @JsonKey(name: 'known_for')  List<KnownFor> knownFor = const [], @JsonKey(name: 'known_for_department') this.knownForDepartment = '', this.gender = 0}): _originCountry = originCountry,_genreIds = genreIds,_knownFor = knownFor;
   factory _Person.fromJson(Map<String, dynamic> json) => _$PersonFromJson(json);
 
 @override@JsonKey() final  int id;
@@ -285,16 +291,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Person&&(identical(other.id, id) || other.id == id)&&(identical(other.posterPath, posterPath) || other.posterPath == posterPath)&&(identical(other.adult, adult) || other.adult == adult)&&(identical(other.popularity, popularity) || other.popularity == popularity)&&(identical(other.backdropPath, backdropPath) || other.backdropPath == backdropPath)&&(identical(other.voteAverage, voteAverage) || other.voteAverage == voteAverage)&&(identical(other.overview, overview) || other.overview == overview)&&(identical(other.firstAirDate, firstAirDate) || other.firstAirDate == firstAirDate)&&const DeepCollectionEquality().equals(other._originCountry, _originCountry)&&const DeepCollectionEquality().equals(other._genreIds, _genreIds)&&(identical(other.originalLanguage, originalLanguage) || other.originalLanguage == originalLanguage)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.name, name) || other.name == name)&&(identical(other.originalName, originalName) || other.originalName == originalName)&&(identical(other.mediaType, mediaType) || other.mediaType == mediaType)&&(identical(other.profilePath, profilePath) || other.profilePath == profilePath)&&const DeepCollectionEquality().equals(other._knownFor, _knownFor)&&(identical(other.knownForDepartment, knownForDepartment) || other.knownForDepartment == knownForDepartment)&&(identical(other.gender, gender) || other.gender == gender));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Person&&(identical(other.id, id) || other.id == id)&&(identical(other.posterPath, posterPath) || other.posterPath == posterPath)&&(identical(other.adult, adult) || other.adult == adult)&&(identical(other.popularity, popularity) || other.popularity == popularity)&&(identical(other.backdropPath, backdropPath) || other.backdropPath == backdropPath)&&(identical(other.voteAverage, voteAverage) || other.voteAverage == voteAverage)&&(identical(other.overview, overview) || other.overview == overview)&&(identical(other.firstAirDate, firstAirDate) || other.firstAirDate == firstAirDate)&&const DeepCollectionEquality().equals(other.originCountry, _originCountry)&&const DeepCollectionEquality().equals(other.genreIds, _genreIds)&&(identical(other.originalLanguage, originalLanguage) || other.originalLanguage == originalLanguage)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.name, name) || other.name == name)&&(identical(other.originalName, originalName) || other.originalName == originalName)&&(identical(other.mediaType, mediaType) || other.mediaType == mediaType)&&(identical(other.profilePath, profilePath) || other.profilePath == profilePath)&&const DeepCollectionEquality().equals(other.knownFor, _knownFor)&&(identical(other.knownForDepartment, knownForDepartment) || other.knownForDepartment == knownForDepartment)&&(identical(other.gender, gender) || other.gender == gender));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,posterPath,adult,popularity,backdropPath,voteAverage,overview,firstAirDate,const DeepCollectionEquality().hash(_originCountry),const DeepCollectionEquality().hash(_genreIds),originalLanguage,voteCount,name,originalName,mediaType,profilePath,const DeepCollectionEquality().hash(_knownFor),knownForDepartment,gender]);
+int get hashCode {
+    return Object.hashAll([runtimeType,id,posterPath,adult,popularity,backdropPath,voteAverage,overview,firstAirDate,const DeepCollectionEquality().hash(_originCountry),const DeepCollectionEquality().hash(_genreIds),originalLanguage,voteCount,name,originalName,mediaType,profilePath,const DeepCollectionEquality().hash(_knownFor),knownForDepartment,gender]);
+}
 
 @override
 String toString() {
-  return 'Person(id: $id, posterPath: $posterPath, adult: $adult, popularity: $popularity, backdropPath: $backdropPath, voteAverage: $voteAverage, overview: $overview, firstAirDate: $firstAirDate, originCountry: $originCountry, genreIds: $genreIds, originalLanguage: $originalLanguage, voteCount: $voteCount, name: $name, originalName: $originalName, mediaType: $mediaType, profilePath: $profilePath, knownFor: $knownFor, knownForDepartment: $knownForDepartment, gender: $gender)';
+    return 'Person(id: $id, posterPath: $posterPath, adult: $adult, popularity: $popularity, backdropPath: $backdropPath, voteAverage: $voteAverage, overview: $overview, firstAirDate: $firstAirDate, originCountry: $originCountry, genreIds: $genreIds, originalLanguage: $originalLanguage, voteCount: $voteCount, name: $name, originalName: $originalName, mediaType: $mediaType, profilePath: $profilePath, knownFor: $knownFor, knownForDepartment: $knownForDepartment, gender: $gender)';
 }
 
 
@@ -367,16 +375,21 @@ $KnownForCopyWith<KnownFor> get copyWith => _$KnownForCopyWithImpl<KnownFor>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is KnownFor&&(identical(other.id, id) || other.id == id)&&(identical(other.posterPath, posterPath) || other.posterPath == posterPath)&&(identical(other.adult, adult) || other.adult == adult)&&(identical(other.popularity, popularity) || other.popularity == popularity)&&(identical(other.backdropPath, backdropPath) || other.backdropPath == backdropPath)&&(identical(other.voteAverage, voteAverage) || other.voteAverage == voteAverage)&&(identical(other.overview, overview) || other.overview == overview)&&(identical(other.firstAirDate, firstAirDate) || other.firstAirDate == firstAirDate)&&const DeepCollectionEquality().equals(other.originCountry, originCountry)&&const DeepCollectionEquality().equals(other.genreIds, genreIds)&&(identical(other.originalLanguage, originalLanguage) || other.originalLanguage == originalLanguage)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.name, name) || other.name == name)&&(identical(other.originalName, originalName) || other.originalName == originalName)&&(identical(other.mediaType, mediaType) || other.mediaType == mediaType)&&(identical(other.releaseDate, releaseDate) || other.releaseDate == releaseDate)&&(identical(other.originalTitle, originalTitle) || other.originalTitle == originalTitle)&&(identical(other.title, title) || other.title == title)&&(identical(other.video, video) || other.video == video));
+  final _this = this as KnownFor;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is KnownFor&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.posterPath, _this.posterPath) || other.posterPath == _this.posterPath)&&(identical(other.adult, _this.adult) || other.adult == _this.adult)&&(identical(other.popularity, _this.popularity) || other.popularity == _this.popularity)&&(identical(other.backdropPath, _this.backdropPath) || other.backdropPath == _this.backdropPath)&&(identical(other.voteAverage, _this.voteAverage) || other.voteAverage == _this.voteAverage)&&(identical(other.overview, _this.overview) || other.overview == _this.overview)&&(identical(other.firstAirDate, _this.firstAirDate) || other.firstAirDate == _this.firstAirDate)&&const DeepCollectionEquality().equals(other.originCountry, _this.originCountry)&&const DeepCollectionEquality().equals(other.genreIds, _this.genreIds)&&(identical(other.originalLanguage, _this.originalLanguage) || other.originalLanguage == _this.originalLanguage)&&(identical(other.voteCount, _this.voteCount) || other.voteCount == _this.voteCount)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.originalName, _this.originalName) || other.originalName == _this.originalName)&&(identical(other.mediaType, _this.mediaType) || other.mediaType == _this.mediaType)&&(identical(other.releaseDate, _this.releaseDate) || other.releaseDate == _this.releaseDate)&&(identical(other.originalTitle, _this.originalTitle) || other.originalTitle == _this.originalTitle)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.video, _this.video) || other.video == _this.video));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,posterPath,adult,popularity,backdropPath,voteAverage,overview,firstAirDate,const DeepCollectionEquality().hash(originCountry),const DeepCollectionEquality().hash(genreIds),originalLanguage,voteCount,name,originalName,mediaType,releaseDate,originalTitle,title,video]);
+int get hashCode {
+  final _this = this as KnownFor;
+  return Object.hashAll([runtimeType,_this.id,_this.posterPath,_this.adult,_this.popularity,_this.backdropPath,_this.voteAverage,_this.overview,_this.firstAirDate,const DeepCollectionEquality().hash(_this.originCountry),const DeepCollectionEquality().hash(_this.genreIds),_this.originalLanguage,_this.voteCount,_this.name,_this.originalName,_this.mediaType,_this.releaseDate,_this.originalTitle,_this.title,_this.video]);
+}
 
 @override
 String toString() {
-  return 'KnownFor(id: $id, posterPath: $posterPath, adult: $adult, popularity: $popularity, backdropPath: $backdropPath, voteAverage: $voteAverage, overview: $overview, firstAirDate: $firstAirDate, originCountry: $originCountry, genreIds: $genreIds, originalLanguage: $originalLanguage, voteCount: $voteCount, name: $name, originalName: $originalName, mediaType: $mediaType, releaseDate: $releaseDate, originalTitle: $originalTitle, title: $title, video: $video)';
+  final _this = this as KnownFor;
+  return 'KnownFor(id: ${_this.id}, posterPath: ${_this.posterPath}, adult: ${_this.adult}, popularity: ${_this.popularity}, backdropPath: ${_this.backdropPath}, voteAverage: ${_this.voteAverage}, overview: ${_this.overview}, firstAirDate: ${_this.firstAirDate}, originCountry: ${_this.originCountry}, genreIds: ${_this.genreIds}, originalLanguage: ${_this.originalLanguage}, voteCount: ${_this.voteCount}, name: ${_this.name}, originalName: ${_this.originalName}, mediaType: ${_this.mediaType}, releaseDate: ${_this.releaseDate}, originalTitle: ${_this.originalTitle}, title: ${_this.title}, video: ${_this.video})';
 }
 
 
@@ -405,7 +418,7 @@ class _$KnownForCopyWithImpl<$Res>
 /// Create a copy of KnownFor
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? posterPath = freezed,Object? adult = null,Object? popularity = null,Object? backdropPath = freezed,Object? voteAverage = null,Object? overview = null,Object? firstAirDate = freezed,Object? originCountry = freezed,Object? genreIds = null,Object? originalLanguage = null,Object? voteCount = null,Object? name = freezed,Object? originalName = freezed,Object? mediaType = null,Object? releaseDate = freezed,Object? originalTitle = freezed,Object? title = freezed,Object? video = null,}) {
-  return _then(_self.copyWith(
+  return _then(KnownFor(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,posterPath: freezed == posterPath ? _self.posterPath : posterPath // ignore: cast_nullable_to_non_nullable
 as String?,adult: null == adult ? _self.adult : adult // ignore: cast_nullable_to_non_nullable
@@ -566,7 +579,7 @@ return $default(_that.id,_that.posterPath,_that.adult,_that.popularity,_that.bac
 @JsonSerializable()
 
 class _KnownFor implements KnownFor {
-  const _KnownFor({this.id = 0, @JsonKey(name: 'poster_path') this.posterPath, this.adult = false, this.popularity = 0.0, @JsonKey(name: 'backdrop_path') this.backdropPath, @JsonKey(name: 'vote_average') this.voteAverage = 0.0, this.overview = '', @JsonKey(name: 'first_air_date') this.firstAirDate, @JsonKey(name: 'origin_country') final  List<String>? originCountry = const [], @JsonKey(name: 'genre_ids') final  List<int> genreIds = const [], @JsonKey(name: 'original_language') this.originalLanguage = '', @JsonKey(name: 'vote_count') this.voteCount = 0, this.name, @JsonKey(name: 'original_name') this.originalName, @JsonKey(name: 'media_type') this.mediaType = '', @JsonKey(name: 'release_date') this.releaseDate, @JsonKey(name: 'original_title') this.originalTitle, this.title, this.video = false}): _originCountry = originCountry,_genreIds = genreIds;
+  const _KnownFor({this.id = 0, @JsonKey(name: 'poster_path') this.posterPath, this.adult = false, this.popularity = 0.0, @JsonKey(name: 'backdrop_path') this.backdropPath, @JsonKey(name: 'vote_average') this.voteAverage = 0.0, this.overview = '', @JsonKey(name: 'first_air_date') this.firstAirDate, @JsonKey(name: 'origin_country')  List<String>? originCountry = const [], @JsonKey(name: 'genre_ids')  List<int> genreIds = const [], @JsonKey(name: 'original_language') this.originalLanguage = '', @JsonKey(name: 'vote_count') this.voteCount = 0, this.name, @JsonKey(name: 'original_name') this.originalName, @JsonKey(name: 'media_type') this.mediaType = '', @JsonKey(name: 'release_date') this.releaseDate, @JsonKey(name: 'original_title') this.originalTitle, this.title, this.video = false}): _originCountry = originCountry,_genreIds = genreIds;
   factory _KnownFor.fromJson(Map<String, dynamic> json) => _$KnownForFromJson(json);
 
 @override@JsonKey() final  int id;
@@ -616,16 +629,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _KnownFor&&(identical(other.id, id) || other.id == id)&&(identical(other.posterPath, posterPath) || other.posterPath == posterPath)&&(identical(other.adult, adult) || other.adult == adult)&&(identical(other.popularity, popularity) || other.popularity == popularity)&&(identical(other.backdropPath, backdropPath) || other.backdropPath == backdropPath)&&(identical(other.voteAverage, voteAverage) || other.voteAverage == voteAverage)&&(identical(other.overview, overview) || other.overview == overview)&&(identical(other.firstAirDate, firstAirDate) || other.firstAirDate == firstAirDate)&&const DeepCollectionEquality().equals(other._originCountry, _originCountry)&&const DeepCollectionEquality().equals(other._genreIds, _genreIds)&&(identical(other.originalLanguage, originalLanguage) || other.originalLanguage == originalLanguage)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.name, name) || other.name == name)&&(identical(other.originalName, originalName) || other.originalName == originalName)&&(identical(other.mediaType, mediaType) || other.mediaType == mediaType)&&(identical(other.releaseDate, releaseDate) || other.releaseDate == releaseDate)&&(identical(other.originalTitle, originalTitle) || other.originalTitle == originalTitle)&&(identical(other.title, title) || other.title == title)&&(identical(other.video, video) || other.video == video));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _KnownFor&&(identical(other.id, id) || other.id == id)&&(identical(other.posterPath, posterPath) || other.posterPath == posterPath)&&(identical(other.adult, adult) || other.adult == adult)&&(identical(other.popularity, popularity) || other.popularity == popularity)&&(identical(other.backdropPath, backdropPath) || other.backdropPath == backdropPath)&&(identical(other.voteAverage, voteAverage) || other.voteAverage == voteAverage)&&(identical(other.overview, overview) || other.overview == overview)&&(identical(other.firstAirDate, firstAirDate) || other.firstAirDate == firstAirDate)&&const DeepCollectionEquality().equals(other.originCountry, _originCountry)&&const DeepCollectionEquality().equals(other.genreIds, _genreIds)&&(identical(other.originalLanguage, originalLanguage) || other.originalLanguage == originalLanguage)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.name, name) || other.name == name)&&(identical(other.originalName, originalName) || other.originalName == originalName)&&(identical(other.mediaType, mediaType) || other.mediaType == mediaType)&&(identical(other.releaseDate, releaseDate) || other.releaseDate == releaseDate)&&(identical(other.originalTitle, originalTitle) || other.originalTitle == originalTitle)&&(identical(other.title, title) || other.title == title)&&(identical(other.video, video) || other.video == video));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,posterPath,adult,popularity,backdropPath,voteAverage,overview,firstAirDate,const DeepCollectionEquality().hash(_originCountry),const DeepCollectionEquality().hash(_genreIds),originalLanguage,voteCount,name,originalName,mediaType,releaseDate,originalTitle,title,video]);
+int get hashCode {
+    return Object.hashAll([runtimeType,id,posterPath,adult,popularity,backdropPath,voteAverage,overview,firstAirDate,const DeepCollectionEquality().hash(_originCountry),const DeepCollectionEquality().hash(_genreIds),originalLanguage,voteCount,name,originalName,mediaType,releaseDate,originalTitle,title,video]);
+}
 
 @override
 String toString() {
-  return 'KnownFor(id: $id, posterPath: $posterPath, adult: $adult, popularity: $popularity, backdropPath: $backdropPath, voteAverage: $voteAverage, overview: $overview, firstAirDate: $firstAirDate, originCountry: $originCountry, genreIds: $genreIds, originalLanguage: $originalLanguage, voteCount: $voteCount, name: $name, originalName: $originalName, mediaType: $mediaType, releaseDate: $releaseDate, originalTitle: $originalTitle, title: $title, video: $video)';
+    return 'KnownFor(id: $id, posterPath: $posterPath, adult: $adult, popularity: $popularity, backdropPath: $backdropPath, voteAverage: $voteAverage, overview: $overview, firstAirDate: $firstAirDate, originCountry: $originCountry, genreIds: $genreIds, originalLanguage: $originalLanguage, voteCount: $voteCount, name: $name, originalName: $originalName, mediaType: $mediaType, releaseDate: $releaseDate, originalTitle: $originalTitle, title: $title, video: $video)';
 }
 
 

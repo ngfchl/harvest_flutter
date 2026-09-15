@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'media_item.dart';
@@ -9,6 +9,7 @@ part of 'media_item.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $MediaItemCopyWith<MediaItem> get copyWith => _$MediaItemCopyWithImpl<MediaItem>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MediaItem&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.originalTitle, originalTitle) || other.originalTitle == originalTitle)&&(identical(other.overview, overview) || other.overview == overview)&&(identical(other.posterPath, posterPath) || other.posterPath == posterPath)&&(identical(other.backdropPath, backdropPath) || other.backdropPath == backdropPath)&&(identical(other.mediaType, mediaType) || other.mediaType == mediaType)&&(identical(other.originalLanguage, originalLanguage) || other.originalLanguage == originalLanguage)&&(identical(other.popularity, popularity) || other.popularity == popularity)&&(identical(other.voteAverage, voteAverage) || other.voteAverage == voteAverage)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.releaseDate, releaseDate) || other.releaseDate == releaseDate)&&const DeepCollectionEquality().equals(other.genreIds, genreIds)&&(identical(other.adult, adult) || other.adult == adult)&&(identical(other.video, video) || other.video == video)&&const DeepCollectionEquality().equals(other.originCountry, originCountry));
+  final _this = this as MediaItem;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MediaItem&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.originalTitle, _this.originalTitle) || other.originalTitle == _this.originalTitle)&&(identical(other.overview, _this.overview) || other.overview == _this.overview)&&(identical(other.posterPath, _this.posterPath) || other.posterPath == _this.posterPath)&&(identical(other.backdropPath, _this.backdropPath) || other.backdropPath == _this.backdropPath)&&(identical(other.mediaType, _this.mediaType) || other.mediaType == _this.mediaType)&&(identical(other.originalLanguage, _this.originalLanguage) || other.originalLanguage == _this.originalLanguage)&&(identical(other.popularity, _this.popularity) || other.popularity == _this.popularity)&&(identical(other.voteAverage, _this.voteAverage) || other.voteAverage == _this.voteAverage)&&(identical(other.voteCount, _this.voteCount) || other.voteCount == _this.voteCount)&&(identical(other.releaseDate, _this.releaseDate) || other.releaseDate == _this.releaseDate)&&const DeepCollectionEquality().equals(other.genreIds, _this.genreIds)&&(identical(other.adult, _this.adult) || other.adult == _this.adult)&&(identical(other.video, _this.video) || other.video == _this.video)&&const DeepCollectionEquality().equals(other.originCountry, _this.originCountry));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,originalTitle,overview,posterPath,backdropPath,mediaType,originalLanguage,popularity,voteAverage,voteCount,releaseDate,const DeepCollectionEquality().hash(genreIds),adult,video,const DeepCollectionEquality().hash(originCountry));
+int get hashCode {
+  final _this = this as MediaItem;
+  return Object.hash(runtimeType,_this.id,_this.title,_this.originalTitle,_this.overview,_this.posterPath,_this.backdropPath,_this.mediaType,_this.originalLanguage,_this.popularity,_this.voteAverage,_this.voteCount,_this.releaseDate,const DeepCollectionEquality().hash(_this.genreIds),_this.adult,_this.video,const DeepCollectionEquality().hash(_this.originCountry));
+}
 
 @override
 String toString() {
-  return 'MediaItem(id: $id, title: $title, originalTitle: $originalTitle, overview: $overview, posterPath: $posterPath, backdropPath: $backdropPath, mediaType: $mediaType, originalLanguage: $originalLanguage, popularity: $popularity, voteAverage: $voteAverage, voteCount: $voteCount, releaseDate: $releaseDate, genreIds: $genreIds, adult: $adult, video: $video, originCountry: $originCountry)';
+  final _this = this as MediaItem;
+  return 'MediaItem(id: ${_this.id}, title: ${_this.title}, originalTitle: ${_this.originalTitle}, overview: ${_this.overview}, posterPath: ${_this.posterPath}, backdropPath: ${_this.backdropPath}, mediaType: ${_this.mediaType}, originalLanguage: ${_this.originalLanguage}, popularity: ${_this.popularity}, voteAverage: ${_this.voteAverage}, voteCount: ${_this.voteCount}, releaseDate: ${_this.releaseDate}, genreIds: ${_this.genreIds}, adult: ${_this.adult}, video: ${_this.video}, originCountry: ${_this.originCountry})';
 }
 
 
@@ -66,7 +72,7 @@ class _$MediaItemCopyWithImpl<$Res>
 /// Create a copy of MediaItem
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? originalTitle = null,Object? overview = null,Object? posterPath = null,Object? backdropPath = null,Object? mediaType = null,Object? originalLanguage = null,Object? popularity = null,Object? voteAverage = freezed,Object? voteCount = freezed,Object? releaseDate = null,Object? genreIds = null,Object? adult = null,Object? video = freezed,Object? originCountry = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(MediaItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,originalTitle: null == originalTitle ? _self.originalTitle : originalTitle // ignore: cast_nullable_to_non_nullable
@@ -224,7 +230,7 @@ return $default(_that.id,_that.title,_that.originalTitle,_that.overview,_that.po
 @JsonSerializable()
 
 class _MediaItem implements MediaItem {
-  const _MediaItem({this.id = 0, this.title = '', @JsonKey(name: 'original_title') this.originalTitle = '', this.overview = '', @JsonKey(name: 'poster_path') this.posterPath = '', @JsonKey(name: 'backdrop_path') this.backdropPath = '', @JsonKey(name: 'media_type') this.mediaType = '', @JsonKey(name: 'original_language') this.originalLanguage = '', this.popularity = 0.0, @JsonKey(name: 'vote_average') this.voteAverage = 0.0, @JsonKey(name: 'vote_count') this.voteCount = 0, @JsonKey(name: 'release_date') this.releaseDate = '', @JsonKey(name: 'genre_ids') final  List<int> genreIds = const [], this.adult = false, this.video, @JsonKey(name: 'origin_country') final  List<String>? originCountry = const []}): _genreIds = genreIds,_originCountry = originCountry;
+  const _MediaItem({this.id = 0, this.title = '', @JsonKey(name: 'original_title') this.originalTitle = '', this.overview = '', @JsonKey(name: 'poster_path') this.posterPath = '', @JsonKey(name: 'backdrop_path') this.backdropPath = '', @JsonKey(name: 'media_type') this.mediaType = '', @JsonKey(name: 'original_language') this.originalLanguage = '', this.popularity = 0.0, @JsonKey(name: 'vote_average') this.voteAverage = 0.0, @JsonKey(name: 'vote_count') this.voteCount = 0, @JsonKey(name: 'release_date') this.releaseDate = '', @JsonKey(name: 'genre_ids')  List<int> genreIds = const [], this.adult = false, this.video, @JsonKey(name: 'origin_country')  List<String>? originCountry = const []}): _genreIds = genreIds,_originCountry = originCountry;
   factory _MediaItem.fromJson(Map<String, dynamic> json) => _$MediaItemFromJson(json);
 
 @override@JsonKey() final  int id;
@@ -271,16 +277,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MediaItem&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.originalTitle, originalTitle) || other.originalTitle == originalTitle)&&(identical(other.overview, overview) || other.overview == overview)&&(identical(other.posterPath, posterPath) || other.posterPath == posterPath)&&(identical(other.backdropPath, backdropPath) || other.backdropPath == backdropPath)&&(identical(other.mediaType, mediaType) || other.mediaType == mediaType)&&(identical(other.originalLanguage, originalLanguage) || other.originalLanguage == originalLanguage)&&(identical(other.popularity, popularity) || other.popularity == popularity)&&(identical(other.voteAverage, voteAverage) || other.voteAverage == voteAverage)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.releaseDate, releaseDate) || other.releaseDate == releaseDate)&&const DeepCollectionEquality().equals(other._genreIds, _genreIds)&&(identical(other.adult, adult) || other.adult == adult)&&(identical(other.video, video) || other.video == video)&&const DeepCollectionEquality().equals(other._originCountry, _originCountry));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _MediaItem&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.originalTitle, originalTitle) || other.originalTitle == originalTitle)&&(identical(other.overview, overview) || other.overview == overview)&&(identical(other.posterPath, posterPath) || other.posterPath == posterPath)&&(identical(other.backdropPath, backdropPath) || other.backdropPath == backdropPath)&&(identical(other.mediaType, mediaType) || other.mediaType == mediaType)&&(identical(other.originalLanguage, originalLanguage) || other.originalLanguage == originalLanguage)&&(identical(other.popularity, popularity) || other.popularity == popularity)&&(identical(other.voteAverage, voteAverage) || other.voteAverage == voteAverage)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.releaseDate, releaseDate) || other.releaseDate == releaseDate)&&const DeepCollectionEquality().equals(other.genreIds, _genreIds)&&(identical(other.adult, adult) || other.adult == adult)&&(identical(other.video, video) || other.video == video)&&const DeepCollectionEquality().equals(other.originCountry, _originCountry));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,originalTitle,overview,posterPath,backdropPath,mediaType,originalLanguage,popularity,voteAverage,voteCount,releaseDate,const DeepCollectionEquality().hash(_genreIds),adult,video,const DeepCollectionEquality().hash(_originCountry));
+int get hashCode {
+    return Object.hash(runtimeType,id,title,originalTitle,overview,posterPath,backdropPath,mediaType,originalLanguage,popularity,voteAverage,voteCount,releaseDate,const DeepCollectionEquality().hash(_genreIds),adult,video,const DeepCollectionEquality().hash(_originCountry));
+}
 
 @override
 String toString() {
-  return 'MediaItem(id: $id, title: $title, originalTitle: $originalTitle, overview: $overview, posterPath: $posterPath, backdropPath: $backdropPath, mediaType: $mediaType, originalLanguage: $originalLanguage, popularity: $popularity, voteAverage: $voteAverage, voteCount: $voteCount, releaseDate: $releaseDate, genreIds: $genreIds, adult: $adult, video: $video, originCountry: $originCountry)';
+    return 'MediaItem(id: $id, title: $title, originalTitle: $originalTitle, overview: $overview, posterPath: $posterPath, backdropPath: $backdropPath, mediaType: $mediaType, originalLanguage: $originalLanguage, popularity: $popularity, voteAverage: $voteAverage, voteCount: $voteCount, releaseDate: $releaseDate, genreIds: $genreIds, adult: $adult, video: $video, originCountry: $originCountry)';
 }
 
 

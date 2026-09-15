@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'search_torrent_info.dart';
@@ -9,6 +9,7 @@ part of 'search_torrent_info.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $SearchTorrentInfoCopyWith<SearchTorrentInfo> get copyWith => _$SearchTorrentInf
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchTorrentInfo&&(identical(other.siteId, siteId) || other.siteId == siteId)&&(identical(other.tid, tid) || other.tid == tid)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.category, category) || other.category == category)&&(identical(other.magnetUrl, magnetUrl) || other.magnetUrl == magnetUrl)&&(identical(other.detailUrl, detailUrl) || other.detailUrl == detailUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.cookie, cookie) || other.cookie == cookie)&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.saleStatus, saleStatus) || other.saleStatus == saleStatus)&&(identical(other.saleExpire, saleExpire) || other.saleExpire == saleExpire)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.hr, hr) || other.hr == hr)&&(identical(other.published, published) || other.published == published)&&(identical(other.size, size) || other.size == size)&&(identical(other.seeders, seeders) || other.seeders == seeders)&&(identical(other.leechers, leechers) || other.leechers == leechers)&&(identical(other.completers, completers) || other.completers == completers));
+  final _this = this as SearchTorrentInfo;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchTorrentInfo&&(identical(other.siteId, _this.siteId) || other.siteId == _this.siteId)&&(identical(other.tid, _this.tid) || other.tid == _this.tid)&&(identical(other.poster, _this.poster) || other.poster == _this.poster)&&(identical(other.category, _this.category) || other.category == _this.category)&&(identical(other.magnetUrl, _this.magnetUrl) || other.magnetUrl == _this.magnetUrl)&&(identical(other.detailUrl, _this.detailUrl) || other.detailUrl == _this.detailUrl)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.subtitle, _this.subtitle) || other.subtitle == _this.subtitle)&&(identical(other.cookie, _this.cookie) || other.cookie == _this.cookie)&&(identical(other.progress, _this.progress) || other.progress == _this.progress)&&(identical(other.saleStatus, _this.saleStatus) || other.saleStatus == _this.saleStatus)&&(identical(other.saleExpire, _this.saleExpire) || other.saleExpire == _this.saleExpire)&&const DeepCollectionEquality().equals(other.tags, _this.tags)&&(identical(other.hr, _this.hr) || other.hr == _this.hr)&&(identical(other.published, _this.published) || other.published == _this.published)&&(identical(other.size, _this.size) || other.size == _this.size)&&(identical(other.seeders, _this.seeders) || other.seeders == _this.seeders)&&(identical(other.leechers, _this.leechers) || other.leechers == _this.leechers)&&(identical(other.completers, _this.completers) || other.completers == _this.completers));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,siteId,tid,poster,category,magnetUrl,detailUrl,title,subtitle,cookie,progress,saleStatus,saleExpire,const DeepCollectionEquality().hash(tags),hr,published,size,seeders,leechers,completers]);
+int get hashCode {
+  final _this = this as SearchTorrentInfo;
+  return Object.hashAll([runtimeType,_this.siteId,_this.tid,_this.poster,_this.category,_this.magnetUrl,_this.detailUrl,_this.title,_this.subtitle,_this.cookie,_this.progress,_this.saleStatus,_this.saleExpire,const DeepCollectionEquality().hash(_this.tags),_this.hr,_this.published,_this.size,_this.seeders,_this.leechers,_this.completers]);
+}
 
 @override
 String toString() {
-  return 'SearchTorrentInfo(siteId: $siteId, tid: $tid, poster: $poster, category: $category, magnetUrl: $magnetUrl, detailUrl: $detailUrl, title: $title, subtitle: $subtitle, cookie: $cookie, progress: $progress, saleStatus: $saleStatus, saleExpire: $saleExpire, tags: $tags, hr: $hr, published: $published, size: $size, seeders: $seeders, leechers: $leechers, completers: $completers)';
+  final _this = this as SearchTorrentInfo;
+  return 'SearchTorrentInfo(siteId: ${_this.siteId}, tid: ${_this.tid}, poster: ${_this.poster}, category: ${_this.category}, magnetUrl: ${_this.magnetUrl}, detailUrl: ${_this.detailUrl}, title: ${_this.title}, subtitle: ${_this.subtitle}, cookie: ${_this.cookie}, progress: ${_this.progress}, saleStatus: ${_this.saleStatus}, saleExpire: ${_this.saleExpire}, tags: ${_this.tags}, hr: ${_this.hr}, published: ${_this.published}, size: ${_this.size}, seeders: ${_this.seeders}, leechers: ${_this.leechers}, completers: ${_this.completers})';
 }
 
 
@@ -66,7 +72,7 @@ class _$SearchTorrentInfoCopyWithImpl<$Res>
 /// Create a copy of SearchTorrentInfo
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? siteId = null,Object? tid = null,Object? poster = null,Object? category = null,Object? magnetUrl = null,Object? detailUrl = null,Object? title = null,Object? subtitle = null,Object? cookie = freezed,Object? progress = freezed,Object? saleStatus = null,Object? saleExpire = freezed,Object? tags = null,Object? hr = null,Object? published = null,Object? size = null,Object? seeders = null,Object? leechers = null,Object? completers = null,}) {
-  return _then(_self.copyWith(
+  return _then(SearchTorrentInfo(
 siteId: null == siteId ? _self.siteId : siteId // ignore: cast_nullable_to_non_nullable
 as String,tid: null == tid ? _self.tid : tid // ignore: cast_nullable_to_non_nullable
 as String,poster: null == poster ? _self.poster : poster // ignore: cast_nullable_to_non_nullable
@@ -227,7 +233,7 @@ return $default(_that.siteId,_that.tid,_that.poster,_that.category,_that.magnetU
 @JsonSerializable()
 
 class _SearchTorrentInfo implements SearchTorrentInfo {
-  const _SearchTorrentInfo({@JsonKey(name: 'site_id', fromJson: _toString) this.siteId = '', @JsonKey(fromJson: _toString) this.tid = '', @JsonKey(fromJson: _toString) this.poster = '', this.category = '', @JsonKey(name: 'magnet_url', fromJson: _toString) this.magnetUrl = '', @JsonKey(name: 'detail_url', fromJson: _toString) this.detailUrl = '', @JsonKey(fromJson: _toString) this.title = '', @JsonKey(fromJson: _toString) this.subtitle = '', @JsonKey(fromJson: _toString) this.cookie, @JsonKey(fromJson: _toDoubleOrNull) this.progress, @JsonKey(name: 'sale_status') this.saleStatus = '无优惠', @JsonKey(name: 'sale_expire') this.saleExpire, final  List<String> tags = const [], this.hr = false, @JsonKey(fromJson: _toString) this.published = '', @JsonKey(fromJson: _toInt) this.size = 0, @JsonKey(fromJson: _toInt) this.seeders = 0, @JsonKey(fromJson: _toInt) this.leechers = 0, @JsonKey(fromJson: _toInt) this.completers = 0}): _tags = tags;
+  const _SearchTorrentInfo({@JsonKey(name: 'site_id', fromJson: _toString) this.siteId = '', @JsonKey(fromJson: _toString) this.tid = '', @JsonKey(fromJson: _toString) this.poster = '', this.category = '', @JsonKey(name: 'magnet_url', fromJson: _toString) this.magnetUrl = '', @JsonKey(name: 'detail_url', fromJson: _toString) this.detailUrl = '', @JsonKey(fromJson: _toString) this.title = '', @JsonKey(fromJson: _toString) this.subtitle = '', @JsonKey(fromJson: _toString) this.cookie, @JsonKey(fromJson: _toDoubleOrNull) this.progress, @JsonKey(name: 'sale_status') this.saleStatus = '无优惠', @JsonKey(name: 'sale_expire') this.saleExpire,  List<String> tags = const [], this.hr = false, @JsonKey(fromJson: _toString) this.published = '', @JsonKey(fromJson: _toInt) this.size = 0, @JsonKey(fromJson: _toInt) this.seeders = 0, @JsonKey(fromJson: _toInt) this.leechers = 0, @JsonKey(fromJson: _toInt) this.completers = 0}): _tags = tags;
   factory _SearchTorrentInfo.fromJson(Map<String, dynamic> json) => _$SearchTorrentInfoFromJson(json);
 
 @override@JsonKey(name: 'site_id', fromJson: _toString) final  String siteId;
@@ -269,16 +275,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchTorrentInfo&&(identical(other.siteId, siteId) || other.siteId == siteId)&&(identical(other.tid, tid) || other.tid == tid)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.category, category) || other.category == category)&&(identical(other.magnetUrl, magnetUrl) || other.magnetUrl == magnetUrl)&&(identical(other.detailUrl, detailUrl) || other.detailUrl == detailUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.cookie, cookie) || other.cookie == cookie)&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.saleStatus, saleStatus) || other.saleStatus == saleStatus)&&(identical(other.saleExpire, saleExpire) || other.saleExpire == saleExpire)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.hr, hr) || other.hr == hr)&&(identical(other.published, published) || other.published == published)&&(identical(other.size, size) || other.size == size)&&(identical(other.seeders, seeders) || other.seeders == seeders)&&(identical(other.leechers, leechers) || other.leechers == leechers)&&(identical(other.completers, completers) || other.completers == completers));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchTorrentInfo&&(identical(other.siteId, siteId) || other.siteId == siteId)&&(identical(other.tid, tid) || other.tid == tid)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.category, category) || other.category == category)&&(identical(other.magnetUrl, magnetUrl) || other.magnetUrl == magnetUrl)&&(identical(other.detailUrl, detailUrl) || other.detailUrl == detailUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.subtitle, subtitle) || other.subtitle == subtitle)&&(identical(other.cookie, cookie) || other.cookie == cookie)&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.saleStatus, saleStatus) || other.saleStatus == saleStatus)&&(identical(other.saleExpire, saleExpire) || other.saleExpire == saleExpire)&&const DeepCollectionEquality().equals(other.tags, _tags)&&(identical(other.hr, hr) || other.hr == hr)&&(identical(other.published, published) || other.published == published)&&(identical(other.size, size) || other.size == size)&&(identical(other.seeders, seeders) || other.seeders == seeders)&&(identical(other.leechers, leechers) || other.leechers == leechers)&&(identical(other.completers, completers) || other.completers == completers));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,siteId,tid,poster,category,magnetUrl,detailUrl,title,subtitle,cookie,progress,saleStatus,saleExpire,const DeepCollectionEquality().hash(_tags),hr,published,size,seeders,leechers,completers]);
+int get hashCode {
+    return Object.hashAll([runtimeType,siteId,tid,poster,category,magnetUrl,detailUrl,title,subtitle,cookie,progress,saleStatus,saleExpire,const DeepCollectionEquality().hash(_tags),hr,published,size,seeders,leechers,completers]);
+}
 
 @override
 String toString() {
-  return 'SearchTorrentInfo(siteId: $siteId, tid: $tid, poster: $poster, category: $category, magnetUrl: $magnetUrl, detailUrl: $detailUrl, title: $title, subtitle: $subtitle, cookie: $cookie, progress: $progress, saleStatus: $saleStatus, saleExpire: $saleExpire, tags: $tags, hr: $hr, published: $published, size: $size, seeders: $seeders, leechers: $leechers, completers: $completers)';
+    return 'SearchTorrentInfo(siteId: $siteId, tid: $tid, poster: $poster, category: $category, magnetUrl: $magnetUrl, detailUrl: $detailUrl, title: $title, subtitle: $subtitle, cookie: $cookie, progress: $progress, saleStatus: $saleStatus, saleExpire: $saleExpire, tags: $tags, hr: $hr, published: $published, size: $size, seeders: $seeders, leechers: $leechers, completers: $completers)';
 }
 
 

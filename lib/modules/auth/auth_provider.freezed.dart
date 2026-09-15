@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'auth_provider.dart';
@@ -9,6 +9,7 @@ part of 'auth_provider.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $AuthStateCopyWith<AuthState> get copyWith => _$AuthStateCopyWithImpl<AuthState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthState&&(identical(other.loading, loading) || other.loading == loading)&&(identical(other.loggedIn, loggedIn) || other.loggedIn == loggedIn)&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.user, user) || other.user == user));
+  final _this = this as AuthState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthState&&(identical(other.loading, _this.loading) || other.loading == _this.loading)&&(identical(other.loggedIn, _this.loggedIn) || other.loggedIn == _this.loggedIn)&&(identical(other.accessToken, _this.accessToken) || other.accessToken == _this.accessToken)&&(identical(other.refreshToken, _this.refreshToken) || other.refreshToken == _this.refreshToken)&&(identical(other.user, _this.user) || other.user == _this.user));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,loading,loggedIn,accessToken,refreshToken,user);
+int get hashCode {
+  final _this = this as AuthState;
+  return Object.hash(runtimeType,_this.loading,_this.loggedIn,_this.accessToken,_this.refreshToken,_this.user);
+}
 
 @override
 String toString() {
-  return 'AuthState(loading: $loading, loggedIn: $loggedIn, accessToken: $accessToken, refreshToken: $refreshToken, user: $user)';
+  final _this = this as AuthState;
+  return 'AuthState(loading: ${_this.loading}, loggedIn: ${_this.loggedIn}, accessToken: ${_this.accessToken}, refreshToken: ${_this.refreshToken}, user: ${_this.user})';
 }
 
 
@@ -66,7 +72,7 @@ class _$AuthStateCopyWithImpl<$Res>
 /// Create a copy of AuthState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? loading = null,Object? loggedIn = null,Object? accessToken = freezed,Object? refreshToken = freezed,Object? user = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(AuthState(
 loading: null == loading ? _self.loading : loading // ignore: cast_nullable_to_non_nullable
 as bool,loggedIn: null == loggedIn ? _self.loggedIn : loggedIn // ignore: cast_nullable_to_non_nullable
 as bool,accessToken: freezed == accessToken ? _self.accessToken : accessToken // ignore: cast_nullable_to_non_nullable
@@ -247,16 +253,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthState&&(identical(other.loading, loading) || other.loading == loading)&&(identical(other.loggedIn, loggedIn) || other.loggedIn == loggedIn)&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.user, user) || other.user == user));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthState&&(identical(other.loading, loading) || other.loading == loading)&&(identical(other.loggedIn, loggedIn) || other.loggedIn == loggedIn)&&(identical(other.accessToken, accessToken) || other.accessToken == accessToken)&&(identical(other.refreshToken, refreshToken) || other.refreshToken == refreshToken)&&(identical(other.user, user) || other.user == user));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,loading,loggedIn,accessToken,refreshToken,user);
+int get hashCode {
+    return Object.hash(runtimeType,loading,loggedIn,accessToken,refreshToken,user);
+}
 
 @override
 String toString() {
-  return 'AuthState(loading: $loading, loggedIn: $loggedIn, accessToken: $accessToken, refreshToken: $refreshToken, user: $user)';
+    return 'AuthState(loading: $loading, loggedIn: $loggedIn, accessToken: $accessToken, refreshToken: $refreshToken, user: $user)';
 }
 
 

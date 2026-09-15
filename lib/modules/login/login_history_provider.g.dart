@@ -47,7 +47,7 @@ abstract class _$LoginHistory extends $Notifier<List<LoginRecord>> {
   List<LoginRecord> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<List<LoginRecord>, List<LoginRecord>>;
     final element =
         ref.element
@@ -57,6 +57,6 @@ abstract class _$LoginHistory extends $Notifier<List<LoginRecord>> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }

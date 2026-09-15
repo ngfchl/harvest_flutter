@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'top_movie.dart';
@@ -9,6 +9,7 @@ part of 'top_movie.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $TopMovieCopyWith<TopMovie> get copyWith => _$TopMovieCopyWithImpl<TopMovie>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TopMovie&&(identical(other.rank, rank) || other.rank == rank)&&(identical(other.doubanUrl, doubanUrl) || other.doubanUrl == doubanUrl)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.subtitle, subtitle)&&(identical(other.cast, cast) || other.cast == cast)&&const DeepCollectionEquality().equals(other.desc, desc)&&(identical(other.ratingNum, ratingNum) || other.ratingNum == ratingNum)&&(identical(other.evaluateNum, evaluateNum) || other.evaluateNum == evaluateNum)&&(identical(other.quote, quote) || other.quote == quote)&&(identical(other.cookie, cookie) || other.cookie == cookie));
+  final _this = this as TopMovie;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TopMovie&&(identical(other.rank, _this.rank) || other.rank == _this.rank)&&(identical(other.doubanUrl, _this.doubanUrl) || other.doubanUrl == _this.doubanUrl)&&(identical(other.poster, _this.poster) || other.poster == _this.poster)&&(identical(other.title, _this.title) || other.title == _this.title)&&const DeepCollectionEquality().equals(other.subtitle, _this.subtitle)&&(identical(other.cast, _this.cast) || other.cast == _this.cast)&&const DeepCollectionEquality().equals(other.desc, _this.desc)&&(identical(other.ratingNum, _this.ratingNum) || other.ratingNum == _this.ratingNum)&&(identical(other.evaluateNum, _this.evaluateNum) || other.evaluateNum == _this.evaluateNum)&&(identical(other.quote, _this.quote) || other.quote == _this.quote)&&(identical(other.cookie, _this.cookie) || other.cookie == _this.cookie));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,rank,doubanUrl,poster,title,const DeepCollectionEquality().hash(subtitle),cast,const DeepCollectionEquality().hash(desc),ratingNum,evaluateNum,quote,cookie);
+int get hashCode {
+  final _this = this as TopMovie;
+  return Object.hash(runtimeType,_this.rank,_this.doubanUrl,_this.poster,_this.title,const DeepCollectionEquality().hash(_this.subtitle),_this.cast,const DeepCollectionEquality().hash(_this.desc),_this.ratingNum,_this.evaluateNum,_this.quote,_this.cookie);
+}
 
 @override
 String toString() {
-  return 'TopMovie(rank: $rank, doubanUrl: $doubanUrl, poster: $poster, title: $title, subtitle: $subtitle, cast: $cast, desc: $desc, ratingNum: $ratingNum, evaluateNum: $evaluateNum, quote: $quote, cookie: $cookie)';
+  final _this = this as TopMovie;
+  return 'TopMovie(rank: ${_this.rank}, doubanUrl: ${_this.doubanUrl}, poster: ${_this.poster}, title: ${_this.title}, subtitle: ${_this.subtitle}, cast: ${_this.cast}, desc: ${_this.desc}, ratingNum: ${_this.ratingNum}, evaluateNum: ${_this.evaluateNum}, quote: ${_this.quote}, cookie: ${_this.cookie})';
 }
 
 
@@ -66,7 +72,7 @@ class _$TopMovieCopyWithImpl<$Res>
 /// Create a copy of TopMovie
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? rank = null,Object? doubanUrl = null,Object? poster = null,Object? title = null,Object? subtitle = null,Object? cast = null,Object? desc = null,Object? ratingNum = null,Object? evaluateNum = null,Object? quote = null,Object? cookie = null,}) {
-  return _then(_self.copyWith(
+  return _then(TopMovie(
 rank: null == rank ? _self.rank : rank // ignore: cast_nullable_to_non_nullable
 as String,doubanUrl: null == doubanUrl ? _self.doubanUrl : doubanUrl // ignore: cast_nullable_to_non_nullable
 as String,poster: null == poster ? _self.poster : poster // ignore: cast_nullable_to_non_nullable
@@ -219,7 +225,7 @@ return $default(_that.rank,_that.doubanUrl,_that.poster,_that.title,_that.subtit
 @JsonSerializable()
 
 class _TopMovie implements TopMovie {
-  const _TopMovie({this.rank = '', @JsonKey(name: 'douban_url') this.doubanUrl = '', this.poster = '', this.title = '', final  List<String> subtitle = const [], this.cast = '', final  List<String> desc = const [], @JsonKey(name: 'rating_num') this.ratingNum = '', @JsonKey(name: 'evaluate_num') this.evaluateNum = '', this.quote = '', this.cookie = ''}): _subtitle = subtitle,_desc = desc;
+  const _TopMovie({this.rank = '', @JsonKey(name: 'douban_url') this.doubanUrl = '', this.poster = '', this.title = '',  List<String> subtitle = const [], this.cast = '',  List<String> desc = const [], @JsonKey(name: 'rating_num') this.ratingNum = '', @JsonKey(name: 'evaluate_num') this.evaluateNum = '', this.quote = '', this.cookie = ''}): _subtitle = subtitle,_desc = desc;
   factory _TopMovie.fromJson(Map<String, dynamic> json) => _$TopMovieFromJson(json);
 
 @override@JsonKey() final  String rank;
@@ -259,16 +265,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TopMovie&&(identical(other.rank, rank) || other.rank == rank)&&(identical(other.doubanUrl, doubanUrl) || other.doubanUrl == doubanUrl)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other._subtitle, _subtitle)&&(identical(other.cast, cast) || other.cast == cast)&&const DeepCollectionEquality().equals(other._desc, _desc)&&(identical(other.ratingNum, ratingNum) || other.ratingNum == ratingNum)&&(identical(other.evaluateNum, evaluateNum) || other.evaluateNum == evaluateNum)&&(identical(other.quote, quote) || other.quote == quote)&&(identical(other.cookie, cookie) || other.cookie == cookie));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TopMovie&&(identical(other.rank, rank) || other.rank == rank)&&(identical(other.doubanUrl, doubanUrl) || other.doubanUrl == doubanUrl)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.title, title) || other.title == title)&&const DeepCollectionEquality().equals(other.subtitle, _subtitle)&&(identical(other.cast, cast) || other.cast == cast)&&const DeepCollectionEquality().equals(other.desc, _desc)&&(identical(other.ratingNum, ratingNum) || other.ratingNum == ratingNum)&&(identical(other.evaluateNum, evaluateNum) || other.evaluateNum == evaluateNum)&&(identical(other.quote, quote) || other.quote == quote)&&(identical(other.cookie, cookie) || other.cookie == cookie));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,rank,doubanUrl,poster,title,const DeepCollectionEquality().hash(_subtitle),cast,const DeepCollectionEquality().hash(_desc),ratingNum,evaluateNum,quote,cookie);
+int get hashCode {
+    return Object.hash(runtimeType,rank,doubanUrl,poster,title,const DeepCollectionEquality().hash(_subtitle),cast,const DeepCollectionEquality().hash(_desc),ratingNum,evaluateNum,quote,cookie);
+}
 
 @override
 String toString() {
-  return 'TopMovie(rank: $rank, doubanUrl: $doubanUrl, poster: $poster, title: $title, subtitle: $subtitle, cast: $cast, desc: $desc, ratingNum: $ratingNum, evaluateNum: $evaluateNum, quote: $quote, cookie: $cookie)';
+    return 'TopMovie(rank: $rank, doubanUrl: $doubanUrl, poster: $poster, title: $title, subtitle: $subtitle, cast: $cast, desc: $desc, ratingNum: $ratingNum, evaluateNum: $evaluateNum, quote: $quote, cookie: $cookie)';
 }
 
 

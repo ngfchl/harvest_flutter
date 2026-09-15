@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'rank_movie.dart';
@@ -9,6 +9,7 @@ part of 'rank_movie.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $RankMovieCopyWith<RankMovie> get copyWith => _$RankMovieCopyWithImpl<RankMovie>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RankMovie&&(identical(other.rank, rank) || other.rank == rank)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.title, title) || other.title == title)&&(identical(other.doubanUrl, doubanUrl) || other.doubanUrl == doubanUrl)&&const DeepCollectionEquality().equals(other.rating, rating)&&(identical(other.isPlayable, isPlayable) || other.isPlayable == isPlayable)&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other.types, types)&&const DeepCollectionEquality().equals(other.regions, regions)&&(identical(other.releaseDate, releaseDate) || other.releaseDate == releaseDate)&&(identical(other.actorCount, actorCount) || other.actorCount == actorCount)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.score, score) || other.score == score)&&(identical(other.cookie, cookie) || other.cookie == cookie)&&const DeepCollectionEquality().equals(other.actors, actors)&&(identical(other.isWatched, isWatched) || other.isWatched == isWatched));
+  final _this = this as RankMovie;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RankMovie&&(identical(other.rank, _this.rank) || other.rank == _this.rank)&&(identical(other.poster, _this.poster) || other.poster == _this.poster)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.doubanUrl, _this.doubanUrl) || other.doubanUrl == _this.doubanUrl)&&const DeepCollectionEquality().equals(other.rating, _this.rating)&&(identical(other.isPlayable, _this.isPlayable) || other.isPlayable == _this.isPlayable)&&(identical(other.id, _this.id) || other.id == _this.id)&&const DeepCollectionEquality().equals(other.types, _this.types)&&const DeepCollectionEquality().equals(other.regions, _this.regions)&&(identical(other.releaseDate, _this.releaseDate) || other.releaseDate == _this.releaseDate)&&(identical(other.actorCount, _this.actorCount) || other.actorCount == _this.actorCount)&&(identical(other.voteCount, _this.voteCount) || other.voteCount == _this.voteCount)&&(identical(other.score, _this.score) || other.score == _this.score)&&(identical(other.cookie, _this.cookie) || other.cookie == _this.cookie)&&const DeepCollectionEquality().equals(other.actors, _this.actors)&&(identical(other.isWatched, _this.isWatched) || other.isWatched == _this.isWatched));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,rank,poster,title,doubanUrl,const DeepCollectionEquality().hash(rating),isPlayable,id,const DeepCollectionEquality().hash(types),const DeepCollectionEquality().hash(regions),releaseDate,actorCount,voteCount,score,cookie,const DeepCollectionEquality().hash(actors),isWatched);
+int get hashCode {
+  final _this = this as RankMovie;
+  return Object.hash(runtimeType,_this.rank,_this.poster,_this.title,_this.doubanUrl,const DeepCollectionEquality().hash(_this.rating),_this.isPlayable,_this.id,const DeepCollectionEquality().hash(_this.types),const DeepCollectionEquality().hash(_this.regions),_this.releaseDate,_this.actorCount,_this.voteCount,_this.score,_this.cookie,const DeepCollectionEquality().hash(_this.actors),_this.isWatched);
+}
 
 @override
 String toString() {
-  return 'RankMovie(rank: $rank, poster: $poster, title: $title, doubanUrl: $doubanUrl, rating: $rating, isPlayable: $isPlayable, id: $id, types: $types, regions: $regions, releaseDate: $releaseDate, actorCount: $actorCount, voteCount: $voteCount, score: $score, cookie: $cookie, actors: $actors, isWatched: $isWatched)';
+  final _this = this as RankMovie;
+  return 'RankMovie(rank: ${_this.rank}, poster: ${_this.poster}, title: ${_this.title}, doubanUrl: ${_this.doubanUrl}, rating: ${_this.rating}, isPlayable: ${_this.isPlayable}, id: ${_this.id}, types: ${_this.types}, regions: ${_this.regions}, releaseDate: ${_this.releaseDate}, actorCount: ${_this.actorCount}, voteCount: ${_this.voteCount}, score: ${_this.score}, cookie: ${_this.cookie}, actors: ${_this.actors}, isWatched: ${_this.isWatched})';
 }
 
 
@@ -66,7 +72,7 @@ class _$RankMovieCopyWithImpl<$Res>
 /// Create a copy of RankMovie
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? rank = null,Object? poster = null,Object? title = null,Object? doubanUrl = null,Object? rating = null,Object? isPlayable = null,Object? id = null,Object? types = null,Object? regions = null,Object? releaseDate = null,Object? actorCount = null,Object? voteCount = null,Object? score = null,Object? cookie = freezed,Object? actors = null,Object? isWatched = null,}) {
-  return _then(_self.copyWith(
+  return _then(RankMovie(
 rank: null == rank ? _self.rank : rank // ignore: cast_nullable_to_non_nullable
 as int,poster: null == poster ? _self.poster : poster // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -224,7 +230,7 @@ return $default(_that.rank,_that.poster,_that.title,_that.doubanUrl,_that.rating
 @JsonSerializable()
 
 class _RankMovie implements RankMovie {
-  const _RankMovie({this.rank = 0, @JsonKey(name: 'cover_url') this.poster = '', this.title = '', @JsonKey(name: 'url') this.doubanUrl = '', final  List<String> rating = const [], @JsonKey(name: 'is_playable') this.isPlayable = false, this.id = '', final  List<String> types = const [], final  List<String> regions = const [], @JsonKey(name: 'release_date') this.releaseDate = '', @JsonKey(name: 'actor_count') this.actorCount = 0, @JsonKey(name: 'vote_count') this.voteCount = 0, this.score = '', this.cookie, final  List<String> actors = const [], @JsonKey(name: 'is_watched') this.isWatched = false}): _rating = rating,_types = types,_regions = regions,_actors = actors;
+  const _RankMovie({this.rank = 0, @JsonKey(name: 'cover_url') this.poster = '', this.title = '', @JsonKey(name: 'url') this.doubanUrl = '',  List<String> rating = const [], @JsonKey(name: 'is_playable') this.isPlayable = false, this.id = '',  List<String> types = const [],  List<String> regions = const [], @JsonKey(name: 'release_date') this.releaseDate = '', @JsonKey(name: 'actor_count') this.actorCount = 0, @JsonKey(name: 'vote_count') this.voteCount = 0, this.score = '', this.cookie,  List<String> actors = const [], @JsonKey(name: 'is_watched') this.isWatched = false}): _rating = rating,_types = types,_regions = regions,_actors = actors;
   factory _RankMovie.fromJson(Map<String, dynamic> json) => _$RankMovieFromJson(json);
 
 @override@JsonKey() final  int rank;
@@ -281,16 +287,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RankMovie&&(identical(other.rank, rank) || other.rank == rank)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.title, title) || other.title == title)&&(identical(other.doubanUrl, doubanUrl) || other.doubanUrl == doubanUrl)&&const DeepCollectionEquality().equals(other._rating, _rating)&&(identical(other.isPlayable, isPlayable) || other.isPlayable == isPlayable)&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other._types, _types)&&const DeepCollectionEquality().equals(other._regions, _regions)&&(identical(other.releaseDate, releaseDate) || other.releaseDate == releaseDate)&&(identical(other.actorCount, actorCount) || other.actorCount == actorCount)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.score, score) || other.score == score)&&(identical(other.cookie, cookie) || other.cookie == cookie)&&const DeepCollectionEquality().equals(other._actors, _actors)&&(identical(other.isWatched, isWatched) || other.isWatched == isWatched));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _RankMovie&&(identical(other.rank, rank) || other.rank == rank)&&(identical(other.poster, poster) || other.poster == poster)&&(identical(other.title, title) || other.title == title)&&(identical(other.doubanUrl, doubanUrl) || other.doubanUrl == doubanUrl)&&const DeepCollectionEquality().equals(other.rating, _rating)&&(identical(other.isPlayable, isPlayable) || other.isPlayable == isPlayable)&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other.types, _types)&&const DeepCollectionEquality().equals(other.regions, _regions)&&(identical(other.releaseDate, releaseDate) || other.releaseDate == releaseDate)&&(identical(other.actorCount, actorCount) || other.actorCount == actorCount)&&(identical(other.voteCount, voteCount) || other.voteCount == voteCount)&&(identical(other.score, score) || other.score == score)&&(identical(other.cookie, cookie) || other.cookie == cookie)&&const DeepCollectionEquality().equals(other.actors, _actors)&&(identical(other.isWatched, isWatched) || other.isWatched == isWatched));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,rank,poster,title,doubanUrl,const DeepCollectionEquality().hash(_rating),isPlayable,id,const DeepCollectionEquality().hash(_types),const DeepCollectionEquality().hash(_regions),releaseDate,actorCount,voteCount,score,cookie,const DeepCollectionEquality().hash(_actors),isWatched);
+int get hashCode {
+    return Object.hash(runtimeType,rank,poster,title,doubanUrl,const DeepCollectionEquality().hash(_rating),isPlayable,id,const DeepCollectionEquality().hash(_types),const DeepCollectionEquality().hash(_regions),releaseDate,actorCount,voteCount,score,cookie,const DeepCollectionEquality().hash(_actors),isWatched);
+}
 
 @override
 String toString() {
-  return 'RankMovie(rank: $rank, poster: $poster, title: $title, doubanUrl: $doubanUrl, rating: $rating, isPlayable: $isPlayable, id: $id, types: $types, regions: $regions, releaseDate: $releaseDate, actorCount: $actorCount, voteCount: $voteCount, score: $score, cookie: $cookie, actors: $actors, isWatched: $isWatched)';
+    return 'RankMovie(rank: $rank, poster: $poster, title: $title, doubanUrl: $doubanUrl, rating: $rating, isPlayable: $isPlayable, id: $id, types: $types, regions: $regions, releaseDate: $releaseDate, actorCount: $actorCount, voteCount: $voteCount, score: $score, cookie: $cookie, actors: $actors, isWatched: $isWatched)';
 }
 
 

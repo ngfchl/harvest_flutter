@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'video_detail.dart';
@@ -9,6 +9,7 @@ part of 'video_detail.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -28,16 +29,21 @@ $DetailRatingCopyWith<DetailRating> get copyWith => _$DetailRatingCopyWithImpl<D
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is DetailRating&&(identical(other.count, count) || other.count == count)&&(identical(other.max, max) || other.max == max)&&(identical(other.starCount, starCount) || other.starCount == starCount)&&(identical(other.value, value) || other.value == value));
+  final _this = this as DetailRating;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is DetailRating&&(identical(other.count, _this.count) || other.count == _this.count)&&(identical(other.max, _this.max) || other.max == _this.max)&&(identical(other.starCount, _this.starCount) || other.starCount == _this.starCount)&&(identical(other.value, _this.value) || other.value == _this.value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,count,max,starCount,value);
+int get hashCode {
+  final _this = this as DetailRating;
+  return Object.hash(runtimeType,_this.count,_this.max,_this.starCount,_this.value);
+}
 
 @override
 String toString() {
-  return 'DetailRating(count: $count, max: $max, starCount: $starCount, value: $value)';
+  final _this = this as DetailRating;
+  return 'DetailRating(count: ${_this.count}, max: ${_this.max}, starCount: ${_this.starCount}, value: ${_this.value})';
 }
 
 
@@ -66,7 +72,7 @@ class _$DetailRatingCopyWithImpl<$Res>
 /// Create a copy of DetailRating
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? count = null,Object? max = null,Object? starCount = null,Object? value = null,}) {
-  return _then(_self.copyWith(
+  return _then(DetailRating(
 count: null == count ? _self.count : count // ignore: cast_nullable_to_non_nullable
 as int,max: null == max ? _self.max : max // ignore: cast_nullable_to_non_nullable
 as int,starCount: null == starCount ? _self.starCount : starCount // ignore: cast_nullable_to_non_nullable
@@ -233,16 +239,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _DetailRating&&(identical(other.count, count) || other.count == count)&&(identical(other.max, max) || other.max == max)&&(identical(other.starCount, starCount) || other.starCount == starCount)&&(identical(other.value, value) || other.value == value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _DetailRating&&(identical(other.count, count) || other.count == count)&&(identical(other.max, max) || other.max == max)&&(identical(other.starCount, starCount) || other.starCount == starCount)&&(identical(other.value, value) || other.value == value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,count,max,starCount,value);
+int get hashCode {
+    return Object.hash(runtimeType,count,max,starCount,value);
+}
 
 @override
 String toString() {
-  return 'DetailRating(count: $count, max: $max, starCount: $starCount, value: $value)';
+    return 'DetailRating(count: $count, max: $max, starCount: $starCount, value: $value)';
 }
 
 
@@ -300,16 +308,21 @@ $PersonCopyWith<Person> get copyWith => _$PersonCopyWithImpl<Person>(this as Per
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Person&&(identical(other.name, name) || other.name == name));
+  final _this = this as Person;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Person&&(identical(other.name, _this.name) || other.name == _this.name));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name);
+int get hashCode {
+  final _this = this as Person;
+  return Object.hash(runtimeType,_this.name);
+}
 
 @override
 String toString() {
-  return 'Person(name: $name)';
+  final _this = this as Person;
+  return 'Person(name: ${_this.name})';
 }
 
 
@@ -338,7 +351,7 @@ class _$PersonCopyWithImpl<$Res>
 /// Create a copy of Person
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? name = null,}) {
-  return _then(_self.copyWith(
+  return _then(Person(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,
   ));
@@ -499,16 +512,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Person&&(identical(other.name, name) || other.name == name));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Person&&(identical(other.name, name) || other.name == name));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,name);
+int get hashCode {
+    return Object.hash(runtimeType,name);
+}
 
 @override
 String toString() {
-  return 'Person(name: $name)';
+    return 'Person(name: $name)';
 }
 
 
@@ -563,16 +578,21 @@ $PicCopyWith<Pic> get copyWith => _$PicCopyWithImpl<Pic>(this as Pic, _$identity
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Pic&&(identical(other.large, large) || other.large == large)&&(identical(other.normal, normal) || other.normal == normal));
+  final _this = this as Pic;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Pic&&(identical(other.large, _this.large) || other.large == _this.large)&&(identical(other.normal, _this.normal) || other.normal == _this.normal));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,large,normal);
+int get hashCode {
+  final _this = this as Pic;
+  return Object.hash(runtimeType,_this.large,_this.normal);
+}
 
 @override
 String toString() {
-  return 'Pic(large: $large, normal: $normal)';
+  final _this = this as Pic;
+  return 'Pic(large: ${_this.large}, normal: ${_this.normal})';
 }
 
 
@@ -601,7 +621,7 @@ class _$PicCopyWithImpl<$Res>
 /// Create a copy of Pic
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? large = null,Object? normal = null,}) {
-  return _then(_self.copyWith(
+  return _then(Pic(
 large: null == large ? _self.large : large // ignore: cast_nullable_to_non_nullable
 as String,normal: null == normal ? _self.normal : normal // ignore: cast_nullable_to_non_nullable
 as String,
@@ -764,16 +784,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Pic&&(identical(other.large, large) || other.large == large)&&(identical(other.normal, normal) || other.normal == normal));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Pic&&(identical(other.large, large) || other.large == large)&&(identical(other.normal, normal) || other.normal == normal));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,large,normal);
+int get hashCode {
+    return Object.hash(runtimeType,large,normal);
+}
 
 @override
 String toString() {
-  return 'Pic(large: $large, normal: $normal)';
+    return 'Pic(large: $large, normal: $normal)';
 }
 
 
@@ -829,16 +851,21 @@ $TrailerCopyWith<Trailer> get copyWith => _$TrailerCopyWithImpl<Trailer>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Trailer&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.typeName, typeName) || other.typeName == typeName)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.runtime, runtime) || other.runtime == runtime));
+  final _this = this as Trailer;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Trailer&&(identical(other.coverUrl, _this.coverUrl) || other.coverUrl == _this.coverUrl)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.typeName, _this.typeName) || other.typeName == _this.typeName)&&(identical(other.videoUrl, _this.videoUrl) || other.videoUrl == _this.videoUrl)&&(identical(other.runtime, _this.runtime) || other.runtime == _this.runtime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,coverUrl,title,typeName,videoUrl,runtime);
+int get hashCode {
+  final _this = this as Trailer;
+  return Object.hash(runtimeType,_this.coverUrl,_this.title,_this.typeName,_this.videoUrl,_this.runtime);
+}
 
 @override
 String toString() {
-  return 'Trailer(coverUrl: $coverUrl, title: $title, typeName: $typeName, videoUrl: $videoUrl, runtime: $runtime)';
+  final _this = this as Trailer;
+  return 'Trailer(coverUrl: ${_this.coverUrl}, title: ${_this.title}, typeName: ${_this.typeName}, videoUrl: ${_this.videoUrl}, runtime: ${_this.runtime})';
 }
 
 
@@ -867,7 +894,7 @@ class _$TrailerCopyWithImpl<$Res>
 /// Create a copy of Trailer
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? coverUrl = null,Object? title = null,Object? typeName = null,Object? videoUrl = null,Object? runtime = null,}) {
-  return _then(_self.copyWith(
+  return _then(Trailer(
 coverUrl: null == coverUrl ? _self.coverUrl : coverUrl // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,typeName: null == typeName ? _self.typeName : typeName // ignore: cast_nullable_to_non_nullable
@@ -1036,16 +1063,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Trailer&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.typeName, typeName) || other.typeName == typeName)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.runtime, runtime) || other.runtime == runtime));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Trailer&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.title, title) || other.title == title)&&(identical(other.typeName, typeName) || other.typeName == typeName)&&(identical(other.videoUrl, videoUrl) || other.videoUrl == videoUrl)&&(identical(other.runtime, runtime) || other.runtime == runtime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,coverUrl,title,typeName,videoUrl,runtime);
+int get hashCode {
+    return Object.hash(runtimeType,coverUrl,title,typeName,videoUrl,runtime);
+}
 
 @override
 String toString() {
-  return 'Trailer(coverUrl: $coverUrl, title: $title, typeName: $typeName, videoUrl: $videoUrl, runtime: $runtime)';
+    return 'Trailer(coverUrl: $coverUrl, title: $title, typeName: $typeName, videoUrl: $videoUrl, runtime: $runtime)';
 }
 
 
@@ -1104,16 +1133,21 @@ $VendorCopyWith<Vendor> get copyWith => _$VendorCopyWithImpl<Vendor>(this as Ven
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Vendor&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.greyIcon, greyIcon) || other.greyIcon == greyIcon)&&(identical(other.url, url) || other.url == url)&&(identical(other.episodesInfo, episodesInfo) || other.episodesInfo == episodesInfo)&&(identical(other.paymentDesc, paymentDesc) || other.paymentDesc == paymentDesc)&&(identical(other.accessible, accessible) || other.accessible == accessible)&&(identical(other.isPaid, isPaid) || other.isPaid == isPaid));
+  final _this = this as Vendor;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Vendor&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.icon, _this.icon) || other.icon == _this.icon)&&(identical(other.greyIcon, _this.greyIcon) || other.greyIcon == _this.greyIcon)&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.episodesInfo, _this.episodesInfo) || other.episodesInfo == _this.episodesInfo)&&(identical(other.paymentDesc, _this.paymentDesc) || other.paymentDesc == _this.paymentDesc)&&(identical(other.accessible, _this.accessible) || other.accessible == _this.accessible)&&(identical(other.isPaid, _this.isPaid) || other.isPaid == _this.isPaid));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,icon,greyIcon,url,episodesInfo,paymentDesc,accessible,isPaid);
+int get hashCode {
+  final _this = this as Vendor;
+  return Object.hash(runtimeType,_this.id,_this.title,_this.icon,_this.greyIcon,_this.url,_this.episodesInfo,_this.paymentDesc,_this.accessible,_this.isPaid);
+}
 
 @override
 String toString() {
-  return 'Vendor(id: $id, title: $title, icon: $icon, greyIcon: $greyIcon, url: $url, episodesInfo: $episodesInfo, paymentDesc: $paymentDesc, accessible: $accessible, isPaid: $isPaid)';
+  final _this = this as Vendor;
+  return 'Vendor(id: ${_this.id}, title: ${_this.title}, icon: ${_this.icon}, greyIcon: ${_this.greyIcon}, url: ${_this.url}, episodesInfo: ${_this.episodesInfo}, paymentDesc: ${_this.paymentDesc}, accessible: ${_this.accessible}, isPaid: ${_this.isPaid})';
 }
 
 
@@ -1142,7 +1176,7 @@ class _$VendorCopyWithImpl<$Res>
 /// Create a copy of Vendor
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? icon = null,Object? greyIcon = null,Object? url = null,Object? episodesInfo = null,Object? paymentDesc = null,Object? accessible = null,Object? isPaid = null,}) {
-  return _then(_self.copyWith(
+  return _then(Vendor(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,icon: null == icon ? _self.icon : icon // ignore: cast_nullable_to_non_nullable
@@ -1319,16 +1353,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Vendor&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.greyIcon, greyIcon) || other.greyIcon == greyIcon)&&(identical(other.url, url) || other.url == url)&&(identical(other.episodesInfo, episodesInfo) || other.episodesInfo == episodesInfo)&&(identical(other.paymentDesc, paymentDesc) || other.paymentDesc == paymentDesc)&&(identical(other.accessible, accessible) || other.accessible == accessible)&&(identical(other.isPaid, isPaid) || other.isPaid == isPaid));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Vendor&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.greyIcon, greyIcon) || other.greyIcon == greyIcon)&&(identical(other.url, url) || other.url == url)&&(identical(other.episodesInfo, episodesInfo) || other.episodesInfo == episodesInfo)&&(identical(other.paymentDesc, paymentDesc) || other.paymentDesc == paymentDesc)&&(identical(other.accessible, accessible) || other.accessible == accessible)&&(identical(other.isPaid, isPaid) || other.isPaid == isPaid));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,icon,greyIcon,url,episodesInfo,paymentDesc,accessible,isPaid);
+int get hashCode {
+    return Object.hash(runtimeType,id,title,icon,greyIcon,url,episodesInfo,paymentDesc,accessible,isPaid);
+}
 
 @override
 String toString() {
-  return 'Vendor(id: $id, title: $title, icon: $icon, greyIcon: $greyIcon, url: $url, episodesInfo: $episodesInfo, paymentDesc: $paymentDesc, accessible: $accessible, isPaid: $isPaid)';
+    return 'Vendor(id: $id, title: $title, icon: $icon, greyIcon: $greyIcon, url: $url, episodesInfo: $episodesInfo, paymentDesc: $paymentDesc, accessible: $accessible, isPaid: $isPaid)';
 }
 
 
@@ -1391,16 +1427,21 @@ $LinewatchSourceCopyWith<LinewatchSource> get copyWith => _$LinewatchSourceCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LinewatchSource&&(identical(other.literal, literal) || other.literal == literal)&&(identical(other.name, name) || other.name == name)&&(identical(other.pic, pic) || other.pic == pic));
+  final _this = this as LinewatchSource;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LinewatchSource&&(identical(other.literal, _this.literal) || other.literal == _this.literal)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.pic, _this.pic) || other.pic == _this.pic));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,literal,name,pic);
+int get hashCode {
+  final _this = this as LinewatchSource;
+  return Object.hash(runtimeType,_this.literal,_this.name,_this.pic);
+}
 
 @override
 String toString() {
-  return 'LinewatchSource(literal: $literal, name: $name, pic: $pic)';
+  final _this = this as LinewatchSource;
+  return 'LinewatchSource(literal: ${_this.literal}, name: ${_this.name}, pic: ${_this.pic})';
 }
 
 
@@ -1429,7 +1470,7 @@ class _$LinewatchSourceCopyWithImpl<$Res>
 /// Create a copy of LinewatchSource
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? literal = null,Object? name = null,Object? pic = null,}) {
-  return _then(_self.copyWith(
+  return _then(LinewatchSource(
 literal: null == literal ? _self.literal : literal // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,pic: null == pic ? _self.pic : pic // ignore: cast_nullable_to_non_nullable
@@ -1594,16 +1635,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LinewatchSource&&(identical(other.literal, literal) || other.literal == literal)&&(identical(other.name, name) || other.name == name)&&(identical(other.pic, pic) || other.pic == pic));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LinewatchSource&&(identical(other.literal, literal) || other.literal == literal)&&(identical(other.name, name) || other.name == name)&&(identical(other.pic, pic) || other.pic == pic));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,literal,name,pic);
+int get hashCode {
+    return Object.hash(runtimeType,literal,name,pic);
+}
 
 @override
 String toString() {
-  return 'LinewatchSource(literal: $literal, name: $name, pic: $pic)';
+    return 'LinewatchSource(literal: $literal, name: $name, pic: $pic)';
 }
 
 
@@ -1660,16 +1703,21 @@ $LinewatchCopyWith<Linewatch> get copyWith => _$LinewatchCopyWithImpl<Linewatch>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Linewatch&&(identical(other.free, free) || other.free == free)&&(identical(other.source, source) || other.source == source)&&(identical(other.url, url) || other.url == url));
+  final _this = this as Linewatch;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Linewatch&&(identical(other.free, _this.free) || other.free == _this.free)&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.url, _this.url) || other.url == _this.url));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,free,source,url);
+int get hashCode {
+  final _this = this as Linewatch;
+  return Object.hash(runtimeType,_this.free,_this.source,_this.url);
+}
 
 @override
 String toString() {
-  return 'Linewatch(free: $free, source: $source, url: $url)';
+  final _this = this as Linewatch;
+  return 'Linewatch(free: ${_this.free}, source: ${_this.source}, url: ${_this.url})';
 }
 
 
@@ -1698,7 +1746,7 @@ class _$LinewatchCopyWithImpl<$Res>
 /// Create a copy of Linewatch
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? free = null,Object? source = null,Object? url = null,}) {
-  return _then(_self.copyWith(
+  return _then(Linewatch(
 free: null == free ? _self.free : free // ignore: cast_nullable_to_non_nullable
 as bool,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as LinewatchSource,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
@@ -1872,16 +1920,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Linewatch&&(identical(other.free, free) || other.free == free)&&(identical(other.source, source) || other.source == source)&&(identical(other.url, url) || other.url == url));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Linewatch&&(identical(other.free, free) || other.free == free)&&(identical(other.source, source) || other.source == source)&&(identical(other.url, url) || other.url == url));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,free,source,url);
+int get hashCode {
+    return Object.hash(runtimeType,free,source,url);
+}
 
 @override
 String toString() {
-  return 'Linewatch(free: $free, source: $source, url: $url)';
+    return 'Linewatch(free: $free, source: $source, url: $url)';
 }
 
 
@@ -1947,16 +1997,21 @@ $RealtimeHonorCopyWith<RealtimeHonor> get copyWith => _$RealtimeHonorCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RealtimeHonor&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.rank, rank) || other.rank == rank)&&(identical(other.score, score) || other.score == score)&&(identical(other.title, title) || other.title == title)&&(identical(other.uri, uri) || other.uri == uri));
+  final _this = this as RealtimeHonor;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RealtimeHonor&&(identical(other.kind, _this.kind) || other.kind == _this.kind)&&(identical(other.rank, _this.rank) || other.rank == _this.rank)&&(identical(other.score, _this.score) || other.score == _this.score)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.uri, _this.uri) || other.uri == _this.uri));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,kind,rank,score,title,uri);
+int get hashCode {
+  final _this = this as RealtimeHonor;
+  return Object.hash(runtimeType,_this.kind,_this.rank,_this.score,_this.title,_this.uri);
+}
 
 @override
 String toString() {
-  return 'RealtimeHonor(kind: $kind, rank: $rank, score: $score, title: $title, uri: $uri)';
+  final _this = this as RealtimeHonor;
+  return 'RealtimeHonor(kind: ${_this.kind}, rank: ${_this.rank}, score: ${_this.score}, title: ${_this.title}, uri: ${_this.uri})';
 }
 
 
@@ -1985,7 +2040,7 @@ class _$RealtimeHonorCopyWithImpl<$Res>
 /// Create a copy of RealtimeHonor
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? kind = null,Object? rank = null,Object? score = null,Object? title = null,Object? uri = null,}) {
-  return _then(_self.copyWith(
+  return _then(RealtimeHonor(
 kind: null == kind ? _self.kind : kind // ignore: cast_nullable_to_non_nullable
 as String,rank: null == rank ? _self.rank : rank // ignore: cast_nullable_to_non_nullable
 as int,score: null == score ? _self.score : score // ignore: cast_nullable_to_non_nullable
@@ -2154,16 +2209,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RealtimeHonor&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.rank, rank) || other.rank == rank)&&(identical(other.score, score) || other.score == score)&&(identical(other.title, title) || other.title == title)&&(identical(other.uri, uri) || other.uri == uri));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _RealtimeHonor&&(identical(other.kind, kind) || other.kind == kind)&&(identical(other.rank, rank) || other.rank == rank)&&(identical(other.score, score) || other.score == score)&&(identical(other.title, title) || other.title == title)&&(identical(other.uri, uri) || other.uri == uri));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,kind,rank,score,title,uri);
+int get hashCode {
+    return Object.hash(runtimeType,kind,rank,score,title,uri);
+}
 
 @override
 String toString() {
-  return 'RealtimeHonor(kind: $kind, rank: $rank, score: $score, title: $title, uri: $uri)';
+    return 'RealtimeHonor(kind: $kind, rank: $rank, score: $score, title: $title, uri: $uri)';
 }
 
 
@@ -2222,16 +2279,21 @@ $VideoDetailCopyWith<VideoDetail> get copyWith => _$VideoDetailCopyWithImpl<Vide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.originalTitle, originalTitle) || other.originalTitle == originalTitle)&&(identical(other.year, year) || other.year == year)&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.pic, pic) || other.pic == pic)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.nullRatingReason, nullRatingReason) || other.nullRatingReason == nullRatingReason)&&const DeepCollectionEquality().equals(other.actors, actors)&&const DeepCollectionEquality().equals(other.directors, directors)&&const DeepCollectionEquality().equals(other.aka, aka)&&const DeepCollectionEquality().equals(other.countries, countries)&&const DeepCollectionEquality().equals(other.languages, languages)&&const DeepCollectionEquality().equals(other.genres, genres)&&const DeepCollectionEquality().equals(other.durations, durations)&&const DeepCollectionEquality().equals(other.pubdate, pubdate)&&(identical(other.intro, intro) || other.intro == intro)&&(identical(other.cardSubtitle, cardSubtitle) || other.cardSubtitle == cardSubtitle)&&(identical(other.isTv, isTv) || other.isTv == isTv)&&(identical(other.isReleased, isReleased) || other.isReleased == isReleased)&&(identical(other.hasLinewatch, hasLinewatch) || other.hasLinewatch == hasLinewatch)&&(identical(other.episodesCount, episodesCount) || other.episodesCount == episodesCount)&&(identical(other.episodesInfo, episodesInfo) || other.episodesInfo == episodesInfo)&&const DeepCollectionEquality().equals(other.trailers, trailers)&&const DeepCollectionEquality().equals(other.vendors, vendors)&&const DeepCollectionEquality().equals(other.linewatches, linewatches)&&const DeepCollectionEquality().equals(other.realtimeHonorInfos, realtimeHonorInfos)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.reviewCount, reviewCount) || other.reviewCount == reviewCount)&&(identical(other.forumTopicCount, forumTopicCount) || other.forumTopicCount == forumTopicCount)&&(identical(other.url, url) || other.url == url)&&(identical(other.sharingUrl, sharingUrl) || other.sharingUrl == sharingUrl)&&(identical(other.type, type) || other.type == type)&&(identical(other.subtype, subtype) || other.subtype == subtype));
+  final _this = this as VideoDetail;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VideoDetail&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.originalTitle, _this.originalTitle) || other.originalTitle == _this.originalTitle)&&(identical(other.year, _this.year) || other.year == _this.year)&&(identical(other.coverUrl, _this.coverUrl) || other.coverUrl == _this.coverUrl)&&(identical(other.pic, _this.pic) || other.pic == _this.pic)&&(identical(other.rating, _this.rating) || other.rating == _this.rating)&&(identical(other.nullRatingReason, _this.nullRatingReason) || other.nullRatingReason == _this.nullRatingReason)&&const DeepCollectionEquality().equals(other.actors, _this.actors)&&const DeepCollectionEquality().equals(other.directors, _this.directors)&&const DeepCollectionEquality().equals(other.aka, _this.aka)&&const DeepCollectionEquality().equals(other.countries, _this.countries)&&const DeepCollectionEquality().equals(other.languages, _this.languages)&&const DeepCollectionEquality().equals(other.genres, _this.genres)&&const DeepCollectionEquality().equals(other.durations, _this.durations)&&const DeepCollectionEquality().equals(other.pubdate, _this.pubdate)&&(identical(other.intro, _this.intro) || other.intro == _this.intro)&&(identical(other.cardSubtitle, _this.cardSubtitle) || other.cardSubtitle == _this.cardSubtitle)&&(identical(other.isTv, _this.isTv) || other.isTv == _this.isTv)&&(identical(other.isReleased, _this.isReleased) || other.isReleased == _this.isReleased)&&(identical(other.hasLinewatch, _this.hasLinewatch) || other.hasLinewatch == _this.hasLinewatch)&&(identical(other.episodesCount, _this.episodesCount) || other.episodesCount == _this.episodesCount)&&(identical(other.episodesInfo, _this.episodesInfo) || other.episodesInfo == _this.episodesInfo)&&const DeepCollectionEquality().equals(other.trailers, _this.trailers)&&const DeepCollectionEquality().equals(other.vendors, _this.vendors)&&const DeepCollectionEquality().equals(other.linewatches, _this.linewatches)&&const DeepCollectionEquality().equals(other.realtimeHonorInfos, _this.realtimeHonorInfos)&&(identical(other.commentCount, _this.commentCount) || other.commentCount == _this.commentCount)&&(identical(other.reviewCount, _this.reviewCount) || other.reviewCount == _this.reviewCount)&&(identical(other.forumTopicCount, _this.forumTopicCount) || other.forumTopicCount == _this.forumTopicCount)&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.sharingUrl, _this.sharingUrl) || other.sharingUrl == _this.sharingUrl)&&(identical(other.type, _this.type) || other.type == _this.type)&&(identical(other.subtype, _this.subtype) || other.subtype == _this.subtype));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,title,originalTitle,year,coverUrl,pic,rating,nullRatingReason,const DeepCollectionEquality().hash(actors),const DeepCollectionEquality().hash(directors),const DeepCollectionEquality().hash(aka),const DeepCollectionEquality().hash(countries),const DeepCollectionEquality().hash(languages),const DeepCollectionEquality().hash(genres),const DeepCollectionEquality().hash(durations),const DeepCollectionEquality().hash(pubdate),intro,cardSubtitle,isTv,isReleased,hasLinewatch,episodesCount,episodesInfo,const DeepCollectionEquality().hash(trailers),const DeepCollectionEquality().hash(vendors),const DeepCollectionEquality().hash(linewatches),const DeepCollectionEquality().hash(realtimeHonorInfos),commentCount,reviewCount,forumTopicCount,url,sharingUrl,type,subtype]);
+int get hashCode {
+  final _this = this as VideoDetail;
+  return Object.hashAll([runtimeType,_this.id,_this.title,_this.originalTitle,_this.year,_this.coverUrl,_this.pic,_this.rating,_this.nullRatingReason,const DeepCollectionEquality().hash(_this.actors),const DeepCollectionEquality().hash(_this.directors),const DeepCollectionEquality().hash(_this.aka),const DeepCollectionEquality().hash(_this.countries),const DeepCollectionEquality().hash(_this.languages),const DeepCollectionEquality().hash(_this.genres),const DeepCollectionEquality().hash(_this.durations),const DeepCollectionEquality().hash(_this.pubdate),_this.intro,_this.cardSubtitle,_this.isTv,_this.isReleased,_this.hasLinewatch,_this.episodesCount,_this.episodesInfo,const DeepCollectionEquality().hash(_this.trailers),const DeepCollectionEquality().hash(_this.vendors),const DeepCollectionEquality().hash(_this.linewatches),const DeepCollectionEquality().hash(_this.realtimeHonorInfos),_this.commentCount,_this.reviewCount,_this.forumTopicCount,_this.url,_this.sharingUrl,_this.type,_this.subtype]);
+}
 
 @override
 String toString() {
-  return 'VideoDetail(id: $id, title: $title, originalTitle: $originalTitle, year: $year, coverUrl: $coverUrl, pic: $pic, rating: $rating, nullRatingReason: $nullRatingReason, actors: $actors, directors: $directors, aka: $aka, countries: $countries, languages: $languages, genres: $genres, durations: $durations, pubdate: $pubdate, intro: $intro, cardSubtitle: $cardSubtitle, isTv: $isTv, isReleased: $isReleased, hasLinewatch: $hasLinewatch, episodesCount: $episodesCount, episodesInfo: $episodesInfo, trailers: $trailers, vendors: $vendors, linewatches: $linewatches, realtimeHonorInfos: $realtimeHonorInfos, commentCount: $commentCount, reviewCount: $reviewCount, forumTopicCount: $forumTopicCount, url: $url, sharingUrl: $sharingUrl, type: $type, subtype: $subtype)';
+  final _this = this as VideoDetail;
+  return 'VideoDetail(id: ${_this.id}, title: ${_this.title}, originalTitle: ${_this.originalTitle}, year: ${_this.year}, coverUrl: ${_this.coverUrl}, pic: ${_this.pic}, rating: ${_this.rating}, nullRatingReason: ${_this.nullRatingReason}, actors: ${_this.actors}, directors: ${_this.directors}, aka: ${_this.aka}, countries: ${_this.countries}, languages: ${_this.languages}, genres: ${_this.genres}, durations: ${_this.durations}, pubdate: ${_this.pubdate}, intro: ${_this.intro}, cardSubtitle: ${_this.cardSubtitle}, isTv: ${_this.isTv}, isReleased: ${_this.isReleased}, hasLinewatch: ${_this.hasLinewatch}, episodesCount: ${_this.episodesCount}, episodesInfo: ${_this.episodesInfo}, trailers: ${_this.trailers}, vendors: ${_this.vendors}, linewatches: ${_this.linewatches}, realtimeHonorInfos: ${_this.realtimeHonorInfos}, commentCount: ${_this.commentCount}, reviewCount: ${_this.reviewCount}, forumTopicCount: ${_this.forumTopicCount}, url: ${_this.url}, sharingUrl: ${_this.sharingUrl}, type: ${_this.type}, subtype: ${_this.subtype})';
 }
 
 
@@ -2260,7 +2322,7 @@ class _$VideoDetailCopyWithImpl<$Res>
 /// Create a copy of VideoDetail
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? originalTitle = null,Object? year = null,Object? coverUrl = null,Object? pic = null,Object? rating = null,Object? nullRatingReason = null,Object? actors = null,Object? directors = null,Object? aka = null,Object? countries = null,Object? languages = null,Object? genres = null,Object? durations = null,Object? pubdate = null,Object? intro = null,Object? cardSubtitle = null,Object? isTv = null,Object? isReleased = null,Object? hasLinewatch = null,Object? episodesCount = null,Object? episodesInfo = null,Object? trailers = null,Object? vendors = null,Object? linewatches = null,Object? realtimeHonorInfos = null,Object? commentCount = null,Object? reviewCount = null,Object? forumTopicCount = null,Object? url = null,Object? sharingUrl = null,Object? type = null,Object? subtype = null,}) {
-  return _then(_self.copyWith(
+  return _then(VideoDetail(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,originalTitle: null == originalTitle ? _self.originalTitle : originalTitle // ignore: cast_nullable_to_non_nullable
@@ -2454,7 +2516,7 @@ return $default(_that.id,_that.title,_that.originalTitle,_that.year,_that.coverU
 @JsonSerializable()
 
 class _VideoDetail implements VideoDetail {
-  const _VideoDetail({this.id = '', this.title = '', @JsonKey(name: 'original_title') this.originalTitle = '', this.year = '', @JsonKey(name: 'cover_url') this.coverUrl = '', this.pic = const Pic(), this.rating = const DetailRating(), @JsonKey(name: 'null_rating_reason') this.nullRatingReason = '', final  List<Person> actors = const <Person>[], final  List<Person> directors = const <Person>[], final  List<String> aka = const <String>[], final  List<String> countries = const <String>[], final  List<String> languages = const <String>[], final  List<String> genres = const <String>[], final  List<String> durations = const <String>[], final  List<String> pubdate = const <String>[], this.intro = '', @JsonKey(name: 'card_subtitle') this.cardSubtitle = '', @JsonKey(name: 'is_tv') this.isTv = false, @JsonKey(name: 'is_released') this.isReleased = false, @JsonKey(name: 'has_linewatch') this.hasLinewatch = false, @JsonKey(name: 'episodes_count') this.episodesCount = 0, @JsonKey(name: 'episodes_info') this.episodesInfo = '', final  List<Trailer> trailers = const <Trailer>[], final  List<Vendor> vendors = const <Vendor>[], final  List<Linewatch> linewatches = const <Linewatch>[], @JsonKey(name: 'realtime_hot_honor_infos') final  List<RealtimeHonor> realtimeHonorInfos = const <RealtimeHonor>[], @JsonKey(name: 'comment_count') this.commentCount = 0, @JsonKey(name: 'review_count') this.reviewCount = 0, @JsonKey(name: 'forum_topic_count') this.forumTopicCount = 0, this.url = '', @JsonKey(name: 'sharing_url') this.sharingUrl = '', this.type = '', this.subtype = ''}): _actors = actors,_directors = directors,_aka = aka,_countries = countries,_languages = languages,_genres = genres,_durations = durations,_pubdate = pubdate,_trailers = trailers,_vendors = vendors,_linewatches = linewatches,_realtimeHonorInfos = realtimeHonorInfos;
+  const _VideoDetail({this.id = '', this.title = '', @JsonKey(name: 'original_title') this.originalTitle = '', this.year = '', @JsonKey(name: 'cover_url') this.coverUrl = '', this.pic = const Pic(), this.rating = const DetailRating(), @JsonKey(name: 'null_rating_reason') this.nullRatingReason = '',  List<Person> actors = const <Person>[],  List<Person> directors = const <Person>[],  List<String> aka = const <String>[],  List<String> countries = const <String>[],  List<String> languages = const <String>[],  List<String> genres = const <String>[],  List<String> durations = const <String>[],  List<String> pubdate = const <String>[], this.intro = '', @JsonKey(name: 'card_subtitle') this.cardSubtitle = '', @JsonKey(name: 'is_tv') this.isTv = false, @JsonKey(name: 'is_released') this.isReleased = false, @JsonKey(name: 'has_linewatch') this.hasLinewatch = false, @JsonKey(name: 'episodes_count') this.episodesCount = 0, @JsonKey(name: 'episodes_info') this.episodesInfo = '',  List<Trailer> trailers = const <Trailer>[],  List<Vendor> vendors = const <Vendor>[],  List<Linewatch> linewatches = const <Linewatch>[], @JsonKey(name: 'realtime_hot_honor_infos')  List<RealtimeHonor> realtimeHonorInfos = const <RealtimeHonor>[], @JsonKey(name: 'comment_count') this.commentCount = 0, @JsonKey(name: 'review_count') this.reviewCount = 0, @JsonKey(name: 'forum_topic_count') this.forumTopicCount = 0, this.url = '', @JsonKey(name: 'sharing_url') this.sharingUrl = '', this.type = '', this.subtype = ''}): _actors = actors,_directors = directors,_aka = aka,_countries = countries,_languages = languages,_genres = genres,_durations = durations,_pubdate = pubdate,_trailers = trailers,_vendors = vendors,_linewatches = linewatches,_realtimeHonorInfos = realtimeHonorInfos;
   factory _VideoDetail.fromJson(Map<String, dynamic> json) => _$VideoDetailFromJson(json);
 
 @override@JsonKey() final  String id;
@@ -2577,16 +2639,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _VideoDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.originalTitle, originalTitle) || other.originalTitle == originalTitle)&&(identical(other.year, year) || other.year == year)&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.pic, pic) || other.pic == pic)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.nullRatingReason, nullRatingReason) || other.nullRatingReason == nullRatingReason)&&const DeepCollectionEquality().equals(other._actors, _actors)&&const DeepCollectionEquality().equals(other._directors, _directors)&&const DeepCollectionEquality().equals(other._aka, _aka)&&const DeepCollectionEquality().equals(other._countries, _countries)&&const DeepCollectionEquality().equals(other._languages, _languages)&&const DeepCollectionEquality().equals(other._genres, _genres)&&const DeepCollectionEquality().equals(other._durations, _durations)&&const DeepCollectionEquality().equals(other._pubdate, _pubdate)&&(identical(other.intro, intro) || other.intro == intro)&&(identical(other.cardSubtitle, cardSubtitle) || other.cardSubtitle == cardSubtitle)&&(identical(other.isTv, isTv) || other.isTv == isTv)&&(identical(other.isReleased, isReleased) || other.isReleased == isReleased)&&(identical(other.hasLinewatch, hasLinewatch) || other.hasLinewatch == hasLinewatch)&&(identical(other.episodesCount, episodesCount) || other.episodesCount == episodesCount)&&(identical(other.episodesInfo, episodesInfo) || other.episodesInfo == episodesInfo)&&const DeepCollectionEquality().equals(other._trailers, _trailers)&&const DeepCollectionEquality().equals(other._vendors, _vendors)&&const DeepCollectionEquality().equals(other._linewatches, _linewatches)&&const DeepCollectionEquality().equals(other._realtimeHonorInfos, _realtimeHonorInfos)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.reviewCount, reviewCount) || other.reviewCount == reviewCount)&&(identical(other.forumTopicCount, forumTopicCount) || other.forumTopicCount == forumTopicCount)&&(identical(other.url, url) || other.url == url)&&(identical(other.sharingUrl, sharingUrl) || other.sharingUrl == sharingUrl)&&(identical(other.type, type) || other.type == type)&&(identical(other.subtype, subtype) || other.subtype == subtype));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _VideoDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.originalTitle, originalTitle) || other.originalTitle == originalTitle)&&(identical(other.year, year) || other.year == year)&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.pic, pic) || other.pic == pic)&&(identical(other.rating, rating) || other.rating == rating)&&(identical(other.nullRatingReason, nullRatingReason) || other.nullRatingReason == nullRatingReason)&&const DeepCollectionEquality().equals(other.actors, _actors)&&const DeepCollectionEquality().equals(other.directors, _directors)&&const DeepCollectionEquality().equals(other.aka, _aka)&&const DeepCollectionEquality().equals(other.countries, _countries)&&const DeepCollectionEquality().equals(other.languages, _languages)&&const DeepCollectionEquality().equals(other.genres, _genres)&&const DeepCollectionEquality().equals(other.durations, _durations)&&const DeepCollectionEquality().equals(other.pubdate, _pubdate)&&(identical(other.intro, intro) || other.intro == intro)&&(identical(other.cardSubtitle, cardSubtitle) || other.cardSubtitle == cardSubtitle)&&(identical(other.isTv, isTv) || other.isTv == isTv)&&(identical(other.isReleased, isReleased) || other.isReleased == isReleased)&&(identical(other.hasLinewatch, hasLinewatch) || other.hasLinewatch == hasLinewatch)&&(identical(other.episodesCount, episodesCount) || other.episodesCount == episodesCount)&&(identical(other.episodesInfo, episodesInfo) || other.episodesInfo == episodesInfo)&&const DeepCollectionEquality().equals(other.trailers, _trailers)&&const DeepCollectionEquality().equals(other.vendors, _vendors)&&const DeepCollectionEquality().equals(other.linewatches, _linewatches)&&const DeepCollectionEquality().equals(other.realtimeHonorInfos, _realtimeHonorInfos)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.reviewCount, reviewCount) || other.reviewCount == reviewCount)&&(identical(other.forumTopicCount, forumTopicCount) || other.forumTopicCount == forumTopicCount)&&(identical(other.url, url) || other.url == url)&&(identical(other.sharingUrl, sharingUrl) || other.sharingUrl == sharingUrl)&&(identical(other.type, type) || other.type == type)&&(identical(other.subtype, subtype) || other.subtype == subtype));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,title,originalTitle,year,coverUrl,pic,rating,nullRatingReason,const DeepCollectionEquality().hash(_actors),const DeepCollectionEquality().hash(_directors),const DeepCollectionEquality().hash(_aka),const DeepCollectionEquality().hash(_countries),const DeepCollectionEquality().hash(_languages),const DeepCollectionEquality().hash(_genres),const DeepCollectionEquality().hash(_durations),const DeepCollectionEquality().hash(_pubdate),intro,cardSubtitle,isTv,isReleased,hasLinewatch,episodesCount,episodesInfo,const DeepCollectionEquality().hash(_trailers),const DeepCollectionEquality().hash(_vendors),const DeepCollectionEquality().hash(_linewatches),const DeepCollectionEquality().hash(_realtimeHonorInfos),commentCount,reviewCount,forumTopicCount,url,sharingUrl,type,subtype]);
+int get hashCode {
+    return Object.hashAll([runtimeType,id,title,originalTitle,year,coverUrl,pic,rating,nullRatingReason,const DeepCollectionEquality().hash(_actors),const DeepCollectionEquality().hash(_directors),const DeepCollectionEquality().hash(_aka),const DeepCollectionEquality().hash(_countries),const DeepCollectionEquality().hash(_languages),const DeepCollectionEquality().hash(_genres),const DeepCollectionEquality().hash(_durations),const DeepCollectionEquality().hash(_pubdate),intro,cardSubtitle,isTv,isReleased,hasLinewatch,episodesCount,episodesInfo,const DeepCollectionEquality().hash(_trailers),const DeepCollectionEquality().hash(_vendors),const DeepCollectionEquality().hash(_linewatches),const DeepCollectionEquality().hash(_realtimeHonorInfos),commentCount,reviewCount,forumTopicCount,url,sharingUrl,type,subtype]);
+}
 
 @override
 String toString() {
-  return 'VideoDetail(id: $id, title: $title, originalTitle: $originalTitle, year: $year, coverUrl: $coverUrl, pic: $pic, rating: $rating, nullRatingReason: $nullRatingReason, actors: $actors, directors: $directors, aka: $aka, countries: $countries, languages: $languages, genres: $genres, durations: $durations, pubdate: $pubdate, intro: $intro, cardSubtitle: $cardSubtitle, isTv: $isTv, isReleased: $isReleased, hasLinewatch: $hasLinewatch, episodesCount: $episodesCount, episodesInfo: $episodesInfo, trailers: $trailers, vendors: $vendors, linewatches: $linewatches, realtimeHonorInfos: $realtimeHonorInfos, commentCount: $commentCount, reviewCount: $reviewCount, forumTopicCount: $forumTopicCount, url: $url, sharingUrl: $sharingUrl, type: $type, subtype: $subtype)';
+    return 'VideoDetail(id: $id, title: $title, originalTitle: $originalTitle, year: $year, coverUrl: $coverUrl, pic: $pic, rating: $rating, nullRatingReason: $nullRatingReason, actors: $actors, directors: $directors, aka: $aka, countries: $countries, languages: $languages, genres: $genres, durations: $durations, pubdate: $pubdate, intro: $intro, cardSubtitle: $cardSubtitle, isTv: $isTv, isReleased: $isReleased, hasLinewatch: $hasLinewatch, episodesCount: $episodesCount, episodesInfo: $episodesInfo, trailers: $trailers, vendors: $vendors, linewatches: $linewatches, realtimeHonorInfos: $realtimeHonorInfos, commentCount: $commentCount, reviewCount: $reviewCount, forumTopicCount: $forumTopicCount, url: $url, sharingUrl: $sharingUrl, type: $type, subtype: $subtype)';
 }
 
 

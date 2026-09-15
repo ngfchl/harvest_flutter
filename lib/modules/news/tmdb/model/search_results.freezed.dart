@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'search_results.dart';
@@ -9,6 +9,7 @@ part of 'search_results.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -25,16 +26,21 @@ $SearchResultsCopyWith<SearchResults> get copyWith => _$SearchResultsCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchResults&&(identical(other.page, page) || other.page == page)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.totalResults, totalResults) || other.totalResults == totalResults)&&const DeepCollectionEquality().equals(other.results, results)&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other.dates, dates));
+  final _this = this as SearchResults;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SearchResults&&(identical(other.page, _this.page) || other.page == _this.page)&&(identical(other.totalPages, _this.totalPages) || other.totalPages == _this.totalPages)&&(identical(other.totalResults, _this.totalResults) || other.totalResults == _this.totalResults)&&const DeepCollectionEquality().equals(other.results, _this.results)&&(identical(other.id, _this.id) || other.id == _this.id)&&const DeepCollectionEquality().equals(other.dates, _this.dates));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,page,totalPages,totalResults,const DeepCollectionEquality().hash(results),id,const DeepCollectionEquality().hash(dates));
+int get hashCode {
+  final _this = this as SearchResults;
+  return Object.hash(runtimeType,_this.page,_this.totalPages,_this.totalResults,const DeepCollectionEquality().hash(_this.results),_this.id,const DeepCollectionEquality().hash(_this.dates));
+}
 
 @override
 String toString() {
-  return 'SearchResults(page: $page, totalPages: $totalPages, totalResults: $totalResults, results: $results, id: $id, dates: $dates)';
+  final _this = this as SearchResults;
+  return 'SearchResults(page: ${_this.page}, totalPages: ${_this.totalPages}, totalResults: ${_this.totalResults}, results: ${_this.results}, id: ${_this.id}, dates: ${_this.dates})';
 }
 
 
@@ -63,7 +69,7 @@ class _$SearchResultsCopyWithImpl<$Res>
 /// Create a copy of SearchResults
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? page = null,Object? totalPages = null,Object? totalResults = null,Object? results = null,Object? id = freezed,Object? dates = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(SearchResults(
 page: null == page ? _self.page : page // ignore: cast_nullable_to_non_nullable
 as int,totalPages: null == totalPages ? _self.totalPages : totalPages // ignore: cast_nullable_to_non_nullable
 as int,totalResults: null == totalResults ? _self.totalResults : totalResults // ignore: cast_nullable_to_non_nullable
@@ -211,7 +217,7 @@ return $default(_that.page,_that.totalPages,_that.totalResults,_that.results,_th
 
 
 class _SearchResults implements SearchResults {
-  const _SearchResults({this.page = 0, @JsonKey(name: 'total_pages') this.totalPages = 0, @JsonKey(name: 'total_results') this.totalResults = 0, final  List<MediaItem> results = const [], this.id, final  Map<String, dynamic>? dates}): _results = results,_dates = dates;
+  const _SearchResults({this.page = 0, @JsonKey(name: 'total_pages') this.totalPages = 0, @JsonKey(name: 'total_results') this.totalResults = 0,  List<MediaItem> results = const [], this.id,  Map<String, dynamic>? dates}): _results = results,_dates = dates;
   
 
 @override@JsonKey() final  int page;
@@ -245,16 +251,18 @@ _$SearchResultsCopyWith<_SearchResults> get copyWith => __$SearchResultsCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchResults&&(identical(other.page, page) || other.page == page)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.totalResults, totalResults) || other.totalResults == totalResults)&&const DeepCollectionEquality().equals(other._results, _results)&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other._dates, _dates));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SearchResults&&(identical(other.page, page) || other.page == page)&&(identical(other.totalPages, totalPages) || other.totalPages == totalPages)&&(identical(other.totalResults, totalResults) || other.totalResults == totalResults)&&const DeepCollectionEquality().equals(other.results, _results)&&(identical(other.id, id) || other.id == id)&&const DeepCollectionEquality().equals(other.dates, _dates));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,page,totalPages,totalResults,const DeepCollectionEquality().hash(_results),id,const DeepCollectionEquality().hash(_dates));
+int get hashCode {
+    return Object.hash(runtimeType,page,totalPages,totalResults,const DeepCollectionEquality().hash(_results),id,const DeepCollectionEquality().hash(_dates));
+}
 
 @override
 String toString() {
-  return 'SearchResults(page: $page, totalPages: $totalPages, totalResults: $totalResults, results: $results, id: $id, dates: $dates)';
+    return 'SearchResults(page: $page, totalPages: $totalPages, totalResults: $totalResults, results: $results, id: $id, dates: $dates)';
 }
 
 

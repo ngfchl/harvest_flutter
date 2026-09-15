@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'log_provider.dart';
@@ -9,6 +9,7 @@ part of 'log_provider.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -24,23 +25,29 @@ $LogFileInfoCopyWith<LogFileInfo> get copyWith => _$LogFileInfoCopyWithImpl<LogF
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  final _this = this as LogFileInfo;
   properties
     ..add(DiagnosticsProperty('type', 'LogFileInfo'))
-    ..add(DiagnosticsProperty('name', name))..add(DiagnosticsProperty('filePath', filePath))..add(DiagnosticsProperty('sizeBytes', sizeBytes))..add(DiagnosticsProperty('lastModified', lastModified));
+    ..add(DiagnosticsProperty('name', _this.name))..add(DiagnosticsProperty('filePath', _this.filePath))..add(DiagnosticsProperty('sizeBytes', _this.sizeBytes))..add(DiagnosticsProperty('lastModified', _this.lastModified));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LogFileInfo&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.sizeBytes, sizeBytes) || other.sizeBytes == sizeBytes)&&(identical(other.lastModified, lastModified) || other.lastModified == lastModified));
+  final _this = this as LogFileInfo;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LogFileInfo&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.filePath, _this.filePath) || other.filePath == _this.filePath)&&(identical(other.sizeBytes, _this.sizeBytes) || other.sizeBytes == _this.sizeBytes)&&(identical(other.lastModified, _this.lastModified) || other.lastModified == _this.lastModified));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,filePath,sizeBytes,lastModified);
+int get hashCode {
+  final _this = this as LogFileInfo;
+  return Object.hash(runtimeType,_this.name,_this.filePath,_this.sizeBytes,_this.lastModified);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'LogFileInfo(name: $name, filePath: $filePath, sizeBytes: $sizeBytes, lastModified: $lastModified)';
+  final _this = this as LogFileInfo;
+  return 'LogFileInfo(name: ${_this.name}, filePath: ${_this.filePath}, sizeBytes: ${_this.sizeBytes}, lastModified: ${_this.lastModified})';
 }
 
 
@@ -69,7 +76,7 @@ class _$LogFileInfoCopyWithImpl<$Res>
 /// Create a copy of LogFileInfo
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? filePath = null,Object? sizeBytes = null,Object? lastModified = null,}) {
-  return _then(_self.copyWith(
+  return _then(LogFileInfo(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,filePath: null == filePath ? _self.filePath : filePath // ignore: cast_nullable_to_non_nullable
 as String,sizeBytes: null == sizeBytes ? _self.sizeBytes : sizeBytes // ignore: cast_nullable_to_non_nullable
@@ -232,23 +239,25 @@ _$LogFileInfoCopyWith<_LogFileInfo> get copyWith => __$LogFileInfoCopyWithImpl<_
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  properties
+    properties
     ..add(DiagnosticsProperty('type', 'LogFileInfo'))
     ..add(DiagnosticsProperty('name', name))..add(DiagnosticsProperty('filePath', filePath))..add(DiagnosticsProperty('sizeBytes', sizeBytes))..add(DiagnosticsProperty('lastModified', lastModified));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LogFileInfo&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.sizeBytes, sizeBytes) || other.sizeBytes == sizeBytes)&&(identical(other.lastModified, lastModified) || other.lastModified == lastModified));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LogFileInfo&&(identical(other.name, name) || other.name == name)&&(identical(other.filePath, filePath) || other.filePath == filePath)&&(identical(other.sizeBytes, sizeBytes) || other.sizeBytes == sizeBytes)&&(identical(other.lastModified, lastModified) || other.lastModified == lastModified));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,filePath,sizeBytes,lastModified);
+int get hashCode {
+    return Object.hash(runtimeType,name,filePath,sizeBytes,lastModified);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'LogFileInfo(name: $name, filePath: $filePath, sizeBytes: $sizeBytes, lastModified: $lastModified)';
+    return 'LogFileInfo(name: $name, filePath: $filePath, sizeBytes: $sizeBytes, lastModified: $lastModified)';
 }
 
 
@@ -292,8 +301,7 @@ as DateTime,
 /// @nodoc
 mixin _$LogState implements DiagnosticableTreeMixin {
 
- List<LogFileInfo> get files; bool get isLoading; LogLevel? get selectedLevel;// 查看器
- String? get viewingFilePath; String? get viewingFileName; List<String> get viewingLines; bool get isLoadingContent; bool get isFollowing;
+ List<LogFileInfo> get files; bool get isLoading; LogLevel? get selectedLevel; String? get viewingFilePath; String? get viewingFileName; List<String> get viewingLines; bool get isLoadingContent; bool get isFollowing;
 /// Create a copy of LogState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -303,23 +311,29 @@ $LogStateCopyWith<LogState> get copyWith => _$LogStateCopyWithImpl<LogState>(thi
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+  final _this = this as LogState;
   properties
     ..add(DiagnosticsProperty('type', 'LogState'))
-    ..add(DiagnosticsProperty('files', files))..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('selectedLevel', selectedLevel))..add(DiagnosticsProperty('viewingFilePath', viewingFilePath))..add(DiagnosticsProperty('viewingFileName', viewingFileName))..add(DiagnosticsProperty('viewingLines', viewingLines))..add(DiagnosticsProperty('isLoadingContent', isLoadingContent))..add(DiagnosticsProperty('isFollowing', isFollowing));
+    ..add(DiagnosticsProperty('files', _this.files))..add(DiagnosticsProperty('isLoading', _this.isLoading))..add(DiagnosticsProperty('selectedLevel', _this.selectedLevel))..add(DiagnosticsProperty('viewingFilePath', _this.viewingFilePath))..add(DiagnosticsProperty('viewingFileName', _this.viewingFileName))..add(DiagnosticsProperty('viewingLines', _this.viewingLines))..add(DiagnosticsProperty('isLoadingContent', _this.isLoadingContent))..add(DiagnosticsProperty('isFollowing', _this.isFollowing));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is LogState&&const DeepCollectionEquality().equals(other.files, files)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.selectedLevel, selectedLevel) || other.selectedLevel == selectedLevel)&&(identical(other.viewingFilePath, viewingFilePath) || other.viewingFilePath == viewingFilePath)&&(identical(other.viewingFileName, viewingFileName) || other.viewingFileName == viewingFileName)&&const DeepCollectionEquality().equals(other.viewingLines, viewingLines)&&(identical(other.isLoadingContent, isLoadingContent) || other.isLoadingContent == isLoadingContent)&&(identical(other.isFollowing, isFollowing) || other.isFollowing == isFollowing));
+  final _this = this as LogState;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is LogState&&const DeepCollectionEquality().equals(other.files, _this.files)&&(identical(other.isLoading, _this.isLoading) || other.isLoading == _this.isLoading)&&(identical(other.selectedLevel, _this.selectedLevel) || other.selectedLevel == _this.selectedLevel)&&(identical(other.viewingFilePath, _this.viewingFilePath) || other.viewingFilePath == _this.viewingFilePath)&&(identical(other.viewingFileName, _this.viewingFileName) || other.viewingFileName == _this.viewingFileName)&&const DeepCollectionEquality().equals(other.viewingLines, _this.viewingLines)&&(identical(other.isLoadingContent, _this.isLoadingContent) || other.isLoadingContent == _this.isLoadingContent)&&(identical(other.isFollowing, _this.isFollowing) || other.isFollowing == _this.isFollowing));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(files),isLoading,selectedLevel,viewingFilePath,viewingFileName,const DeepCollectionEquality().hash(viewingLines),isLoadingContent,isFollowing);
+int get hashCode {
+  final _this = this as LogState;
+  return Object.hash(runtimeType,const DeepCollectionEquality().hash(_this.files),_this.isLoading,_this.selectedLevel,_this.viewingFilePath,_this.viewingFileName,const DeepCollectionEquality().hash(_this.viewingLines),_this.isLoadingContent,_this.isFollowing);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'LogState(files: $files, isLoading: $isLoading, selectedLevel: $selectedLevel, viewingFilePath: $viewingFilePath, viewingFileName: $viewingFileName, viewingLines: $viewingLines, isLoadingContent: $isLoadingContent, isFollowing: $isFollowing)';
+  final _this = this as LogState;
+  return 'LogState(files: ${_this.files}, isLoading: ${_this.isLoading}, selectedLevel: ${_this.selectedLevel}, viewingFilePath: ${_this.viewingFilePath}, viewingFileName: ${_this.viewingFileName}, viewingLines: ${_this.viewingLines}, isLoadingContent: ${_this.isLoadingContent}, isFollowing: ${_this.isFollowing})';
 }
 
 
@@ -348,7 +362,7 @@ class _$LogStateCopyWithImpl<$Res>
 /// Create a copy of LogState
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? files = null,Object? isLoading = null,Object? selectedLevel = freezed,Object? viewingFilePath = freezed,Object? viewingFileName = freezed,Object? viewingLines = null,Object? isLoadingContent = null,Object? isFollowing = null,}) {
-  return _then(_self.copyWith(
+  return _then(LogState(
 files: null == files ? _self.files : files // ignore: cast_nullable_to_non_nullable
 as List<LogFileInfo>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,selectedLevel: freezed == selectedLevel ? _self.selectedLevel : selectedLevel // ignore: cast_nullable_to_non_nullable
@@ -498,7 +512,7 @@ return $default(_that.files,_that.isLoading,_that.selectedLevel,_that.viewingFil
 
 
 class _LogState with DiagnosticableTreeMixin implements LogState {
-  const _LogState({final  List<LogFileInfo> files = const [], this.isLoading = false, this.selectedLevel, this.viewingFilePath, this.viewingFileName, final  List<String> viewingLines = const [], this.isLoadingContent = false, this.isFollowing = true}): _files = files,_viewingLines = viewingLines;
+  const _LogState({ List<LogFileInfo> files = const [], this.isLoading = false, this.selectedLevel, this.viewingFilePath, this.viewingFileName,  List<String> viewingLines = const [], this.isLoadingContent = false, this.isFollowing = true}): _files = files,_viewingLines = viewingLines;
   
 
  final  List<LogFileInfo> _files;
@@ -510,7 +524,6 @@ class _LogState with DiagnosticableTreeMixin implements LogState {
 
 @override@JsonKey() final  bool isLoading;
 @override final  LogLevel? selectedLevel;
-// 查看器
 @override final  String? viewingFilePath;
 @override final  String? viewingFileName;
  final  List<String> _viewingLines;
@@ -532,23 +545,25 @@ _$LogStateCopyWith<_LogState> get copyWith => __$LogStateCopyWithImpl<_LogState>
 
 @override
 void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  properties
+    properties
     ..add(DiagnosticsProperty('type', 'LogState'))
     ..add(DiagnosticsProperty('files', files))..add(DiagnosticsProperty('isLoading', isLoading))..add(DiagnosticsProperty('selectedLevel', selectedLevel))..add(DiagnosticsProperty('viewingFilePath', viewingFilePath))..add(DiagnosticsProperty('viewingFileName', viewingFileName))..add(DiagnosticsProperty('viewingLines', viewingLines))..add(DiagnosticsProperty('isLoadingContent', isLoadingContent))..add(DiagnosticsProperty('isFollowing', isFollowing));
 }
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LogState&&const DeepCollectionEquality().equals(other._files, _files)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.selectedLevel, selectedLevel) || other.selectedLevel == selectedLevel)&&(identical(other.viewingFilePath, viewingFilePath) || other.viewingFilePath == viewingFilePath)&&(identical(other.viewingFileName, viewingFileName) || other.viewingFileName == viewingFileName)&&const DeepCollectionEquality().equals(other._viewingLines, _viewingLines)&&(identical(other.isLoadingContent, isLoadingContent) || other.isLoadingContent == isLoadingContent)&&(identical(other.isFollowing, isFollowing) || other.isFollowing == isFollowing));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _LogState&&const DeepCollectionEquality().equals(other.files, _files)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.selectedLevel, selectedLevel) || other.selectedLevel == selectedLevel)&&(identical(other.viewingFilePath, viewingFilePath) || other.viewingFilePath == viewingFilePath)&&(identical(other.viewingFileName, viewingFileName) || other.viewingFileName == viewingFileName)&&const DeepCollectionEquality().equals(other.viewingLines, _viewingLines)&&(identical(other.isLoadingContent, isLoadingContent) || other.isLoadingContent == isLoadingContent)&&(identical(other.isFollowing, isFollowing) || other.isFollowing == isFollowing));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_files),isLoading,selectedLevel,viewingFilePath,viewingFileName,const DeepCollectionEquality().hash(_viewingLines),isLoadingContent,isFollowing);
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_files),isLoading,selectedLevel,viewingFilePath,viewingFileName,const DeepCollectionEquality().hash(_viewingLines),isLoadingContent,isFollowing);
+}
 
 @override
 String toString({ DiagnosticLevel minLevel = DiagnosticLevel.info }) {
-  return 'LogState(files: $files, isLoading: $isLoading, selectedLevel: $selectedLevel, viewingFilePath: $viewingFilePath, viewingFileName: $viewingFileName, viewingLines: $viewingLines, isLoadingContent: $isLoadingContent, isFollowing: $isFollowing)';
+    return 'LogState(files: $files, isLoading: $isLoading, selectedLevel: $selectedLevel, viewingFilePath: $viewingFilePath, viewingFileName: $viewingFileName, viewingLines: $viewingLines, isLoadingContent: $isLoadingContent, isFollowing: $isFollowing)';
 }
 
 
