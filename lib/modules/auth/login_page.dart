@@ -1,3 +1,4 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:async';
 import 'dart:math';
 
@@ -15,6 +16,7 @@ import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/option/widgets/app_upgrade_page.dart';
 import 'package:harvest/modules/shell/widgets/log_floating_overlay.dart';
 import 'package:harvest/router/app_router.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -442,7 +444,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (!mounted) return;
     final status = setupStatus ?? await _fetchSetupStatus(baseUrl);
     if (!mounted) return;
-    final credentials = await shadcn.showDialog<_SetupCredentials>(
+    final credentials = await appShowDialog<_SetupCredentials>(
       context: context,
       builder: (ctx) {
         final size = MediaQuery.sizeOf(ctx);
@@ -475,7 +477,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _clearAllPersistentData() async {
-    final confirmed = await shadcn.showDialog<bool>(
+    final confirmed = await appShowDialog<bool>(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         title: const Text('清理所有持久化数据'),
@@ -755,10 +757,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
     final theme = shadcn.Theme.of(context);
     final cs = theme.colorScheme;
 
-    return shadcn.OverlayManagerLayer(
-      popoverHandler: const shadcn.PopoverOverlayHandler(),
-      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-      menuHandler: const shadcn.PopoverOverlayHandler(),
+    return OverlayManagerLayer(
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.sizeOf(context).height * 0.82,
