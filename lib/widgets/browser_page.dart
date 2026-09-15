@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
 import 'package:harvest/modules/search/model/search_torrent_info.dart';
@@ -109,61 +110,56 @@ class BrowserCookieQuickMenu extends StatelessWidget {
 
     if (!hasContent) return effectiveBadge;
 
-    return shadcn.OverlayManagerLayer(
-      popoverHandler: const shadcn.PopoverOverlayHandler(),
-      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-      menuHandler: const shadcn.PopoverOverlayHandler(),
-      child: Builder(
-        builder: (menuContext) => GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => shadcn.showDropdown<void>(
-            context: menuContext,
-            alignment: Alignment.topCenter,
-            offset: const Offset(0, 8),
-            widthConstraint: shadcn.PopoverConstraint.intrinsic,
-            heightConstraint: shadcn.PopoverConstraint.intrinsic,
-            consumeOutsideTaps: false,
-            builder: (_) => AppDropdownMenu(
-              children: [
-                shadcn.MenuLabel(child: Text(menuLabel)),
-                const shadcn.MenuDivider(),
-                for (final target in targets)
-                  shadcn.MenuButton(
-                    leading: Icon(target.icon),
-                    onPressed: (itemContext) {
-                      shadcn.closeOverlay(itemContext);
-                      onSelected(target);
-                    },
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 240),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            target.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+    return Builder(
+      builder: (menuContext) => GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => shadcn.showDropdown<void>(
+          context: menuContext,
+          alignment: Alignment.topCenter,
+          offset: const Offset(0, 8),
+          widthConstraint: shadcn.PopoverConstraint.intrinsic,
+          heightConstraint: shadcn.PopoverConstraint.intrinsic,
+          consumeOutsideTaps: false,
+          builder: (_) => appMenu(
+            children: [
+              shadcn.MenuLabel(child: Text(menuLabel)),
+              const shadcn.MenuDivider(),
+              for (final target in targets)
+                shadcn.MenuButton(
+                  leading: Icon(target.icon),
+                  onPressed: (itemContext) {
+                    shadcn.closeOverlay(itemContext);
+                    onSelected(target);
+                  },
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 240),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          target.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _browserDisplayUrl(target.url),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: cs.foreground.withValues(alpha: 0.48),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _browserDisplayUrl(target.url),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: cs.foreground.withValues(alpha: 0.48),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-          child: effectiveBadge,
         ),
+        child: effectiveBadge,
       ),
     );
   }
@@ -1394,7 +1390,7 @@ class _BrowserPageState extends State<BrowserPage> {
       widthConstraint: shadcn.PopoverConstraint.intrinsic,
       heightConstraint: shadcn.PopoverConstraint.intrinsic,
       consumeOutsideTaps: true,
-      builder: (_) => AppDropdownMenu(
+      builder: (_) => appMenu(
         children: [
           shadcn.MenuButton(
             leading: const Icon(shadcn.LucideIcons.link),
@@ -3225,7 +3221,7 @@ JSON.stringify({
     }
 
     var saving = false;
-    await shadcn.showDialog<void>(
+    await appShowDialog<void>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) {
@@ -3936,12 +3932,8 @@ JSON.stringify({
       }
 
       Widget selectionActionButton() {
-        return shadcn.OverlayManagerLayer(
-          popoverHandler: const shadcn.PopoverOverlayHandler(),
-          tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-          menuHandler: const shadcn.PopoverOverlayHandler(),
-          child: Builder(
-            builder: (menuContext) => shadcn.Button.ghost(
+        return Builder(
+          builder: (menuContext) => shadcn.Button.ghost(
               onPressed: items.isEmpty
                   ? null
                   : () => shadcn.showDropdown<void>(
@@ -3951,7 +3943,7 @@ JSON.stringify({
                       widthConstraint: shadcn.PopoverConstraint.intrinsic,
                       heightConstraint: shadcn.PopoverConstraint.intrinsic,
                       consumeOutsideTaps: false,
-                      builder: (_) => AppDropdownMenu(
+                      builder: (_) => appMenu(
                         children: [
                           const shadcn.MenuLabel(child: Text('批量选择')),
                           const shadcn.MenuDivider(),
@@ -4015,7 +4007,6 @@ JSON.stringify({
                     ),
               child: const Text('选择操作'),
             ),
-          ),
         );
       }
 
@@ -4646,7 +4637,7 @@ JSON.stringify({
       return;
     }
 
-    await shadcn.showDialog<void>(
+    await appShowDialog<void>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) =>
@@ -4715,7 +4706,7 @@ JSON.stringify({
               ),
             );
           } else {
-            await shadcn.showDialog<void>(
+            await appShowDialog<void>(
               context: context,
               builder: (dialogContext) => shadcn.AlertDialog(
                 content: SizedBox(
@@ -5209,7 +5200,7 @@ JSON.stringify({
       'uid': true,
     };
 
-    await shadcn.showDialog<void>(
+    await appShowDialog<void>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setState) {
@@ -5303,7 +5294,7 @@ JSON.stringify({
                   );
                   return;
                 }
-                final selected = await shadcn.showDialog<String>(
+                final selected = await appShowDialog<String>(
                   context: dialogContext,
                   builder: (ctx) => shadcn.AlertDialog(
                     title: const Text('选择站点地址'),
@@ -5398,54 +5389,48 @@ JSON.stringify({
                         onPressed: () => setState(() => ascending = !ascending),
                         child: Text(ascending ? '注册时间正序' : '注册时间倒序'),
                       ),
-                      shadcn.OverlayManagerLayer(
-                        popoverHandler: const shadcn.PopoverOverlayHandler(),
-                        tooltipHandler:
-                            const shadcn.FixedTooltipOverlayHandler(),
-                        menuHandler: const shadcn.PopoverOverlayHandler(),
-                        child: Builder(
-                          builder: (menuContext) => shadcn.Button.ghost(
-                            onPressed: () => shadcn.showDropdown<void>(
-                              context: menuContext,
-                              alignment: Alignment.topCenter,
-                              offset: const Offset(0, 8),
-                              consumeOutsideTaps: false,
-                              builder: (_) => AppDropdownMenu(
-                                children: [
-                                  const shadcn.MenuLabel(child: Text('显示字段')),
-                                  const shadcn.MenuDivider(),
-                                  for (final item in const [
-                                    ('duration', '注册时长'),
-                                    ('uploaded', '上传量'),
-                                    ('downloaded', '下载量'),
-                                    ('invitation', '邀请数'),
-                                    ('username', '用户名'),
-                                    ('email', '邮箱'),
-                                    ('uid', 'UID'),
-                                  ])
-                                    shadcn.MenuButton(
-                                      onPressed: (_) => setState(() {
-                                        visibleFields[item.$1] =
-                                            !(visibleFields[item.$1] ?? true);
-                                      }),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            (visibleFields[item.$1] ?? true)
-                                                ? shadcn.LucideIcons.check
-                                                : shadcn.LucideIcons.minus,
-                                            size: 14,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(item.$2),
-                                        ],
-                                      ),
+                      Builder(
+                        builder: (menuContext) => shadcn.Button.ghost(
+                          onPressed: () => shadcn.showDropdown<void>(
+                            context: menuContext,
+                            alignment: Alignment.topCenter,
+                            offset: const Offset(0, 8),
+                            consumeOutsideTaps: false,
+                            builder: (_) => appMenu(
+                              children: [
+                                const shadcn.MenuLabel(child: Text('显示字段')),
+                                const shadcn.MenuDivider(),
+                                for (final item in const [
+                                  ('duration', '注册时长'),
+                                  ('uploaded', '上传量'),
+                                  ('downloaded', '下载量'),
+                                  ('invitation', '邀请数'),
+                                  ('username', '用户名'),
+                                  ('email', '邮箱'),
+                                  ('uid', 'UID'),
+                                ])
+                                  shadcn.MenuButton(
+                                    onPressed: (_) => setState(() {
+                                      visibleFields[item.$1] =
+                                          !(visibleFields[item.$1] ?? true);
+                                    }),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          (visibleFields[item.$1] ?? true)
+                                              ? shadcn.LucideIcons.check
+                                              : shadcn.LucideIcons.minus,
+                                          size: 14,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(item.$2),
+                                      ],
                                     ),
-                                ],
-                              ),
+                                  ),
+                              ],
                             ),
-                            child: const Text('字段'),
                           ),
+                          child: const Text('字段'),
                         ),
                       ),
                     ],
