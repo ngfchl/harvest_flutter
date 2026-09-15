@@ -576,7 +576,7 @@ Future<TorrentColumn?> _showDesktopColumnMenu({
             onSecondaryTapDown: (_) => close(null),
           ),
         ),
-        AppContextMenuPopup(
+        shadcn.ContextMenuPopup(
           anchorContext: context,
           position: position,
           children: [

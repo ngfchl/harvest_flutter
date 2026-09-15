@@ -296,7 +296,7 @@ Future<String?> showTorrentContextMenu({
             onSecondaryTapDown: (_) => close(null),
           ),
         ),
-        AppContextMenuPopup(
+        shadcn.ContextMenuPopup(
           anchorContext: context,
           position: position,
           children: _contextMenuEntries(items: items, submenus: submenus, onSelect: close),

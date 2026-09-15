@@ -1,3 +1,4 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'package:flutter/material.dart';
 import 'package:harvest/modules/download/model/downloader.dart';
 import 'package:harvest/widgets/app_menu.dart';
@@ -74,7 +75,7 @@ class DownloaderHeaderMenu extends StatelessWidget {
 
   void _showMenu(BuildContext anchorContext, List<HeaderMenuAction> actions) {
     final menuKey = GlobalKey();
-    shadcn.showPopover<void>(
+    showPopover<void>(
       context: anchorContext,
       alignment: Alignment.topRight,
       anchorAlignment: Alignment.bottomRight,
@@ -82,7 +83,6 @@ class DownloaderHeaderMenu extends StatelessWidget {
       offset: const Offset(0, 8),
       consumeOutsideTaps: false,
       regionGroupId: menuKey,
-      handler: const shadcn.PopoverOverlayHandler(),
       overlayBarrier: shadcn.OverlayBarrier(
         borderRadius: BorderRadius.circular(shadcn.Theme.of(anchorContext).radiusMd),
       ),
@@ -90,7 +90,7 @@ class DownloaderHeaderMenu extends StatelessWidget {
         data: shadcn.DropdownMenuData(menuKey),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 220),
-          child: AppDropdownMenu(
+          child: appMenu(
             children: [
               shadcn.MenuLabel(child: Text('当前列表 $currentCount 个种子').small),
               const shadcn.MenuDivider(),
