@@ -1,3 +1,4 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -80,7 +81,7 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard> {
       onToggleBrush: widget.onToggleBrush,
     );
 
-    final card = AppContextMenu(
+    final card = shadcn.ContextMenu(
       items: menu.buildContextMenuItems(context),
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
@@ -187,10 +188,7 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard> {
 
     if (!context.isMobile) return card;
 
-    return shadcn.OverlayManagerLayer(
-      popoverHandler: const shadcn.PopoverOverlayHandler(),
-      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-      menuHandler: const shadcn.PopoverOverlayHandler(),
+    return OverlayManagerLayer(
       child: card,
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -350,11 +351,11 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
       );
       return;
     }
-    shadcn.showDialog(context: context, builder: (_) => editor);
+    appShowDialog(context: context, builder: (_) => editor);
   }
 
   void _confirmDelete(Downloader d) {
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         title: const Text('删除下载器'),

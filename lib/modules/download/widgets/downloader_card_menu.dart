@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -133,7 +134,7 @@ class DownloaderCardMenu {
           onPressed: (ctx) async {
             await close(ctx);
             if (!hostContext.mounted) return;
-            shadcn.showDialog(
+            appShowDialog(
               context: hostContext,
               builder: (dialogContext) => shadcn.AlertDialog(
                 title: const Text('确认执行辅种'),
@@ -168,7 +169,7 @@ class DownloaderCardMenu {
         onPressed: (ctx) async {
           await close(ctx);
           if (!hostContext.mounted) return;
-          shadcn.showDialog(
+          appShowDialog(
             context: hostContext,
             builder: (_) => d.isQb ? QbSettingsDialog(downloader: d) : TrSettingsDialog(downloader: d),
           );
@@ -180,7 +181,7 @@ class DownloaderCardMenu {
         onPressed: (ctx) async {
           await close(ctx);
           if (!hostContext.mounted) return;
-          shadcn.showDialog(
+          appShowDialog(
             context: hostContext,
             builder: (_) => d.isQb
                 ? QbSettingsDialog(downloader: d, initialIndex: 3)

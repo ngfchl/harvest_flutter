@@ -1,3 +1,4 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/ui/ui.dart';
@@ -109,10 +110,7 @@ class _DownloaderEditorDialogState extends ConsumerState<DownloaderEditorDialog>
     final pathsAsync = ref.watch(downloaderPathsProvider);
     final isMobile = context.isMobile;
 
-    return shadcn.OverlayManagerLayer(
-      popoverHandler: const shadcn.PopoverOverlayHandler(),
-      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-      menuHandler: const shadcn.PopoverOverlayHandler(),
+    return OverlayManagerLayer(
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
