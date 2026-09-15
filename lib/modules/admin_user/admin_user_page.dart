@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/app_menu.dart';
@@ -375,7 +376,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
   void _openCreateDialog() {
     final emailCtrl = TextEditingController();
     var saving = false;
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => shadcn.AlertDialog(
@@ -437,7 +438,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
     );
     var saving = false;
     var tryUser = false;
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
@@ -556,7 +557,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
   void _openResetAllInviteDialog() {
     final countCtrl = TextEditingController(text: '3');
     var saving = false;
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => shadcn.AlertDialog(
@@ -613,7 +614,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
   void _openResetInviteDialog(AdminUser user) {
     final countCtrl = TextEditingController(text: '3');
     var saving = false;
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
@@ -712,7 +713,7 @@ class _AdminUserPageState extends ConsumerState<AdminUserPage> {
 
   void _confirmDelete(AdminUser user) {
     var saving = false;
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => shadcn.AlertDialog(
@@ -1517,9 +1518,8 @@ class _AdminUserTile extends StatelessWidget {
       ),
     );
 
-    return AppContextMenu(
+    return shadcn.ContextMenu(
       behavior: HitTestBehavior.opaque,
-      openOnTap: true,
       items: _menuItems(context),
       child: tile,
     );

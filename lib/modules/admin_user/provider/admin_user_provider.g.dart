@@ -39,7 +39,7 @@ abstract class _$AdminUserList extends $AsyncNotifier<List<AdminUser>> {
   FutureOr<List<AdminUser>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<List<AdminUser>>, List<AdminUser>>;
     final element =
         ref.element
@@ -49,6 +49,6 @@ abstract class _$AdminUserList extends $AsyncNotifier<List<AdminUser>> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }
