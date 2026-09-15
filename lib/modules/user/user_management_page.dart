@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/auth/user_model.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
@@ -161,7 +162,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
     final isEdit = user != null;
     final title = !isEdit ? '新增用户' : (resetPassword ? '重置密码' : '编辑用户');
 
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
@@ -272,7 +273,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
   }
 
   void _confirmDelete(ManagedUser user) {
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         title: const Text('确认删除'),
@@ -623,7 +624,7 @@ class _UserTile extends StatelessWidget {
   }
 
   void _showMenu(BuildContext context) {
-    shadcn.showDialog<void>(
+    appShowDialog<void>(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         title: Text(user.username.isEmpty ? '用户操作' : user.username),

@@ -72,7 +72,7 @@ abstract class _$ManagedUserList extends $AsyncNotifier<List<ManagedUser>> {
   FutureOr<List<ManagedUser>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref =
         this.ref as $Ref<AsyncValue<List<ManagedUser>>, List<ManagedUser>>;
     final element =
@@ -83,6 +83,6 @@ abstract class _$ManagedUserList extends $AsyncNotifier<List<ManagedUser>> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }
