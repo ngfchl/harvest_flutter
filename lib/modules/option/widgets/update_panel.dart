@@ -3,6 +3,7 @@ import 'package:flutter/material.dart' show SelectionArea;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:harvest/core/theme/app_surface.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/browser_page.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart'
     show IconExtension, TextExtension;
@@ -811,7 +812,7 @@ Future<void> _runUpgrade(
 }
 
 Future<bool> _confirmUpdate(BuildContext context, UpgradeAction action) async {
-  final result = await shadcn.showDialog<bool>(
+  final result = await appShowDialog<bool>(
     context: context,
     builder: (ctx) => shadcn.AlertDialog(
       leading: const Icon(

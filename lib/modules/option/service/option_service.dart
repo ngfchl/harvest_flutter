@@ -86,13 +86,13 @@ class OptionService {
     required PlatformFile file,
     required CookieBackupSource source,
   }) async {
-    if (file.path == null && file.bytes == null) {
+    if (file.path == null && await file.readAsBytes() == null) {
       throw StateError('无法读取文件: ${file.name}');
     }
 
     final formData = FormData();
-    final multipart = file.bytes != null
-        ? MultipartFile.fromBytes(file.bytes!, filename: file.name)
+    final multipart = await file.readAsBytes() != null
+        ? MultipartFile.fromBytes(await file.readAsBytes()!, filename: file.name)
         : await MultipartFile.fromFile(file.path!, filename: file.name);
     formData.files.add(MapEntry('file', multipart));
 
@@ -152,13 +152,13 @@ class OptionService {
 
   /// 导入完整数据备份
   Future<String> importBackup({required PlatformFile file}) async {
-    if (file.path == null && file.bytes == null) {
+    if (file.path == null && await file.readAsBytes() == null) {
       throw StateError('无法读取文件: ${file.name}');
     }
 
     final formData = FormData();
-    final multipart = file.bytes != null
-        ? MultipartFile.fromBytes(file.bytes!, filename: file.name)
+    final multipart = await file.readAsBytes() != null
+        ? MultipartFile.fromBytes(await file.readAsBytes()!, filename: file.name)
         : await MultipartFile.fromFile(file.path!, filename: file.name);
     formData.files.add(MapEntry('file', multipart));
 
@@ -240,13 +240,13 @@ class OptionService {
 
   /// 从旧版 sqlite3 数据库文件导入数据
   Future<String> importLegacySqlite({required PlatformFile file}) async {
-    if (file.path == null && file.bytes == null) {
+    if (file.path == null && await file.readAsBytes() == null) {
       throw StateError('无法读取文件: ${file.name}');
     }
 
     final formData = FormData();
-    final multipart = file.bytes != null
-        ? MultipartFile.fromBytes(file.bytes!, filename: file.name)
+    final multipart = await file.readAsBytes() != null
+        ? MultipartFile.fromBytes(await file.readAsBytes()!, filename: file.name)
         : await MultipartFile.fromFile(file.path!, filename: file.name);
     formData.files.add(MapEntry('file', multipart));
 

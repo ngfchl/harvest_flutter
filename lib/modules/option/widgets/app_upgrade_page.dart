@@ -13,6 +13,7 @@ import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/browser_page.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
@@ -21,9 +22,9 @@ import 'package:install_plugin_v3/install_plugin_v3.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:shadcn_flutter/shadcn_flutter.dart'
     show IconExtension, TextExtension;
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -424,7 +425,7 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
 
     _dialogTabIndex = 0;
     if (autoPrompt) _autoPromptOpen = true;
-    await shadcn.showDialog<void>(
+    await appShowDialog<void>(
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
@@ -747,13 +748,14 @@ class _AppUpgradePageState extends ConsumerState<AppUpgradePage> {
           return;
         }
 
-        final savePath = await FilePicker.saveFile(
+        final saveUri = await FilePicker.saveFile(
           dialogTitle: '保存安装包',
           fileName: fileName,
           type: FileType.any,
           bytes: Uint8List(0),
         );
-        if (savePath == null) return;
+        if (saveUri == null) return;
+        final savePath = saveUri.toFilePath();
         _activeDownloadPath = savePath;
         await _downloadToPath(url, savePath, _cancelToken!);
         Toast.success('安装包已保存');
