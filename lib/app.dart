@@ -13,6 +13,7 @@ import 'package:harvest/core/utils/ui/responsive.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/notice/provider/notice_provider.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 // ignore: implementation_imports
 import 'package:shadcn_flutter/src/components/locale/shadcn_localizations_en.dart';
@@ -104,7 +105,7 @@ class _MyAppState extends ConsumerState<MyApp>
       await windowManager.destroy();
       return;
     }
-    final confirmed = await shadcn.showDialog<bool>(
+    final confirmed = await appShowDialog<bool>(
       context: ctx,
       builder: (ctx) => shadcn.AlertDialog(
         title: const Text('确认退出'),
@@ -335,12 +336,6 @@ class _MyAppState extends ConsumerState<MyApp>
       ],
 
       scaling: themeState.adaptiveScaling,
-      materialTheme: themeState.materialTheme(switch (themeState.mode) {
-        shadcn.ThemeMode.dark => Brightness.dark,
-        shadcn.ThemeMode.light => Brightness.light,
-        shadcn.ThemeMode.system => _platformBrightness,
-        _ => _platformBrightness,
-      }),
       theme: themeState.shadcnLight,
       darkTheme: themeState.shadcnDark,
       themeMode: switch (themeState.mode) {
