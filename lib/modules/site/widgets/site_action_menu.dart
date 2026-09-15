@@ -28,57 +28,12 @@ class SiteActionMenu extends ConsumerWidget {
       children: [child, if (refreshing) const _SiteCardLoadingOverlay()],
     );
 
-    if (refreshing) return content;
-
-    return GestureDetector(
+    return shadcn.ContextMenu(
+      enabled: !refreshing,
       behavior: HitTestBehavior.opaque,
-      onSecondaryTapDown: (details) {
-        _showContextMenu(context, ref, details.globalPosition);
-      },
+      items: _buildActionItems(context, ref, site),
       child: content,
     );
-  }
-
-  void _showContextMenu(BuildContext context, WidgetRef ref, Offset position) {
-    final overlay = Overlay.of(context);
-    final items = _buildActionItems(context, ref, site);
-    late final OverlayEntry entry;
-    var removed = false;
-
-    void close() {
-      if (removed) return;
-      removed = true;
-      entry.remove();
-    }
-
-    entry = OverlayEntry(
-      builder: (_) => Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: close,
-              onSecondaryTapDown: (_) => close(),
-            ),
-          ),
-          Positioned(
-            left: position.dx,
-            top: position.dy,
-            child: Material(
-              color: Colors.transparent,
-              child: shadcn.MenuGroup(
-                autofocus: true,
-                direction: Axis.vertical,
-                onDismissed: close,
-                builder: (_, children) => shadcn.MenuPopup(children: children),
-                children: items,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-    overlay.insert(entry);
   }
 }
 
