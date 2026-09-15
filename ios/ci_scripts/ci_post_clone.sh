@@ -16,6 +16,10 @@ flutter precache --ios
 # Install Flutter dependencies.
 flutter pub get
 
+# Generate Flutter ephemeral files (Generated.xcconfig, GeneratedPluginRegistrant,
+# FlutterGeneratedPluginSwiftPackage) so SPM plugin packages exist before xcodebuild runs.
+flutter build ios --config-only --release
+
 # Install CocoaPods using Homebrew.
 HOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.
 brew install cocoapods
