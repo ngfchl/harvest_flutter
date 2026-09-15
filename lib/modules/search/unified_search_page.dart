@@ -470,76 +470,71 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       onBack: () => unawaited(_closePage()),
       child: GlobalDrawerSwipeArea(
         child: AppBackground(
-          child: shadcn.OverlayManagerLayer(
-            popoverHandler: const shadcn.PopoverOverlayHandler(),
-            tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-            menuHandler: const shadcn.PopoverOverlayHandler(),
             child: Scaffold(
+            backgroundColor: pageBackground,
+            appBar: AppBar(
               backgroundColor: pageBackground,
-              appBar: AppBar(
-                backgroundColor: pageBackground,
-                surfaceTintColor: Colors.transparent,
-                elevation: 0,
-                toolbarHeight: kAppHeaderHeight,
-                leading: Padding(
-                  padding: EdgeInsets.only(
-                    left: appHeaderLeadingInset(context),
-                  ),
-                  child: shadcn.IconButton.ghost(
-                    icon: Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 18,
-                      color: cs.foreground,
-                    ),
-                    onPressed: _closePage,
-                  ),
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
+              toolbarHeight: kAppHeaderHeight,
+              leading: Padding(
+                padding: EdgeInsets.only(
+                  left: appHeaderLeadingInset(context),
                 ),
-                leadingWidth: 48 + appHeaderLeadingInset(context),
-                titleSpacing: 0,
-                title: Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: UnifiedSearchBar(
-                    controller: _ctrl,
-                    focusNode: _focusNode,
-                    onChanged: _onTextChanged,
-                    onSubmit: _doSearch,
-                    onClear: _onClear,
-                    hint: _mode == SearchMode.media
-                        ? '搜索电影、剧集...'
-                        : '搜索种子资源...',
+                child: shadcn.IconButton.ghost(
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 18,
+                    color: cs.foreground,
                   ),
+                  onPressed: _closePage,
                 ),
-                actions: [
-                  const DebugThemeButton.material(),
-                  if (_mode == SearchMode.resource)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: shadcn.IconButton.ghost(
-                        icon: Icon(
-                          shadcn.LucideIcons.settings,
-                          size: 19,
-                          color: cs.foreground,
-                        ),
-                        onPressed: _showSearchSettings,
+              ),
+              leadingWidth: 48 + appHeaderLeadingInset(context),
+              titleSpacing: 0,
+              title: Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: UnifiedSearchBar(
+                  controller: _ctrl,
+                  focusNode: _focusNode,
+                  onChanged: _onTextChanged,
+                  onSubmit: _doSearch,
+                  onClear: _onClear,
+                  hint: _mode == SearchMode.media
+                      ? '搜索电影、剧集...'
+                      : '搜索种子资源...',
+                ),
+              ),
+              actions: [
+                const DebugThemeButton.material(),
+                if (_mode == SearchMode.resource)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: shadcn.IconButton.ghost(
+                      icon: Icon(
+                        shadcn.LucideIcons.settings,
+                        size: 19,
+                        color: cs.foreground,
                       ),
+                      onPressed: _showSearchSettings,
                     ),
-                  if (headerTrailingInset > 0)
-                    SizedBox(width: headerTrailingInset),
-                ],
-              ),
-              body: Column(
-                children: [
-                  _buildModeSwitcher(),
-                  Container(
-                    height: 0.5,
-                    color: cs.border.withValues(alpha: 0.3),
                   ),
-                  if (showResourceProgress)
-                    _buildResourceProgress(resourceState),
-                  if (showHistory) _buildHistorySuggestions(),
-                  Expanded(child: _buildBody(context, resourceState)),
-                ],
-              ),
+                if (headerTrailingInset > 0)
+                  SizedBox(width: headerTrailingInset),
+              ],
+            ),
+            body: Column(
+              children: [
+                _buildModeSwitcher(),
+                Container(
+                  height: 0.5,
+                  color: cs.border.withValues(alpha: 0.3),
+                ),
+                if (showResourceProgress)
+                  _buildResourceProgress(resourceState),
+                if (showHistory) _buildHistorySuggestions(),
+                Expanded(child: _buildBody(context, resourceState)),
+              ],
             ),
           ),
         ),
