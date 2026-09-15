@@ -1,12 +1,13 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:harvest/widgets/shad_text_field.dart';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_sheet.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../download/model/downloader.dart';
@@ -358,10 +359,7 @@ class _TorrentMoveEditSheetState extends ConsumerState<TorrentMoveEditSheet> {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     final downloadersAsync = ref.watch(downloaderListProvider);
 
-    return shadcn.OverlayManagerLayer(
-      popoverHandler: const shadcn.PopoverOverlayHandler(),
-      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-      menuHandler: const shadcn.PopoverOverlayHandler(),
+    return OverlayManagerLayer(
       child: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),

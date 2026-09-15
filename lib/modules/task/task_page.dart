@@ -12,6 +12,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/modules/download/provider/downloader_provider.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
@@ -509,10 +510,8 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
         ? Colors.black.withValues(alpha: 0.30)
         : Colors.black.withValues(alpha: 0.10);
 
-    return AppContextMenu(
+    return shadcn.ContextMenu(
       items: _taskMenuItems(context, task),
-      openOnTap: isMobile,
-      openOnLongPress: !isMobile,
       child: SizedBox(
         height: cardHeight,
         child: Container(
@@ -1137,9 +1136,8 @@ class _TaskResultTile extends ConsumerWidget {
     final displaySummary = _taskResultDisplaySummary(result);
     final id = result.displayId;
 
-    return AppContextMenu(
+    return shadcn.ContextMenu(
       items: _taskResultMenuItems(context, ref, result),
-      openOnTap: false,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () => _TaskResultDetailDialog.show(context, ref, result),
@@ -1316,7 +1314,7 @@ class _TaskResultDetailDialog {
   static void show(BuildContext context, WidgetRef ref, TaskResult result) {
     final taskId = result.displayId.trim();
 
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         title: const Text('执行记录详情'),
@@ -1459,7 +1457,7 @@ class _TaskResultDetailContent extends StatelessWidget {
 
 class _TaskResultClearDialog {
   static void show(BuildContext context, WidgetRef ref) {
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         leading: const Icon(shadcn.LucideIcons.trash2),
@@ -1561,7 +1559,7 @@ class _TaskResultDeleteDialog {
       return;
     }
 
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         leading: const Icon(shadcn.LucideIcons.trash2),
@@ -1601,7 +1599,7 @@ class _TaskResultCancelDialog {
       return;
     }
 
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         leading: const Icon(shadcn.LucideIcons.circleX),
@@ -1878,7 +1876,7 @@ String _prettyTaskResultJson(Object? value) {
 // ==================== 删除确认 ====================
 class _DeleteConfirmDialog {
   static void show(BuildContext context, WidgetRef ref, Schedule task) {
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         leading: const Icon(shadcn.LucideIcons.trash2),
