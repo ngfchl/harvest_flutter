@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/http.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -35,7 +36,7 @@ void _showInviteDialog(BuildContext context) {
   final emailCtrl = TextEditingController();
   bool sending = false;
 
-  shadcn.showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) {

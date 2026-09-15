@@ -1,3 +1,4 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 
@@ -7,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/modules/admin_user/admin_user_access.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/notice/model/notice_history.dart';
@@ -221,7 +223,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
   Future<void> _confirmExitApp() async {
     if (_exitDialogOpen || !mounted) return;
     _exitDialogOpen = true;
-    final ok = await shadcn.showDialog<bool>(
+    final ok = await appShowDialog<bool>(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         title: const Text('退出应用'),
@@ -1069,7 +1071,7 @@ class _AccountMenuButton extends ConsumerWidget {
     final colors = shadcn.Theme.of(context).colorScheme;
     final menuKey = GlobalKey();
 
-    shadcn.showPopover<void>(
+    showPopover<void>(
       context: context,
       alignment: Alignment.topRight,
       anchorAlignment: Alignment.bottomRight,
@@ -1077,7 +1079,7 @@ class _AccountMenuButton extends ConsumerWidget {
       offset: const Offset(0, 8),
       consumeOutsideTaps: false,
       regionGroupId: menuKey,
-      handler: const shadcn.PopoverOverlayHandler(),
+      handler: const PopoverOverlayHandler(),
       overlayBarrier: shadcn.OverlayBarrier(
         borderRadius: BorderRadius.circular(shadcn.Theme.of(context).radiusMd),
       ),

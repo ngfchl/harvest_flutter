@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/utils/platform/platform_tool.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:window_manager/window_manager.dart';
@@ -11,7 +12,7 @@ import '../../../core/theme/theme_presets.dart';
 import '../../../core/theme/theme_provider.dart';
 
 void showThemeDialog(BuildContext context) {
-  shadcn.showDialog(context: context, builder: (_) => const ThemeDialog());
+  appShowDialog(context: context, builder: (_) => const ThemeDialog());
 }
 
 class ThemeDialog extends ConsumerStatefulWidget {

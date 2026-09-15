@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest/core/config/app_config.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/utils/utils.dart';
@@ -194,7 +195,7 @@ class GlobalNavigationSidebar extends StatelessWidget {
   }
 
   Future<void> _confirmRestartServer(BuildContext context) async {
-    final ok = await shadcn.showDialog<bool>(
+    final ok = await appShowDialog<bool>(
       context: context,
       builder: (ctx) => shadcn.AlertDialog(
         title: const Text('重启服务器'),
