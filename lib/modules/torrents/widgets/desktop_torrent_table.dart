@@ -417,10 +417,38 @@ class _DesktopTorrentHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onSecondaryTapDown: (details) =>
-          _showColumnMenu(context, ref, details.globalPosition),
+    final selectedColumns = ref.watch(desktopTorrentColumnsProvider);
+    final availableColumns = availableDesktopTorrentColumns(queueEnabled);
+    
+    return shadcn.ContextMenu(
+      items: [
+        shadcn.MenuLabel(child: const Text('显示列').xSmall.muted),
+        const shadcn.MenuDivider(),
+        for (final column in availableColumns)
+          shadcn.MenuButton(
+            leading: Icon(
+              selectedColumns.contains(column)
+                  ? Icons.check_box_rounded
+                  : Icons.check_box_outline_blank_rounded,
+              size: 16,
+            ),
+            onPressed: (_) {
+              final notifier = ref.read(desktopTorrentColumnsProvider.notifier);
+              final next = Set<TorrentColumn>.of(notifier.state);
+              if (next.contains(column)) {
+                if (next.length == 1) {
+                  Toast.info('至少保留一列');
+                  return;
+                }
+                next.remove(column);
+              } else {
+                next.add(column);
+              }
+              notifier.state = next;
+            },
+            child: SizedBox(width: 180, child: Text(column.label).small),
+          ),
+      ],
       child: Container(
         height: 38,
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -438,32 +466,6 @@ class _DesktopTorrentHeader extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  Future<void> _showColumnMenu(
-    BuildContext context,
-    WidgetRef ref,
-    Offset position,
-  ) async {
-    final selected = await _showDesktopColumnMenu(
-      context: context,
-      position: position,
-      selectedColumns: ref.read(desktopTorrentColumnsProvider),
-      availableColumns: availableDesktopTorrentColumns(queueEnabled),
-    );
-    if (selected == null) return;
-    final notifier = ref.read(desktopTorrentColumnsProvider.notifier);
-    final next = Set<TorrentColumn>.of(notifier.state);
-    if (next.contains(selected)) {
-      if (next.length == 1) {
-        Toast.info('至少保留一列');
-        return;
-      }
-      next.remove(selected);
-    } else {
-      next.add(selected);
-    }
-    notifier.state = next;
   }
 }
 
@@ -548,56 +550,4 @@ class _SortableHeader extends ConsumerWidget {
   }
 }
 
-Future<TorrentColumn?> _showDesktopColumnMenu({
-  required BuildContext context,
-  required Offset position,
-  required Set<TorrentColumn> selectedColumns,
-  required List<TorrentColumn> availableColumns,
-}) {
-  final overlay = Overlay.of(context);
-  final completer = Completer<TorrentColumn?>();
-  late final OverlayEntry entry;
-  var removed = false;
 
-  void close(TorrentColumn? column) {
-    if (removed) return;
-    removed = true;
-    if (!completer.isCompleted) completer.complete(column);
-    entry.remove();
-  }
-
-  entry = OverlayEntry(
-    builder: (ctx) => Stack(
-      children: [
-        Positioned.fill(
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onTap: () => close(null),
-            onSecondaryTapDown: (_) => close(null),
-          ),
-        ),
-        shadcn.ContextMenuPopup(
-          anchorContext: context,
-          position: position,
-          children: [
-            shadcn.MenuLabel(child: const Text('显示列').xSmall.muted),
-            const shadcn.MenuDivider(),
-            for (final column in availableColumns)
-              shadcn.MenuButton(
-                leading: Icon(
-                  selectedColumns.contains(column)
-                      ? Icons.check_box_rounded
-                      : Icons.check_box_outline_blank_rounded,
-                  size: 16,
-                ),
-                onPressed: (_) => close(column),
-                child: SizedBox(width: 180, child: Text(column.label).small),
-              ),
-          ],
-        ),
-      ],
-    ),
-  );
-  overlay.insert(entry);
-  return completer.future;
-}
