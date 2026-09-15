@@ -36,6 +36,24 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
+
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                if (project.name == 'flutter_inappwebview_android') {
+                    // Fix for flutter_inappwebview_android proguard issue
+                    project.tasks.configureEach { task ->
+                        if (task.name.contains('proguard') || task.name.contains('minify')) {
+                            task.enabled = false
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }

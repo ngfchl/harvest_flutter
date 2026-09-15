@@ -247,6 +247,18 @@ jobs:
       - name: 安装 Flutter 依赖
         run: flutter pub get
 
+      - name: 修复 flutter_inappwebview_android proguard 问题
+        shell: bash
+        run: |
+          set -euo pipefail
+          # 修复 flutter_inappwebview_android 使用已弃用的 proguard 文件
+          PUB_CACHE="${PUB_CACHE:-$HOME/.pub-cache}"
+          INAPPWEBVIEW_DIR=$(find "$PUB_CACHE" -path "*/flutter_inappwebview_android-*/android/build.gradle" -print -quit 2>/dev/null || true)
+          if [ -n "$INAPPWEBVIEW_DIR" ]; then
+            sed -i "s/getDefaultProguardFile('proguard-android.txt')/getDefaultProguardFile('proguard-android-optimize.txt')/g" "$INAPPWEBVIEW_DIR"
+            echo "Fixed proguard file reference in flutter_inappwebview_android"
+          fi
+
       - name: 打包 Android arm64 发行版
         shell: bash
         run: |
