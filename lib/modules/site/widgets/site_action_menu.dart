@@ -61,10 +61,19 @@ class SiteActionMenu extends ConsumerWidget {
               onSecondaryTapDown: (_) => close(),
             ),
           ),
-          shadcn.ContextMenuPopup(
-            anchorContext: context,
-            position: position,
-            children: items,
+          Positioned(
+            left: position.dx,
+            top: position.dy,
+            child: Material(
+              color: Colors.transparent,
+              child: shadcn.MenuGroup(
+                autofocus: true,
+                direction: Axis.vertical,
+                onDismissed: close,
+                builder: (_, children) => shadcn.MenuPopup(children: children),
+                children: items,
+              ),
+            ),
           ),
         ],
       ),
