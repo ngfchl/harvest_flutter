@@ -96,7 +96,7 @@ class SiteInfoList extends _$SiteInfoList {
   }
 
   Future<void> importCustomSiteToml(
-    List<PlatformFile> files, {
+    List<({String name, List<int> bytes})> files, {
     bool overwrite = false,
   }) async {
     await SiteService.importCustomSiteToml(files, overwrite: overwrite);

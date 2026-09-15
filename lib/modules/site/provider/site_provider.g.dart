@@ -39,7 +39,7 @@ abstract class _$WebsiteList extends $AsyncNotifier<List<WebSite>> {
   FutureOr<List<WebSite>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<List<WebSite>>, List<WebSite>>;
     final element =
         ref.element
@@ -49,7 +49,7 @@ abstract class _$WebsiteList extends $AsyncNotifier<List<WebSite>> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }
 
@@ -83,7 +83,7 @@ abstract class _$SiteInfoList extends $AsyncNotifier<List<SiteInfo>> {
   FutureOr<List<SiteInfo>> build();
   @$mustCallSuper
   @override
-  void runBuild() {
+  WhenComplete runBuild() {
     final ref = this.ref as $Ref<AsyncValue<List<SiteInfo>>, List<SiteInfo>>;
     final element =
         ref.element
@@ -93,7 +93,7 @@ abstract class _$SiteInfoList extends $AsyncNotifier<List<SiteInfo>> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, build);
+    return element.handleCreate(ref, build);
   }
 }
 

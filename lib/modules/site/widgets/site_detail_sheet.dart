@@ -1,9 +1,11 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/http/http.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
@@ -35,7 +37,7 @@ void openDetail(BuildContext context, SiteInfo site) {
       ),
     );
   } else {
-    shadcn.showDialog<void>(
+    appShowDialog<void>(
       context: context,
       builder: (_) => shadcn.AlertDialog(
         content: ConstrainedBox(
@@ -2429,7 +2431,7 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
 
   void _showBrowseMenu(BuildContext context, List<SiteBrowseTarget> targets) {
     final menuKey = GlobalKey();
-    shadcn.showPopover<void>(
+    showPopover<void>(
       context: context,
       alignment: Alignment.topRight,
       anchorAlignment: Alignment.bottomRight,
@@ -2437,13 +2439,12 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
       widthConstraint: shadcn.PopoverConstraint.intrinsic,
       consumeOutsideTaps: false,
       regionGroupId: menuKey,
-      handler: const shadcn.PopoverOverlayHandler(),
       overlayBarrier: shadcn.OverlayBarrier(
         borderRadius: BorderRadius.circular(shadcn.Theme.of(context).radiusMd),
       ),
       builder: (_) => shadcn.Data.inherit(
         data: shadcn.DropdownMenuData(menuKey),
-        child: AppDropdownMenu(
+        child: appMenu(
           children: [
             for (final target in targets)
               shadcn.MenuButton(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/site/model/site_config.dart';
@@ -15,7 +16,7 @@ import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 Future<void> showSiteTimelineDialog(BuildContext context) async {
-  await shadcn.showDialog<void>(
+  await appShowDialog<void>(
     context: context,
     builder: (dialogContext) => shadcn.AlertDialog(
       title: const Text('站点时间轴'),
@@ -327,28 +328,23 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
     required String label,
     required List<shadcn.MenuItem> children,
   }) {
-    return shadcn.OverlayManagerLayer(
-      popoverHandler: const shadcn.PopoverOverlayHandler(),
-      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-      menuHandler: const shadcn.PopoverOverlayHandler(),
-      child: Builder(
-        builder: (menuContext) => shadcn.Button.secondary(
-          onPressed: () => shadcn.showDropdown<void>(
-            context: menuContext,
-            alignment: Alignment.topRight,
-            offset: const Offset(0, 8),
-            consumeOutsideTaps: false,
-            builder: (_) => AppDropdownMenu(children: children),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(label),
-              const SizedBox(width: 6),
-              const Icon(shadcn.LucideIcons.chevronDown, size: 13),
-            ],
-          ).xSmall,
+    return Builder(
+      builder: (menuContext) => shadcn.Button.secondary(
+        onPressed: () => shadcn.showDropdown<void>(
+          context: menuContext,
+          alignment: Alignment.topRight,
+          offset: const Offset(0, 8),
+          consumeOutsideTaps: false,
+          builder: (_) => appMenu(children: children),
         ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label),
+            const SizedBox(width: 6),
+            const Icon(shadcn.LucideIcons.chevronDown, size: 13),
+          ],
+        ).xSmall,
       ),
     );
   }
@@ -491,7 +487,7 @@ class _SiteTimelineContentState extends ConsumerState<SiteTimelineContent> {
       );
       return;
     }
-    final selected = await shadcn.showDialog<String>(
+    final selected = await appShowDialog<String>(
       context: context,
       builder: (ctx) => _SiteUrlSelectDialog(urls: urls),
     );

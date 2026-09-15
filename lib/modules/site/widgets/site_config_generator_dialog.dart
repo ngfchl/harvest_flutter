@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:path/path.dart' as p;
@@ -30,7 +31,7 @@ void showSiteConfigGenerator(BuildContext context) {
           SizedBox(height: MediaQuery.sizeOf(ctx).height * 0.92, child: dialog),
     );
   } else {
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (_) => shadcn.AlertDialog(
         content: ConstrainedBox(
@@ -218,13 +219,8 @@ class _SiteConfigGeneratorDialogState
     try {
       final bytes = _configBytes();
       final fileName = _configFileName();
-      final file = PlatformFile(
-        name: fileName,
-        size: bytes.length,
-        bytes: bytes,
-      );
       await ref.read(siteInfoListProvider.notifier).importCustomSiteToml([
-        file,
+        (name: fileName, bytes: bytes.toList()),
       ], overwrite: overwrite);
       if (!mounted) return;
       Toast.success('站点配置已保存到服务器');
@@ -272,13 +268,14 @@ class _SiteConfigGeneratorDialogState
     required Uint8List bytes,
   }) async {
     try {
-      final path = await FilePicker.saveFile(
+      final uri = await FilePicker.saveFile(
         dialogTitle: '保存站点配置',
         fileName: fileName,
         type: FileType.custom,
         allowedExtensions: const ['toml'],
         bytes: bytes,
       );
+      final path = uri?.toFilePath();
       AppLogger.info('FilePicker 保存站点配置返回: fileName=$fileName, path=$path');
       return path;
     } on PlatformException catch (e) {
@@ -1880,7 +1877,7 @@ Future<bool?> _showTomlLevelDetail(
           SizedBox(height: MediaQuery.sizeOf(ctx).height * 0.9, child: editor),
     );
   }
-  return shadcn.showDialog<bool>(
+  return appShowDialog<bool>(
     context: context,
     builder: (_) => shadcn.AlertDialog(
       content: ConstrainedBox(

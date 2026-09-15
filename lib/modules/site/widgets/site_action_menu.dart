@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
-import 'package:harvest/widgets/app_menu.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/site_config.dart';
@@ -28,10 +28,9 @@ class SiteActionMenu extends ConsumerWidget {
       children: [child, if (refreshing) const _SiteCardLoadingOverlay()],
     );
 
-    return AppContextMenu(
+    return shadcn.ContextMenu(
       enabled: !refreshing,
       behavior: HitTestBehavior.opaque,
-      openOnTap: context.isMobile,
       items: _buildActionItems(context, ref, site),
       child: content,
     );
@@ -170,7 +169,7 @@ List<shadcn.MenuItem> _buildActionItems(
       icon: shadcn.LucideIcons.copy,
       label: '辅种',
       onPressed: () async {
-        shadcn.showDialog(
+        appShowDialog(
           context: context,
           builder: (dialogContext) => shadcn.AlertDialog(
             title: const Text('确认执行辅种'),
@@ -196,19 +195,6 @@ List<shadcn.MenuItem> _buildActionItems(
     ),
     ...browseItems,
   ];
-}
-
-Future<void> showSiteActionMenu({
-  required BuildContext context,
-  required WidgetRef ref,
-  required SiteInfo site,
-  required Offset position,
-}) {
-  return appShowContextMenu(
-    context: context,
-    position: position,
-    items: _buildActionItems(context, ref, site),
-  );
 }
 
 List<shadcn.MenuItem> _buildBrowseItems(
@@ -361,7 +347,7 @@ shadcn.MenuButton _menuItem({
 void _confirmDelete(BuildContext context, WidgetRef ref, SiteInfo site) {
   final notifier = ref.read(siteInfoListProvider.notifier);
 
-  shadcn.showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) => shadcn.AlertDialog(
       title: const Text('确认删除'),

@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -38,7 +39,7 @@ void showAddSiteSheet(BuildContext context) {
       },
     );
   } else {
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (_) => shadcn.AlertDialog(
         content: ConstrainedBox(
@@ -135,7 +136,7 @@ void showSiteForm(
       ),
     );
   } else {
-    shadcn.showDialog(
+    appShowDialog(
       context: context,
       builder: (_) => shadcn.AlertDialog(
         content: ConstrainedBox(
@@ -708,12 +709,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
       child: form,
     );
 
-    final layered = shadcn.OverlayManagerLayer(
-      popoverHandler: const shadcn.PopoverOverlayHandler(),
-      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-      menuHandler: const shadcn.PopoverOverlayHandler(),
-      child: wrapped,
-    );
+    final layered = wrapped;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),

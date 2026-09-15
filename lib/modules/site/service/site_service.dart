@@ -46,18 +46,13 @@ class SiteService {
     return addData(_mysiteList, site.toJson());
   }
 
-  static Future<void> importCustomSiteToml(List<PlatformFile> files, {bool overwrite = false}) async {
+  static Future<void> importCustomSiteToml(List<({String name, List<int> bytes})> files, {bool overwrite = false}) async {
     AppLogger.info('开始上传自定义站点配置: files=${files.map((file) => file.name).join(', ')}, overwrite=$overwrite');
     final formData = FormData();
     formData.fields.add(MapEntry('overwrite', overwrite.toString()));
 
     for (final file in files) {
-      if (file.path == null && file.bytes == null) {
-        throw StateError('无法读取文件: ${file.name}');
-      }
-      final multipart = file.bytes != null
-          ? MultipartFile.fromBytes(file.bytes!, filename: file.name)
-          : await MultipartFile.fromFile(file.path!, filename: file.name);
+      final multipart = MultipartFile.fromBytes(file.bytes, filename: file.name);
       formData.files.add(MapEntry('files', multipart));
     }
 

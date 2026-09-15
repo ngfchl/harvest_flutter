@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
@@ -384,39 +385,34 @@ class _SitePageState extends ConsumerState<SitePage> {
   }
 
   Widget _buildCardStyleMenu(BuildContext context) {
-    return shadcn.OverlayManagerLayer(
-      popoverHandler: const shadcn.PopoverOverlayHandler(),
-      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-      menuHandler: const shadcn.PopoverOverlayHandler(),
-      child: Builder(
-        builder: (menuContext) => shadcn.IconButton.ghost(
-          onPressed: () => shadcn.showDropdown<void>(
-            context: menuContext,
-            alignment: Alignment.topCenter,
-            offset: const Offset(0, 8),
-            widthConstraint: shadcn.PopoverConstraint.intrinsic,
-            heightConstraint: shadcn.PopoverConstraint.intrinsic,
-            consumeOutsideTaps: false,
-            builder: (dropdownContext) => Consumer(
-              builder: (context, ref, _) {
-                final current = ref.watch(siteCardStyleProvider);
-                return AppDropdownMenu(
-                  children: [
-                    shadcn.MenuLabel(child: const Text('卡片样式')),
-                    const shadcn.MenuDivider(),
-                    _cardStyleTile(dropdownContext, SiteCardStyle.style1, current, '样式 1'),
-                    _cardStyleTile(dropdownContext, SiteCardStyle.style2, current, '样式 2'),
-                    _cardStyleTile(dropdownContext, SiteCardStyle.style3, current, '样式 3'),
-                    _cardStyleTile(dropdownContext, SiteCardStyle.style4, current, '样式 4'),
-                  ],
-                );
-              },
-            ),
+    return Builder(
+      builder: (menuContext) => shadcn.IconButton.ghost(
+        onPressed: () => shadcn.showDropdown<void>(
+          context: menuContext,
+          alignment: Alignment.topCenter,
+          offset: const Offset(0, 8),
+          widthConstraint: shadcn.PopoverConstraint.intrinsic,
+          heightConstraint: shadcn.PopoverConstraint.intrinsic,
+          consumeOutsideTaps: false,
+          builder: (dropdownContext) => Consumer(
+            builder: (context, ref, _) {
+              final current = ref.watch(siteCardStyleProvider);
+              return appMenu(
+                children: [
+                  shadcn.MenuLabel(child: const Text('卡片样式')),
+                  const shadcn.MenuDivider(),
+                  _cardStyleTile(dropdownContext, SiteCardStyle.style1, current, '样式 1'),
+                  _cardStyleTile(dropdownContext, SiteCardStyle.style2, current, '样式 2'),
+                  _cardStyleTile(dropdownContext, SiteCardStyle.style3, current, '样式 3'),
+                  _cardStyleTile(dropdownContext, SiteCardStyle.style4, current, '样式 4'),
+                ],
+              );
+            },
           ),
-          icon: shadcn.Tooltip(
-            tooltip: (_) => const Text('卡片样式'),
-            child: const Icon(Icons.dashboard_customize_outlined, size: 18),
-          ),
+        ),
+        icon: shadcn.Tooltip(
+          tooltip: (_) => const Text('卡片样式'),
+          child: const Icon(Icons.dashboard_customize_outlined, size: 18),
         ),
       ),
     );
@@ -700,55 +696,50 @@ class _SitePageState extends ConsumerState<SitePage> {
 
   Widget _buildSiteCreateMenu(BuildContext context) {
     final anchorContext = context;
-    return shadcn.OverlayManagerLayer(
-      popoverHandler: const shadcn.PopoverOverlayHandler(),
-      tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-      menuHandler: const shadcn.PopoverOverlayHandler(),
-      child: Builder(
-        builder: (menuContext) => shadcn.IconButton.ghost(
-          onPressed: () => shadcn.showDropdown<void>(
-            context: menuContext,
-            builder: (_) => AppDropdownMenu(
-              children: [
-                _menuAction(
-                  icon: shadcn.LucideIcons.plus,
-                  label: '添加站点',
-                  onPressed: () {
-                    if (!anchorContext.mounted) return;
-                    _openAdd(anchorContext);
-                  },
-                ),
-                _menuAction(
-                  icon: shadcn.LucideIcons.fileUp,
-                  label: '上传配置',
-                  onPressed: () {
-                    if (!anchorContext.mounted) return;
-                    _openImportTomlDialog(anchorContext);
-                  },
-                ),
-                _menuAction(
-                  icon: shadcn.LucideIcons.fileCode,
-                  label: '生成配置',
-                  onPressed: () {
-                    if (!anchorContext.mounted) return;
-                    showSiteConfigGenerator(anchorContext);
-                  },
-                ),
-                _menuAction(
-                  icon: shadcn.LucideIcons.gitBranchPlus,
-                  label: '站点时间轴',
-                  onPressed: () {
-                    if (!anchorContext.mounted) return;
-                    showSiteTimelineDialog(anchorContext);
-                  },
-                ),
-              ],
-            ),
+    return Builder(
+      builder: (menuContext) => shadcn.IconButton.ghost(
+        onPressed: () => shadcn.showDropdown<void>(
+          context: menuContext,
+          builder: (_) => appMenu(
+            children: [
+              _menuAction(
+                icon: shadcn.LucideIcons.plus,
+                label: '添加站点',
+                onPressed: () {
+                  if (!anchorContext.mounted) return;
+                  _openAdd(anchorContext);
+                },
+              ),
+              _menuAction(
+                icon: shadcn.LucideIcons.fileUp,
+                label: '上传配置',
+                onPressed: () {
+                  if (!anchorContext.mounted) return;
+                  _openImportTomlDialog(anchorContext);
+                },
+              ),
+              _menuAction(
+                icon: shadcn.LucideIcons.fileCode,
+                label: '生成配置',
+                onPressed: () {
+                  if (!anchorContext.mounted) return;
+                  showSiteConfigGenerator(anchorContext);
+                },
+              ),
+              _menuAction(
+                icon: shadcn.LucideIcons.gitBranchPlus,
+                label: '站点时间轴',
+                onPressed: () {
+                  if (!anchorContext.mounted) return;
+                  showSiteTimelineDialog(anchorContext);
+                },
+              ),
+            ],
           ),
-          icon: shadcn.Tooltip(
-            tooltip: (_) => const Text('站点操作'),
-            child: const Icon(shadcn.LucideIcons.plus, size: 18),
-          ),
+        ),
+        icon: shadcn.Tooltip(
+          tooltip: (_) => const Text('站点操作'),
+          child: const Icon(shadcn.LucideIcons.plus, size: 18),
         ),
       ),
     );
@@ -817,7 +808,7 @@ class _SitePageState extends ConsumerState<SitePage> {
       }
     }
 
-    await shadcn.showDialog<void>(
+    await appShowDialog<void>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setState) {
@@ -897,7 +888,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                   );
                   return;
                 }
-                final selected = await shadcn.showDialog<String>(
+                final selected = await appShowDialog<String>(
                   context: dialogContext,
                   builder: (ctx) {
                     final cs = shadcn.Theme.of(ctx).colorScheme;
@@ -1007,7 +998,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                   );
                   return;
                 }
-                final selected = await shadcn.showDialog<String>(
+                final selected = await appShowDialog<String>(
                   context: dialogContext,
                   builder: (ctx) {
                     final cs = shadcn.Theme.of(ctx).colorScheme;
@@ -1174,53 +1165,48 @@ class _SitePageState extends ConsumerState<SitePage> {
                         }),
                         child: Text(showDurationOnTitle ? '标题显示：注册时长' : '标题显示：注册日期').xSmall,
                       ),
-                      shadcn.OverlayManagerLayer(
-                        popoverHandler: const shadcn.PopoverOverlayHandler(),
-                        tooltipHandler: const shadcn.FixedTooltipOverlayHandler(),
-                        menuHandler: const shadcn.PopoverOverlayHandler(),
-                        child: Builder(
-                          builder: (menuContext) => shadcn.Button.ghost(
-                            onPressed: () => shadcn.showDropdown<void>(
-                              context: menuContext,
-                              alignment: Alignment.topCenter,
-                              offset: const Offset(0, 8),
-                              consumeOutsideTaps: false,
-                              builder: (_) => AppDropdownMenu(
-                                children: [
-                                  const shadcn.MenuLabel(child: Text('显示字段')),
-                                  const shadcn.MenuDivider(),
-                                  for (final item in const [
-                                    ('duration', '注册时长'),
-                                    ('uploaded', '上传量'),
-                                    ('downloaded', '下载量'),
-                                    ('invitation', '邀请数'),
-                                    ('username', '用户名'),
-                                    ('email', '邮箱'),
-                                    ('uid', 'UID'),
-                                  ])
-                                    shadcn.MenuButton(
-                                      onPressed: (_) => setState(() {
-                                        visibleFields[item.$1] = !(visibleFields[item.$1] ?? true);
-                                        HiveManager.set(StorageKeys.siteTimelineVisibleFields, visibleFields);
-                                      }),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            (visibleFields[item.$1] ?? true)
-                                                ? shadcn.LucideIcons.check
-                                                : shadcn.LucideIcons.minus,
-                                            size: 14,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(item.$2),
-                                        ],
-                                      ),
+                      Builder(
+                        builder: (menuContext) => shadcn.Button.ghost(
+                          onPressed: () => shadcn.showDropdown<void>(
+                            context: menuContext,
+                            alignment: Alignment.topCenter,
+                            offset: const Offset(0, 8),
+                            consumeOutsideTaps: false,
+                            builder: (_) => appMenu(
+                              children: [
+                                const shadcn.MenuLabel(child: Text('显示字段')),
+                                const shadcn.MenuDivider(),
+                                for (final item in const [
+                                  ('duration', '注册时长'),
+                                  ('uploaded', '上传量'),
+                                  ('downloaded', '下载量'),
+                                  ('invitation', '邀请数'),
+                                  ('username', '用户名'),
+                                  ('email', '邮箱'),
+                                  ('uid', 'UID'),
+                                ])
+                                  shadcn.MenuButton(
+                                    onPressed: (_) => setState(() {
+                                      visibleFields[item.$1] = !(visibleFields[item.$1] ?? true);
+                                      HiveManager.set(StorageKeys.siteTimelineVisibleFields, visibleFields);
+                                    }),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          (visibleFields[item.$1] ?? true)
+                                              ? shadcn.LucideIcons.check
+                                              : shadcn.LucideIcons.minus,
+                                          size: 14,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(item.$2),
+                                      ],
                                     ),
-                                ],
-                              ),
+                                  ),
+                              ],
                             ),
-                            child: const Text('字段').xSmall,
                           ),
+                          child: const Text('字段').xSmall,
                         ),
                       ),
                     ],
@@ -1267,13 +1253,11 @@ class _SitePageState extends ConsumerState<SitePage> {
           final cs = theme.colorScheme;
 
           Future<void> selectFiles() async {
-            FilePickerResult? result;
+            List<PlatformFile> result = [];
             try {
               result = await FilePicker.pickFiles(
-                allowMultiple: true,
                 type: FileType.custom,
                 allowedExtensions: const ['toml'],
-                withData: true,
               );
             } on PlatformException catch (e) {
               AppLogger.error('选择 TOML 配置文件失败', e);
@@ -1291,8 +1275,8 @@ class _SitePageState extends ConsumerState<SitePage> {
             if (result == null) return;
             if (!ctx.mounted) return;
 
-            final tomlFiles = result.files.where((file) => file.name.toLowerCase().endsWith('.toml')).toList();
-            if (tomlFiles.length != result.files.length) {
+            final tomlFiles = result.where((file) => file.name.toLowerCase().endsWith('.toml')).toList();
+            if (tomlFiles.length != result.length) {
               Toast.warning('仅支持 TOML 配置文件');
             }
             if (tomlFiles.isEmpty) return;
@@ -1306,7 +1290,18 @@ class _SitePageState extends ConsumerState<SitePage> {
               Toast.warning('请选择 TOML 配置文件');
               return;
             }
-            if (files.any((file) => file.path == null && file.bytes == null)) {
+            bool anyUnreadable = false;
+            for (final file in files) {
+              if (file.path == null) {
+                try {
+                  final bytes = await file.readAsBytes();
+                  if (bytes.isEmpty) anyUnreadable = true;
+                } catch (_) {
+                  anyUnreadable = true;
+                }
+              }
+            }
+            if (anyUnreadable) {
               Toast.error('无法读取所选文件');
               return;
             }
@@ -1314,7 +1309,11 @@ class _SitePageState extends ConsumerState<SitePage> {
             setDialogState(() => uploading = true);
             try {
               AppLogger.info('提交上传 TOML 配置文件: count=${files.length}, overwrite=$overwrite');
-              await ref.read(siteInfoListProvider.notifier).importCustomSiteToml(files, overwrite: overwrite);
+              final fileData = <({String name, List<int> bytes})>[];
+              for (final f in files) {
+                fileData.add((name: f.name, bytes: await f.readAsBytes()));
+              }
+              await ref.read(siteInfoListProvider.notifier).importCustomSiteToml(fileData, overwrite: overwrite);
               if (ctx.mounted) closeAppSheet(ctx);
               Toast.success('站点配置已上传');
             } catch (e, st) {
@@ -1512,7 +1511,7 @@ class _TomlFileList extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            formatBytes(files[i].size),
+                            formatBytes(files[i].lengthSync() ?? 0),
                             style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
                           ),
                         ],
