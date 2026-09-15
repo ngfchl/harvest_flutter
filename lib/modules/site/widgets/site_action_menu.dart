@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_dialog.dart';
+import 'package:harvest/widgets/app_menu.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/site_config.dart';
@@ -28,11 +29,23 @@ class SiteActionMenu extends ConsumerWidget {
       children: [child, if (refreshing) const _SiteCardLoadingOverlay()],
     );
 
-    return shadcn.ContextMenu(
-      enabled: !refreshing,
+    if (refreshing) return content;
+
+    return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      items: _buildActionItems(context, ref, site),
+      onSecondaryTapDown: (details) {
+        _showContextMenu(context, ref, details.globalPosition);
+      },
       child: content,
+    );
+  }
+
+  void _showContextMenu(BuildContext context, WidgetRef ref, Offset position) {
+    final items = _buildActionItems(context, ref, site);
+    appShowContextMenu(
+      context: context,
+      position: position,
+      items: items,
     );
   }
 }
