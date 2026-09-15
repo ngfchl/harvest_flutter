@@ -142,7 +142,7 @@ class _AppSheetDragHandle extends StatelessWidget {
 }
 
 Future<void> closeAppSheet<T>(BuildContext context, [T? result]) {
-  final overlay = shadcn.Data.maybeFind<shadcn.OverlayHandlerStateMixin>(
+  final overlay = shadcn.Data.maybeFind(
     context,
   );
   if (overlay != null) {
