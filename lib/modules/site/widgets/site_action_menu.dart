@@ -36,6 +36,10 @@ class SiteActionMenu extends ConsumerWidget {
       onSecondaryTapDown: (details) {
         _showContextMenu(context, ref, details.globalPosition);
       },
+      // 移动端长按等效右键
+      onLongPressStart: (details) {
+        _showContextMenu(context, ref, details.globalPosition);
+      },
       child: content,
     );
   }
