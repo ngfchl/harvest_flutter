@@ -228,9 +228,13 @@ class SiteCard extends ConsumerWidget {
               children: [
                 TextSpan(
                   text: _maskSiteName(site.site, privacy),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
+                    // 与样式2 _titleText 一致：暗黑用主题前景色
+                    color: SiteCardTokens.of(context).isDark
+                        ? shadcn.Theme.of(context).colorScheme.foreground
+                        : siteColors(context).foreground,
                   ),
                 ),
                 if (site.nickname.isNotEmpty && site.nickname != site.site)
