@@ -544,7 +544,11 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
               _isEdit ? '编辑站点' : '添加站点',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: cs.foreground,
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -730,7 +734,13 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('启用站点'),
+                Text(
+                  '启用站点',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: cs.foreground,
+                  ),
+                ),
                 const SizedBox(height: 3),
                 Text(
                   _available ? '站点正常运行中' : '站点已停用',
@@ -805,7 +815,13 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: shadcn.Theme.of(context).colorScheme.foreground,
+          ),
+        ),
         const SizedBox(height: 8),
         ShadTextField(
           controller: controller,
@@ -824,7 +840,13 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('标签', style: TextStyle(fontWeight: FontWeight.w600)),
+        Text(
+          '标签',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: cs.foreground,
+          ),
+        ),
         const SizedBox(height: 8),
         if (configTags.isNotEmpty)
           Wrap(
