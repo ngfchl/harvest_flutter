@@ -1083,13 +1083,10 @@ class _AccountMenuButton extends ConsumerWidget {
       overlayBarrier: shadcn.OverlayBarrier(
         borderRadius: BorderRadius.circular(shadcn.Theme.of(context).radiusMd),
       ),
-      builder: (_) => shadcn.Data.inherit(
-        data: shadcn.DropdownMenuData(menuKey),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 180),
-          child: shadcn.DropdownMenu(
-            children: [
-              shadcn.MenuLabel(child: const Text('账号')),
+      builder: (_) {
+        final menu = shadcn.DropdownMenu(
+          children: [
+            shadcn.MenuLabel(child: const Text('账号')),
               if (isSuperuser)
                 _item(
                   context,
@@ -1190,10 +1187,20 @@ class _AccountMenuButton extends ConsumerWidget {
                 title: '日志浮窗',
                 onTap: () => LogOverlayManager.toggle(context),
               ),
-            ],
-          ),
-        ),
-      ),
+          ],
+        );
+
+        return shadcn.Data.inherit(
+          data: shadcn.DropdownMenuData(menuKey),
+          child: context.isMobile
+              // 移动端自适应为底部 sheet，撑满宽度
+              ? SizedBox(width: double.infinity, child: menu)
+              : ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 180),
+                  child: menu,
+                ),
+        );
+      },
     );
   }
 
