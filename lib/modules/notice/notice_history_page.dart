@@ -347,6 +347,7 @@ class _NoticeTile extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: typo.small.copyWith(
+                        color: cs.foreground,
                         fontWeight: unread ? FontWeight.w700 : FontWeight.w500,
                       ),
                     ),
@@ -419,9 +420,10 @@ class NoticeDetailPage extends ConsumerWidget {
                   children: [
                     Text(
                       title,
-                      style: shadcn.Theme.of(
-                        context,
-                      ).typography.xLarge.copyWith(fontWeight: FontWeight.w700),
+                      style: shadcn.Theme.of(context).typography.xLarge.copyWith(
+                        color: shadcn.Theme.of(context).colorScheme.foreground,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Row(
