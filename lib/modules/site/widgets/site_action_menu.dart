@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_dialog.dart';
-import 'package:harvest/widgets/app_menu.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/site_config.dart';
@@ -31,25 +30,11 @@ class SiteActionMenu extends ConsumerWidget {
 
     if (refreshing) return content;
 
-    return GestureDetector(
+    // 使用 shadcn 官方 ContextMenu：右键/长按与定位由库内部处理
+    return shadcn.ContextMenu(
       behavior: HitTestBehavior.opaque,
-      onSecondaryTapDown: (details) {
-        _showContextMenu(context, ref, details.globalPosition);
-      },
-      // 移动端长按等效右键
-      onLongPressStart: (details) {
-        _showContextMenu(context, ref, details.globalPosition);
-      },
+      items: _buildActionItems(context, ref, site),
       child: content,
-    );
-  }
-
-  void _showContextMenu(BuildContext context, WidgetRef ref, Offset position) {
-    final items = _buildActionItems(context, ref, site);
-    appShowContextMenu(
-      context: context,
-      position: position,
-      items: items,
     );
   }
 }
