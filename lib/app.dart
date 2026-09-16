@@ -368,14 +368,24 @@ class _LoggedInAppChrome extends ConsumerWidget {
     }
     final sidebarVisible = ref.watch(desktopNavigationSidebarVisibleProvider);
 
-    return Row(
-      children: [
-        if (sidebarVisible)
-          SizedBox(
-            width: 260,
-            child: GlobalNavigationSidebar(ref: ref, persistent: true),
+    // 覆盖整窗的根 Overlay：侧栏 Row 会把 Navigator（及其 Overlay 原点）
+    // 推到内容区起点 (sidebarWidth, 0)，导致弹层用全局坐标定位时被重复
+    // 累加侧栏宽度。在此包一层全窗 Overlay，rootOverlay 弹层即以窗口
+    // 左上角为原点，与事件 globalPosition 坐标系一致。
+    return Overlay(
+      initialEntries: [
+        OverlayEntry(
+          builder: (_) => Row(
+            children: [
+              if (sidebarVisible)
+                SizedBox(
+                  width: 260,
+                  child: GlobalNavigationSidebar(ref: ref, persistent: true),
+                ),
+              Expanded(child: child),
+            ],
           ),
-        Expanded(child: child),
+        ),
       ],
     );
   }
