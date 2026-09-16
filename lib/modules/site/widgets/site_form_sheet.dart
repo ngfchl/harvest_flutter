@@ -629,9 +629,9 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     final form = Padding(
       padding: EdgeInsets.fromLTRB(
         16,
-        mobile ? 0 : 16,
+        mobile ? 0 : 12,
         16,
-        MediaQuery.of(context).viewInsets.bottom + 16,
+        MediaQuery.of(context).viewInsets.bottom + 12,
       ),
       child: Column(
         children: [
@@ -642,13 +642,13 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
               controller: widget.scrollController,
               children: [
                 _availabilitySection(context),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 _formSection(context, '基本信息', [
                   _formField('昵称', _nicknameCtrl),
                   _formField('排序', _sortIdCtrl),
                   _tagEditor(context, configTags),
                 ]),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 _formSection(context, '用户信息', [
                   _formField('用户ID', _userIdCtrl),
                   _formField('用户名', _usernameCtrl),
@@ -656,20 +656,20 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
                   _formField('Passkey', _passkeyCtrl),
                   _formField('Authkey', _authkeyCtrl),
                 ]),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 _formSection(context, '账号信息', [
                   _formField('Cookie', _cookieCtrl, maxLines: 3),
                   _formField('LocalStorage', _localStorageCtrl, maxLines: 3),
                   _formField('User Agent', _uaCtrl),
                 ]),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 _formSection(context, '连接设置', [
                   _formField('代理', _proxyCtrl, hint: 'http://ip:port'),
                   _mirrorEditor(context, configUrls),
                 ]),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 _buildSwitchGrid(context),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -795,7 +795,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
                 children[i],
                 if (i != children.length - 1)
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Divider(height: 1, color: cs.border),
                   ),
               ],
