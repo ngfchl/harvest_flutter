@@ -331,15 +331,18 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
                         width: 0.5,
                       ),
                     ),
-                    child: ListTile(
-                      dense: true,
-                      title: Text(filtered[i]),
-                      trailing: Icon(
-                        shadcn.LucideIcons.chevronRight,
-                        size: 16,
-                        color: cs.mutedForeground,
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: ListTile(
+                        dense: true,
+                        title: Text(filtered[i]),
+                        trailing: Icon(
+                          shadcn.LucideIcons.chevronRight,
+                          size: 16,
+                          color: cs.mutedForeground,
+                        ),
+                        onTap: () => _openAddForm(context, ref, filtered[i]),
                       ),
-                      onTap: () => _openAddForm(context, ref, filtered[i]),
                     ),
                   ),
                 ),
