@@ -714,7 +714,12 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                             color: cs.mutedForeground.withValues(alpha: 0.4),
                           ),
                           const SizedBox(width: 10),
-                          Expanded(child: Text(keyword, style: typo.small)),
+                          Expanded(
+                            child: Text(
+                              keyword,
+                              style: typo.small.copyWith(color: cs.foreground),
+                            ),
+                          ),
                           GestureDetector(
                             onTap: () {
                               SearchHistoryManager.removeHistory(keyword);
@@ -2783,7 +2788,10 @@ class _SheetOptionTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: typo.small.copyWith(fontWeight: FontWeight.w500),
+                    style: typo.small.copyWith(
+                      color: cs.foreground,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   Text(
                     subtitle,
