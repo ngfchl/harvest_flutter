@@ -344,14 +344,17 @@ class _DownloaderPageState extends ConsumerState<DownloaderPage> {
       },
     );
     if (context.isMobile) {
-      showAppSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => editor,
-      );
+      showAppSheet<void>(context: context, isScrollControlled: true, builder: (_) => editor);
       return;
     }
-    appShowDialog(context: context, builder: (_) => editor);
+    // 桌面端与站点编辑一致，用 shadcn AlertDialog 承载，
+    // 避免 material Dialog 在 shadcn 主题下渲染出默认亮色样式
+    appShowDialog(
+      context: context,
+      builder: (_) => shadcn.AlertDialog(
+        content: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 440, maxHeight: 720), child: editor),
+      ),
+    );
   }
 
   void _confirmDelete(Downloader d) {
