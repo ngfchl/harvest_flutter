@@ -1968,9 +1968,27 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     return siteId;
   }
 
+  /// 统计中日韩字符数
+  int _cjkCount(String text) {
+    return text.runes
+        .where((r) => (r >= 0x4E00 && r <= 0x9FFF) || (r >= 0x3400 && r <= 0x4DBF))
+        .length;
+  }
+
+  /// 中文多的那条做主标题，副标题固定用另一条
+  (String, String) _torrentDisplayTitles(SearchTorrentInfo item) {
+    final title = item.title.trim();
+    final subtitle = item.subtitle.trim();
+    if (title.isEmpty) return (subtitle, '');
+    if (subtitle.isEmpty) return (title, '');
+    if (_cjkCount(subtitle) > _cjkCount(title)) return (subtitle, title);
+    return (title, subtitle);
+  }
+
   Widget _buildTorrentCard(SearchTorrentInfo item) {
     final cs = shadcn.Theme.of(context).colorScheme;
     final typo = shadcn.Theme.of(context).typography;
+    final (displayTitle, displaySubtitle) = _torrentDisplayTitles(item);
 
     final site = _siteFor(item.siteId);
     return Material(
@@ -1998,15 +2016,18 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      item.title,
+                      displayTitle,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: typo.small.copyWith(fontWeight: FontWeight.w600),
+                      style: typo.small.copyWith(
+                        color: cs.foreground,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    if (item.subtitle.isNotEmpty) ...[
+                    if (displaySubtitle.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
-                        item.subtitle,
+                        displaySubtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: typo.xSmall.copyWith(
