@@ -26,6 +26,8 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   late List<String> _storedSites;
   late List<String> _savedStoredSites;
   late List<String> _selectedSites;
+  late final TextEditingController _siteFilterCtrl;
+  String _siteFilter = '';
 
   @override
   void initState() {
@@ -38,6 +40,17 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
     _storedSites = List.from(settings.storedSites);
     _savedStoredSites = List.from(persistedSettings.storedSites);
     _selectedSites = List.from(settings.sites);
+    _siteFilterCtrl = TextEditingController();
+    _siteFilterCtrl.addListener(() {
+      if (!mounted) return;
+      setState(() => _siteFilter = _siteFilterCtrl.text.trim());
+    });
+  }
+
+  @override
+  void dispose() {
+    _siteFilterCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -225,6 +238,8 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                     ],
                   ),
                   const SizedBox(height: 12),
+                  _buildSiteFilterField(cs, typo),
+                  const SizedBox(height: 10),
                   Flexible(
                     child: availableSites.isEmpty
                         ? Padding(
@@ -238,12 +253,26 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                               ),
                             ),
                           )
+                        : _filteredSites(availableSites).isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 18),
+                            child: Center(
+                              child: Text(
+                                '没有匹配「$_siteFilter」的站点',
+                                style: typo.small.copyWith(
+                                  color: cs.mutedForeground,
+                                ),
+                              ),
+                            ),
+                          )
                         : SingleChildScrollView(
                             child: Wrap(
                               spacing: 7,
                               runSpacing: 7,
                               children: [
-                                for (final site in availableSites)
+                                for (final site in _filteredSites(
+                                  availableSites,
+                                ))
                                   _buildSiteChip(site),
                               ],
                             ),
@@ -274,6 +303,67 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
       return _siteLabel(a).compareTo(_siteLabel(b));
     });
     return result;
+  }
+
+  List<SiteInfo> _filteredSites(List<SiteInfo> sites) {
+    if (_siteFilter.isEmpty) return sites;
+    return sites.where(_matchesSiteFilter).toList();
+  }
+
+  Widget _buildSiteFilterField(
+    shadcn.ColorScheme cs,
+    shadcn.Typography typo,
+  ) {
+    return Container(
+      height: 32,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: appSurfaceColor(context, cs.background),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: cs.border.withValues(alpha: 0.55)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            shadcn.LucideIcons.filter,
+            size: 13,
+            color: cs.mutedForeground,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _siteFilterCtrl,
+              style: typo.xSmall.copyWith(color: cs.foreground),
+              decoration: InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+                hintText: '筛选站点：名称 / 域名 / 昵称',
+                hintStyle: typo.xSmall.copyWith(
+                  color: cs.mutedForeground.withValues(alpha: 0.6),
+                ),
+              ),
+            ),
+          ),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _siteFilterCtrl,
+            builder: (_, value, _) {
+              if (value.text.isEmpty) return const SizedBox.shrink();
+              return GestureDetector(
+                onTap: _siteFilterCtrl.clear,
+                child: Icon(
+                  shadcn.LucideIcons.x,
+                  size: 13,
+                  color: cs.mutedForeground,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildStepper() {
@@ -486,6 +576,21 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   String _siteLabel(SiteInfo site) {
     final nickname = site.nickname.trim();
     return nickname.isNotEmpty ? nickname : site.site;
+  }
+
+  /// 站点筛选：匹配站点名称 / 昵称 / 域名（mirror/rss/torrents 的 host）
+  bool _matchesSiteFilter(SiteInfo site) {
+    final query = _siteFilter.trim().toLowerCase();
+    if (query.isEmpty) return true;
+    if (site.site.toLowerCase().contains(query)) return true;
+    if (site.nickname.toLowerCase().contains(query)) return true;
+    for (final url in [site.mirror, site.rss, site.torrents]) {
+      final value = url?.trim() ?? '';
+      if (value.isEmpty) continue;
+      final host = Uri.tryParse(value)?.host ?? '';
+      if (host.isNotEmpty && host.toLowerCase().contains(query)) return true;
+    }
+    return false;
   }
 
   String _siteKey(SiteInfo site) => site.id.toString();
