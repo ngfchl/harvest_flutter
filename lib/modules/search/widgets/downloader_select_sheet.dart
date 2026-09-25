@@ -119,6 +119,7 @@ class DownloaderSelectSheet extends ConsumerWidget {
                                       Text(
                                         d.name,
                                         style: typo.small.copyWith(
+                                          color: cs.foreground,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -130,7 +131,10 @@ class DownloaderSelectSheet extends ConsumerWidget {
                                             ? 'Transmission'
                                             : d.category,
                                         style: typo.xSmall.copyWith(
-                                          color: cs.mutedForeground,
+                                          color: cs.mutedForeground.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                          fontSize: 10,
                                         ),
                                       ),
                                     ],

@@ -74,39 +74,49 @@ Future<T?> showAppSheet<T>({
                       ),
                     ],
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (effectiveShowDragHandle) _AppSheetDragHandle(cs: cs),
-                      if (showDefaultHeader)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 4, 8, 2),
-                          child: Row(
-                            children: [
-                              shadcn.IconButton.ghost(
-                                onPressed: () => closeAppSheet(sheetContext),
-                                icon: const Icon(
-                                  shadcn.LucideIcons.arrowLeft,
-                                  size: 16,
-                                ),
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(color: cs.foreground),
+                    child: IconTheme.merge(
+                      data: IconThemeData(color: cs.foreground),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (effectiveShowDragHandle)
+                            _AppSheetDragHandle(cs: cs),
+                          if (showDefaultHeader)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(8, 4, 8, 2),
+                              child: Row(
+                                children: [
+                                  shadcn.IconButton.ghost(
+                                    onPressed: () => closeAppSheet(sheetContext),
+                                    icon: const Icon(
+                                      shadcn.LucideIcons.arrowLeft,
+                                      size: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      title ?? '',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: shadcn.Theme.of(sheetContext)
+                                          .typography
+                                          .large
+                                          .copyWith(
+                                            color: cs.foreground,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  title ?? '',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: shadcn.Theme.of(sheetContext)
-                                      .typography
-                                      .large
-                                      .copyWith(fontWeight: FontWeight.w700),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      Flexible(fit: FlexFit.loose, child: child),
-                    ],
+                            ),
+                          Flexible(fit: FlexFit.loose, child: child),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
