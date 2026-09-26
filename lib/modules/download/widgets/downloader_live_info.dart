@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:harvest/core/utils/utils.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/downloader_speed.dart';
 
@@ -13,7 +12,7 @@ class DownloaderLiveInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final uploadColor = cs.primary;
     final downloadColor = cs.destructive;
@@ -35,7 +34,7 @@ class DownloaderLiveInfo extends StatelessWidget {
             Expanded(
               child: _primaryMetricTile(
                 context,
-                icon: shadcn.LucideIcons.arrowUp,
+                icon: LucideIcons.arrowUp,
                 label: '已上传',
                 value: _formatSessionSize(info.uploadedSession),
                 speed: _formatSpeed(info.uploadSpeed),
@@ -48,7 +47,7 @@ class DownloaderLiveInfo extends StatelessWidget {
             Expanded(
               child: _primaryMetricTile(
                 context,
-                icon: shadcn.LucideIcons.arrowDown,
+                icon: LucideIcons.arrowDown,
                 label: '已下载',
                 value: _formatSessionSize(info.downloadedSession),
                 speed: _formatSpeed(info.downloadSpeed),
@@ -84,7 +83,7 @@ class DownloaderLiveInfo extends StatelessWidget {
     required Color color,
     required bool active,
   }) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tokens = _DownloaderLiveInfoTokens.of(context, compact: compact);
     final effectiveColor = color;
@@ -155,7 +154,7 @@ class DownloaderLiveInfo extends StatelessWidget {
   }
 
   Widget _metricValueLine(BuildContext context, {required String text, required Color color}) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final style = theme.typography.small.copyWith(color: color, fontWeight: FontWeight.w800);
 
     return LayoutBuilder(
@@ -177,7 +176,7 @@ class DownloaderLiveInfo extends StatelessWidget {
   }
 
   Widget _limitBadge(BuildContext context, {required String label, required Color color}) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final tokens = _DownloaderLiveInfoTokens.of(context, compact: compact);
     return Container(
       alignment: Alignment.center,
@@ -197,7 +196,7 @@ class DownloaderLiveInfo extends StatelessWidget {
   }
 
   Widget _metricPill(BuildContext context, {required String label, required String value, required Color color}) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tokens = _DownloaderLiveInfoTokens.of(context, compact: compact);
     return Container(
@@ -254,7 +253,7 @@ class _DownloaderLiveInfoTokens {
   const _DownloaderLiveInfoTokens._({required this.densityScale, required this.iconScale});
 
   factory _DownloaderLiveInfoTokens.of(BuildContext context, {required bool compact}) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling * (compact ? 0.92 : 1.0))
         .clamp(0.68, 1.28)
         .toDouble();

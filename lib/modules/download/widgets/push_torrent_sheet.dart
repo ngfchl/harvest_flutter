@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:harvest/widgets/shad_text_field.dart';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/site/model/site_info.dart';
 import 'package:harvest/modules/site/provider/site_provider.dart';
 import 'package:harvest/widgets/app_sheet.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../search/model/search_torrent_info.dart';
@@ -334,8 +334,8 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: _isQb
-                      ? Colors.blue.withValues(alpha: 0.1)
-                      : Colors.orange.withValues(alpha: 0.1),
+                      ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                      : const Color(0xFFF97316).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -343,7 +343,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: _isQb ? Colors.blue : Colors.orange,
+                    color: _isQb ? const Color(0xFF3B82F6) : const Color(0xFFF97316),
                   ),
                 ),
               ),
@@ -429,9 +429,9 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
       _torrentBadge(_siteLabel(torrent.siteId), cs.primary),
       if (torrent.category.isNotEmpty && torrent.category != '无分类')
         _torrentBadge(torrent.category, cs.mutedForeground),
-      if (torrent.hr) _torrentBadge('HR', Colors.orange),
+      if (torrent.hr) _torrentBadge('HR', const Color(0xFFF97316)),
       if (torrent.saleStatus.isNotEmpty && torrent.saleStatus != '无优惠')
-        _torrentBadge(torrent.saleStatus, Colors.green),
+        _torrentBadge(torrent.saleStatus, const Color(0xFF22C55E)),
       if (torrent.published.isNotEmpty)
         Text(
           formatMonthDay(torrent.published),
@@ -507,35 +507,35 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(shadcn.LucideIcons.arrowUp, size: 10, color: Colors.green),
+        const Icon(shadcn.LucideIcons.arrowUp, size: 10, color: Color(0xFF22C55E)),
         const SizedBox(width: 1),
         Text(
           '${torrent.seeders}',
           style: const TextStyle(
             fontSize: 10,
-            color: Colors.green,
+            color: Color(0xFF22C55E),
             fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(width: 4),
-        const Icon(shadcn.LucideIcons.arrowDown, size: 10, color: Colors.red),
+        const Icon(shadcn.LucideIcons.arrowDown, size: 10, color: Color(0xFFEF4444)),
         const SizedBox(width: 1),
         Text(
           '${torrent.leechers}',
           style: const TextStyle(
             fontSize: 10,
-            color: Colors.red,
+            color: Color(0xFFEF4444),
             fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(width: 4),
-        const Icon(shadcn.LucideIcons.check, size: 10, color: Colors.grey),
+        const Icon(shadcn.LucideIcons.check, size: 10, color: Color(0xFF9CA3AF)),
         const SizedBox(width: 1),
         Text(
           '${torrent.completers}',
           style: const TextStyle(
             fontSize: 10,
-            color: Colors.grey,
+            color: Color(0xFF9CA3AF),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -619,7 +619,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
                   child: Text(
                     cat.name,
                     style: typo.xSmall.copyWith(
-                      color: selected ? Colors.white : cs.foreground,
+                      color: selected ? shadcn.Colors.white : cs.foreground,
                       fontWeight: selected
                           ? FontWeight.w600
                           : FontWeight.normal,
@@ -750,7 +750,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
 
     showAppSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: shadcn.Colors.transparent,
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setSheet) {
@@ -1215,7 +1215,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: selected ? cs.primary : Colors.transparent,
+                    color: selected ? cs.primary : shadcn.Colors.transparent,
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(
                       color: selected
@@ -1226,7 +1226,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
                   child: Text(
                     opt.$2,
                     style: typo.xSmall.copyWith(
-                      color: selected ? Colors.white : cs.mutedForeground,
+                      color: selected ? shadcn.Colors.white : cs.mutedForeground,
                       fontWeight: selected
                           ? FontWeight.w600
                           : FontWeight.normal,
@@ -1441,7 +1441,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
   void _showPickerSheet({required String title, required Widget child}) {
     showAppSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: shadcn.Colors.transparent,
       builder: (ctx) {
         final cs = shadcn.Theme.of(ctx).colorScheme;
 
@@ -1601,12 +1601,7 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
         ? const <String>[]
         : _parseUrlInputs(_manualUrlCtrl.text);
     if (!_hasTorrent && manualUrls.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('请输入种子链接'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      Toast.warning('请输入种子链接');
       return;
     }
 
@@ -1761,22 +1756,11 @@ class _PushTorrentSheetState extends ConsumerState<PushTorrentSheet> {
       if (mounted) {
         closeAppSheet(context);
         widget.onSuccess?.call();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('已推送到 ${widget.downloader.name}'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        Toast.success('已推送到 ${widget.downloader.name}');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('推送失败: $e'),
-            backgroundColor: shadcn.Theme.of(context).colorScheme.destructive,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        Toast.error('推送失败: $e');
       }
     } finally {
       if (mounted) setState(() => _submitting = false);

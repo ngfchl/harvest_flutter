@@ -1,11 +1,9 @@
-import 'package:harvest/widgets/shadcn_compat.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/dashboard/provider/privacy_provider.dart';
 import 'package:harvest/modules/torrents/torrent_list_page.dart';
-import 'package:harvest/widgets/app_menu.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../model/downloader.dart';
@@ -188,9 +186,7 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard> {
 
     if (!context.isMobile) return card;
 
-    return OverlayManagerLayer(
-      child: card,
-    );
+    return card;
   }
 
   Widget _header({
@@ -423,14 +419,16 @@ class _DownloaderCardState extends ConsumerState<DownloaderCard> {
     if (!mounted) return;
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => TorrentListPage(
+      PageRouteBuilder(
+        pageBuilder: (_, __, _) => TorrentListPage(
           downloaderId: d.id,
           downloaderName: d.name,
           downloaderType: d.isQb
               ? DownloaderType.qbittorrent
               : DownloaderType.transmission,
         ),
+        transitionsBuilder: (_, animation, _, child) =>
+            FadeTransition(opacity: animation, child: child),
       ),
     );
   }

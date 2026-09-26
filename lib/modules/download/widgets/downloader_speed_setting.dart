@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/widgets/app_sheet.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../provider/downloader_speed_provider.dart';
 
 void showSpeedSettings(BuildContext context, WidgetRef ref) {
-  final theme = shadcn.Theme.of(context);
-  final cs = shadcn.Theme.of(context).colorScheme;
+  final theme = Theme.of(context);
+  final cs = Theme.of(context).colorScheme;
   final sheetBackground = cs.background;
 
   showAppSheet<void>(
@@ -16,7 +16,7 @@ void showSpeedSettings(BuildContext context, WidgetRef ref) {
     isScrollControlled: true,
     builder: (ctx) => SafeArea(
       top: false,
-      child: shadcn.Card(
+      child: Card(
         filled: true,
         fillColor: sheetBackground,
         borderRadius: BorderRadius.vertical(
@@ -39,7 +39,7 @@ void showSpeedSettings(BuildContext context, WidgetRef ref) {
               child: Row(
                 children: [
                   Icon(
-                    shadcn.LucideIcons.settings,
+                    LucideIcons.settings,
                     size: theme.scaling * 16,
                     color: cs.mutedForeground,
                   ),
@@ -72,7 +72,7 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     final interval = ref.watch(speedIntervalProvider);
     final duration = ref.watch(speedDurationProvider);
     final enabled = ref.watch(speedEnabledProvider);
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -84,9 +84,9 @@ class DownloaderSpeedSettings extends ConsumerWidget {
           // ── 自动刷新开关 ──
           _settingRow(
             context,
-            icon: shadcn.LucideIcons.refreshCw,
+            icon: LucideIcons.refreshCw,
             label: '自动刷新数据',
-            trailing: shadcn.Switch(
+            trailing: Switch(
               value: enabled,
               enabled: true,
               onChanged: (v) => ref.read(speedEnabledProvider.notifier).set(v),
@@ -98,7 +98,7 @@ class DownloaderSpeedSettings extends ConsumerWidget {
             SizedBox(height: theme.density.baseGap * theme.scaling * 1.5),
             _sliderSetting(
               context,
-              icon: shadcn.LucideIcons.timer,
+              icon: LucideIcons.timer,
               label: '刷新间隔',
               valueLabel: '${interval}s',
               value: interval.toDouble(),
@@ -114,7 +114,7 @@ class DownloaderSpeedSettings extends ConsumerWidget {
             SizedBox(height: theme.density.baseGap * theme.scaling * 2),
             _sliderSetting(
               context,
-              icon: shadcn.LucideIcons.clock,
+              icon: LucideIcons.clock,
               label: '自动停止',
               valueLabel: '${duration}min',
               value: duration.toDouble(),
@@ -137,8 +137,8 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     required String label,
     required Widget trailing,
   }) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final theme = shadcn.Theme.of(context);
+    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
     return Row(
       children: [
         Icon(icon, size: theme.scaling * 16, color: cs.mutedForeground),
@@ -168,8 +168,8 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     required int divisions,
     required ValueChanged<double> onChanged,
   }) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final theme = shadcn.Theme.of(context);
+    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
 
     return Column(
       children: [
@@ -208,8 +208,8 @@ class DownloaderSpeedSettings extends ConsumerWidget {
           ],
         ),
         SizedBox(height: theme.density.baseGap * theme.scaling),
-        shadcn.Slider(
-          value: shadcn.SliderValue.single(value),
+        Slider(
+          value: SliderValue.single(value),
           min: min,
           max: max,
           divisions: divisions,
@@ -226,7 +226,7 @@ class DownloaderSpeedSettings extends ConsumerWidget {
     required String unit,
     required ValueChanged<int> onTap,
   }) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     return Padding(
       padding: EdgeInsets.only(left: theme.scaling * 26),
       child: Wrap(
@@ -235,11 +235,11 @@ class DownloaderSpeedSettings extends ConsumerWidget {
         children: presets
             .map(
               (v) => current == v
-                  ? shadcn.Button.secondary(
+                  ? Button.secondary(
                       onPressed: () => onTap(v),
                       child: Text('$v$unit'),
                     )
-                  : shadcn.Button.outline(
+                  : Button.outline(
                       onPressed: () => onTap(v),
                       child: Text('$v$unit'),
                     ),
@@ -271,12 +271,12 @@ class _NumberPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final theme = shadcn.Theme.of(context);
+    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _btn(context, shadcn.LucideIcons.minus, value > min, onMinus),
+        _btn(context, LucideIcons.minus, value > min, onMinus),
         SizedBox(
           width: theme.scaling * 52,
           child: Text(
@@ -289,7 +289,7 @@ class _NumberPicker extends StatelessWidget {
             ),
           ),
         ),
-        _btn(context, shadcn.LucideIcons.plus, value < max, onPlus),
+        _btn(context, LucideIcons.plus, value < max, onPlus),
       ],
     );
   }
@@ -300,9 +300,9 @@ class _NumberPicker extends StatelessWidget {
     bool enabled,
     VoidCallback onTap,
   ) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final theme = shadcn.Theme.of(context);
-    return shadcn.IconButton.outline(
+    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    return IconButton.outline(
       onPressed: enabled ? onTap : null,
       icon: Icon(
         icon,

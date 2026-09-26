@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_sheet.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../torrents/torrent_list_page.dart';
@@ -65,12 +65,14 @@ class DownloaderCardMenu {
           if (!hostContext.mounted) return;
           Navigator.push(
             hostContext,
-            MaterialPageRoute(
-              builder: (_) => TorrentListPage(
+            PageRouteBuilder(
+              pageBuilder: (_, __, _) => TorrentListPage(
                 downloaderId: d.id,
                 downloaderName: d.name,
                 downloaderType: d.isQb ? DownloaderType.qbittorrent : DownloaderType.transmission,
               ),
+              transitionsBuilder: (_, animation, _, child) =>
+                  FadeTransition(opacity: animation, child: child),
             ),
           );
         },
