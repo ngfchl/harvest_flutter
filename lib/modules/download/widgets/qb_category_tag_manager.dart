@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:harvest/widgets/app_sheet.dart';
+import 'package:flutter/widgets.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
@@ -58,7 +58,7 @@ class QbCategoryManagerSheet extends ConsumerWidget {
     final pathCtrl = TextEditingController(text: category?.savePath ?? '');
     final editing = category != null;
 
-    showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => _InputDialog(
         title: editing ? '编辑分类' : '新增分类',
@@ -80,7 +80,7 @@ class QbCategoryManagerSheet extends ConsumerWidget {
               await DownloaderService.createCategory(downloader.id, category: name, savePath: pathCtrl.text.trim());
             }
             ref.invalidate(downloaderCategoriesProvider(downloader.id));
-            if (ctx.mounted) closeAppSheet(ctx);
+            if (ctx.mounted) Navigator.of(ctx).pop();
             Toast.success(editing ? '分类已更新' : '分类已创建');
           } catch (e, st) {
             AppLogger.error('保存 QB 分类失败', e, st);
@@ -149,7 +149,7 @@ class QbTagManagerSheet extends ConsumerWidget {
   void _showTagEditor(BuildContext context, WidgetRef ref) {
     final tagCtrl = TextEditingController();
 
-    showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => _InputDialog(
         title: '新增标签',
@@ -164,7 +164,7 @@ class QbTagManagerSheet extends ConsumerWidget {
           try {
             await DownloaderService.createTag(downloader.id, tag);
             ref.invalidate(downloaderTagsProvider(downloader.id));
-            if (ctx.mounted) closeAppSheet(ctx);
+            if (ctx.mounted) Navigator.of(ctx).pop();
             Toast.success('标签已创建');
           } catch (e, st) {
             AppLogger.error('创建 QB 标签失败', e, st);
@@ -263,7 +263,7 @@ class _ManagerScaffold extends StatelessWidget {
                   ],
                 ),
               ),
-              Divider(height: 1, color: cs.border),
+              shadcn.Divider(height: 1, color: cs.border),
               Expanded(child: child),
             ],
           ),
@@ -385,20 +385,18 @@ class _InputDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = shadcn.Theme.of(context).colorScheme;
-    return Dialog(
-      backgroundColor: cs.background,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
+    // 与项目其他弹窗一致，用 shadcn.AlertDialog 承载（appShowDialog 宿主）
+    return shadcn.AlertDialog(
+      title: Text(
+        title,
+        style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w700),
+      ),
+      content: Padding(
+        padding: const EdgeInsets.only(top: 14),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 14),
             ShadTextField(
               controller: primaryController,
               enabled: primaryEnabled,
@@ -413,18 +411,14 @@ class _InputDialog extends StatelessWidget {
                 onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
               ),
             ],
-            const SizedBox(height: 18),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                shadcn.Button.ghost(onPressed: () => closeAppSheet(context), child: const Text('取消')),
-                const SizedBox(width: 8),
-                shadcn.Button.primary(onPressed: onSubmit, child: const Text('保存')),
-              ],
-            ),
           ],
         ),
       ),
+      actions: [
+        shadcn.Button.ghost(onPressed: () => Navigator.of(context).pop(), child: const Text('取消')),
+        const SizedBox(width: 8),
+        shadcn.Button.primary(onPressed: onSubmit, child: const Text('保存')),
+      ],
     );
   }
 }
@@ -481,55 +475,43 @@ void _showConfirmDialog(
   required Future<void> Function() onConfirm,
   bool destructive = false,
 }) {
-  showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) {
       final cs = shadcn.Theme.of(ctx).colorScheme;
-      return Dialog(
-        backgroundColor: cs.background,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: destructive ? cs.destructive : cs.foreground,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(message, style: TextStyle(color: cs.mutedForeground, fontSize: 13)),
-              const SizedBox(height: 18),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
-                  const SizedBox(width: 8),
-                  destructive
-                      ? shadcn.Button.destructive(
-                          onPressed: () async {
-                            closeAppSheet(ctx);
-                            await onConfirm();
-                          },
-                          child: const Text('确认'),
-                        )
-                      : shadcn.Button.primary(
-                          onPressed: () async {
-                            closeAppSheet(ctx);
-                            await onConfirm();
-                          },
-                          child: const Text('确认'),
-                        ),
-                ],
-              ),
-            ],
+      // 与项目其他确认弹窗一致，用 shadcn.AlertDialog 承载
+      return shadcn.AlertDialog(
+        title: Text(
+          title,
+          style: TextStyle(
+            color: destructive ? cs.destructive : cs.foreground,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
           ),
         ),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(message, style: TextStyle(color: cs.mutedForeground, fontSize: 13)),
+        ),
+        actions: [
+          shadcn.Button.ghost(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
+          const SizedBox(width: 8),
+          destructive
+              ? shadcn.Button.destructive(
+                  onPressed: () async {
+                    Navigator.of(ctx).pop();
+                    await onConfirm();
+                  },
+                  child: const Text('确认'),
+                )
+              : shadcn.Button.primary(
+                  onPressed: () async {
+                    Navigator.of(ctx).pop();
+                    await onConfirm();
+                  },
+                  child: const Text('确认'),
+                ),
+        ],
       );
     },
   );
