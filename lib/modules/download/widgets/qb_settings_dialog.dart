@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
@@ -1499,12 +1499,22 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
   @override
   Widget build(BuildContext context) {
     final t = shadcn.Theme.of(context);
-    return Dialog(
-      insetPadding: _isMobile
+    final cs = t.colorScheme;
+    // shadcn 风格自绘弹窗容器（宿主可能是 appShowDialog 或 material
+    // showDialog，不能依赖宿主提供 Material 表面）
+    return Padding(
+      padding: _isMobile
           ? const EdgeInsets.all(8)
           : const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
-      clipBehavior: Clip.antiAlias,
-      child: ConstrainedBox(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(t.radiusLg),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: cs.background,
+            borderRadius: BorderRadius.circular(t.radiusLg),
+            border: Border.all(color: cs.border.withValues(alpha: 0.6)),
+          ),
+        child: ConstrainedBox(
         constraints: BoxConstraints(
           maxHeight:
               MediaQuery.of(context).size.height * (_isMobile ? 0.95 : 0.9),
@@ -1620,7 +1630,7 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                                     height: 16,
                                     child: shadcn.CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: Colors.white,
+                                      color: Color(0xFFFFFFFF),
                                     ),
                                   ),
                                 )
@@ -1632,6 +1642,8 @@ class _QbSettingsDialogState extends ConsumerState<QbSettingsDialog> {
                 ),
               ),
           ],
+          ),
+        ),
         ),
       ),
     );

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
@@ -346,10 +346,20 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = shadcn.Theme.of(context);
+    final cs = theme.colorScheme;
 
-    return Dialog(
-      insetPadding: _isMobile ? const EdgeInsets.all(8) : const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      clipBehavior: Clip.antiAlias,
+    // shadcn 风格自绘弹窗容器（宿主可能是 appShowDialog 或 material
+    // showDialog，不能依赖宿主提供 Material 表面）
+    return Padding(
+      padding: _isMobile ? const EdgeInsets.all(8) : const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(theme.radiusLg),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: cs.background,
+            borderRadius: BorderRadius.circular(theme.radiusLg),
+            border: Border.all(color: cs.border.withValues(alpha: 0.6)),
+          ),
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * (_isMobile ? 0.95 : 0.9),
@@ -369,6 +379,8 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
             ),
             if (!_loading && _error == null) _buildFooter(theme),
           ],
+        ),
+      ),
         ),
       ),
     );
@@ -462,7 +474,7 @@ class _TrSettingsDialogState extends ConsumerState<TrSettingsDialog> {
                         child: SizedBox(
                           width: 16,
                           height: 16,
-                          child: shadcn.CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: shadcn.CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFFFFFF)),
                         ),
                       )
                     : const Center(child: Text('保存')),
@@ -994,7 +1006,7 @@ class _ScrollableSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: height,
-      child: Scrollbar(
+      child: shadcn.Scrollbar(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(4, 12, 4, 18),
