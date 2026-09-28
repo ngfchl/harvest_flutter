@@ -66,7 +66,7 @@ class DownloaderCardMenu {
           Navigator.push(
             hostContext,
             PageRouteBuilder(
-              pageBuilder: (_, __, _) => TorrentListPage(
+              pageBuilder: (_, _, _) => TorrentListPage(
                 downloaderId: d.id,
                 downloaderName: d.name,
                 downloaderType: d.isQb ? DownloaderType.qbittorrent : DownloaderType.transmission,
@@ -200,11 +200,9 @@ class DownloaderCardMenu {
           onPressed: (ctx) async {
             await close(ctx);
             if (!hostContext.mounted) return;
-            showAppSheet<void>(
+            showQbManagerSheet(
               context: hostContext,
-              isScrollControlled: true,
-              backgroundColor: cs.background,
-              builder: (_) => QbCategoryManagerSheet(downloader: d),
+              builder: () => QbCategoryManagerSheet(downloader: d),
             );
           },
         ),
@@ -214,11 +212,9 @@ class DownloaderCardMenu {
           onPressed: (ctx) async {
             await close(ctx);
             if (!hostContext.mounted) return;
-            showAppSheet<void>(
+            showQbManagerSheet(
               context: hostContext,
-              isScrollControlled: true,
-              backgroundColor: cs.background,
-              builder: (_) => QbTagManagerSheet(downloader: d),
+              builder: () => QbTagManagerSheet(downloader: d),
             );
           },
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:harvest/widgets/app_dialog.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
@@ -9,6 +10,36 @@ import '../model/downloader.dart';
 import '../model/downloader_category.dart';
 import '../provider/downloader_provider.dart';
 import '../service/downloader_service.dart';
+
+/// 打开分类/标签管理：桌面端用 appShowDialog，移动端用 showAppSheet，
+/// 与参数设置等弹窗的端上形态保持一致。
+void showQbManagerSheet({
+  required BuildContext context,
+  required shadcn.Widget Function() builder,
+}) {
+  if (context.isMobile) {
+    showAppSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => shadcn.ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.92,
+        ),
+        child: builder(),
+      ),
+    );
+    return;
+  }
+  appShowDialog(
+    context: context,
+    builder: (_) => shadcn.AlertDialog(
+      content: shadcn.ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 440, maxHeight: 640),
+        child: builder(),
+      ),
+    ),
+  );
+}
 
 class QbCategoryManagerSheet extends ConsumerWidget {
   final Downloader downloader;

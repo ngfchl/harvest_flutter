@@ -529,16 +529,16 @@ class _TorrentListPageState extends ConsumerState<TorrentListPage>
   // ── 对话框 ──
 
   void _showQbCategoryManager(Downloader downloader) {
-    showAppSheet(
+    showQbManagerSheet(
       context: context,
-      builder: (_) => QbCategoryManagerSheet(downloader: downloader),
+      builder: () => QbCategoryManagerSheet(downloader: downloader),
     );
   }
 
   void _showQbTagManager(Downloader downloader) {
-    showAppSheet(
+    showQbManagerSheet(
       context: context,
-      builder: (_) => QbTagManagerSheet(downloader: downloader),
+      builder: () => QbTagManagerSheet(downloader: downloader),
     );
   }
 
