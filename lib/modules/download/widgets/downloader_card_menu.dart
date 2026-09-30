@@ -50,10 +50,6 @@ class DownloaderCardMenu {
       );
     }
 
-    Future<void> close(BuildContext menuContext) {
-      return shadcn.closeOverlay(menuContext);
-    }
-
     return [
       shadcn.MenuLabel(child: Text(d.name).small),
       const shadcn.MenuDivider(),
@@ -61,7 +57,6 @@ class DownloaderCardMenu {
         icon: shadcn.LucideIcons.list,
         title: '种子列表',
         onPressed: (ctx) async {
-          await close(ctx);
           if (!hostContext.mounted) return;
           Navigator.push(
             hostContext,
@@ -81,7 +76,6 @@ class DownloaderCardMenu {
         icon: shadcn.LucideIcons.plus,
         title: '添加种子',
         onPressed: (ctx) async {
-          await close(ctx);
           if (!hostContext.mounted) return;
           showAppSheet<void>(
             context: hostContext,
@@ -99,7 +93,6 @@ class DownloaderCardMenu {
         icon: shadcn.LucideIcons.pencil,
         title: '编辑',
         onPressed: (ctx) async {
-          await close(ctx);
           onEdit();
         },
       ),
@@ -108,7 +101,6 @@ class DownloaderCardMenu {
         title: '删除',
         destructive: true,
         onPressed: (ctx) async {
-          await close(ctx);
           onDelete();
         },
       ),
@@ -117,7 +109,6 @@ class DownloaderCardMenu {
         icon: d.isActive ? shadcn.LucideIcons.pause : shadcn.LucideIcons.play,
         title: d.isActive ? '停用' : '启用',
         onPressed: (ctx) async {
-          await close(ctx);
           onToggleActive();
         },
       ),
@@ -125,7 +116,6 @@ class DownloaderCardMenu {
         icon: shadcn.LucideIcons.zap,
         title: !d.brush ? '关闭辅种' : '开启辅种',
         onPressed: (ctx) async {
-          await close(ctx);
           onToggleBrush();
         },
       ),
@@ -134,7 +124,6 @@ class DownloaderCardMenu {
           icon: shadcn.LucideIcons.copy,
           title: '执行辅种',
           onPressed: (ctx) async {
-            await close(ctx);
             if (!hostContext.mounted) return;
             appShowDialog(
               context: hostContext,
@@ -169,7 +158,6 @@ class DownloaderCardMenu {
         icon: shadcn.LucideIcons.settings,
         title: '设置',
         onPressed: (ctx) async {
-          await close(ctx);
           if (!hostContext.mounted) return;
           appShowDialog(
             context: hostContext,
@@ -181,7 +169,6 @@ class DownloaderCardMenu {
         icon: shadcn.LucideIcons.gauge,
         title: '限速设置',
         onPressed: (ctx) async {
-          await close(ctx);
           if (!hostContext.mounted) return;
           appShowDialog(
             context: hostContext,
@@ -198,7 +185,6 @@ class DownloaderCardMenu {
           icon: shadcn.LucideIcons.tags,
           title: '分类管理',
           onPressed: (ctx) async {
-            await close(ctx);
             if (!hostContext.mounted) return;
             showQbManagerSheet(
               context: hostContext,
@@ -210,7 +196,6 @@ class DownloaderCardMenu {
           icon: shadcn.LucideIcons.tag,
           title: '标签管理',
           onPressed: (ctx) async {
-            await close(ctx);
             if (!hostContext.mounted) return;
             showQbManagerSheet(
               context: hostContext,
