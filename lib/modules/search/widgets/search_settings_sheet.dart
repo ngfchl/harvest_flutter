@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/feedback/toast.dart';
 import 'package:harvest/widgets/app_sheet.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/shad_text_field.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../../site/model/site_info.dart';
 import '../../site/provider/site_provider.dart';
@@ -15,8 +15,7 @@ class SearchSettingsSheet extends ConsumerStatefulWidget {
   const SearchSettingsSheet({super.key});
 
   @override
-  ConsumerState<SearchSettingsSheet> createState() =>
-      _SearchSettingsSheetState();
+  ConsumerState<SearchSettingsSheet> createState() => _SearchSettingsSheetState();
 }
 
 class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
@@ -55,23 +54,18 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     final availableSites = _availableSearchSites();
     final availableSiteKeys = availableSites.map(_siteKey).toSet();
     final actionColors = _actionButtonColors(cs.primary);
-    final selectedCount = _selectedSites
-        .where((site) => availableSiteKeys.contains(site))
-        .length;
-    final allSitesSelected =
-        availableSites.isNotEmpty && selectedCount == availableSites.length;
+    final selectedCount = _selectedSites.where((site) => availableSiteKeys.contains(site)).length;
+    final allSitesSelected = availableSites.isNotEmpty && selectedCount == availableSites.length;
 
     return AppSurfaceContainer(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.82,
-      ),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.82),
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       color: appSurfaceColor(context, cs.background),
       borderColor: cs.border.withValues(alpha: 0.5),
@@ -83,26 +77,17 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
             child: Container(
               width: 36,
               height: 4,
-              decoration: BoxDecoration(
-                color: cs.border,
-                borderRadius: BorderRadius.circular(2),
-              ),
+              decoration: BoxDecoration(color: cs.border, borderRadius: BorderRadius.circular(2)),
             ),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Text(
-                '搜索设置',
-                style: typo.normal.copyWith(fontWeight: FontWeight.w600),
-              ),
+              Text('搜索设置', style: typo.normal.copyWith(fontWeight: FontWeight.w600)),
               const Spacer(),
               GestureDetector(
                 onTap: () => closeAppSheet(context),
-                child: Text(
-                  '完成',
-                  style: typo.small.copyWith(color: cs.primary),
-                ),
+                child: Text('完成', style: typo.small.copyWith(color: cs.primary)),
               ),
             ],
           ),
@@ -113,27 +98,14 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '最大站点数',
-                      style: typo.small.copyWith(fontWeight: FontWeight.w500),
-                    ),
-                    Text(
-                      '从多少个站点搜索，默认 5，0 表示全部',
-                      style: typo.xSmall.copyWith(
-                        color: cs.mutedForeground,
-                        fontSize: 11,
-                      ),
-                    ),
+                    Text('最大站点数', style: typo.small.copyWith(fontWeight: FontWeight.w500)),
+                    Text('从多少个站点搜索，默认 5，0 表示全部', style: typo.xSmall.copyWith(color: cs.mutedForeground, fontSize: 11)),
                   ],
                 ),
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildUnlimitedButton(),
-                  const SizedBox(width: 8),
-                  _buildStepper(),
-                ],
+                children: [_buildUnlimitedButton(), const SizedBox(width: 8), _buildStepper()],
               ),
             ],
           ),
@@ -157,35 +129,18 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              '指定站点',
-                              style: typo.small.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
+                            Text('指定站点', style: typo.small.copyWith(fontWeight: FontWeight.w500)),
                             const SizedBox(height: 2),
                             Text(
-                              _sitesEnabled
-                                  ? '仅显示存活且可搜索的站点'
-                                  : '已关闭，搜索时 sites 参数为空',
-                              style: typo.xSmall.copyWith(
-                                color: cs.mutedForeground,
-                                fontSize: 11,
-                              ),
+                              _sitesEnabled ? '仅显示存活且可搜索的站点' : '已关闭，搜索时 sites 参数为空',
+                              style: typo.xSmall.copyWith(color: cs.mutedForeground, fontSize: 11),
                             ),
                           ],
                         ),
                       ),
-                      Text(
-                        _sitesEnabled ? '$selectedCount 个站点' : '关闭',
-                        style: typo.xSmall.copyWith(color: cs.primary),
-                      ),
+                      Text(_sitesEnabled ? '$selectedCount 个站点' : '关闭', style: typo.xSmall.copyWith(color: cs.primary)),
                       const SizedBox(width: 10),
-                      Switch(
-                        value: _sitesEnabled,
-                        onChanged: (value) =>
-                            _setSitesEnabled(value, availableSites),
-                      ),
+                      Switch(value: _sitesEnabled, onChanged: (value) => _setSitesEnabled(value, availableSites)),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -193,42 +148,34 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                     children: [
                       Expanded(
                         child: _buildActionButton(
-                          icon: shadcn.LucideIcons.refreshCw,
+                          icon: LucideIcons.refreshCw,
                           label: '加载',
                           color: actionColors[0],
-                          onPress: availableSites.isEmpty
-                              ? null
-                              : () => _loadStoredSites(availableSites),
+                          onPress: availableSites.isEmpty ? null : () => _loadStoredSites(availableSites),
                         ),
                       ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: _buildActionButton(
-                          icon: allSitesSelected
-                              ? shadcn.LucideIcons.square
-                              : shadcn.LucideIcons.checkCheck,
+                          icon: allSitesSelected ? LucideIcons.square : LucideIcons.checkCheck,
                           label: allSitesSelected ? '取消' : '全部',
                           color: actionColors[1],
-                          onPress: availableSites.isEmpty
-                              ? null
-                              : () => _toggleAllSites(availableSites),
+                          onPress: availableSites.isEmpty ? null : () => _toggleAllSites(availableSites),
                         ),
                       ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: _buildActionButton(
-                          icon: shadcn.LucideIcons.dices,
+                          icon: LucideIcons.dices,
                           label: '随机',
                           color: actionColors[2],
-                          onPress: availableSites.isEmpty
-                              ? null
-                              : () => _selectRandomSites(availableSites),
+                          onPress: availableSites.isEmpty ? null : () => _selectRandomSites(availableSites),
                         ),
                       ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: _buildActionButton(
-                          icon: shadcn.LucideIcons.save,
+                          icon: LucideIcons.save,
                           label: '保存',
                           color: actionColors[3],
                           prominent: true,
@@ -245,12 +192,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                         ? Padding(
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             child: Center(
-                              child: Text(
-                                '没有可搜索的存活站点',
-                                style: typo.small.copyWith(
-                                  color: cs.mutedForeground,
-                                ),
-                              ),
+                              child: Text('没有可搜索的存活站点', style: typo.small.copyWith(color: cs.mutedForeground)),
                             ),
                           )
                         : _filteredSites(availableSites).isEmpty
@@ -259,9 +201,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                             child: Center(
                               child: Text(
                                 '没有匹配「$_siteFilter」的站点',
-                                style: typo.small.copyWith(
-                                  color: cs.mutedForeground,
-                                ),
+                                style: typo.small.copyWith(color: cs.mutedForeground),
                               ),
                             ),
                           )
@@ -269,12 +209,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                             child: Wrap(
                               spacing: 7,
                               runSpacing: 7,
-                              children: [
-                                for (final site in _filteredSites(
-                                  availableSites,
-                                ))
-                                  _buildSiteChip(site),
-                              ],
+                              children: [for (final site in _filteredSites(availableSites)) _buildSiteChip(site)],
                             ),
                           ),
                   ),
@@ -289,14 +224,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
 
   List<SiteInfo> _availableSearchSites() {
     final sites = ref.watch(siteInfoListProvider).value ?? [];
-    final result = sites
-        .where(
-          (site) =>
-              site.available &&
-              site.searchTorrents &&
-              site.site.trim().isNotEmpty,
-        )
-        .toList();
+    final result = sites.where((site) => site.available && site.searchTorrents && site.site.trim().isNotEmpty).toList();
     result.sort((a, b) {
       final sort = a.sortId.compareTo(b.sortId);
       if (sort != 0) return sort;
@@ -310,10 +238,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
     return sites.where(_matchesSiteFilter).toList();
   }
 
-  Widget _buildSiteFilterField(
-    shadcn.ColorScheme cs,
-    shadcn.Typography typo,
-  ) {
+  Widget _buildSiteFilterField(ColorScheme cs, Typography typo) {
     return Container(
       height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -324,26 +249,15 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
       ),
       child: Row(
         children: [
-          Icon(
-            shadcn.LucideIcons.filter,
-            size: 13,
-            color: cs.mutedForeground,
-          ),
+          Icon(LucideIcons.filter, size: 13, color: cs.mutedForeground),
           const SizedBox(width: 8),
           Expanded(
-            child: TextField(
+            child: ShadTextField(
               controller: _siteFilterCtrl,
               style: typo.xSmall.copyWith(color: cs.foreground),
-              decoration: InputDecoration(
-                isDense: true,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-                hintText: '筛选站点：名称 / 域名 / 昵称',
-                hintStyle: typo.xSmall.copyWith(
-                  color: cs.mutedForeground.withValues(alpha: 0.6),
-                ),
+              placeholder: Text(
+                '筛选站点：名称 / 域名 / 昵称',
+                style: typo.xSmall.copyWith(color: cs.mutedForeground.withValues(alpha: 0.6)),
               ),
             ),
           ),
@@ -353,11 +267,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
               if (value.text.isEmpty) return const SizedBox.shrink();
               return GestureDetector(
                 onTap: _siteFilterCtrl.clear,
-                child: Icon(
-                  shadcn.LucideIcons.x,
-                  size: 13,
-                  color: cs.mutedForeground,
-                ),
+                child: Icon(LucideIcons.x, size: 13, color: cs.mutedForeground),
               );
             },
           ),
@@ -367,7 +277,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   }
 
   Widget _buildStepper() {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
 
@@ -384,31 +294,22 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: Icon(
-                shadcn.LucideIcons.minus,
+                LucideIcons.minus,
                 size: 16,
-                color: _maxCount > 0
-                    ? cs.foreground
-                    : cs.mutedForeground.withValues(alpha: 0.3),
+                color: _maxCount > 0 ? cs.foreground : cs.mutedForeground.withValues(alpha: 0.3),
               ),
             ),
           ),
           Container(
             width: 34,
             alignment: Alignment.center,
-            child: Text(
-              _maxCount == 0 ? '全部' : '$_maxCount',
-              style: typo.small.copyWith(fontWeight: FontWeight.w600),
-            ),
+            child: Text(_maxCount == 0 ? '全部' : '$_maxCount', style: typo.small.copyWith(fontWeight: FontWeight.w600)),
           ),
           GestureDetector(
             onTap: () => _setMaxCount(_maxCount + 1),
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: Icon(
-                shadcn.LucideIcons.plus,
-                size: 16,
-                color: cs.foreground,
-              ),
+              child: Icon(LucideIcons.plus, size: 16, color: cs.foreground),
             ),
           ),
         ],
@@ -417,9 +318,9 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   }
 
   Widget _buildUnlimitedButton() {
-    final typo = shadcn.Theme.of(context).typography;
+    final typo = Theme.of(context).typography;
     final active = _maxCount == 0;
-    const color = Colors.teal;
+    final color = const Color(0xFF009688);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -431,9 +332,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
         decoration: BoxDecoration(
           color: color.withValues(alpha: active ? 0.16 : 0.08),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: color.withValues(alpha: active ? 0.65 : 0.38),
-          ),
+          border: Border.all(color: color.withValues(alpha: active ? 0.65 : 0.38)),
         ),
         child: Text(
           '不限',
@@ -453,7 +352,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
     bool prominent = false,
     required VoidCallback? onPress,
   }) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final enabled = onPress != null;
@@ -508,12 +407,8 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
 
   List<Color> _actionButtonColors(Color primary) {
     final hsl = HSLColor.fromColor(primary);
-    final base = hsl.withSaturation(
-      hsl.saturation.clamp(0.52, 0.74).toDouble(),
-    );
-    final tuned = base.withLightness(
-      base.lightness.clamp(0.42, 0.58).toDouble(),
-    );
+    final base = hsl.withSaturation(hsl.saturation.clamp(0.52, 0.74).toDouble());
+    final tuned = base.withLightness(base.lightness.clamp(0.42, 0.58).toDouble());
 
     Color shifted(double offset) {
       final hue = (tuned.hue + offset) % 360;
@@ -524,7 +419,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   }
 
   Widget _buildSiteChip(SiteInfo site) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final key = _siteKey(site);
@@ -539,15 +434,9 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
         constraints: const BoxConstraints(maxWidth: 150),
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
         decoration: BoxDecoration(
-          color: selected
-              ? cs.primary.withValues(alpha: 0.12)
-              : appSurfaceColor(context, cs.background),
+          color: selected ? cs.primary.withValues(alpha: 0.12) : appSurfaceColor(context, cs.background),
           borderRadius: BorderRadius.circular(7),
-          border: Border.all(
-            color: selected
-                ? cs.primary.withValues(alpha: 0.55)
-                : cs.border.withValues(alpha: 0.55),
-          ),
+          border: Border.all(color: selected ? cs.primary.withValues(alpha: 0.55) : cs.border.withValues(alpha: 0.55)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -563,10 +452,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
                 ),
               ),
             ),
-            if (selected) ...[
-              const SizedBox(width: 5),
-              Icon(shadcn.LucideIcons.check, size: 12, color: cs.primary),
-            ],
+            if (selected) ...[const SizedBox(width: 5), Icon(LucideIcons.check, size: 12, color: cs.primary)],
           ],
         ),
       ),
@@ -639,25 +525,19 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   void _toggleAllSites(List<SiteInfo> availableSites) {
     final availableKeys = availableSites.map(_siteKey).toSet();
     final selectedCount = _selectedSites.where(availableKeys.contains).length;
-    final shouldClear =
-        availableSites.isNotEmpty && selectedCount == availableSites.length;
+    final shouldClear = availableSites.isNotEmpty && selectedCount == availableSites.length;
 
     setState(() {
       _sitesEnabled = true;
-      _selectedSites = shouldClear
-          ? <String>[]
-          : availableSites.map(_siteKey).toList();
+      _selectedSites = shouldClear ? <String>[] : availableSites.map(_siteKey).toList();
       _storedSites = List.from(_selectedSites);
     });
     _updateSiteDraft();
   }
 
   void _selectRandomSites(List<SiteInfo> availableSites) {
-    final count = _maxCount == 0
-        ? availableSites.length
-        : min(_maxCount, availableSites.length);
-    final shuffled = List<SiteInfo>.from(availableSites)
-      ..shuffle(Random.secure());
+    final count = _maxCount == 0 ? availableSites.length : min(_maxCount, availableSites.length);
+    final shuffled = List<SiteInfo>.from(availableSites)..shuffle(Random.secure());
     setState(() {
       _sitesEnabled = true;
       _selectedSites = shuffled.take(count).map(_siteKey).toList();
@@ -695,10 +575,7 @@ class _SearchSettingsSheetState extends ConsumerState<SearchSettingsSheet> {
   }
 
   void _saveSites(List<SiteInfo> availableSites) {
-    final formattedSites = _normalizeSiteKeys(
-      _sitesEnabled ? _selectedSites : _storedSites,
-      availableSites,
-    );
+    final formattedSites = _normalizeSiteKeys(_sitesEnabled ? _selectedSites : _storedSites, availableSites);
     final effectiveSites = _sitesEnabled ? formattedSites : <String>[];
     setState(() {
       _selectedSites = List.from(effectiveSites);
