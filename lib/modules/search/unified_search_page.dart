@@ -1,17 +1,16 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
-import 'package:harvest/widgets/app_sheet.dart';
+import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
+import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
-import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../../widgets/browser_page.dart';
 import '../news/douban/model/search_result.dart';
@@ -36,17 +35,124 @@ enum _ResourceSortField { title, subtitle, size, seeders, published }
 
 const _resourceResolutionValues = ['720P', '1080P', '2160P', '4K', '8K'];
 
+/// 可点击展开/收起的信息条容器(替代 material ExpansionTile)。
+class _CollapsibleSection extends StatefulWidget {
+  final Widget title;
+  final Widget child;
+  final bool initiallyExpanded;
+
+  const _CollapsibleSection({required this.title, required this.child, this.initiallyExpanded = false});
+
+  @override
+  State<_CollapsibleSection> createState() => _CollapsibleSectionState();
+}
+
+class _CollapsibleSectionState extends State<_CollapsibleSection> {
+  late bool _expanded = widget.initiallyExpanded;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: Row(
+            children: [
+              Expanded(child: widget.title),
+              AnimatedRotation(
+                turns: _expanded ? 0.5 : 0,
+                duration: const Duration(milliseconds: 150),
+                child: Icon(LucideIcons.chevronDown, size: 14, color: Theme.of(context).colorScheme.mutedForeground),
+              ),
+            ],
+          ),
+        ),
+        AnimatedCrossFade(
+          duration: const Duration(milliseconds: 150),
+          sizeCurve: Curves.easeInOut,
+          crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          firstChild: const SizedBox(width: double.infinity),
+          secondChild: widget.child,
+        ),
+      ],
+    );
+  }
+}
+
+class _SearchToolbar extends StatelessWidget {
+  final bool mobile;
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final SearchMode mode;
+  final ValueChanged<String> onTextChanged;
+  final ValueChanged<String> onSubmit;
+  final VoidCallback onClear;
+  final VoidCallback onClose;
+  final VoidCallback onShowSettings;
+  final double trailingInset;
+
+  const _SearchToolbar({
+    required this.mobile,
+    required this.controller,
+    required this.focusNode,
+    required this.mode,
+    required this.onTextChanged,
+    required this.onSubmit,
+    required this.onClear,
+    required this.onClose,
+    required this.onShowSettings,
+    required this.trailingInset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final horizontal = mobile ? 12.0 : 16.0;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(horizontal, 6, horizontal, 6),
+      child: Row(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(left: appHeaderLeadingInset(context)),
+            child: IconButton.ghost(
+              icon: Icon(LucideIcons.chevronLeft, size: 18, color: cs.foreground),
+              onPressed: onClose,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: UnifiedSearchBar(
+              controller: controller,
+              focusNode: focusNode,
+              onChanged: onTextChanged,
+              onSubmit: onSubmit,
+              onClear: onClear,
+              hint: mode == SearchMode.media ? '搜索电影、剧集...' : '搜索种子资源...',
+            ),
+          ),
+          const DebugThemeButton.material(),
+          if (mode == SearchMode.resource) ...[
+            const SizedBox(width: 4),
+            IconButton.ghost(
+              icon: Icon(LucideIcons.settings, size: 19, color: cs.foreground),
+              onPressed: onShowSettings,
+            ),
+          ],
+          if (trailingInset > 0) SizedBox(width: trailingInset),
+        ],
+      ),
+    );
+  }
+}
+
 class UnifiedSearchPage extends ConsumerStatefulWidget {
   final String? initialQuery;
   final SearchMode initialMode;
   final VoidCallback? onClose;
 
-  const UnifiedSearchPage({
-    super.key,
-    this.initialQuery,
-    this.initialMode = SearchMode.media,
-    this.onClose,
-  });
+  const UnifiedSearchPage({super.key, this.initialQuery, this.initialMode = SearchMode.media, this.onClose});
 
   @override
   ConsumerState<UnifiedSearchPage> createState() => _UnifiedSearchPageState();
@@ -78,7 +184,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   final Set<String> _resourceFilterEpisodes = {};
   bool _resourceFilterHrOnly = false;
   bool _resourceFilterSizeEnabled = false;
-  RangeValues _resourceFilterSizeGb = const RangeValues(0, 100);
+  SliderValue _resourceFilterSizeGb = const SliderValue.ranged(0, 100);
   OverlayEntry? _resourceFilterOverlay;
 
   _ResourceFilterData _resourceFilterData() {
@@ -138,9 +244,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   // ═══════════════════════════════════════════════
 
   void _bindActiveScrollController() {
-    final controller = _mode == SearchMode.media
-        ? _mediaScrollController
-        : _resourceScrollController;
+    final controller = _mode == SearchMode.media ? _mediaScrollController : _resourceScrollController;
     registerPageScrollController(ref, 5, controller);
     ref.read(activeScrollControllerProvider.notifier).state = controller;
   }
@@ -158,18 +262,14 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       _setModeQuery(_mode, q);
       if (q.isEmpty) {
         _clearActiveSubmittedState();
-      } else if (_mode == SearchMode.media &&
-          q != _mediaSubmittedQuery &&
-          _mediaLoading) {
+      } else if (_mode == SearchMode.media && q != _mediaSubmittedQuery && _mediaLoading) {
         _mediaSearchSerial++;
         _mediaLoading = false;
       }
     });
 
     if (_mode == SearchMode.resource &&
-        (q.isEmpty ||
-            (q != _resourceSubmittedQuery &&
-                _submittedMode == SearchMode.resource))) {
+        (q.isEmpty || (q != _resourceSubmittedQuery && _submittedMode == SearchMode.resource))) {
       ref.read(resourceSearchProvider.notifier).clear();
     }
   }
@@ -178,11 +278,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     _submitSearch(query);
   }
 
-  void _submitSearch(
-    String query, {
-    SearchMode? mode,
-    bool updateController = true,
-  }) {
+  void _submitSearch(String query, {SearchMode? mode, bool updateController = true}) {
     final q = query.trim();
     if (q.isEmpty) return;
     final targetMode = mode ?? _mode;
@@ -235,9 +331,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       }),
     ]);
     if (!mounted || serial != _mediaSearchSerial) {
-      AppLogger.debug(
-        '[Search][media] discard serial=$serial current=$_mediaSearchSerial mounted=$mounted query="$q"',
-      );
+      AppLogger.debug('[Search][media] discard serial=$serial current=$_mediaSearchSerial mounted=$mounted query="$q"');
       return;
     }
 
@@ -274,11 +368,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     final settings = SearchSettings.load();
     ref
         .read(resourceSearchProvider.notifier)
-        .search(
-          q,
-          maxCount: settings.maxCount,
-          sites: _normalizedSearchSiteIds(settings.sites),
-        );
+        .search(q, maxCount: settings.maxCount, sites: _normalizedSearchSiteIds(settings.sites));
   }
 
   void _switchMode(SearchMode mode) {
@@ -331,9 +421,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   String _modeSubmittedQuery(SearchMode mode) {
-    return mode == SearchMode.media
-        ? _mediaSubmittedQuery
-        : _resourceSubmittedQuery;
+    return mode == SearchMode.media ? _mediaSubmittedQuery : _resourceSubmittedQuery;
   }
 
   void _setModeSubmittedQuery(SearchMode mode, String query) {
@@ -367,12 +455,12 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   void _onHistoryTap(String keyword) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     showAppSheet(
       context: context,
       backgroundColor: appSurfaceColor(context, theme.colorScheme.background),
       builder: (ctx) {
-        final theme = shadcn.Theme.of(ctx);
+        final theme = Theme.of(ctx);
         final cs = theme.colorScheme;
         final typo = theme.typography;
 
@@ -400,7 +488,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               ),
               const SizedBox(height: 16),
               _SheetOptionTile(
-                icon: shadcn.LucideIcons.film,
+                icon: LucideIcons.film,
                 iconColor: Colors.blue,
                 title: '搜索信息',
                 subtitle: '从 TMDB / 豆瓣搜索影视信息',
@@ -411,7 +499,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               ),
               const SizedBox(height: 4),
               _SheetOptionTile(
-                icon: shadcn.LucideIcons.download,
+                icon: LucideIcons.download,
                 iconColor: Colors.green,
                 title: '搜索资源',
                 subtitle: '从已配置站点搜索种子资源',
@@ -453,7 +541,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   @override
   Widget build(BuildContext context) {
     final resourceState = ref.watch(resourceSearchProvider);
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final history = SearchHistoryManager.getHistory();
     final showHistory = _query.isEmpty && history.isNotEmpty;
     final showResourceProgress =
@@ -470,68 +558,28 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       onBack: () => unawaited(_closePage()),
       child: GlobalDrawerSwipeArea(
         child: AppBackground(
-            child: Scaffold(
+          child: Scaffold(
             backgroundColor: pageBackground,
-            appBar: AppBar(
-              backgroundColor: pageBackground,
-              surfaceTintColor: Colors.transparent,
-              elevation: 0,
-              toolbarHeight: kAppHeaderHeight,
-              leading: Padding(
-                padding: EdgeInsets.only(
-                  left: appHeaderLeadingInset(context),
-                ),
-                child: shadcn.IconButton.ghost(
-                  icon: Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    size: 18,
-                    color: cs.foreground,
-                  ),
-                  onPressed: _closePage,
-                ),
+            headerBackgroundColor: pageBackground,
+            headers: [
+              _SearchToolbar(
+                mobile: context.isMobile,
+                controller: _ctrl,
+                focusNode: _focusNode,
+                mode: _mode,
+                onTextChanged: _onTextChanged,
+                onSubmit: _doSearch,
+                onClear: _onClear,
+                onClose: _closePage,
+                onShowSettings: _showSearchSettings,
+                trailingInset: headerTrailingInset,
               ),
-              leadingWidth: 48 + appHeaderLeadingInset(context),
-              titleSpacing: 0,
-              title: Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: UnifiedSearchBar(
-                  controller: _ctrl,
-                  focusNode: _focusNode,
-                  onChanged: _onTextChanged,
-                  onSubmit: _doSearch,
-                  onClear: _onClear,
-                  hint: _mode == SearchMode.media
-                      ? '搜索电影、剧集...'
-                      : '搜索种子资源...',
-                ),
-              ),
-              actions: [
-                const DebugThemeButton.material(),
-                if (_mode == SearchMode.resource)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: shadcn.IconButton.ghost(
-                      icon: Icon(
-                        shadcn.LucideIcons.settings,
-                        size: 19,
-                        color: cs.foreground,
-                      ),
-                      onPressed: _showSearchSettings,
-                    ),
-                  ),
-                if (headerTrailingInset > 0)
-                  SizedBox(width: headerTrailingInset),
-              ],
-            ),
-            body: Column(
+            ],
+            child: Column(
               children: [
                 _buildModeSwitcher(),
-                Container(
-                  height: 0.5,
-                  color: cs.border.withValues(alpha: 0.3),
-                ),
-                if (showResourceProgress)
-                  _buildResourceProgress(resourceState),
+                Container(height: 0.5, color: cs.border.withValues(alpha: 0.3)),
+                if (showResourceProgress) _buildResourceProgress(resourceState),
                 if (showHistory) _buildHistorySuggestions(),
                 Expanded(child: _buildBody(context, resourceState)),
               ],
@@ -547,8 +595,8 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   // ═══════════════════════════════════════════════
 
   Widget _buildModeSwitcher() {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
@@ -590,48 +638,37 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   // ═══════════════════════════════════════════════
 
   Widget _buildResourceProgress(ResourceSearchState state) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
-    final msg = state.messages.isNotEmpty ? state.messages.last.text : '搜索中...';
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
+    final msg = state.messages.isNotEmpty ? state.messages.last : null;
+    final title = msg?.text ?? '搜索中...';
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: cs.border.withValues(alpha: 0.3),
-            width: 0.5,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: cs.border.withValues(alpha: 0.3), width: 0.5)),
       ),
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 14,
-            height: 14,
-            child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              msg,
-              style: typo.xSmall.copyWith(color: cs.mutedForeground),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: _CollapsibleSection(
+        title: Row(
+          children: [
+            const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                style: typo.xSmall.copyWith(color: cs.mutedForeground),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-          Text(
-            '${state.results.length} 条',
-            style: typo.xSmall.copyWith(
-              color: cs.mutedForeground,
-              fontWeight: FontWeight.w600,
+            Text(
+              '${state.results.length} 条',
+              style: typo.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
             ),
-          ),
-          if (state.results.isNotEmpty) ...[
-            const SizedBox(width: 8),
-            _buildResourceFilterButton(),
+            if (state.results.isNotEmpty) ...[const SizedBox(width: 8), _buildResourceFilterButton()],
           ],
-        ],
+        ),
+        child: _buildMessagesList(state),
       ),
     );
   }
@@ -641,7 +678,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   // ═══════════════════════════════════════════════
 
   Widget _buildHistorySuggestions() {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final history = SearchHistoryManager.getHistory();
@@ -657,18 +694,11 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
             padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
             child: Row(
               children: [
-                Icon(
-                  shadcn.LucideIcons.clock,
-                  size: 14,
-                  color: cs.mutedForeground,
-                ),
+                Icon(LucideIcons.clock, size: 14, color: cs.mutedForeground),
                 const SizedBox(width: 6),
                 Text(
                   '搜索历史',
-                  style: typo.xSmall.copyWith(
-                    color: cs.mutedForeground,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: typo.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w500),
                 ),
                 const Spacer(),
                 GestureDetector(
@@ -678,10 +708,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8),
-                    child: Text(
-                      '清除',
-                      style: typo.xSmall.copyWith(color: cs.mutedForeground),
-                    ),
+                    child: Text('清除', style: typo.xSmall.copyWith(color: cs.mutedForeground)),
                   ),
                 ),
               ],
@@ -696,48 +723,29 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               itemCount: history.length,
               itemBuilder: (_, i) {
                 final keyword = history[i];
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    onTap: () => _onHistoryTap(keyword),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 9,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            shadcn.LucideIcons.clock,
-                            size: 14,
-                            color: cs.mutedForeground.withValues(alpha: 0.4),
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _onHistoryTap(keyword),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
+                    child: Row(
+                      children: [
+                        Icon(LucideIcons.clock, size: 14, color: cs.mutedForeground.withValues(alpha: 0.4)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(keyword, style: typo.small.copyWith(color: cs.foreground)),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            SearchHistoryManager.removeHistory(keyword);
+                            setState(() {});
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Icon(LucideIcons.x, size: 14, color: cs.mutedForeground.withValues(alpha: 0.3)),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              keyword,
-                              style: typo.small.copyWith(color: cs.foreground),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              SearchHistoryManager.removeHistory(keyword);
-                              setState(() {});
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8),
-                              child: Icon(
-                                shadcn.LucideIcons.x,
-                                size: 14,
-                                color: cs.mutedForeground.withValues(
-                                  alpha: 0.3,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -769,16 +777,10 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     );
   }
 
-  Widget _buildModeBody(
-    BuildContext context,
-    SearchMode mode,
-    ResourceSearchState resourceState,
-  ) {
+  Widget _buildModeBody(BuildContext context, SearchMode mode, ResourceSearchState resourceState) {
     final query = _modeQuery(mode);
     if (query.isEmpty) {
-      return _buildEmptyHint(
-        '输入${mode == SearchMode.media ? '影视名称' : '资源关键词'}开始搜索',
-      );
+      return _buildEmptyHint('输入${mode == SearchMode.media ? '影视名称' : '资源关键词'}开始搜索');
     }
     final activeSubmittedQuery = _modeSubmittedQuery(mode);
     if (activeSubmittedQuery.isEmpty || query != activeSubmittedQuery) {
@@ -794,18 +796,14 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            shadcn.LucideIcons.search,
+            LucideIcons.search,
             size: 48,
-            color: shadcn.Theme.of(
-              context,
-            ).colorScheme.mutedForeground.withValues(alpha: 0.2),
+            color: Theme.of(context).colorScheme.mutedForeground.withValues(alpha: 0.2),
           ),
           const SizedBox(height: 12),
           Text(
             text,
-            style: shadcn.Theme.of(context).typography.small.copyWith(
-              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-            ),
+            style: Theme.of(context).typography.small.copyWith(color: Theme.of(context).colorScheme.mutedForeground),
           ),
         ],
       ),
@@ -818,15 +816,13 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
 
   Widget _buildMediaBody(BuildContext context) {
     if (_mediaLoading) {
-      return const Center(child: shadcn.CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
     if (_tmdbResults.isEmpty && _doubanResults.isEmpty) {
       return Center(
         child: Text(
           '没有找到「$_mediaSubmittedQuery」',
-          style: shadcn.Theme.of(context).typography.small.copyWith(
-            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-          ),
+          style: Theme.of(context).typography.small.copyWith(color: Theme.of(context).colorScheme.mutedForeground),
         ),
       );
     }
@@ -835,8 +831,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       controller: _mediaScrollController,
       padding: EdgeInsets.fromLTRB(mobile ? 12 : 16, 8, mobile ? 12 : 16, 80),
       children: [
-        if (_tmdbResults.isNotEmpty)
-          ..._tmdbResults.map((item) => _buildTmdbTile(context, item)),
+        if (_tmdbResults.isNotEmpty) ..._tmdbResults.map((item) => _buildTmdbTile(context, item)),
         if (_doubanResults.isNotEmpty) ...[
           if (_tmdbResults.isNotEmpty) const SizedBox(height: 4),
           ..._doubanResults.map((item) => _buildDoubanTile(context, item)),
@@ -866,13 +861,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                       fit: BoxFit.cover,
                       httpHeaders: headers,
                       placeholder: (_, _) => const Center(
-                        child: SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: shadcn.CircularProgressIndicator(
-                            strokeWidth: 1.5,
-                          ),
-                        ),
+                        child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 1.5)),
                       ),
                       errorWidget: (_, _, _) => _posterPh(context),
                     )
@@ -882,24 +871,14 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               top: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 3,
-                  vertical: 1.5,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1.5),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.85),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(3),
-                  ),
+                  borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(3)),
                 ),
                 child: Text(
                   source,
-                  style: const TextStyle(
-                    fontSize: 7.5,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    height: 1,
-                  ),
+                  style: const TextStyle(fontSize: 7.5, color: Colors.white, fontWeight: FontWeight.w700, height: 1),
                 ),
               ),
             ),
@@ -917,22 +896,12 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       'subtitleDate="${item.releaseDate}" posterUrl="$posterUrl"',
     );
     return _searchResultTile(
-      leading: _buildPosterWithBadge(
-        context: context,
-        imageUrl: posterUrl,
-        source: 'TMDB',
-        color: Colors.blue,
-      ),
+      leading: _buildPosterWithBadge(context: context, imageUrl: posterUrl, source: 'TMDB', color: Colors.blue),
       title: item.title,
       subtitle: _tmdbSubtitle(context, item),
-      trailing: IconButton(
-        icon: Icon(
-          shadcn.LucideIcons.search,
-          size: 16,
-          color: shadcn.Theme.of(context).colorScheme.primary,
-        ),
+      trailing: IconButton.ghost(
+        icon: Icon(LucideIcons.search, size: 16, color: Theme.of(context).colorScheme.primary),
         onPressed: () => _goResourceSearch(item.title),
-        tooltip: '搜索资源',
       ),
       onTap: () => openTmdbDetail(context, item),
     );
@@ -948,19 +917,15 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
         if (item.releaseDate.isNotEmpty)
           Text(
             item.releaseDate,
-            style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-            ),
+            style: Theme.of(context).typography.xSmall.copyWith(color: Theme.of(context).colorScheme.mutedForeground),
           ),
         if (item.voteAverage != null && item.voteAverage! > 0) ...[
           const SizedBox(width: 6),
-          Icon(shadcn.LucideIcons.star, size: 12, color: Colors.amber),
+          Icon(LucideIcons.star, size: 12, color: Colors.amber),
           const SizedBox(width: 2),
           Text(
             item.voteAverage!.toStringAsFixed(1),
-            style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-            ),
+            style: Theme.of(context).typography.xSmall.copyWith(color: Theme.of(context).colorScheme.mutedForeground),
           ),
         ],
         if (item.mediaType.isNotEmpty) ...[
@@ -968,8 +933,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0.5),
             decoration: BoxDecoration(
-              color: (item.mediaType == 'movie' ? Colors.blue : Colors.purple)
-                  .withValues(alpha: 0.1),
+              color: (item.mediaType == 'movie' ? Colors.blue : Colors.purple).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(2),
             ),
             child: Text(
@@ -1011,18 +975,18 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               if (target.year.isNotEmpty)
                 Text(
                   target.year,
-                  style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).typography.xSmall.copyWith(color: Theme.of(context).colorScheme.mutedForeground),
                 ),
               if (ratingText.isNotEmpty) ...[
                 const SizedBox(width: 6),
-                Icon(shadcn.LucideIcons.star, size: 11, color: Colors.amber),
+                Icon(LucideIcons.star, size: 11, color: Colors.amber),
                 const SizedBox(width: 2),
                 Text(
                   ratingText,
-                  style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                  style: Theme.of(context).typography.xSmall.copyWith(
+                    color: Theme.of(context).colorScheme.mutedForeground,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1030,14 +994,9 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               if (item.typeName.isNotEmpty) ...[
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 3,
-                    vertical: 0.5,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0.5),
                   decoration: BoxDecoration(
-                    color: (isTv ? Colors.purple : Colors.blue).withValues(
-                      alpha: 0.1,
-                    ),
+                    color: (isTv ? Colors.purple : Colors.blue).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(2),
                   ),
                   child: Text(
@@ -1053,21 +1012,14 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               if (target.hasLinewatch) ...[
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 3,
-                    vertical: 0.5,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0.5),
                   decoration: BoxDecoration(
                     color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(2),
                   ),
                   child: const Text(
                     '可播放',
-                    style: TextStyle(
-                      fontSize: 9,
-                      color: Colors.green,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 9, color: Colors.green, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -1079,10 +1031,8 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               target.cardSubtitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-                color: shadcn.Theme.of(
-                  context,
-                ).colorScheme.mutedForeground.withValues(alpha: 0.6),
+              style: Theme.of(context).typography.xSmall.copyWith(
+                color: Theme.of(context).colorScheme.mutedForeground.withValues(alpha: 0.6),
                 fontSize: 10,
               ),
             ),
@@ -1092,10 +1042,8 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               padding: const EdgeInsets.only(top: 2),
               child: Text(
                 target.nullRatingReason,
-                style: shadcn.Theme.of(context).typography.xSmall.copyWith(
-                  color: shadcn.Theme.of(
-                    context,
-                  ).colorScheme.mutedForeground.withValues(alpha: 0.4),
+                style: Theme.of(context).typography.xSmall.copyWith(
+                  color: Theme.of(context).colorScheme.mutedForeground.withValues(alpha: 0.4),
                   fontSize: 10,
                   fontStyle: FontStyle.italic,
                 ),
@@ -1103,14 +1051,9 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
             ),
         ],
       ),
-      trailing: IconButton(
-        icon: Icon(
-          shadcn.LucideIcons.search,
-          size: 16,
-          color: shadcn.Theme.of(context).colorScheme.primary,
-        ),
+      trailing: IconButton.ghost(
+        icon: Icon(LucideIcons.search, size: 16, color: Theme.of(context).colorScheme.primary),
         onPressed: () => _goResourceSearch(target.title),
-        tooltip: '搜索资源',
       ),
       onTap: () {
         if (subjectId.isNotEmpty) openDoubanDetail(context, subjectId);
@@ -1119,15 +1062,9 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   Widget _posterPh(BuildContext ctx) => Container(
-    color: shadcn.Theme.of(ctx).colorScheme.muted,
+    color: Theme.of(ctx).colorScheme.muted,
     child: Center(
-      child: Icon(
-        shadcn.LucideIcons.film,
-        size: 20,
-        color: shadcn.Theme.of(
-          ctx,
-        ).colorScheme.mutedForeground.withValues(alpha: 0.3),
-      ),
+      child: Icon(LucideIcons.film, size: 20, color: Theme.of(ctx).colorScheme.mutedForeground.withValues(alpha: 0.3)),
     ),
   );
 
@@ -1138,39 +1075,36 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     required Widget trailing,
     required VoidCallback onTap,
   }) {
-    final typo = shadcn.Theme.of(context).typography;
+    final typo = Theme.of(context).typography;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              children: [
-                leading,
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: typo.small.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 3),
-                      subtitle,
-                    ],
-                  ),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            children: [
+              leading,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: typo.small.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 3),
+                    subtitle,
+                  ],
                 ),
-                trailing,
-              ],
-            ),
+              ),
+              trailing,
+            ],
           ),
         ),
       ),
@@ -1194,9 +1128,9 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
             child: Center(
               child: Text(
                 '没有找到「$_resourceSubmittedQuery」相关资源',
-                style: shadcn.Theme.of(context).typography.small.copyWith(
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                ),
+                style: Theme.of(
+                  context,
+                ).typography.small.copyWith(color: Theme.of(context).colorScheme.mutedForeground),
               ),
             ),
           ),
@@ -1205,8 +1139,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     }
     return Column(
       children: [
-        if (!state.searching && state.messages.isNotEmpty)
-          _buildResourceDoneSummary(state),
+        if (!state.searching && state.messages.isNotEmpty) _buildResourceDoneSummary(state),
         if (state.results.isNotEmpty) _buildResourceSortBar(state),
         Expanded(child: _buildResourceList(state)),
       ],
@@ -1214,32 +1147,21 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   Widget _buildResourceDoneSummary(ResourceSearchState state) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
     final msg = state.messages.last;
     final hasResults = state.results.isNotEmpty;
 
     return Container(
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: cs.border.withValues(alpha: 0.3),
-            width: 0.5,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: cs.border.withValues(alpha: 0.3), width: 0.5)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: ExpansionTile(
-        tilePadding: EdgeInsets.zero,
-        childrenPadding: EdgeInsets.zero,
-        shape: const Border(),
-        collapsedShape: const Border(),
+      child: _CollapsibleSection(
         title: Row(
           children: [
             Icon(
-              msg.isError
-                  ? shadcn.LucideIcons.circleAlert
-                  : shadcn.LucideIcons.check,
+              msg.isError ? LucideIcons.circleAlert : LucideIcons.check,
               size: 14,
               color: msg.isError ? Colors.red : Colors.green.shade600,
             ),
@@ -1254,30 +1176,26 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
             ),
             Text(
               '${state.results.length} 条',
-              style: typo.xSmall.copyWith(
-                color: cs.mutedForeground,
-                fontWeight: FontWeight.w600,
-              ),
+              style: typo.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
             ),
-            if (hasResults) ...[
-              const SizedBox(width: 8),
-              _buildResourceFilterButton(),
-            ],
+            if (hasResults) ...[const SizedBox(width: 8), _buildResourceFilterButton()],
           ],
         ),
-        children: [_buildMessagesList(state)],
+        child: _buildMessagesList(state),
       ),
     );
   }
 
   Widget _buildMessagesList(ResourceSearchState state) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Column(
-        children: List.generate(state.messages.length, (i) {
+    return SizedBox(
+      height: 220,
+      child: ListView.builder(
+        padding: const EdgeInsets.only(top: 4, bottom: 8),
+        itemCount: state.messages.length,
+        itemBuilder: (_, i) {
           final msg = state.messages[state.messages.length - 1 - i];
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 4),
@@ -1285,9 +1203,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  msg.isError
-                      ? shadcn.LucideIcons.circleAlert
-                      : shadcn.LucideIcons.check,
+                  msg.isError ? LucideIcons.circleAlert : LucideIcons.check,
                   size: 12,
                   color: msg.isError ? Colors.red : Colors.green.shade600,
                 ),
@@ -1295,51 +1211,39 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                 Expanded(
                   child: Text(
                     msg.text,
-                    style: typo.xSmall.copyWith(
-                      color: msg.isError ? Colors.red : cs.mutedForeground,
-                      fontSize: 11,
-                    ),
+                    style: typo.xSmall.copyWith(color: msg.isError ? Colors.red : cs.mutedForeground, fontSize: 11),
                   ),
                 ),
                 Text(
                   '${msg.time.hour.toString().padLeft(2, '0')}:'
                   '${msg.time.minute.toString().padLeft(2, '0')}:'
                   '${msg.time.second.toString().padLeft(2, '0')}',
-                  style: typo.xSmall.copyWith(
-                    color: cs.mutedForeground.withValues(alpha: 0.4),
-                    fontSize: 10,
-                  ),
+                  style: typo.xSmall.copyWith(color: cs.mutedForeground.withValues(alpha: 0.4), fontSize: 10),
                 ),
               ],
             ),
           );
-        }),
+        },
       ),
     );
   }
 
   Widget _buildResourceList(ResourceSearchState state) {
     final mobile = context.isMobile;
-    final results = _sortedResourceResults(
-      _filteredResourceResults(state.results),
-    );
+    final results = _sortedResourceResults(_filteredResourceResults(state.results));
     if (results.isEmpty) {
       if (state.searching) {
         return Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(
-                width: 22,
-                height: 22,
-                child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-              ),
+              const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
               const SizedBox(height: 12),
               Text(
                 '正在搜索资源...',
-                style: shadcn.Theme.of(context).typography.small.copyWith(
-                  color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                ),
+                style: Theme.of(
+                  context,
+                ).typography.small.copyWith(color: Theme.of(context).colorScheme.mutedForeground),
               ),
             ],
           ),
@@ -1348,9 +1252,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       return Center(
         child: Text(
           '没有符合筛选条件的资源',
-          style: shadcn.Theme.of(context).typography.small.copyWith(
-            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-          ),
+          style: Theme.of(context).typography.small.copyWith(color: Theme.of(context).colorScheme.mutedForeground),
         ),
       );
     }
@@ -1364,7 +1266,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   Widget _buildResourceSortBar(ResourceSearchState state) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final filteredCount = _filteredResourceResults(state.results).length;
 
@@ -1379,8 +1281,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
           children: [
             for (final field in _ResourceSortField.values) ...[
               _buildResourceSortChip(field),
-              if (field != _ResourceSortField.values.last)
-                const SizedBox(width: 6),
+              if (field != _ResourceSortField.values.last) const SizedBox(width: 6),
             ],
             const SizedBox(width: 10),
             _buildResourceFilterResultCount(filteredCount),
@@ -1391,8 +1292,8 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   Widget _buildResourceFilterResultCount(int count) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -1403,17 +1304,14 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       ),
       child: Text(
         '$count 条',
-        style: typo.xSmall.copyWith(
-          color: cs.mutedForeground,
-          fontWeight: FontWeight.w600,
-        ),
+        style: typo.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
       ),
     );
   }
 
   Widget _buildResourceFilterButton() {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
     final count = _resourceFilterCount;
     final active = count > 0;
 
@@ -1426,24 +1324,14 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
           decoration: BoxDecoration(
-            color: active
-                ? cs.primary.withValues(alpha: 0.12)
-                : cs.mutedForeground.withValues(alpha: 0.05),
+            color: active ? cs.primary.withValues(alpha: 0.12) : cs.mutedForeground.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(7),
-            border: Border.all(
-              color: active
-                  ? cs.primary.withValues(alpha: 0.55)
-                  : cs.border.withValues(alpha: 0.45),
-            ),
+            border: Border.all(color: active ? cs.primary.withValues(alpha: 0.55) : cs.border.withValues(alpha: 0.45)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                shadcn.LucideIcons.listFilter,
-                size: 12,
-                color: active ? cs.primary : cs.foreground,
-              ),
+              Icon(LucideIcons.listFilter, size: 12, color: active ? cs.primary : cs.foreground),
               const SizedBox(width: 4),
               Text(
                 active ? '筛选 $count' : '筛选',
@@ -1468,17 +1356,11 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     final overlay = Overlay.of(anchorContext, rootOverlay: true);
     final anchorBox = anchorContext.findRenderObject() as RenderBox?;
     final overlayBox = overlay.context.findRenderObject() as RenderBox?;
-    if (anchorBox == null ||
-        overlayBox == null ||
-        !anchorBox.hasSize ||
-        !overlayBox.hasSize) {
+    if (anchorBox == null || overlayBox == null || !anchorBox.hasSize || !overlayBox.hasSize) {
       return;
     }
 
-    final anchorOffset = anchorBox.localToGlobal(
-      Offset.zero,
-      ancestor: overlayBox,
-    );
+    final anchorOffset = anchorBox.localToGlobal(Offset.zero, ancestor: overlayBox);
     final anchorSize = anchorBox.size;
     final overlaySize = overlayBox.size;
     final compact = overlaySize.width < 600;
@@ -1488,18 +1370,12 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     final aboveSpace = anchorOffset.dy - 12;
     final showAbove = !compact && belowSpace < 280 && aboveSpace > belowSpace;
     final panelMaxHeight = (showAbove ? aboveSpace : belowSpace)
-        .clamp(
-          compact ? 160.0 : 220.0,
-          compact ? overlaySize.height - 24 : 520.0,
-        )
+        .clamp(compact ? 160.0 : 220.0, compact ? overlaySize.height - 24 : 520.0)
         .toDouble();
     final panelLeft = compact ? 12.0 : null;
     final panelRight = compact
         ? 12.0
-        : (overlaySize.width - anchorOffset.dx - anchorSize.width).clamp(
-            8.0,
-            overlaySize.width,
-          );
+        : (overlaySize.width - anchorOffset.dx - anchorSize.width).clamp(8.0, overlaySize.width);
 
     late final OverlayEntry entry;
     entry = OverlayEntry(
@@ -1540,38 +1416,16 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
                     maxHeight: panelMaxHeight,
                     siteLabel: _siteLabel,
                     categoryLabel: _categoryLabel,
-                    onToggleSite: (value) => update(
-                      () => _toggleFilterValue(_resourceFilterSites, value),
-                    ),
-                    onToggleSale: (value) => update(
-                      () => _toggleFilterValue(_resourceFilterSales, value),
-                    ),
-                    onToggleCategory: (value) => update(
-                      () =>
-                          _toggleFilterValue(_resourceFilterCategories, value),
-                    ),
-                    onToggleResolution: (value) => update(
-                      () =>
-                          _toggleFilterValue(_resourceFilterResolutions, value),
-                    ),
-                    onToggleTag: (value) => update(
-                      () => _toggleFilterValue(_resourceFilterTags, value),
-                    ),
-                    onToggleSeason: (value) => update(
-                      () => _toggleFilterValue(_resourceFilterSeasons, value),
-                    ),
-                    onToggleEpisode: (value) => update(
-                      () => _toggleFilterValue(_resourceFilterEpisodes, value),
-                    ),
-                    onToggleHr: () => update(
-                      () => _resourceFilterHrOnly = !_resourceFilterHrOnly,
-                    ),
-                    onToggleSize: () => update(
-                      () => _resourceFilterSizeEnabled =
-                          !_resourceFilterSizeEnabled,
-                    ),
-                    onSizeChanged: (value) =>
-                        update(() => _resourceFilterSizeGb = value),
+                    onToggleSite: (value) => update(() => _toggleFilterValue(_resourceFilterSites, value)),
+                    onToggleSale: (value) => update(() => _toggleFilterValue(_resourceFilterSales, value)),
+                    onToggleCategory: (value) => update(() => _toggleFilterValue(_resourceFilterCategories, value)),
+                    onToggleResolution: (value) => update(() => _toggleFilterValue(_resourceFilterResolutions, value)),
+                    onToggleTag: (value) => update(() => _toggleFilterValue(_resourceFilterTags, value)),
+                    onToggleSeason: (value) => update(() => _toggleFilterValue(_resourceFilterSeasons, value)),
+                    onToggleEpisode: (value) => update(() => _toggleFilterValue(_resourceFilterEpisodes, value)),
+                    onToggleHr: () => update(() => _resourceFilterHrOnly = !_resourceFilterHrOnly),
+                    onToggleSize: () => update(() => _resourceFilterSizeEnabled = !_resourceFilterSizeEnabled),
+                    onSizeChanged: (value) => update(() => _resourceFilterSizeGb = value),
                     onClear: () => update(_resetResourceFilters),
                   );
                 },
@@ -1591,8 +1445,8 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   Widget _buildResourceSortChip(_ResourceSortField field) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
     final active = _resourceSortField == field;
 
     return GestureDetector(
@@ -1603,15 +1457,9 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
         decoration: BoxDecoration(
-          color: active
-              ? cs.primary.withValues(alpha: 0.12)
-              : cs.mutedForeground.withValues(alpha: 0.05),
+          color: active ? cs.primary.withValues(alpha: 0.12) : cs.mutedForeground.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(7),
-          border: Border.all(
-            color: active
-                ? cs.primary.withValues(alpha: 0.55)
-                : cs.border.withValues(alpha: 0.45),
-          ),
+          border: Border.all(color: active ? cs.primary.withValues(alpha: 0.55) : cs.border.withValues(alpha: 0.45)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1625,13 +1473,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
             ),
             if (active) ...[
               const SizedBox(width: 3),
-              Icon(
-                _resourceSortAscending
-                    ? shadcn.LucideIcons.arrowUp
-                    : shadcn.LucideIcons.arrowDown,
-                size: 11,
-                color: cs.primary,
-              ),
+              Icon(_resourceSortAscending ? LucideIcons.arrowUp : LucideIcons.arrowDown, size: 11, color: cs.primary),
             ],
           ],
         ),
@@ -1677,9 +1519,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     }
   }
 
-  List<SearchTorrentInfo> _sortedResourceResults(
-    List<SearchTorrentInfo> results,
-  ) {
+  List<SearchTorrentInfo> _sortedResourceResults(List<SearchTorrentInfo> results) {
     final sorted = List<SearchTorrentInfo>.of(results);
     sorted.sort(_compareResourceItems);
     return sorted;
@@ -1760,49 +1600,37 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     _resourceFilterEpisodes.clear();
     _resourceFilterHrOnly = false;
     _resourceFilterSizeEnabled = false;
-    _resourceFilterSizeGb = const RangeValues(0, 100);
+    _resourceFilterSizeGb = const SliderValue.ranged(0, 100);
   }
 
-  List<SearchTorrentInfo> _filteredResourceResults(
-    List<SearchTorrentInfo> results,
-  ) {
+  List<SearchTorrentInfo> _filteredResourceResults(List<SearchTorrentInfo> results) {
     if (_resourceFilterCount == 0) return results;
     return results.where(_matchesResourceFilters).toList();
   }
 
   bool _matchesResourceFilters(SearchTorrentInfo item) {
-    if (_resourceFilterSites.isNotEmpty &&
-        !_resourceFilterSites.contains(item.siteId)) {
+    if (_resourceFilterSites.isNotEmpty && !_resourceFilterSites.contains(item.siteId)) {
       return false;
     }
-    if (_resourceFilterSales.isNotEmpty &&
-        !_resourceFilterSales.contains(_resourceSaleValue(item))) {
+    if (_resourceFilterSales.isNotEmpty && !_resourceFilterSales.contains(_resourceSaleValue(item))) {
       return false;
     }
-    if (_resourceFilterCategories.isNotEmpty &&
-        !_resourceFilterCategories.contains(item.category)) {
+    if (_resourceFilterCategories.isNotEmpty && !_resourceFilterCategories.contains(item.category)) {
       return false;
     }
     if (_resourceFilterResolutions.isNotEmpty &&
-        _extractResourceResolutions(
-          item,
-        ).intersection(_resourceFilterResolutions).isEmpty) {
+        _extractResourceResolutions(item).intersection(_resourceFilterResolutions).isEmpty) {
       return false;
     }
-    if (_resourceFilterTags.isNotEmpty &&
-        item.tags.toSet().intersection(_resourceFilterTags).isEmpty) {
+    if (_resourceFilterTags.isNotEmpty && item.tags.toSet().intersection(_resourceFilterTags).isEmpty) {
       return false;
     }
     if (_resourceFilterSeasons.isNotEmpty &&
-        _extractResourceSeasons(
-          item,
-        ).intersection(_resourceFilterSeasons).isEmpty) {
+        _extractResourceSeasons(item).intersection(_resourceFilterSeasons).isEmpty) {
       return false;
     }
     if (_resourceFilterEpisodes.isNotEmpty &&
-        _extractResourceEpisodes(
-          item,
-        ).intersection(_resourceFilterEpisodes).isEmpty) {
+        _extractResourceEpisodes(item).intersection(_resourceFilterEpisodes).isEmpty) {
       return false;
     }
     if (_resourceFilterSizeEnabled && !_matchesResourceSizeRange(item)) {
@@ -1861,9 +1689,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       }
     }
 
-    final pattern = RegExp(
-      r'(^|[^A-Z0-9])(?:S\d{1,2})?E(?:P)?(\d{1,3})(?=[^0-9]|$)',
-    );
+    final pattern = RegExp(r'(^|[^A-Z0-9])(?:S\d{1,2})?E(?:P)?(\d{1,3})(?=[^0-9]|$)');
     for (final match in pattern.allMatches(text)) {
       final number = int.tryParse(match.group(2) ?? '');
       if (number != null && number > 0) {
@@ -1876,14 +1702,10 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   bool _matchesResourceSizeRange(SearchTorrentInfo item) {
     if (item.size <= 0) return false;
     final sizeGb = item.size / (1024 * 1024 * 1024);
-    return sizeGb >= _resourceFilterSizeGb.start &&
-        sizeGb <= _resourceFilterSizeGb.end;
+    return sizeGb >= _resourceFilterSizeGb.start && sizeGb <= _resourceFilterSizeGb.end;
   }
 
-  List<String> _resourceFilterOptions(
-    List<SearchTorrentInfo> results,
-    String Function(SearchTorrentInfo item) pick,
-  ) {
+  List<String> _resourceFilterOptions(List<SearchTorrentInfo> results, String Function(SearchTorrentInfo item) pick) {
     final values = <String>{};
     for (final item in results) {
       final value = pick(item).trim();
@@ -1894,11 +1716,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
 
   List<String> _resourceResolutionOptions(List<SearchTorrentInfo> results) {
     return _resourceResolutionValues
-        .where(
-          (resolution) => results.any(
-            (item) => _extractResourceResolutions(item).contains(resolution),
-          ),
-        )
+        .where((resolution) => results.any((item) => _extractResourceResolutions(item).contains(resolution)))
         .toList();
   }
 
@@ -1970,9 +1788,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
 
   /// 统计中日韩字符数
   int _cjkCount(String text) {
-    return text.runes
-        .where((r) => (r >= 0x4E00 && r <= 0x9FFF) || (r >= 0x3400 && r <= 0x4DBF))
-        .length;
+    return text.runes.where((r) => (r >= 0x4E00 && r <= 0x9FFF) || (r >= 0x3400 && r <= 0x4DBF)).length;
   }
 
   /// 中文多的那条做主标题，副标题固定用另一条
@@ -1986,119 +1802,88 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   }
 
   Widget _buildTorrentCard(SearchTorrentInfo item) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
     final (displayTitle, displaySubtitle) = _torrentDisplayTitles(item);
 
     final site = _siteFor(item.siteId);
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: () => _onTorrentTap(item),
-        onLongPress: () => BrowserPage.open(
-          context,
-          url: item.detailUrl,
-          title: item.title,
-          cookie: site?.cookie,
-          localStorage: site?.localStorage,
-          userAgent: site?.userAgent,
-          siteId: site?.site ?? item.siteId,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _onTorrentTap(item),
+      onLongPress: () => BrowserPage.open(
+        context,
+        url: item.detailUrl,
+        title: item.title,
+        cookie: site?.cookie,
+        localStorage: site?.localStorage,
+        userAgent: site?.userAgent,
+        siteId: site?.site ?? item.siteId,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    displayTitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: typo.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
+                  ),
+                  if (displaySubtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
                     Text(
-                      displayTitle,
-                      maxLines: 2,
+                      displaySubtitle,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: typo.small.copyWith(
-                        color: cs.foreground,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (displaySubtitle.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        displaySubtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: typo.xSmall.copyWith(
-                          color: cs.mutedForeground.withValues(alpha: 0.6),
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 2,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          formatBytes(item.size),
-                          style: typo.xSmall.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: cs.foreground,
-                          ),
-                        ),
-                        _seedRow(item),
-                        _badge(item.siteId, cs.primary),
-                        if (item.category.isNotEmpty && item.category != '无分类')
-                          _badge(
-                            _categoryLabel(item.category),
-                            cs.mutedForeground,
-                          ),
-                        if (!item.hr) _badge('HR', Colors.orange),
-                        if (item.saleStatus.isNotEmpty &&
-                            item.saleStatus != '无优惠')
-                          _badge(item.saleStatus, Colors.green),
-                        if (item.published.isNotEmpty)
-                          _publishedTimeText(item.published, cs),
-                      ],
+                      style: typo.xSmall.copyWith(color: cs.mutedForeground.withValues(alpha: 0.6), fontSize: 10),
                     ),
                   ],
-                ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 2,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        formatBytes(item.size),
+                        style: typo.xSmall.copyWith(fontWeight: FontWeight.w600, color: cs.foreground),
+                      ),
+                      _seedRow(item),
+                      _badge(item.siteId, cs.primary),
+                      if (item.category.isNotEmpty && item.category != '无分类')
+                        _badge(_categoryLabel(item.category), cs.mutedForeground),
+                      if (!item.hr) _badge('HR', Colors.orange),
+                      if (item.saleStatus.isNotEmpty && item.saleStatus != '无优惠') _badge(item.saleStatus, Colors.green),
+                      if (item.published.isNotEmpty) _publishedTimeText(item.published, cs),
+                    ],
+                  ),
+                ],
               ),
-              IconButton(
-                icon: Icon(
-                  shadcn.LucideIcons.download,
-                  size: 16,
-                  color: cs.primary,
-                ),
-                onPressed: () => _onTorrentTap(item),
-                tooltip: '下载',
-              ),
-            ],
-          ),
+            ),
+            IconButton.ghost(
+              icon: Icon(LucideIcons.download, size: 16, color: cs.primary),
+              onPressed: () => _onTorrentTap(item),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _publishedTimeText(String value, shadcn.ColorScheme cs) {
+  Widget _publishedTimeText(String value, ColorScheme cs) {
     final parsed = parseFlexibleLocalDateTime(value);
     final label = parsed == null ? value : _formatRelativePublishedTime(parsed);
-    final tooltip = parsed == null
-        ? value
-        : formatDateTimeSecond(parsed.toLocal());
+    final tooltip = parsed == null ? value : formatDateTimeSecond(parsed.toLocal());
 
     return Tooltip(
-      message: tooltip,
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          color: cs.mutedForeground.withValues(alpha: 0.5),
-        ),
-      ),
+      tooltip: (context) => Text(tooltip),
+      child: Text(label, style: TextStyle(fontSize: 10, color: cs.mutedForeground.withValues(alpha: 0.5))),
     );
   }
 
@@ -2120,37 +1905,25 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(shadcn.LucideIcons.arrowUp, size: 10, color: Colors.green),
+        const Icon(LucideIcons.arrowUp, size: 10, color: Colors.green),
         const SizedBox(width: 1),
         Text(
           '${item.seeders}',
-          style: const TextStyle(
-            fontSize: 10,
-            color: Colors.green,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 10, color: Colors.green, fontWeight: FontWeight.w600),
         ),
         const SizedBox(width: 4),
-        const Icon(shadcn.LucideIcons.arrowDown, size: 10, color: Colors.red),
+        const Icon(LucideIcons.arrowDown, size: 10, color: Colors.red),
         const SizedBox(width: 1),
         Text(
           '${item.leechers}',
-          style: const TextStyle(
-            fontSize: 10,
-            color: Colors.red,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.w600),
         ),
         const SizedBox(width: 4),
-        const Icon(shadcn.LucideIcons.check, size: 10, color: Colors.grey),
+        Icon(LucideIcons.check, size: 10, color: Colors.gray.shade500),
         const SizedBox(width: 1),
         Text(
           '${item.completers}',
-          style: const TextStyle(
-            fontSize: 10,
-            color: Colors.grey,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 10, color: Colors.gray.shade500, fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -2159,17 +1932,10 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
   Widget _badge(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(3),
-      ),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(3)),
       child: Text(
         text,
-        style: TextStyle(
-          fontSize: 9,
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(fontSize: 9, color: color, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -2194,9 +1960,7 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
       showDefaultHeader: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      constraints: const BoxConstraints(
-        maxWidth: DownloaderSelectSheet.desktopWidth,
-      ),
+      constraints: const BoxConstraints(maxWidth: DownloaderSelectSheet.desktopWidth),
       builder: (ctx) => DownloaderSelectSheet(
         useDefaultHeader: true,
         onSelected: (downloader) {
@@ -2208,11 +1972,8 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
               // 这里也一样
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
-              constraints: const BoxConstraints(
-                maxWidth: PushTorrentSheet.desktopWidth,
-              ),
-              builder: (_) =>
-                  PushTorrentSheet(torrent: item, downloader: downloader),
+              constraints: const BoxConstraints(maxWidth: PushTorrentSheet.desktopWidth),
+              builder: (_) => PushTorrentSheet(torrent: item, downloader: downloader),
             );
           });
         },
@@ -2277,7 +2038,7 @@ class _ResourceFilterPanel extends StatefulWidget {
   final Set<String> selectedEpisodes;
   final bool hrOnly;
   final bool sizeEnabled;
-  final RangeValues sizeGb;
+  final SliderValue sizeGb;
   final double maxHeight;
   final String Function(String value) siteLabel;
   final String Function(String value) categoryLabel;
@@ -2290,7 +2051,7 @@ class _ResourceFilterPanel extends StatefulWidget {
   final ValueChanged<String> onToggleEpisode;
   final VoidCallback onToggleHr;
   final VoidCallback onToggleSize;
-  final ValueChanged<RangeValues> onSizeChanged;
+  final ValueChanged<SliderValue> onSizeChanged;
   final VoidCallback onClear;
 
   const _ResourceFilterPanel({
@@ -2336,12 +2097,10 @@ class _ResourceFilterPanelState extends State<_ResourceFilterPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
     final mediaWidth = MediaQuery.sizeOf(context).width;
-    final panelWidth = mediaWidth < 600
-        ? double.infinity
-        : (mediaWidth - 24).clamp(280.0, 520.0).toDouble();
+    final panelWidth = mediaWidth < 600 ? double.infinity : (mediaWidth - 24).clamp(280.0, 520.0).toDouble();
     final activeCount =
         widget.selectedSites.length +
         widget.selectedSales.length +
@@ -2367,43 +2126,25 @@ class _ResourceFilterPanelState extends State<_ResourceFilterPanel> {
               padding: const EdgeInsets.fromLTRB(14, 12, 10, 8),
               child: Row(
                 children: [
-                  Icon(
-                    shadcn.LucideIcons.listFilter,
-                    size: 16,
-                    color: cs.foreground,
-                  ),
+                  Icon(LucideIcons.listFilter, size: 16, color: cs.foreground),
                   const SizedBox(width: 8),
                   Text(
                     '筛选资源',
-                    style: typo.small.copyWith(
-                      color: cs.foreground,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: typo.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
                   ),
                   if (activeCount > 0) ...[
                     const SizedBox(width: 6),
                     Text(
                       '$activeCount 项',
-                      style: typo.xSmall.copyWith(
-                        color: cs.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: typo.xSmall.copyWith(color: cs.primary, fontWeight: FontWeight.w600),
                     ),
                   ],
                   const Spacer(),
-                  if (activeCount > 0)
-                    shadcn.Button.outline(
-                      onPressed: widget.onClear,
-                      child: const Text('清除'),
-                    ),
+                  if (activeCount > 0) Button.outline(onPressed: widget.onClear, child: const Text('清除')),
                 ],
               ),
             ),
-            Divider(
-              height: 1,
-              thickness: 0.5,
-              color: cs.border.withValues(alpha: 0.35),
-            ),
+            Divider(height: 1, thickness: 0.5, color: cs.border.withValues(alpha: 0.35)),
             Flexible(
               child: Scrollbar(
                 controller: _scrollController,
@@ -2415,11 +2156,7 @@ class _ResourceFilterPanelState extends State<_ResourceFilterPanel> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
                   children: [
-                    _ResourceFilterSwitchTile(
-                      label: '不看 HR',
-                      value: widget.hrOnly,
-                      onToggle: widget.onToggleHr,
-                    ),
+                    _ResourceFilterSwitchTile(label: '不看 HR', value: widget.hrOnly, onToggle: widget.onToggleHr),
                     _ResourceSizeRangeFilter(
                       enabled: widget.sizeEnabled,
                       value: widget.sizeGb,
@@ -2487,16 +2224,12 @@ class _ResourceFilterSwitchTile extends StatelessWidget {
   final bool value;
   final VoidCallback onToggle;
 
-  const _ResourceFilterSwitchTile({
-    required this.label,
-    required this.value,
-    required this.onToggle,
-  });
+  const _ResourceFilterSwitchTile({required this.label, required this.value, required this.onToggle});
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
 
     return AppSurfaceContainer(
       margin: const EdgeInsets.only(top: 4, bottom: 6),
@@ -2508,10 +2241,7 @@ class _ResourceFilterSwitchTile extends StatelessWidget {
         children: [
           Text(
             label,
-            style: typo.small.copyWith(
-              color: cs.foreground,
-              fontWeight: FontWeight.w600,
-            ),
+            style: typo.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
           ),
           const Spacer(),
           Switch(value: value, onChanged: (_) => onToggle()),
@@ -2540,8 +2270,8 @@ class _ResourceFilterSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
     if (values.isEmpty) return const SizedBox.shrink();
 
     return Padding(
@@ -2551,10 +2281,7 @@ class _ResourceFilterSection extends StatelessWidget {
         children: [
           Text(
             title,
-            style: typo.xSmall.copyWith(
-              color: cs.mutedForeground,
-              fontWeight: FontWeight.w600,
-            ),
+            style: typo.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 7),
           Wrap(
@@ -2589,8 +2316,8 @@ class _ResourceHorizontalFilterSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
     if (values.isEmpty) return const SizedBox.shrink();
 
     return Padding(
@@ -2600,10 +2327,7 @@ class _ResourceHorizontalFilterSection extends StatelessWidget {
         children: [
           Text(
             title,
-            style: typo.xSmall.copyWith(
-              color: cs.mutedForeground,
-              fontWeight: FontWeight.w600,
-            ),
+            style: typo.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 7),
           SingleChildScrollView(
@@ -2629,9 +2353,9 @@ class _ResourceHorizontalFilterSection extends StatelessWidget {
 
 class _ResourceSizeRangeFilter extends StatelessWidget {
   final bool enabled;
-  final RangeValues value;
+  final SliderValue value;
   final VoidCallback onToggle;
-  final ValueChanged<RangeValues> onChanged;
+  final ValueChanged<SliderValue> onChanged;
 
   const _ResourceSizeRangeFilter({
     required this.enabled,
@@ -2642,8 +2366,8 @@ class _ResourceSizeRangeFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
     final start = value.start.round();
     final end = value.end.round();
 
@@ -2659,10 +2383,7 @@ class _ResourceSizeRangeFilter extends StatelessWidget {
             children: [
               Text(
                 '种子大小',
-                style: typo.small.copyWith(
-                  color: cs.foreground,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: typo.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: 8),
               Text(
@@ -2676,12 +2397,13 @@ class _ResourceSizeRangeFilter extends StatelessWidget {
               Switch(value: enabled, onChanged: (_) => onToggle()),
             ],
           ),
-          RangeSlider(
-            values: value,
+          const SizedBox(height: 8),
+          Slider(
+            value: value,
             min: 0,
             max: 100,
             divisions: 100,
-            labels: RangeLabels('$start GB', '$end GB'),
+            enabled: enabled,
             onChanged: enabled ? onChanged : null,
           ),
         ],
@@ -2695,16 +2417,12 @@ class _ResourceFilterChip extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _ResourceFilterChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
+  const _ResourceFilterChip({required this.label, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -2714,15 +2432,9 @@ class _ResourceFilterChip extends StatelessWidget {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
         decoration: BoxDecoration(
-          color: selected
-              ? cs.primary.withValues(alpha: 0.12)
-              : cs.mutedForeground.withValues(alpha: 0.045),
+          color: selected ? cs.primary.withValues(alpha: 0.12) : cs.mutedForeground.withValues(alpha: 0.045),
           borderRadius: BorderRadius.circular(7),
-          border: Border.all(
-            color: selected
-                ? cs.primary.withValues(alpha: 0.55)
-                : cs.border.withValues(alpha: 0.45),
-          ),
+          border: Border.all(color: selected ? cs.primary.withValues(alpha: 0.55) : cs.border.withValues(alpha: 0.45)),
         ),
         child: Text(
           label,
@@ -2746,8 +2458,7 @@ class _SearchModePane extends StatefulWidget {
   State<_SearchModePane> createState() => _SearchModePaneState();
 }
 
-class _SearchModePaneState extends State<_SearchModePane>
-    with AutomaticKeepAliveClientMixin {
+class _SearchModePaneState extends State<_SearchModePane> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -2782,8 +2493,8 @@ class _SheetOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -2809,23 +2520,13 @@ class _SheetOptionTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: typo.small.copyWith(
-                      color: cs.foreground,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: typo.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w500),
                   ),
-                  Text(
-                    subtitle,
-                    style: typo.xSmall.copyWith(color: cs.mutedForeground),
-                  ),
+                  Text(subtitle, style: typo.xSmall.copyWith(color: cs.mutedForeground)),
                 ],
               ),
             ),
-            Icon(
-              shadcn.LucideIcons.chevronRight,
-              size: 16,
-              color: cs.mutedForeground,
-            ),
+            Icon(LucideIcons.chevronRight, size: 16, color: cs.mutedForeground),
           ],
         ),
       ),
