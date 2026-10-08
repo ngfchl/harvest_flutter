@@ -77,7 +77,7 @@ final class SiteInfoListProvider
   SiteInfoList create() => SiteInfoList();
 }
 
-String _$siteInfoListHash() => r'1a894457d693f420c04a5d31549cd1b6452cf5bc';
+String _$siteInfoListHash() => r'b4a3de0924bd1e874782c75bb9c7e8867c1de34d';
 
 abstract class _$SiteInfoList extends $AsyncNotifier<List<SiteInfo>> {
   FutureOr<List<SiteInfo>> build();
