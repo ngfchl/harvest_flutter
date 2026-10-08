@@ -162,6 +162,7 @@ class API {
   static const String DOUBAN_SUBJECT = "/api/option/douban/subject/";
   static const String DOUBAN_TAGS = "/api/option/douban/tags";
   static const String DOUBAN_HOT = "/api/option/douban/hot";
+  static const String DOUBAN_NOW_PLAYING = "/api/option/douban/now_playing";
   static const String DOUBAN_RANK = "/api/option/douban/rank";
   static const String DOUBAN_SEARCH = "/api/option/douban/search";
 
@@ -307,6 +308,7 @@ const _apiEndpointNames = <String, String>{
   API.DOUBAN_TOP250: '豆瓣 Top250 接口',
   API.DOUBAN_TAGS: '豆瓣标签接口',
   API.DOUBAN_HOT: '豆瓣热门接口',
+  API.DOUBAN_NOW_PLAYING: '豆瓣正在热映接口',
   API.DOUBAN_RANK: '豆瓣榜单接口',
   API.DOUBAN_SEARCH: '豆瓣搜索接口',
   API.TMDB_SEARCH: 'TMDB 搜索接口',

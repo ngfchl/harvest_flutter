@@ -2,6 +2,7 @@ import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/hooks.dart';
 
 import '../model/hot_media.dart';
+import '../model/now_playing_movie.dart';
 import '../model/rank_movie.dart';
 import '../model/search_result.dart';
 import '../model/top_movie.dart';
@@ -52,6 +53,12 @@ class DoubanService {
         'page_limit': pageLimit,
       },
     );
+  }
+
+  // ────────────────────── 正在热映 ──────────────────────
+
+  static Future<List<NowPlayingMovie>> getNowPlaying() {
+    return fetchModelList(API.DOUBAN_NOW_PLAYING, NowPlayingMovie.fromJson);
   }
 
   // ────────────────────── Top250 ──────────────────────
