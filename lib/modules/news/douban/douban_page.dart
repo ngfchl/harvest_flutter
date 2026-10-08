@@ -29,6 +29,7 @@ class DoubanPage extends ConsumerWidget {
         controller: scrollController,
         padding: EdgeInsets.only(bottom: newsBottomPadding(context)),
         children: [
+          _nowPlayingSection(ref, context),
           _hotMoviesSection(ref, context),
           _hotTvsSection(ref, context),
           _top250Section(ref, context),
@@ -88,6 +89,29 @@ class DoubanPage extends ConsumerWidget {
     );
   }
 
+  Widget _nowPlayingSection(WidgetRef ref, BuildContext context) {
+    final async = ref.watch(doubanNowPlayingProvider);
+    return DoubanSection(
+      title: '正在热映',
+      isLoading: async.isLoading && !async.hasValue,
+      items:
+          async.value
+              ?.map(
+                (m) => DoubanCard(
+                  title: m.title,
+                  posterUrl: m.cover.url,
+                  rating: m.rating != null ? '${m.rating!.value}' : null,
+                  subtitle:
+                      m.cardSubtitle.isNotEmpty ? m.cardSubtitle : null,
+                  badge: m.hasLinewatch ? '可播' : null,
+                  onTap: () => openDoubanDetail(context, m.id),
+                ),
+              )
+              .toList() ??
+          [],
+    );
+  }
+
   Widget _hotMoviesSection(WidgetRef ref, BuildContext context) {
     final async = ref.watch(doubanHotMoviesProvider);
     return DoubanSection(
@@ -140,12 +164,14 @@ class DoubanPage extends ConsumerWidget {
     if (!ref.read(mediaInfoSettingsProvider).doubanEnabled) return;
 
     ref.read(doubanForceRefreshProvider.notifier).state = const {
+      doubanNowPlayingCacheKey,
       doubanHotMoviesCacheKey,
       doubanHotTvsCacheKey,
       doubanTop250CacheKey,
       doubanRankMoviesCacheKey,
     };
     await Future.wait([
+      ref.refresh(doubanNowPlayingProvider.future),
       ref.refresh(doubanHotMoviesProvider.future),
       ref.refresh(doubanHotTvsProvider.future),
       ref.refresh(doubanTop250Provider.future),

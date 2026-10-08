@@ -4,6 +4,7 @@ import 'package:harvest/core/cache/session_cache.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 
 import '../model/hot_media.dart';
+import '../model/now_playing_movie.dart';
 import '../model/rank_movie.dart';
 import '../model/top_movie.dart';
 import '../service/douban_service.dart';
@@ -11,6 +12,7 @@ import '../../provider/media_info_settings_provider.dart';
 
 const doubanHotMoviesCacheKey = 'news.douban.hot.movies';
 const doubanHotTvsCacheKey = 'news.douban.hot.tvs';
+const doubanNowPlayingCacheKey = 'news.douban.now_playing';
 const doubanTop250CacheKey = 'news.douban.top250';
 const doubanRankMoviesCacheKey = 'news.douban.rank.movies';
 const doubanRankTvsCacheKey = 'news.douban.rank.tvs';
@@ -42,6 +44,19 @@ final doubanHotTvsProvider = FutureProvider.autoDispose<List<HotMedia>>((ref) {
     doubanHotTvsCacheKey,
     () => DoubanService.getHotTvs('热门'),
     HotMedia.fromJson,
+  );
+});
+
+// 正在热映
+final doubanNowPlayingProvider = FutureProvider.autoDispose<List<NowPlayingMovie>>((
+  ref,
+) {
+  ref.keepAlive();
+  return _cachedList(
+    ref,
+    doubanNowPlayingCacheKey,
+    DoubanService.getNowPlaying,
+    NowPlayingMovie.fromJson,
   );
 });
 

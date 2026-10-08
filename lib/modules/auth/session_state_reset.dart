@@ -66,6 +66,7 @@ void _invalidateSessionState(dynamic ref) {
     ..invalidate(doubanForceRefreshProvider)
     ..invalidate(doubanHotMoviesProvider)
     ..invalidate(doubanHotTvsProvider)
+    ..invalidate(doubanNowPlayingProvider)
     ..invalidate(doubanTop250Provider)
     ..invalidate(doubanRankMoviesProvider)
     ..invalidate(doubanRankTvsProvider);
