@@ -1,10 +1,15 @@
-import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:harvest/core/storage/hive_manager.dart';
-import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
+
+/// SSE 搜索服务平台分发入口:
+/// - 原生平台(iOS/Android/macOS/Windows/Linux)走 dart:io HttpClient 实现
+/// - Web 平台走 fetch + ReadableStream 真流式实现(XHR 整包缓冲不适用)
+///
+/// 两个实现共享本文件的 [SearchEvent] 模型与 [parseLine] 行解析逻辑。
+export 'resource_search_service_io.dart'
+    if (dart.library.js_interop) 'resource_search_service_web.dart'
+    show ResourceSearchService;
 
 class SearchEvent {
   final int code;
@@ -29,113 +34,24 @@ class SearchEvent {
   }
 }
 
-class ResourceSearchService {
-  static Stream<SearchEvent> search(
-    String query, {
-    int maxCount = 5,
-    List<String> sites = const [],
-  }) async* {
-    HttpClient? client;
-    var eventCount = 0;
-    try {
-      client = HttpClient()
-        ..autoUncompress = false
-        ..maxConnectionsPerHost = 5  // 限制连接数
-        ..idleTimeout = const Duration(seconds: 60);
-      
-      final baseUrl = HiveManager.get(StorageKeys.baseUrl);
+/// SSE 行解析:剥离 `data:` 前缀后按 JSON 解析,供两个平台实现复用。
+SearchEvent? parseLine(String line) {
+  final trimmed = line.trim();
+  if (trimmed.isEmpty) return null;
 
-      final uri = Uri.parse('$baseUrl/api/mysite/search');
-      AppLogger.info(
-        '[SSE] resource search connecting queryLength=${query.length} '
-        'maxCount=$maxCount sites=${sites.length}',
-      );
-      final request = await client.postUrl(uri);
-
-      // Token
-      final token = HiveManager.get(StorageKeys.accessToken);
-
-      // Headers
-      request.headers.set('Accept-Encoding', 'identity'); // ← 加这行
-      request.headers.set('Content-Type', 'application/json');
-      request.headers.set('Accept', 'text/event-stream');
-      request.headers.set('Cache-Control', 'no-cache');
-
-      if (token != null && token.toString().isNotEmpty) {
-        request.headers.set('Authorization', 'Bearer $token');
-      }
-
-      // Body
-      // Body — 用 add 传 UTF-8 字节
-      final body = utf8.encode(
-        jsonEncode({'key': query, 'max_count': maxCount, 'sites': sites}),
-      );
-      request.headers.set('Content-Length', body.length.toString());
-      request.add(body);
-
-      final response = await request.close();
-      AppLogger.info(
-        '[SSE] resource search connected status=${response.statusCode}',
-      );
-
-      String buffer = '';
-      await for (final chunk in response) {
-        buffer += utf8.decode(chunk, allowMalformed: true);
-        final lines = buffer.split('\n');
-        buffer = lines.removeLast();
-
-        for (final line in lines) {
-          final event = _parseLine(line);
-          if (event != null) {
-            eventCount++;
-            if (event.succeed) {
-              AppLogger.verbose(
-                '[SSE] resource event code=${event.code} msg=${event.msg}',
-              );
-            } else {
-              AppLogger.warn(
-                '[SSE] resource event failed code=${event.code} msg=${event.msg}',
-              );
-            }
-            yield event;
-          }
-        }
-      }
-
-      if (buffer.trim().isNotEmpty) {
-        final event = _parseLine(buffer);
-        if (event != null) {
-          eventCount++;
-          yield event;
-        }
-      }
-    } catch (e, trace) {
-      AppLogger.error('[SSE] resource search error', e, trace);
-      yield SearchEvent(code: -1, msg: '连接失败: $e', data: null, succeed: false);
-    } finally {
-      client?.close(force: true);
-      AppLogger.info('[SSE] resource search closed events=$eventCount');
-    }
+  String jsonStr = trimmed;
+  if (jsonStr.startsWith('data:')) {
+    jsonStr = jsonStr.substring(5).trim();
   }
+  if (jsonStr.isEmpty) return null;
 
-  static SearchEvent? _parseLine(String line) {
-    final trimmed = line.trim();
-    if (trimmed.isEmpty) return null;
-
-    String jsonStr = trimmed;
-    if (jsonStr.startsWith('data:')) {
-      jsonStr = jsonStr.substring(5).trim();
-    }
-    if (jsonStr.isEmpty) return null;
-
-    try {
-      final json = jsonDecode(jsonStr) as Map<String, dynamic>;
-      return SearchEvent.fromJson(json);
-    } catch (e) {
-      AppLogger.warn(
-        '[SSE] failed to parse event line length=${jsonStr.length}: $e',
-      );
-      return null;
-    }
+  try {
+    final json = jsonDecode(jsonStr) as Map<String, dynamic>;
+    return SearchEvent.fromJson(json);
+  } catch (e) {
+    AppLogger.warn(
+      '[SSE] failed to parse event line length=${jsonStr.length}: $e',
+    );
+    return null;
   }
 }
