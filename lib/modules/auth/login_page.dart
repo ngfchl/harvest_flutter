@@ -179,7 +179,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   ShadTextField(
                                     controller: _serverController,
                                     placeholder: const Text('服务器地址'),
-                                    enabled: !kIsWeb,
                                     onSubmitted: (_) =>
                                         FocusScope.of(context).unfocus(),
                                   ),
