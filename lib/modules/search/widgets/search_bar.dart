@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 class UnifiedSearchBar extends StatefulWidget {
   final TextEditingController controller;
@@ -52,11 +51,11 @@ class _UnifiedSearchBarState extends State<UnifiedSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final hasText = widget.controller.text.isNotEmpty;
 
-    return shadcn.AnimatedContainer(
+    return AnimatedContainer(
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       duration: Duration(milliseconds: 100),
@@ -75,17 +74,13 @@ class _UnifiedSearchBarState extends State<UnifiedSearchBar> {
               placeholder: Text(widget.hint),
               style: theme.typography.small,
               features: [
-                shadcn.InputFeature.leading(Icon(shadcn.LucideIcons.search, size: 16, color: cs.mutedForeground)),
-                // shadcn.InputFeature.clear(visibility: shadcn.InputFeatureVisibility.textNotEmpty,),
+                InputFeature.leading(Icon(LucideIcons.search, size: 16, color: cs.mutedForeground)),
+                // InputFeature.clear(visibility: InputFeatureVisibility.textNotEmpty,),
               ],
             ),
           ),
           if (hasText)
-            shadcn.IconButton.ghost(
-              size: shadcn.ButtonSize.small,
-              onPressed: widget.onClear,
-              icon: Icon(shadcn.LucideIcons.x, size: 14),
-            ),
+            IconButton.ghost(size: ButtonSize.small, onPressed: widget.onClear, icon: Icon(LucideIcons.x, size: 14)),
         ],
       ),
     );
