@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:harvest/core/theme/app_surface.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 class ShadTextField extends StatelessWidget {
   final TextEditingController? controller;
@@ -23,7 +22,7 @@ class ShadTextField extends StatelessWidget {
   final TextStyle? style;
   final BoxDecoration? decoration;
   final EdgeInsetsGeometry? padding;
-  final List<shadcn.InputFeature> features;
+  final List<InputFeature> features;
   final String? Function(String?)? validator;
   final AutovalidateMode? autovalidateMode;
   final EditableTextContextMenuBuilder? contextMenuBuilder;
@@ -64,21 +63,16 @@ class ShadTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (validator != null) {
-      return FormField<String>(
-        initialValue: controller?.text ?? '',
+      return _ValidatedTextField(
+        controller: controller,
         validator: validator,
         autovalidateMode: autovalidateMode,
-        builder: (field) {
+        onChanged: onChanged,
+        builder: (errorText, onChangedOverride) {
           return _withChrome(
             context,
-            field: _field(
-              context,
-              onChangedOverride: (value) {
-                field.didChange(value);
-                onChanged?.call(value);
-              },
-            ),
-            errorText: field.errorText,
+            field: _field(context, onChangedOverride: onChangedOverride),
+            errorText: errorText,
           );
         },
       );
@@ -87,12 +81,8 @@ class ShadTextField extends StatelessWidget {
     return _withChrome(context, field: _field(context));
   }
 
-  Widget _withChrome(
-    BuildContext context, {
-    required Widget field,
-    String? errorText,
-  }) {
-    final theme = shadcn.Theme.of(context);
+  Widget _withChrome(BuildContext context, {required Widget field, String? errorText}) {
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final labelWidget =
         label ??
@@ -100,10 +90,7 @@ class ShadTextField extends StatelessWidget {
             ? null
             : Text(
                 labelText!,
-                style: theme.typography.small.copyWith(
-                  color: cs.foreground,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
               ));
 
     if (labelWidget == null && helperText == null && errorText == null) {
@@ -115,10 +102,7 @@ class ShadTextField extends StatelessWidget {
       children: [
         if (labelWidget != null) ...[
           DefaultTextStyle.merge(
-            style: theme.typography.small.copyWith(
-              color: cs.foreground,
-              fontWeight: FontWeight.w600,
-            ),
+            style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
             child: labelWidget,
           ),
           const SizedBox(height: 6),
@@ -126,29 +110,18 @@ class ShadTextField extends StatelessWidget {
         field,
         if (helperText != null && errorText == null) ...[
           const SizedBox(height: 5),
-          Text(
-            helperText!,
-            style: theme.typography.xSmall.copyWith(
-              color: cs.mutedForeground.withValues(alpha: 0.86),
-            ),
-          ),
+          Text(helperText!, style: theme.typography.xSmall.copyWith(color: cs.mutedForeground.withValues(alpha: 0.86))),
         ],
         if (errorText != null) ...[
           const SizedBox(height: 5),
-          Text(
-            errorText,
-            style: theme.typography.xSmall.copyWith(color: cs.destructive),
-          ),
+          Text(errorText, style: theme.typography.xSmall.copyWith(color: cs.destructive)),
         ],
       ],
     );
   }
 
-  Widget _field(
-    BuildContext context, {
-    ValueChanged<String>? onChangedOverride,
-  }) {
-    return shadcn.TextField(
+  Widget _field(BuildContext context, {ValueChanged<String>? onChangedOverride}) {
+    return TextField(
       controller: controller,
       focusNode: focusNode,
       placeholder: placeholder,
@@ -166,8 +139,7 @@ class ShadTextField extends StatelessWidget {
       decoration: decoration ?? _defaultDecoration(context),
       padding: padding,
       features: features,
-      contextMenuBuilder:
-          contextMenuBuilder ?? shadcn.TextField.defaultContextMenuBuilder,
+      contextMenuBuilder: contextMenuBuilder ?? TextField.defaultContextMenuBuilder,
       onChanged: onChangedOverride ?? onChanged,
       onSubmitted: (value) {
         onSubmitted?.call(value);
@@ -179,21 +151,68 @@ class ShadTextField extends StatelessWidget {
   }
 
   BoxDecoration _defaultDecoration(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final baseColor = appSurfaceColor(context, cs.background);
     return BoxDecoration(
-      color: enabled
-          ? baseColor
-          : Color.alphaBlend(
-              cs.mutedForeground.withValues(alpha: 0.04),
-              baseColor,
-            ),
+      color: enabled ? baseColor : Color.alphaBlend(cs.mutedForeground.withValues(alpha: 0.04), baseColor),
       borderRadius: BorderRadius.circular(theme.radiusMd),
-      border: Border.all(
-        color: enabled ? cs.input : cs.border.withValues(alpha: 0.65),
-        width: 0.8,
-      ),
+      border: Border.all(color: enabled ? cs.input : cs.border.withValues(alpha: 0.65), width: 0.8),
     );
+  }
+}
+
+class _ValidatedTextField extends StatefulWidget {
+  final TextEditingController? controller;
+  final String? Function(String?)? validator;
+  final AutovalidateMode? autovalidateMode;
+  final ValueChanged<String>? onChanged;
+  final Widget Function(String? errorText, ValueChanged<String>? onChangedOverride) builder;
+
+  const _ValidatedTextField({
+    required this.builder,
+    this.controller,
+    this.validator,
+    this.autovalidateMode,
+    this.onChanged,
+  });
+
+  @override
+  State<_ValidatedTextField> createState() => _ValidatedTextFieldState();
+}
+
+class _ValidatedTextFieldState extends State<_ValidatedTextField> {
+  String? _errorText;
+  bool _hasInteracted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.autovalidateMode == AutovalidateMode.always) {
+      _validate(widget.controller?.text ?? '');
+    }
+  }
+
+  void _validate(String value) {
+    if (widget.validator == null) return;
+    final error = widget.validator!(value);
+    if (error != _errorText) {
+      setState(() => _errorText = error);
+    }
+  }
+
+  void _onChanged(String value) {
+    if (!_hasInteracted) {
+      _hasInteracted = true;
+    }
+    if (_hasInteracted || widget.autovalidateMode == AutovalidateMode.always) {
+      _validate(value);
+    }
+    widget.onChanged?.call(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.builder(_errorText, _onChanged);
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 class EscapeBackScope extends StatefulWidget {
   final Widget child;
@@ -25,8 +25,7 @@ class _EscapeBackScopeState extends State<EscapeBackScope> {
   }
 
   bool _handleKey(KeyEvent event) {
-    if (event is! KeyDownEvent ||
-        event.logicalKey != LogicalKeyboardKey.escape) {
+    if (event is! KeyDownEvent || event.logicalKey != LogicalKeyboardKey.escape) {
       return false;
     }
 

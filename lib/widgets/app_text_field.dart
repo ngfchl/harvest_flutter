@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:flutter/services.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import 'shad_text_field.dart';
 
@@ -17,7 +17,7 @@ class AppTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final TextStyle? style;
-  final List<shadcn.InputFeature>? features;
+  final List<InputFeature>? features;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final bool autoUnfocusOnSubmitted;

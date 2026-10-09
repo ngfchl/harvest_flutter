@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
 class DesktopWindowControlsOverlay extends StatelessWidget {
@@ -19,9 +18,7 @@ class DesktopWindowControlsOverlay extends StatelessWidget {
 
     final controlsOnLeft = PlatformTool.isMacOS() || PlatformTool.isLinux();
 
-    final content = PlatformTool.isWindows()
-        ? _WindowsTitleBarDragListener(child: child)
-        : child;
+    final content = PlatformTool.isWindows() ? _WindowsTitleBarDragListener(child: child) : child;
 
     return Stack(
       children: [
@@ -32,9 +29,7 @@ class DesktopWindowControlsOverlay extends StatelessWidget {
           right: controlsOnLeft ? null : kDesktopWindowControlsInset,
           height: kAppHeaderHeight,
           child: Align(
-            alignment: controlsOnLeft
-                ? Alignment.centerLeft
-                : Alignment.centerRight,
+            alignment: controlsOnLeft ? Alignment.centerLeft : Alignment.centerRight,
             child: DesktopWindowControls(isMacStyle: controlsOnLeft),
           ),
         ),
@@ -49,12 +44,10 @@ class _WindowsTitleBarDragListener extends StatefulWidget {
   const _WindowsTitleBarDragListener({required this.child});
 
   @override
-  State<_WindowsTitleBarDragListener> createState() =>
-      _WindowsTitleBarDragListenerState();
+  State<_WindowsTitleBarDragListener> createState() => _WindowsTitleBarDragListenerState();
 }
 
-class _WindowsTitleBarDragListenerState
-    extends State<_WindowsTitleBarDragListener> {
+class _WindowsTitleBarDragListenerState extends State<_WindowsTitleBarDragListener> {
   static const double _dragSlop = 8;
   static const double _leadingInteractiveGuard = 72;
   static const double _extraTrailingInteractiveGuard = 180;
@@ -108,10 +101,9 @@ class _WindowsTitleBarDragListenerState
     final width = mediaQuery.size.width;
     if (width <= 0) return false;
 
-    final trailingGuard =
-        (kDesktopWindowControlsReservedWidth + _extraTrailingInteractiveGuard)
-            .clamp(kDesktopWindowControlsReservedWidth, width * 0.42)
-            .toDouble();
+    final trailingGuard = (kDesktopWindowControlsReservedWidth + _extraTrailingInteractiveGuard)
+        .clamp(kDesktopWindowControlsReservedWidth, width * 0.42)
+        .toDouble();
 
     if (position.dx < _leadingInteractiveGuard) return false;
     if (position.dx > width - trailingGuard) return false;
@@ -136,13 +128,13 @@ class DesktopWindowControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final closeButton = DesktopTrafficLightButton(
       color: const Color(0xFFFF5F57),
-      icon: shadcn.LucideIcons.x,
+      icon: LucideIcons.x,
       tooltip: '关闭',
       onPressed: () => windowManager.close(),
     );
     final minimizeButton = DesktopTrafficLightButton(
       color: const Color(0xFFFFBD2E),
-      icon: shadcn.LucideIcons.minus,
+      icon: LucideIcons.minus,
       tooltip: '最小化',
       onPressed: () async {
         final minimized = await windowManager.isMinimized();
@@ -155,7 +147,7 @@ class DesktopWindowControls extends StatelessWidget {
     );
     final maximizeButton = DesktopTrafficLightButton(
       color: const Color(0xFF28C840),
-      icon: shadcn.LucideIcons.maximize2,
+      icon: LucideIcons.maximize2,
       tooltip: '最大化',
       onPressed: () async {
         if (await windowManager.isMaximized()) {
@@ -194,8 +186,7 @@ class DesktopTrafficLightButton extends StatefulWidget {
   });
 
   @override
-  State<DesktopTrafficLightButton> createState() =>
-      _DesktopTrafficLightButtonState();
+  State<DesktopTrafficLightButton> createState() => _DesktopTrafficLightButtonState();
 }
 
 class _DesktopTrafficLightButtonState extends State<DesktopTrafficLightButton> {
@@ -204,19 +195,15 @@ class _DesktopTrafficLightButtonState extends State<DesktopTrafficLightButton> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final foreground = Color.lerp(
-      Colors.black,
-      widget.color,
-      0.18,
-    )!.withValues(alpha: 0.72);
+    final cs = Theme.of(context).colorScheme;
+    final foreground = Color.lerp(Colors.black, widget.color, 0.18)!.withValues(alpha: 0.72);
     final circleColor = _pressed
         ? Color.lerp(widget.color, Colors.black, 0.10)!
         : _hovered
         ? Color.lerp(widget.color, Colors.white, 0.12)!
         : widget.color;
 
-    return shadcn.Tooltip(
+    return Tooltip(
       tooltip: (_) => Text(widget.tooltip),
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
@@ -246,17 +233,10 @@ class _DesktopTrafficLightButtonState extends State<DesktopTrafficLightButton> {
                   decoration: BoxDecoration(
                     color: circleColor,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: cs.border.withValues(
-                        alpha: _hovered ? 0.24 : 0.14,
-                      ),
-                      width: 0.6,
-                    ),
+                    border: Border.all(color: cs.border.withValues(alpha: _hovered ? 0.24 : 0.14), width: 0.6),
                     boxShadow: [
                       BoxShadow(
-                        color: widget.color.withValues(
-                          alpha: _hovered ? 0.32 : 0.18,
-                        ),
+                        color: widget.color.withValues(alpha: _hovered ? 0.32 : 0.18),
                         blurRadius: _hovered ? 8 : 3,
                         spreadRadius: _hovered ? 0.5 : 0,
                         offset: const Offset(0, 1),

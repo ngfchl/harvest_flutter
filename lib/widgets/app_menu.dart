@@ -1,17 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 /// Simple menu widget for use in overlays/dropdowns.
-Widget appMenu({
-  required List<shadcn.MenuItem> children,
-  Axis direction = Axis.vertical,
-}) {
+Widget appMenu({required List<MenuItem> children, Axis direction = Axis.vertical}) {
   return ConstrainedBox(
     constraints: const BoxConstraints(minWidth: 192),
-    child: shadcn.MenuGroup(
+    child: MenuGroup(
       autofocus: false,
       direction: direction,
-      builder: (_, children) => shadcn.MenuPopup(children: children),
+      builder: (_, children) => MenuPopup(children: children),
       children: children,
     ),
   );

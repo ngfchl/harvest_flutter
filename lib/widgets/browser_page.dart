@@ -4,12 +4,12 @@ import 'dart:convert';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/widgets/app_dialog.dart';
+import 'package:harvest/widgets/shad_text_field.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/download/widgets/push_torrent_sheet.dart';
 import 'package:harvest/modules/search/model/search_torrent_info.dart';
@@ -22,7 +22,7 @@ import 'package:harvest/modules/site/widgets/site_level_sheet.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -69,8 +69,8 @@ class BrowserPage extends StatefulWidget {
   }) {
     final normalizedUrl = _normalizeInitialBrowserUrl(url);
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => BrowserPage(
+      PageRouteBuilder(
+        pageBuilder: (_, _, _) => BrowserPage(
           url: normalizedUrl,
           title: title,
           cookie: cookie,
@@ -79,6 +79,7 @@ class BrowserPage extends StatefulWidget {
           siteId: siteId,
           website: website,
         ),
+        transitionsBuilder: (_, animation, _, child) => FadeTransition(opacity: animation, child: child),
       ),
     );
   }
@@ -103,7 +104,7 @@ class BrowserCookieQuickMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     // 检查是否有任何可显示的内容
     final hasContent = targets.isNotEmpty;
     final effectiveBadge = badge ?? _defaultCookieBadge(hasContent);
@@ -113,22 +114,22 @@ class BrowserCookieQuickMenu extends StatelessWidget {
     return Builder(
       builder: (menuContext) => GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => shadcn.showDropdown<void>(
+        onTap: () => showDropdown<void>(
           context: menuContext,
           alignment: Alignment.topCenter,
           offset: const Offset(0, 8),
-          widthConstraint: shadcn.PopoverConstraint.intrinsic,
-          heightConstraint: shadcn.PopoverConstraint.intrinsic,
+          widthConstraint: PopoverConstraint.intrinsic,
+          heightConstraint: PopoverConstraint.intrinsic,
           consumeOutsideTaps: false,
           builder: (_) => appMenu(
             children: [
-              shadcn.MenuLabel(child: Text(menuLabel)),
-              const shadcn.MenuDivider(),
+              MenuLabel(child: Text(menuLabel)),
+              const MenuDivider(),
               for (final target in targets)
-                shadcn.MenuButton(
+                MenuButton(
                   leading: Icon(target.icon),
                   onPressed: (itemContext) {
-                    shadcn.closeOverlay(itemContext);
+                    closeOverlay(itemContext);
                     onSelected(target);
                   },
                   child: ConstrainedBox(
@@ -137,20 +138,13 @@ class BrowserCookieQuickMenu extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          target.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        Text(target.label, maxLines: 1, overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 2),
                         Text(
                           _browserDisplayUrl(target.url),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: cs.foreground.withValues(alpha: 0.48),
-                          ),
+                          style: TextStyle(fontSize: 10, color: cs.foreground.withValues(alpha: 0.48)),
                         ),
                       ],
                     ),
@@ -177,25 +171,13 @@ class BrowserCookieQuickMenu extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(shadcn.LucideIcons.cookie, size: 12, color: color),
+          const Icon(LucideIcons.cookie, size: 12, color: color),
           const SizedBox(width: 3),
           const Text(
             'Cookie',
-            style: TextStyle(
-              color: color,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              height: 1,
-            ),
+            style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w800, height: 1),
           ),
-          if (hasTargets) ...[
-            const SizedBox(width: 2),
-            const Icon(
-              shadcn.LucideIcons.chevronDown,
-              size: 10,
-              color: color,
-            ),
-          ],
+          if (hasTargets) ...[const SizedBox(width: 2), const Icon(LucideIcons.chevronDown, size: 10, color: color)],
         ],
       ),
     );
@@ -207,9 +189,7 @@ String _normalizeInitialBrowserUrl(String value) {
   final uri = Uri.tryParse(text);
   if (uri == null || !uri.hasScheme || uri.host.isEmpty) return text;
   final normalizedPath = uri.path.replaceAll(RegExp(r'/+'), '/');
-  return uri
-      .replace(path: normalizedPath.isEmpty ? null : normalizedPath)
-      .toString();
+  return uri.replace(path: normalizedPath.isEmpty ? null : normalizedPath).toString();
 }
 
 String _browserDisplayUrl(String url) {
@@ -217,9 +197,7 @@ String _browserDisplayUrl(String url) {
   try {
     final uri = Uri.parse(url);
     final display = uri.host + uri.path;
-    return display.endsWith('/')
-        ? display.substring(0, display.length - 1)
-        : display;
+    return display.endsWith('/') ? display.substring(0, display.length - 1) : display;
   } catch (_) {
     return url;
   }
@@ -275,16 +253,11 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   void _enableWebViewDebugging() {
-    if (!kDebugMode ||
-        kIsWeb ||
-        defaultTargetPlatform != TargetPlatform.android) {
+    if (!kDebugMode || kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return;
     }
     unawaited(
-      InAppWebViewController.setWebContentsDebuggingEnabled(true).catchError((
-        Object e,
-        StackTrace st,
-      ) {
+      InAppWebViewController.setWebContentsDebuggingEnabled(true).catchError((Object e, StackTrace st) {
         AppLogger.warn('开启 Android WebView 调试失败: $e\n$st');
       }),
     );
@@ -419,12 +392,7 @@ class _BrowserPageState extends State<BrowserPage> {
   UnmodifiableListView<UserScript>? _configuredLocalStorageUserScripts() {
     final source = _configuredLocalStorageInjectionScript();
     if (source == null) return null;
-    return UnmodifiableListView([
-      UserScript(
-        source: source,
-        injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START,
-      ),
-    ]);
+    return UnmodifiableListView([UserScript(source: source, injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START)]);
   }
 
   InAppWebViewInitialData? _configuredLocalStorageBootstrapInitialData() {
@@ -437,17 +405,11 @@ class _BrowserPageState extends State<BrowserPage> {
     return InAppWebViewInitialData(
       baseUrl: WebUri(targetUrl),
       historyUrl: WebUri(targetUrl),
-      data: _buildLocalStorageBootstrapHtml(
-        injectionScript: source,
-        targetUrl: targetUrl,
-      ),
+      data: _buildLocalStorageBootstrapHtml(injectionScript: source, targetUrl: targetUrl),
     );
   }
 
-  String _buildLocalStorageBootstrapHtml({
-    required String injectionScript,
-    required String targetUrl,
-  }) {
+  String _buildLocalStorageBootstrapHtml({required String injectionScript, required String targetUrl}) {
     final encodedTargetUrl = jsonEncode(targetUrl);
     return '''
 <!doctype html>
@@ -469,10 +431,7 @@ class _BrowserPageState extends State<BrowserPage> {
 ''';
   }
 
-  Future<int> _injectConfiguredLocalStorage(
-    InAppWebViewController controller,
-    String? url,
-  ) async {
+  Future<int> _injectConfiguredLocalStorage(InAppWebViewController controller, String? url) async {
     if (_closing) return 0;
     final source = _configuredLocalStorageInjectionScript(url: url);
     if (source == null) return 0;
@@ -506,8 +465,7 @@ class _BrowserPageState extends State<BrowserPage> {
     }
     if (url?.trim().isNotEmpty == true) {
       final currentUri = Uri.tryParse(url!.trim());
-      if (currentUri == null ||
-          !_isConfiguredLocalStorageHost(currentUri.host)) {
+      if (currentUri == null || !_isConfiguredLocalStorageHost(currentUri.host)) {
         return null;
       }
     }
@@ -522,9 +480,7 @@ class _BrowserPageState extends State<BrowserPage> {
     final hosts = <String>{};
     void addHost(String? value) {
       final uri = Uri.tryParse(value?.trim() ?? '');
-      if (uri == null ||
-          (uri.scheme != 'http' && uri.scheme != 'https') ||
-          uri.host.isEmpty) {
+      if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https') || uri.host.isEmpty) {
         return;
       }
       final host = uri.host.toLowerCase();
@@ -760,9 +716,7 @@ class _BrowserPageState extends State<BrowserPage> {
     }
 
     try {
-      final cookies = await CookieManager.instance().getCookies(
-        url: WebUri(targetUrl),
-      );
+      final cookies = await CookieManager.instance().getCookies(url: WebUri(targetUrl));
       final hasCookie = cookies.any((cookie) => cookie.name.isNotEmpty);
       if (mounted && !_closing && _hasReadableCookie != hasCookie) {
         setState(() => _hasReadableCookie = hasCookie);
@@ -818,14 +772,11 @@ class _BrowserPageState extends State<BrowserPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final torrentWebsite = _currentTorrentWebsiteConfig();
     final detailWebsite = _currentDetailWebsiteConfig();
     final userWebsite = _currentUserWebsiteConfig();
-    final showTorrentFab =
-        (torrentWebsite != null || detailWebsite != null) &&
-        !_closing &&
-        !_isLoading;
+    final showTorrentFab = (torrentWebsite != null || detailWebsite != null) && !_closing && !_isLoading;
     final showUserProfileFab = userWebsite != null && !_closing && !_isLoading;
     final bonusWebsite = _currentBonusWebsiteConfig();
     final showBonusFab = bonusWebsite != null && !_closing && (_progress >= 0.5 || !_isLoading);
@@ -843,144 +794,111 @@ class _BrowserPageState extends State<BrowserPage> {
         }
       },
       child: AppBackground(
-        child: Scaffold(
-          backgroundColor: pageBackground,
-          body: SafeArea(
-            child: Stack(
-              children: [
-                Column(
-                  children: [
-                    _buildTopBar(cs),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      height: (_progress > 0 && _progress < 1) ? 2 : 0,
-                      child: LinearProgressIndicator(
-                        value: _progress,
-                        backgroundColor: Colors.transparent,
-                        valueColor: AlwaysStoppedAnimation(cs.primary),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  _buildTopBar(cs),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    height: (_progress > 0 && _progress < 1) ? 2 : 0,
+                    child: LinearProgressIndicator(
+                      value: _progress,
+                      backgroundColor: const Color(0x00000000),
+                      color: cs.primary,
+                    ),
+                  ),
+                  Expanded(
+                    child: _closing
+                        ? const SizedBox.shrink()
+                        : _cookiesReady
+                        ? _buildWebView()
+                        : const Center(child: CircularProgressIndicator()),
+                  ),
+                  _buildBottomBar(cs),
+                ],
+              ),
+              if (showBonusFab && !_bonusExchanging)
+                Positioned(
+                  right: 16,
+                  bottom: MediaQuery.of(context).size.height / 2 - 24,
+                  child: GestureDetector(
+                    onTap: () => _showBonusExchangeSheet(bonusWebsite),
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF59E0B),
+                        shape: BoxShape.circle,
+                        boxShadow: [BoxShadow(color: Color(0x66F59E0B), blurRadius: 8, offset: Offset(0, 2))],
                       ),
+                      child: const Icon(LucideIcons.gem, size: 22, color: const Color(0xFFFFFFFF)),
                     ),
-                    Expanded(
-                      child: _closing
-                          ? const SizedBox.shrink()
-                          : _cookiesReady
-                          ? _buildWebView()
-                          : const Center(
-                              child: shadcn.CircularProgressIndicator(),
-                            ),
-                    ),
-                    _buildBottomBar(cs),
-                  ],
+                  ),
                 ),
-                if (showBonusFab && !_bonusExchanging)
-                  Positioned(
-                    right: 16,
-                    bottom: MediaQuery.of(context).size.height / 2 - 24,
-                    child: GestureDetector(
-                      onTap: () => _showBonusExchangeSheet(bonusWebsite),
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF59E0B),
-                          shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: Color(0x66F59E0B), blurRadius: 8, offset: Offset(0, 2))],
+              if (_bonusExchanging)
+                Positioned(
+                  right: 16,
+                  bottom: MediaQuery.of(context).size.height / 2 - 24,
+                  child: _buildBonusFlutterOverlay(cs),
+                ),
+              if (showTorrentFab || showUserProfileFab)
+                Positioned(
+                  right: 16,
+                  bottom: MediaQuery.of(context).padding.bottom + 64,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (showUserProfileFab) ...[
+                        PrimaryButton(
+                          size: ButtonSize.normal,
+                          onPressed: _extractingUserProfile ? null : () => _extractUserProfile(userWebsite),
+                          child: _extractingUserProfile
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: cs.primaryForeground),
+                                )
+                              : const Icon(LucideIcons.userRound, size: 18),
                         ),
-                        child: const Icon(shadcn.LucideIcons.gem, size: 22, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                if (_bonusExchanging)
-                  Positioned(
-                    right: 16,
-                    bottom: MediaQuery.of(context).size.height / 2 - 24,
-                    child: _buildBonusFlutterOverlay(cs),
-                  ),
-                if (showTorrentFab || showUserProfileFab)
-                  Positioned(
-                    right: 16,
-                    bottom: MediaQuery.of(context).padding.bottom + 64,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (showUserProfileFab) ...[
-                          FloatingActionButton.small(
-                            heroTag: 'browser_user_profile_fab',
-                            onPressed: _extractingUserProfile
-                                ? null
-                                : () => _extractUserProfile(userWebsite),
-                            backgroundColor: cs.primary,
-                            foregroundColor: cs.primaryForeground,
-                            child: _extractingUserProfile
-                                ? SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: shadcn.CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: cs.primaryForeground,
-                                    ),
-                                  )
-                                : const Icon(
-                                    shadcn.LucideIcons.userRound,
-                                    size: 18,
-                                  ),
-                          ),
-                          if (showTorrentFab) const SizedBox(height: 10),
-                        ],
-                        if (showTorrentFab)
-                          FloatingActionButton.small(
-                            heroTag: 'browser_torrent_list_fab',
-                            onPressed: _extractingTorrentList
-                                ? null
-                                : () async {
-                                    if (detailWebsite != null) {
-                                      await _extractSingleTorrentDetail(
-                                        detailWebsite,
-                                      );
-                                      return;
-                                    }
-                                    if (torrentWebsite != null) {
-                                      await _extractTorrentList(torrentWebsite);
-                                    }
-                                  },
-                            backgroundColor: cs.primary,
-                            foregroundColor: cs.primaryForeground,
-                            child: _extractingTorrentList
-                                ? SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: shadcn.CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: cs.primaryForeground,
-                                    ),
-                                  )
-                                : Icon(
-                                    detailWebsite != null
-                                        ? shadcn.LucideIcons.download
-                                        : shadcn.LucideIcons.listChecks,
-                                    size: 18,
-                                  ),
-                          ),
+                        if (showTorrentFab) const SizedBox(height: 10),
                       ],
-                    ),
+                      if (showTorrentFab)
+                        PrimaryButton(
+                          size: ButtonSize.normal,
+                          onPressed: _extractingTorrentList
+                              ? null
+                              : () async {
+                                  if (detailWebsite != null) {
+                                    await _extractSingleTorrentDetail(detailWebsite);
+                                    return;
+                                  }
+                                  if (torrentWebsite != null) {
+                                    await _extractTorrentList(torrentWebsite);
+                                  }
+                                },
+                          child: _extractingTorrentList
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: cs.primaryForeground),
+                                )
+                              : Icon(detailWebsite != null ? LucideIcons.download : LucideIcons.listChecks, size: 18),
+                        ),
+                    ],
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTopBar(shadcn.ColorScheme cs) {
+  Widget _buildTopBar(ColorScheme cs) {
     return Container(
-      padding: appHeaderPadding(
-        context,
-        left: 12,
-        top: 8,
-        right: 12,
-        bottom: 8,
-      ),
+      padding: appHeaderPadding(context, left: 12, top: 8, right: 12, bottom: 8),
       decoration: BoxDecoration(
         color: appSurfaceColor(context, cs.background),
         border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
@@ -995,11 +913,7 @@ class _BrowserPageState extends State<BrowserPage> {
               behavior: HitTestBehavior.opaque,
               child: Padding(
                 padding: const EdgeInsets.all(4),
-                child: Icon(
-                  shadcn.LucideIcons.x,
-                  size: 18,
-                  color: cs.foreground,
-                ),
+                child: Icon(LucideIcons.x, size: 18, color: cs.foreground),
               ),
             ),
           ),
@@ -1012,20 +926,13 @@ class _BrowserPageState extends State<BrowserPage> {
                 if (_currentTitle.isNotEmpty)
                   Text(
                     _currentTitle,
-                    style: TextStyle(
-                      color: cs.foreground,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(color: cs.foreground, fontSize: 13, fontWeight: FontWeight.w600),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 Text(
                   _displayUrl(_currentUrl),
-                  style: TextStyle(
-                    color: cs.foreground.withValues(alpha: 0.4),
-                    fontSize: 10,
-                  ),
+                  style: TextStyle(color: cs.foreground.withValues(alpha: 0.4), fontSize: 10),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1033,56 +940,44 @@ class _BrowserPageState extends State<BrowserPage> {
             ),
           ),
           // 等级信息按钮
-          if (_shouldShowCookieQuickMenu()) ...[
-            _buildLevelBadge(cs),
-            const SizedBox(width: 6),
-          ],
+          if (_shouldShowCookieQuickMenu()) ...[_buildLevelBadge(cs), const SizedBox(width: 6)],
           // Cookie 指示
           if (_shouldShowCookieQuickMenu()) _buildCookieQuickMenu(cs),
           // 加载状态
           if (_isLoading) ...[
             const SizedBox(width: 8),
-            SizedBox(
-              width: 14,
-              height: 14,
-              child: shadcn.CircularProgressIndicator(
-                strokeWidth: 2,
-                color: cs.primary,
-              ),
-            ),
+            SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: cs.primary)),
           ],
           if (_error != null) ...[
             const SizedBox(width: 8),
-            Icon(
-              shadcn.LucideIcons.circleAlert,
-              size: 14,
-              color: const Color(0xFFF85149),
-            ),
+            Icon(LucideIcons.circleAlert, size: 14, color: const Color(0xFFF85149)),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildCookieQuickMenu(shadcn.ColorScheme cs) {
+  Widget _buildCookieQuickMenu(ColorScheme cs) {
     final targets = _siteQuickBrowseTargets();
-    return BrowserCookieQuickMenu(
-      targets: targets,
-      onSelected: _openQuickBrowseTarget,
-    );
+    return BrowserCookieQuickMenu(targets: targets, onSelected: _openQuickBrowseTarget);
   }
 
-  Widget _buildLevelBadge(shadcn.ColorScheme cs) {
+  Widget _buildLevelBadge(ColorScheme cs) {
     final website = _websiteConfigForCurrentSite();
     final siteInfo = _currentSiteInfoForQuickLinks(website);
     if (siteInfo == null) return const SizedBox.shrink();
     final status = siteInfo.latestStatus;
     final configs = ProviderScope.containerOf(context, listen: false).read(websiteListProvider).value ?? [];
     WebSite? config;
-    for (final c in configs) { if (c.name == siteInfo.site) { config = c; break; } }
+    for (final c in configs) {
+      if (c.name == siteInfo.site) {
+        config = c;
+        break;
+      }
+    }
 
     String levelText = status?.myLevel ?? '-';
-    Color badgeColor = shadcn.Theme.of(context).brightness == Brightness.dark
+    Color badgeColor = Theme.of(context).brightness == Brightness.dark
         ? const Color(0xFF94A3B8)
         : const Color(0xFF64748B);
     final levels = config?.level;
@@ -1099,12 +994,11 @@ class _BrowserPageState extends State<BrowserPage> {
       }
     }
 
-    final isDark = shadcn.Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () => openLevelInfo(context, site: siteInfo),
       child: Tooltip(
-        message: '等级: ${status?.myLevel ?? "-"}',
-        preferBelow: false,
+        tooltip: (context) => const Text('等级信息'),
         child: Container(
           height: 22,
           padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -1116,16 +1010,11 @@ class _BrowserPageState extends State<BrowserPage> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.workspace_premium, size: 12, color: badgeColor),
+              Icon(LucideIcons.medal, size: 12, color: badgeColor),
               const SizedBox(width: 3),
               Text(
                 levelText,
-                style: TextStyle(
-                  color: badgeColor,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  height: 1,
-                ),
+                style: TextStyle(color: badgeColor, fontSize: 10, fontWeight: FontWeight.w800, height: 1),
               ),
             ],
           ),
@@ -1150,17 +1039,12 @@ class _BrowserPageState extends State<BrowserPage> {
     }
 
     AppLogger.info('开始提取 Cookie: site=${siteInfo.site}, url=$_currentUrl');
-    final notifier = ProviderScope.containerOf(
-      context,
-      listen: false,
-    ).read(siteInfoListProvider.notifier);
+    final notifier = ProviderScope.containerOf(context, listen: false).read(siteInfoListProvider.notifier);
     final cookie = await _cookieHeaderFor(_currentUrl);
     final cookieText = cookie?.trim();
     final localStorage = await _localStorageSnapshotFor(_currentUrl);
     final hasCookie = cookieText?.isNotEmpty == true;
-    final normalizedLocalStorage = localStorage == null
-        ? null
-        : _optionalBrowserStorage(localStorage);
+    final normalizedLocalStorage = localStorage == null ? null : _optionalBrowserStorage(localStorage);
     final hasLocalStorage = normalizedLocalStorage != null;
 
     if (!hasCookie && !hasLocalStorage) {
@@ -1171,9 +1055,7 @@ class _BrowserPageState extends State<BrowserPage> {
 
     if (hasCookie) {
       AppLogger.info('提取到的 Cookie 长度: ${cookieText!.length} 字符');
-      AppLogger.info(
-        'Cookie 内容预览: ${cookieText.substring(0, cookieText.length > 200 ? 200 : cookieText.length)}...',
-      );
+      AppLogger.info('Cookie 内容预览: ${cookieText.substring(0, cookieText.length > 200 ? 200 : cookieText.length)}...');
     }
 
     var copied = false;
@@ -1200,20 +1082,12 @@ class _BrowserPageState extends State<BrowserPage> {
       );
       if (hasCookie && !hasLocalStorage) {
         Toast.success(
-          copied
-              ? '数据已复制，Cookie 已同步 (${cookieText!.length} 字符)'
-              : 'Cookie 已同步，复制失败 (${cookieText!.length} 字符)',
+          copied ? '数据已复制，Cookie 已同步 (${cookieText!.length} 字符)' : 'Cookie 已同步，复制失败 (${cookieText!.length} 字符)',
         );
       } else if (hasCookie) {
-        Toast.success(
-          copied
-              ? '数据已复制，Cookie/localStorage 已同步'
-              : 'Cookie/localStorage 已同步，复制失败',
-        );
+        Toast.success(copied ? '数据已复制，Cookie/localStorage 已同步' : 'Cookie/localStorage 已同步，复制失败');
       } else {
-        Toast.success(
-          copied ? '数据已复制，localStorage 已同步' : 'localStorage 已同步，复制失败',
-        );
+        Toast.success(copied ? '数据已复制，localStorage 已同步' : 'localStorage 已同步，复制失败');
       }
     } catch (e, st) {
       AppLogger.error('同步 Cookie/localStorage 失败', e, st);
@@ -1226,14 +1100,8 @@ class _BrowserPageState extends State<BrowserPage> {
     return text.isEmpty ? null : text;
   }
 
-  String _browserStorageClipboardJson({
-    required String? cookie,
-    required String? localStorage,
-  }) {
-    return jsonEncode(<String, Object?>{
-      'cookie': cookie?.trim() ?? '',
-      'localstorage': localStorage?.trim() ?? '',
-    });
+  String _browserStorageClipboardJson({required String? cookie, required String? localStorage}) {
+    return jsonEncode(<String, Object?>{'cookie': cookie?.trim() ?? '', 'localstorage': localStorage?.trim() ?? ''});
   }
 
   Future<void> _copyBrowserStorageClipboardJson() async {
@@ -1292,12 +1160,10 @@ class _BrowserPageState extends State<BrowserPage> {
       if (siteId.isNotEmpty && (siteName == siteId || nickname == siteId)) {
         return site;
       }
-      if (websiteName.isNotEmpty &&
-          (siteName == websiteName || nickname == websiteName)) {
+      if (websiteName.isNotEmpty && (siteName == websiteName || nickname == websiteName)) {
         return site;
       }
-      if (websiteNickname.isNotEmpty &&
-          (siteName == websiteNickname || nickname == websiteNickname)) {
+      if (websiteNickname.isNotEmpty && (siteName == websiteNickname || nickname == websiteNickname)) {
         return site;
       }
     }
@@ -1313,9 +1179,7 @@ class _BrowserPageState extends State<BrowserPage> {
     AppLogger.info('快速跳转: label=${target.label}, url=${target.url}');
     final controller = _controller;
     if (controller == null || _closing) {
-      AppLogger.warn(
-        '无法跳转: controller=${controller == null ? "null" : "ok"}, _closing=$_closing',
-      );
+      AppLogger.warn('无法跳转: controller=${controller == null ? "null" : "ok"}, _closing=$_closing');
       return;
     }
     try {
@@ -1330,7 +1194,7 @@ class _BrowserPageState extends State<BrowserPage> {
 
   // ── 底部工具栏 ──
 
-  Widget _buildBottomBar(shadcn.ColorScheme cs) {
+  Widget _buildBottomBar(ColorScheme cs) {
     return Container(
       padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
       decoration: BoxDecoration(
@@ -1340,41 +1204,17 @@ class _BrowserPageState extends State<BrowserPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _bottomBtn(cs, shadcn.LucideIcons.arrowLeft, '后退', _canGoBack, () {
+          _bottomBtn(cs, LucideIcons.arrowLeft, '后退', _canGoBack, () {
             if (_canGoBack) {
               _controller?.goBack();
             } else {
               _closeBrowser();
             }
           }),
-          _bottomBtn(
-            cs,
-            shadcn.LucideIcons.arrowRight,
-            '前进',
-            _canGoForward,
-            () => _controller?.goForward(),
-          ),
-          _bottomBtn(
-            cs,
-            shadcn.LucideIcons.refreshCw,
-            '刷新',
-            true,
-            () => _controller?.reload(),
-          ),
-          _bottomBtn(
-            cs,
-            shadcn.LucideIcons.globe,
-            'UA',
-            true,
-            _showUserAgentPicker,
-          ),
-          _bottomBtn(
-            cs,
-            shadcn.LucideIcons.ellipsisVertical,
-            '操作',
-            true,
-            _showBrowserActionMenu,
-          ),
+          _bottomBtn(cs, LucideIcons.arrowRight, '前进', _canGoForward, () => _controller?.goForward()),
+          _bottomBtn(cs, LucideIcons.refreshCw, '刷新', true, () => _controller?.reload()),
+          _bottomBtn(cs, LucideIcons.globe, 'UA', true, _showUserAgentPicker),
+          _bottomBtn(cs, LucideIcons.ellipsisVertical, '操作', true, _showBrowserActionMenu),
         ],
       ),
     );
@@ -1383,91 +1223,89 @@ class _BrowserPageState extends State<BrowserPage> {
   Future<void> _showBrowserActionMenu() async {
     if (!mounted) return;
     final canExtractCookie = _shouldShowExtractCookieButton();
-    shadcn.showDropdown<void>(
+    showDropdown<void>(
       context: context,
       alignment: Alignment.bottomCenter,
       offset: const Offset(0, -8),
-      widthConstraint: shadcn.PopoverConstraint.intrinsic,
-      heightConstraint: shadcn.PopoverConstraint.intrinsic,
+      widthConstraint: PopoverConstraint.intrinsic,
+      heightConstraint: PopoverConstraint.intrinsic,
       consumeOutsideTaps: true,
       builder: (_) => appMenu(
         children: [
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.link),
+          MenuButton(
+            leading: const Icon(LucideIcons.link),
             onPressed: (itemContext) {
-              shadcn.closeOverlay(itemContext);
+              closeOverlay(itemContext);
               Clipboard.setData(ClipboardData(text: _accessUrlText()));
               Toast.success('链接已复制');
             },
             child: const Text('复制链接'),
           ),
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.share2),
+          MenuButton(
+            leading: const Icon(LucideIcons.share2),
             onPressed: (itemContext) {
-              shadcn.closeOverlay(itemContext);
-              SharePlus.instance.share(
-                ShareParams(text: _accessUrlText(), subject: _currentTitle),
-              );
+              closeOverlay(itemContext);
+              SharePlus.instance.share(ShareParams(text: _accessUrlText(), subject: _currentTitle));
             },
             child: const Text('分享链接'),
           ),
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.camera),
+          MenuButton(
+            leading: const Icon(LucideIcons.camera),
             onPressed: (itemContext) {
-              shadcn.closeOverlay(itemContext);
+              closeOverlay(itemContext);
               unawaited(_captureBrowserLongScreenshot());
             },
             child: const Text('长截图'),
           ),
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.externalLink),
+          MenuButton(
+            leading: const Icon(LucideIcons.externalLink),
             onPressed: (itemContext) {
-              shadcn.closeOverlay(itemContext);
+              closeOverlay(itemContext);
               unawaited(_openCurrentUrlExternally());
             },
             child: const Text('浏览器打开'),
           ),
           if (kDebugMode)
-            shadcn.MenuButton(
-              leading: const Icon(shadcn.LucideIcons.squareTerminal),
+            MenuButton(
+              leading: const Icon(LucideIcons.squareTerminal),
               onPressed: (itemContext) {
-                shadcn.closeOverlay(itemContext);
+                closeOverlay(itemContext);
                 unawaited(_openWebViewDevTools());
               },
               child: const Text('开发者工具'),
             ),
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.clipboardList),
+          MenuButton(
+            leading: const Icon(LucideIcons.clipboardList),
             onPressed: (itemContext) {
-              shadcn.closeOverlay(itemContext);
+              closeOverlay(itemContext);
               unawaited(_copyBrowserStorageClipboardJson());
             },
             child: const Text('复制授权信息'),
           ),
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.shieldCheck),
+          MenuButton(
+            leading: const Icon(LucideIcons.shieldCheck),
             onPressed: (itemContext) {
-              shadcn.closeOverlay(itemContext);
+              closeOverlay(itemContext);
               unawaited(_copyBrowserAuthDiagnostics());
             },
             child: const Text('授权诊断'),
           ),
-          const shadcn.MenuDivider(),
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.cloudDownload),
+          const MenuDivider(),
+          MenuButton(
+            leading: const Icon(LucideIcons.cloudDownload),
             enabled: canExtractCookie,
             onPressed: canExtractCookie
                 ? (itemContext) {
-                    shadcn.closeOverlay(itemContext);
+                    closeOverlay(itemContext);
                     unawaited(_extractAndSyncCookie());
                   }
                 : null,
             child: const Text('同步Cookie'),
           ),
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.cookie),
+          MenuButton(
+            leading: const Icon(LucideIcons.cookie),
             onPressed: (itemContext) {
-              shadcn.closeOverlay(itemContext);
+              closeOverlay(itemContext);
               unawaited(_clearCurrentSiteCookies());
             },
             child: const Text('清理Cookie'),
@@ -1522,10 +1360,7 @@ class _BrowserPageState extends State<BrowserPage> {
       return;
     }
 
-    final injectedCount = await _injectConfiguredLocalStorage(
-      controller,
-      _currentUrl,
-    );
+    final injectedCount = await _injectConfiguredLocalStorage(controller, _currentUrl);
     final cookie = await _cookieHeaderFor(_currentUrl);
     final localStorage = await _localStorageRawSnapshotFor(_currentUrl);
     final filteredLocalStorage = await _localStorageSnapshotFor(_currentUrl);
@@ -1544,9 +1379,7 @@ class _BrowserPageState extends State<BrowserPage> {
     };
 
     try {
-      await Clipboard.setData(
-        ClipboardData(text: const JsonEncoder.withIndent('  ').convert(data)),
-      );
+      await Clipboard.setData(ClipboardData(text: const JsonEncoder.withIndent('  ').convert(data)));
       Toast.success('授权诊断已复制');
     } catch (e, st) {
       AppLogger.warn('复制授权诊断失败: $e\n$st');
@@ -1557,10 +1390,8 @@ class _BrowserPageState extends State<BrowserPage> {
   String _webViewDevToolsTip() {
     if (kIsWeb) return '使用浏览器自带开发者工具查看当前页面';
     return switch (defaultTargetPlatform) {
-      TargetPlatform.android =>
-        'Chrome 打开 chrome://inspect/#devices，选择当前 App WebView',
-      TargetPlatform.iOS ||
-      TargetPlatform.macOS => 'Safari 开启 Develop 菜单后选择当前 WebView',
+      TargetPlatform.android => 'Chrome 打开 chrome://inspect/#devices，选择当前 App WebView',
+      TargetPlatform.iOS || TargetPlatform.macOS => 'Safari 开启 Develop 菜单后选择当前 WebView',
       TargetPlatform.windows => 'Windows 可直接打开 WebView2 开发者工具',
       _ => '当前平台暂未提供内置 WebView 开发者工具入口',
     };
@@ -1579,16 +1410,13 @@ class _BrowserPageState extends State<BrowserPage> {
       return false;
     }
     if (!_isConfiguredLocalStorageHost(currentUri.host)) return false;
-    return _sameBrowserUrl(currentUri, initialUri) ||
-        _looksLikeLoginUrl(currentUri);
+    return _sameBrowserUrl(currentUri, initialUri) || _looksLikeLoginUrl(currentUri);
   }
 
   bool _sameBrowserUrl(Uri a, Uri b) {
     String normalizedPath(Uri uri) {
       final path = uri.path.isEmpty ? '/' : uri.path;
-      return path.endsWith('/') && path.length > 1
-          ? path.substring(0, path.length - 1)
-          : path;
+      return path.endsWith('/') && path.length > 1 ? path.substring(0, path.length - 1) : path;
     }
 
     return a.scheme == b.scheme &&
@@ -1615,9 +1443,7 @@ class _BrowserPageState extends State<BrowserPage> {
 
     final currentUrl = _currentUrl.trim();
     final uri = Uri.tryParse(currentUrl);
-    if (uri == null ||
-        (uri.scheme != 'http' && uri.scheme != 'https') ||
-        uri.host.isEmpty) {
+    if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https') || uri.host.isEmpty) {
       Toast.warning('当前链接无效');
       return;
     }
@@ -1627,10 +1453,7 @@ class _BrowserPageState extends State<BrowserPage> {
     final cookieManager = CookieManager.instance();
 
     try {
-      final cookies = await cookieManager.getCookies(
-        url: webUri,
-        webViewController: controller,
-      );
+      final cookies = await cookieManager.getCookies(url: webUri, webViewController: controller);
 
       var deletedAny = false;
       for (final cookie in cookies) {
@@ -1655,11 +1478,7 @@ class _BrowserPageState extends State<BrowserPage> {
       }
 
       for (final domain in domainCandidates) {
-        final deleted = await cookieManager.deleteCookies(
-          url: webUri,
-          domain: domain,
-          webViewController: controller,
-        );
+        final deleted = await cookieManager.deleteCookies(url: webUri, domain: domain, webViewController: controller);
         deletedAny = deletedAny || deleted;
       }
 
@@ -1672,14 +1491,10 @@ class _BrowserPageState extends State<BrowserPage> {
         });
       }
 
-      AppLogger.info(
-        '已清理内置浏览器当前站点 Cookie: origin=$origin, count=${cookies.length}, deleted=$deletedAny',
-      );
+      AppLogger.info('已清理内置浏览器当前站点 Cookie: origin=$origin, count=${cookies.length}, deleted=$deletedAny');
       Toast.success('已清理当前站点 Cookie');
       try {
-        await controller.loadUrl(
-          urlRequest: URLRequest(url: WebUri(currentUrl)),
-        );
+        await controller.loadUrl(urlRequest: URLRequest(url: WebUri(currentUrl)));
       } catch (e, st) {
         AppLogger.warn('清理 Cookie 后刷新当前页面失败: $e\n$st');
         if (mounted && !_closing) Toast.warning('Cookie 已清理，刷新页面失败');
@@ -1690,9 +1505,7 @@ class _BrowserPageState extends State<BrowserPage> {
     }
   }
 
-  Future<void> _clearCurrentSiteBrowserStorage(
-    InAppWebViewController controller,
-  ) async {
+  Future<void> _clearCurrentSiteBrowserStorage(InAppWebViewController controller) async {
     try {
       await controller.evaluateJavascript(
         source:
@@ -1711,8 +1524,7 @@ class _BrowserPageState extends State<BrowserPage> {
   }
 
   bool _isIpHost(String host) {
-    return RegExp(r'^\d{1,3}(\.\d{1,3}){3}$').hasMatch(host) ||
-        host.contains(':');
+    return RegExp(r'^\d{1,3}(\.\d{1,3}){3}$').hasMatch(host) || host.contains(':');
   }
 
   Future<void> _captureBrowserLongScreenshot() async {
@@ -1736,9 +1548,7 @@ class _BrowserPageState extends State<BrowserPage> {
     }
   }
 
-  Future<Uint8List?> _captureWebViewLongScreenshot(
-    InAppWebViewController controller,
-  ) async {
+  Future<Uint8List?> _captureWebViewLongScreenshot(InAppWebViewController controller) async {
     final metrics = await _readWebViewMetrics(controller);
     final viewportHeight = parseDouble(metrics['viewportHeight']);
     final contentHeight = parseDouble(metrics['contentHeight']);
@@ -1747,9 +1557,7 @@ class _BrowserPageState extends State<BrowserPage> {
       return controller.takeScreenshot();
     }
 
-    final maxScroll = contentHeight > viewportHeight
-        ? contentHeight - viewportHeight
-        : 0.0;
+    final maxScroll = contentHeight > viewportHeight ? contentHeight - viewportHeight : 0.0;
     final offsets = <double>[0];
     if (maxScroll > 0) {
       final step = viewportHeight * 0.85;
@@ -1765,9 +1573,7 @@ class _BrowserPageState extends State<BrowserPage> {
     final pieces = <_BrowserScreenshotPiece>[];
     double? scale;
     for (final offset in offsets) {
-      await controller.evaluateJavascript(
-        source: 'window.scrollTo(0, ${offset.round()});',
-      );
+      await controller.evaluateJavascript(source: 'window.scrollTo(0, ${offset.round()});');
       await Future.delayed(const Duration(milliseconds: 320));
       final bytes = await controller.takeScreenshot();
       if (bytes == null || bytes.isEmpty) continue;
@@ -1776,21 +1582,13 @@ class _BrowserPageState extends State<BrowserPage> {
       pieces.add(_BrowserScreenshotPiece(image: image, offset: offset));
     }
 
-    await controller.evaluateJavascript(
-      source: 'window.scrollTo(0, ${originalY.round()});',
-    );
+    await controller.evaluateJavascript(source: 'window.scrollTo(0, ${originalY.round()});');
 
     if (pieces.isEmpty) return controller.takeScreenshot();
-    return _stitchBrowserScreenshots(
-      pieces: pieces,
-      contentHeight: contentHeight,
-      scale: scale ?? 1,
-    );
+    return _stitchBrowserScreenshots(pieces: pieces, contentHeight: contentHeight, scale: scale ?? 1);
   }
 
-  Future<Map<String, dynamic>> _readWebViewMetrics(
-    InAppWebViewController controller,
-  ) async {
+  Future<Map<String, dynamic>> _readWebViewMetrics(InAppWebViewController controller) async {
     final raw = await controller.evaluateJavascript(
       source: '''
 JSON.stringify({
@@ -1806,9 +1604,7 @@ JSON.stringify({
 ''',
     );
     final data = raw is String ? jsonDecode(raw) : raw;
-    return data is Map
-        ? Map<String, dynamic>.from(data)
-        : const <String, dynamic>{};
+    return data is Map ? Map<String, dynamic>.from(data) : const <String, dynamic>{};
   }
 
   Future<ui.Image> _decodeImage(Uint8List bytes) async {
@@ -1833,18 +1629,8 @@ JSON.stringify({
       final remaining = totalHeight - dstY;
       if (remaining <= 0) continue;
       final srcHeight = remaining < image.height ? remaining : image.height;
-      final src = Rect.fromLTWH(
-        0,
-        0,
-        image.width.toDouble(),
-        srcHeight.toDouble(),
-      );
-      final dst = Rect.fromLTWH(
-        0,
-        dstY.toDouble(),
-        width.toDouble(),
-        srcHeight.toDouble(),
-      );
+      final src = Rect.fromLTWH(0, 0, image.width.toDouble(), srcHeight.toDouble());
+      final dst = Rect.fromLTWH(0, dstY.toDouble(), width.toDouble(), srcHeight.toDouble());
       canvas.drawImageRect(image, src, dst, Paint());
     }
 
@@ -1854,13 +1640,7 @@ JSON.stringify({
     return byteData?.buffer.asUint8List();
   }
 
-  Widget _bottomBtn(
-    shadcn.ColorScheme cs,
-    IconData icon,
-    String label,
-    bool enabled,
-    VoidCallback onTap,
-  ) {
+  Widget _bottomBtn(ColorScheme cs, IconData icon, String label, bool enabled, VoidCallback onTap) {
     return GestureDetector(
       onTap: enabled ? onTap : null,
       behavior: HitTestBehavior.opaque,
@@ -1872,18 +1652,14 @@ JSON.stringify({
             Icon(
               icon,
               size: 18,
-              color: enabled
-                  ? cs.foreground.withValues(alpha: 0.7)
-                  : cs.foreground.withValues(alpha: 0.15),
+              color: enabled ? cs.foreground.withValues(alpha: 0.7) : cs.foreground.withValues(alpha: 0.15),
             ),
             const SizedBox(height: 2),
             Text(
               label,
               style: TextStyle(
                 fontSize: 9,
-                color: enabled
-                    ? cs.foreground.withValues(alpha: 0.5)
-                    : cs.foreground.withValues(alpha: 0.15),
+                color: enabled ? cs.foreground.withValues(alpha: 0.5) : cs.foreground.withValues(alpha: 0.15),
               ),
             ),
           ],
@@ -1897,9 +1673,7 @@ JSON.stringify({
   Widget _buildWebView() {
     final localStorageBootstrap = _configuredLocalStorageBootstrapInitialData();
     return InAppWebView(
-      initialUrlRequest: localStorageBootstrap == null
-          ? URLRequest(url: WebUri(widget.url))
-          : null,
+      initialUrlRequest: localStorageBootstrap == null ? URLRequest(url: WebUri(widget.url)) : null,
       initialData: localStorageBootstrap,
       initialUserScripts: _configuredLocalStorageUserScripts(),
       initialSettings: InAppWebViewSettings(
@@ -1955,20 +1729,12 @@ JSON.stringify({
           }
           _isLoading = false;
         });
-        final injectedLocalStorageCount = await _injectConfiguredLocalStorage(
-          controller,
-          urlText,
-        );
+        final injectedLocalStorageCount = await _injectConfiguredLocalStorage(controller, urlText);
         unawaited(_refreshReadableLocalStorageState(urlText));
-        if (injectedLocalStorageCount > 0 &&
-            _shouldRetryInitialUrlAfterLocalStorageInjection(urlText)) {
+        if (injectedLocalStorageCount > 0 && _shouldRetryInitialUrlAfterLocalStorageInjection(urlText)) {
           _retriedInitialUrlAfterLocalStorageInjection = true;
-          AppLogger.info(
-            'localStorage 已写入登录页，重新打开初始地址: from=$urlText, to=${widget.url}',
-          );
-          await controller.loadUrl(
-            urlRequest: URLRequest(url: WebUri(widget.url)),
-          );
+          AppLogger.info('localStorage 已写入登录页，重新打开初始地址: from=$urlText, to=${widget.url}');
+          await controller.loadUrl(urlRequest: URLRequest(url: WebUri(widget.url)));
           return;
         }
         unawaited(_refreshReadableCookieState(url?.toString()));
@@ -2035,12 +1801,7 @@ JSON.stringify({
     final configuredUserAgent = widget.userAgent?.trim();
     return [
       if (configuredUserAgent != null && configuredUserAgent.isNotEmpty)
-        _UserAgentPreset(
-          id: 'site',
-          label: '站点配置',
-          description: configuredUserAgent,
-          userAgent: configuredUserAgent,
-        ),
+        _UserAgentPreset(id: 'site', label: '站点配置', description: configuredUserAgent, userAgent: configuredUserAgent),
       const _UserAgentPreset(
         id: 'safari_macos',
         label: 'Safari macOS',
@@ -2088,8 +1849,7 @@ JSON.stringify({
       id: 'firefox_windows',
       label: 'Firefox Windows',
       description: 'Windows Firefox Desktop',
-      userAgent:
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0',
     ),
   ];
 
@@ -2097,7 +1857,7 @@ JSON.stringify({
     if (_defaultUserAgent == null) await _loadDefaultUserAgent();
     if (!mounted) return;
 
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     await showAppSheet<void>(
       context: context,
       showDragHandle: true,
@@ -2111,39 +1871,48 @@ JSON.stringify({
 
             Widget presetTile(_UserAgentPreset preset) {
               final selected = preset.id == _activeUserAgentId;
-              return ListTile(
-                dense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                leading: Icon(
-                  selected
-                      ? shadcn.LucideIcons.check
-                      : shadcn.LucideIcons.globe,
-                  size: 18,
-                  color: selected
-                      ? cs.primary
-                      : cs.foreground.withValues(alpha: 0.62),
-                ),
-                title: Text(
-                  preset.label,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    color: cs.foreground,
-                  ),
-                ),
-                subtitle: Text(
-                  preset.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: cs.foreground.withValues(alpha: 0.56),
-                  ),
-                ),
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () async {
                   closeAppSheet(context);
                   await _applyUserAgentPreset(preset);
                 },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        selected ? LucideIcons.check : LucideIcons.globe,
+                        size: 18,
+                        color: selected ? cs.primary : cs.foreground.withValues(alpha: 0.62),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              preset.label,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                                color: cs.foreground,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              preset.description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.56)),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               );
             }
 
@@ -2152,46 +1921,47 @@ JSON.stringify({
                 shrinkWrap: true,
                 padding: const EdgeInsets.fromLTRB(12, 4, 12, 16),
                 children: [
-                  for (final preset in presets) ...[
-                    presetTile(preset),
-                    Divider(height: 1, color: cs.border),
-                  ],
-                  ListTile(
-                    dense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                    leading: Icon(
-                      fallbackExpanded
-                          ? shadcn.LucideIcons.chevronDown
-                          : shadcn.LucideIcons.chevronRight,
-                      size: 18,
-                      color: cs.foreground.withValues(alpha: 0.62),
-                    ),
-                    title: Text(
-                      '备选 UA',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: cs.foreground,
-                      ),
-                    ),
-                    subtitle: Text(
-                      'Chrome / Edge / Firefox',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: cs.foreground.withValues(alpha: 0.56),
-                      ),
-                    ),
+                  for (final preset in presets) ...[presetTile(preset), Divider(height: 1, color: cs.border)],
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () {
                       setSheetState(() {
                         fallbackExpanded = !fallbackExpanded;
                       });
                     },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            fallbackExpanded ? LucideIcons.chevronDown : LucideIcons.chevronRight,
+                            size: 18,
+                            color: cs.foreground.withValues(alpha: 0.62),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '备选 UA',
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: cs.foreground),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Chrome / Edge / Firefox',
+                                  style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.56)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   if (fallbackExpanded)
-                    for (final preset in fallbackPresets) ...[
-                      Divider(height: 1, color: cs.border),
-                      presetTile(preset),
-                    ],
+                    for (final preset in fallbackPresets) ...[Divider(height: 1, color: cs.border), presetTile(preset)],
                 ],
               ),
             );
@@ -2207,9 +1977,7 @@ JSON.stringify({
     if (mounted) setState(() {});
 
     try {
-      await _controller?.setSettings(
-        settings: InAppWebViewSettings(userAgent: _activeUserAgent),
-      );
+      await _controller?.setSettings(settings: InAppWebViewSettings(userAgent: _activeUserAgent));
       await _controller?.reload();
       Toast.success('已切换 UA：${preset.label}');
     } catch (e, st) {
@@ -2231,8 +1999,7 @@ JSON.stringify({
     final currentHost = _uriHost(currentUrl);
 
     for (final config in _websiteConfigs) {
-      if (config.name.toLowerCase() == siteKey ||
-          config.nickname.toLowerCase() == siteKey) {
+      if (config.name.toLowerCase() == siteKey || config.nickname.toLowerCase() == siteKey) {
         return config;
       }
     }
@@ -2253,13 +2020,10 @@ JSON.stringify({
     }
     final website = _websiteConfigForCurrentSite();
     if (website == null) return null;
-    if (website.pageTorrents.trim().isEmpty ||
-        website.torrentsRule.trim().isEmpty) {
+    if (website.pageTorrents.trim().isEmpty || website.torrentsRule.trim().isEmpty) {
       return null;
     }
-    return _matchesWebsitePage(currentUrl, website.pageTorrents)
-        ? website
-        : null;
+    return _matchesWebsitePage(currentUrl, website.pageTorrents) ? website : null;
   }
 
   WebSite? _currentDetailWebsiteConfig() {
@@ -2270,8 +2034,7 @@ JSON.stringify({
     final website = _websiteConfigForCurrentSite();
     if (website == null) return null;
     if (website.pageDetail.trim().isEmpty) return null;
-    if (website.detailDownloadUrlRule.trim().isEmpty &&
-        website.detailTitleRule.trim().isEmpty) {
+    if (website.detailDownloadUrlRule.trim().isEmpty && website.detailTitleRule.trim().isEmpty) {
       return null;
     }
     return _matchesWebsitePage(currentUrl, website.pageDetail) ? website : null;
@@ -2285,11 +2048,8 @@ JSON.stringify({
     if (!_hasUserProfileRules(website)) return null;
     final pageUser = website.pageUser.trim();
     final pageControlPanel = website.pageControlPanel.trim();
-    final matchesUser =
-        pageUser.isNotEmpty && _matchesWebsitePage(currentUrl, pageUser);
-    final matchesControlPanel =
-        pageControlPanel.isNotEmpty &&
-        _matchesWebsitePage(currentUrl, pageControlPanel);
+    final matchesUser = pageUser.isNotEmpty && _matchesWebsitePage(currentUrl, pageUser);
+    final matchesControlPanel = pageControlPanel.isNotEmpty && _matchesWebsitePage(currentUrl, pageControlPanel);
     return matchesUser || matchesControlPanel ? website : null;
   }
 
@@ -2309,10 +2069,7 @@ JSON.stringify({
   }
 
   bool _hasUserProfileRules(WebSite website) {
-    return website.pageUser.contains('{}') ||
-        _userProfileRuleSpecs(
-          website,
-        ).any((spec) => spec.rule.trim().isNotEmpty);
+    return website.pageUser.contains('{}') || _userProfileRuleSpecs(website).any((spec) => spec.rule.trim().isNotEmpty);
   }
 
   List<_BrowserUserProfileRule> _userProfileRuleSpecs(WebSite website) {
@@ -2320,142 +2077,47 @@ JSON.stringify({
       _BrowserUserProfileRule('username', '用户名', '账号', website.myUsernameRule),
       _BrowserUserProfileRule('email', '邮箱', '账号', website.myEmailRule),
       _BrowserUserProfileRule('uid', 'UID', '账号', website.myUidRule),
-      _BrowserUserProfileRule(
-        'passkey',
-        'Passkey',
-        '账号',
-        website.myPasskeyRule,
-      ),
-      _BrowserUserProfileRule(
-        'time_join',
-        '注册时间',
-        '时间',
-        website.myTimeJoinRule,
-      ),
-      _BrowserUserProfileRule(
-        'latest_active',
-        '最后活动',
-        '时间',
-        website.myLatestActiveRule,
-      ),
+      _BrowserUserProfileRule('passkey', 'Passkey', '账号', website.myPasskeyRule),
+      _BrowserUserProfileRule('time_join', '注册时间', '时间', website.myTimeJoinRule),
+      _BrowserUserProfileRule('latest_active', '最后活动', '时间', website.myLatestActiveRule),
       _BrowserUserProfileRule('level', '等级', '账号', website.myLevelRule),
       _BrowserUserProfileRule('uploaded', '上传量', '流量', website.myUploadedRule),
-      _BrowserUserProfileRule(
-        'downloaded',
-        '下载量',
-        '流量',
-        website.myDownloadedRule,
-      ),
+      _BrowserUserProfileRule('downloaded', '下载量', '流量', website.myDownloadedRule),
       _BrowserUserProfileRule('ratio', '分享率', '账号', website.myRatioRule),
       _BrowserUserProfileRule('bonus', '魔力值', '魔力/积分', website.myBonusRule),
-      _BrowserUserProfileRule(
-        'bonus_hour',
-        '时魔',
-        '魔力/积分',
-        website.myPerHourBonusRule,
-      ),
+      _BrowserUserProfileRule('bonus_hour', '时魔', '魔力/积分', website.myPerHourBonusRule),
       _BrowserUserProfileRule('score', '积分', '魔力/积分', website.myScoreRule),
-      _BrowserUserProfileRule(
-        'invitation',
-        '邀请',
-        '统计',
-        website.myInvitationRule,
-      ),
+      _BrowserUserProfileRule('invitation', '邀请', '统计', website.myInvitationRule),
       _BrowserUserProfileRule('hr', 'HR', '统计', website.myHrRule),
       _BrowserUserProfileRule('leech', '下载中', '统计', website.myLeechRule),
       _BrowserUserProfileRule('publish', '发布数', '统计', website.myPublishRule),
       _BrowserUserProfileRule('seed', '做种数', '统计', website.mySeedRule),
-      _BrowserUserProfileRule(
-        'seed_volume',
-        '做种量',
-        '统计',
-        website.mySeedVolRule,
-      ),
+      _BrowserUserProfileRule('seed_volume', '做种量', '统计', website.mySeedVolRule),
     ];
   }
 
   _BrowserUserProfileDisplay _userProfileDisplay(String key) {
     return switch (key) {
-      'username' => const _BrowserUserProfileDisplay(
-        Icons.person_outline,
-        Color(0xFF2563EB),
-      ),
-      'email' => const _BrowserUserProfileDisplay(
-        Icons.alternate_email,
-        Color(0xFF0EA5E9),
-      ),
-      'uid' => const _BrowserUserProfileDisplay(
-        Icons.badge_outlined,
-        Color(0xFF64748B),
-      ),
-      'passkey' => const _BrowserUserProfileDisplay(
-        Icons.key_outlined,
-        Color(0xFF64748B),
-      ),
-      'time_join' => const _BrowserUserProfileDisplay(
-        Icons.event_available_outlined,
-        Color(0xFF14B8A6),
-      ),
-      'latest_active' => const _BrowserUserProfileDisplay(
-        Icons.schedule_outlined,
-        Color(0xFF06B6D4),
-      ),
-      'level' => const _BrowserUserProfileDisplay(
-        Icons.workspace_premium_outlined,
-        Color(0xFFF59E0B),
-      ),
-      'uploaded' => const _BrowserUserProfileDisplay(
-        Icons.cloud_upload_outlined,
-        Color(0xFF10B981),
-      ),
-      'downloaded' => const _BrowserUserProfileDisplay(
-        Icons.cloud_download_outlined,
-        Color(0xFFEF4444),
-      ),
-      'ratio' => const _BrowserUserProfileDisplay(
-        Icons.balance_outlined,
-        Color(0xFF8B5CF6),
-      ),
-      'bonus' => const _BrowserUserProfileDisplay(
-        Icons.diamond_outlined,
-        Color(0xFFF59E0B),
-      ),
-      'bonus_hour' => const _BrowserUserProfileDisplay(
-        Icons.bolt_outlined,
-        Color(0xFFF97316),
-      ),
-      'score' => const _BrowserUserProfileDisplay(
-        Icons.star_border_outlined,
-        Color(0xFFEAB308),
-      ),
-      'invitation' => const _BrowserUserProfileDisplay(
-        Icons.group_add_outlined,
-        Color(0xFF8B5CF6),
-      ),
-      'hr' => const _BrowserUserProfileDisplay(
-        Icons.warning_amber_outlined,
-        Color(0xFFEF4444),
-      ),
-      'leech' => const _BrowserUserProfileDisplay(
-        Icons.arrow_downward,
-        Color(0xFFF97316),
-      ),
-      'publish' => const _BrowserUserProfileDisplay(
-        Icons.rocket_launch_outlined,
-        Color(0xFF6366F1),
-      ),
-      'seed' => const _BrowserUserProfileDisplay(
-        Icons.grass_outlined,
-        Color(0xFF10B981),
-      ),
-      'seed_volume' => const _BrowserUserProfileDisplay(
-        Icons.storage_outlined,
-        Color(0xFF0EA5E9),
-      ),
-      _ => const _BrowserUserProfileDisplay(
-        Icons.info_outline,
-        Color(0xFF64748B),
-      ),
+      'username' => const _BrowserUserProfileDisplay(LucideIcons.user, Color(0xFF2563EB)),
+      'email' => const _BrowserUserProfileDisplay(LucideIcons.atSign, Color(0xFF0EA5E9)),
+      'uid' => const _BrowserUserProfileDisplay(LucideIcons.badge, Color(0xFF64748B)),
+      'passkey' => const _BrowserUserProfileDisplay(LucideIcons.key, Color(0xFF64748B)),
+      'time_join' => const _BrowserUserProfileDisplay(LucideIcons.calendar, Color(0xFF14B8A6)),
+      'latest_active' => const _BrowserUserProfileDisplay(LucideIcons.clock, Color(0xFF06B6D4)),
+      'level' => const _BrowserUserProfileDisplay(LucideIcons.award, Color(0xFFF59E0B)),
+      'uploaded' => const _BrowserUserProfileDisplay(LucideIcons.cloudUpload, Color(0xFF10B981)),
+      'downloaded' => const _BrowserUserProfileDisplay(LucideIcons.cloudDownload, Color(0xFFEF4444)),
+      'ratio' => const _BrowserUserProfileDisplay(LucideIcons.scale, Color(0xFF8B5CF6)),
+      'bonus' => const _BrowserUserProfileDisplay(LucideIcons.gem, Color(0xFFF59E0B)),
+      'bonus_hour' => const _BrowserUserProfileDisplay(LucideIcons.zap, Color(0xFFF97316)),
+      'score' => const _BrowserUserProfileDisplay(LucideIcons.star, Color(0xFFEAB308)),
+      'invitation' => const _BrowserUserProfileDisplay(LucideIcons.userPlus, Color(0xFF8B5CF6)),
+      'hr' => const _BrowserUserProfileDisplay(LucideIcons.triangleAlert, Color(0xFFEF4444)),
+      'leech' => const _BrowserUserProfileDisplay(LucideIcons.arrowDown, Color(0xFFF97316)),
+      'publish' => const _BrowserUserProfileDisplay(LucideIcons.rocket, Color(0xFF6366F1)),
+      'seed' => const _BrowserUserProfileDisplay(LucideIcons.leaf, Color(0xFF10B981)),
+      'seed_volume' => const _BrowserUserProfileDisplay(LucideIcons.database, Color(0xFF0EA5E9)),
+      _ => const _BrowserUserProfileDisplay(LucideIcons.info, Color(0xFF64748B)),
     };
   }
 
@@ -2466,10 +2128,7 @@ JSON.stringify({
     final rawRule = pageRule.trim();
     if (rawRule.contains('{}')) {
       const marker = '__HARVEST_PAGE_MARKER__';
-      final target = _resolveWebsitePageUri(
-        current,
-        rawRule.replaceAll('{}', marker),
-      );
+      final target = _resolveWebsitePageUri(current, rawRule.replaceAll('{}', marker));
       if (target == null || !target.toString().contains(marker)) return false;
 
       if (target.queryParameters.containsValue(marker)) {
@@ -2487,9 +2146,7 @@ JSON.stringify({
         }
       }
 
-      final escaped = RegExp.escape(
-        target.toString(),
-      ).replaceAll(RegExp.escape(marker), r'([^/?#&]+)');
+      final escaped = RegExp.escape(target.toString()).replaceAll(RegExp.escape(marker), r'([^/?#&]+)');
       return RegExp('^$escaped(?:[?#&].*)?\$').hasMatch(current.toString());
     }
 
@@ -2497,8 +2154,7 @@ JSON.stringify({
     if (target == null) return false;
     final currentPath = _normalizePath(current.path);
     final targetPath = _normalizePath(target.path);
-    return targetPath.isNotEmpty &&
-        (currentPath == targetPath || currentPath.startsWith('$targetPath/'));
+    return targetPath.isNotEmpty && (currentPath == targetPath || currentPath.startsWith('$targetPath/'));
   }
 
   Uri? _resolveWebsitePageUri(Uri current, String pageRule) {
@@ -2552,9 +2208,7 @@ JSON.stringify({
 
     setState(() => _extractingTorrentList = true);
     try {
-      final raw = await controller.evaluateJavascript(
-        source: _buildTorrentExtractScript(website),
-      );
+      final raw = await controller.evaluateJavascript(source: _buildTorrentExtractScript(website));
       if (!mounted || _closing) return;
       final items = _parseExtractedTorrents(raw);
       if (items.isEmpty) {
@@ -2577,9 +2231,7 @@ JSON.stringify({
 
     setState(() => _extractingTorrentList = true);
     try {
-      final raw = await controller.evaluateJavascript(
-        source: _buildTorrentDetailExtractScript(website),
-      );
+      final raw = await controller.evaluateJavascript(source: _buildTorrentDetailExtractScript(website));
       if (!mounted || _closing) return;
       final item = _parseExtractedTorrentDetail(raw);
       if (item == null) {
@@ -2614,9 +2266,7 @@ JSON.stringify({
 
     setState(() => _extractingUserProfile = true);
     try {
-      final raw = await controller.evaluateJavascript(
-        source: _buildUserProfileExtractScript(website),
-      );
+      final raw = await controller.evaluateJavascript(source: _buildUserProfileExtractScript(website));
       if (!mounted || _closing) return;
       final items = _parseExtractedUserProfile(raw);
       if (items.isEmpty) {
@@ -2637,19 +2287,8 @@ JSON.stringify({
 
   String _buildUserProfileExtractScript(WebSite website) {
     final specs = _userProfileRuleSpecs(website)
-        .where(
-          (spec) =>
-              spec.rule.trim().isNotEmpty ||
-              (spec.key == 'uid' && website.pageUser.contains('{}')),
-        )
-        .map(
-          (spec) => {
-            'key': spec.key,
-            'label': spec.label,
-            'group': spec.group,
-            'rule': spec.rule,
-          },
-        )
+        .where((spec) => spec.rule.trim().isNotEmpty || (spec.key == 'uid' && website.pageUser.contains('{}')))
+        .map((spec) => {'key': spec.key, 'label': spec.label, 'group': spec.group, 'rule': spec.rule})
         .toList();
     return '''
 (() => {
@@ -2861,10 +2500,7 @@ JSON.stringify({
   }
 
   String _formatUserProfileValue(String key, String rawValue) {
-    final value = rawValue
-        .replaceAll('\u00a0', ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+    final value = rawValue.replaceAll('\u00a0', ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
     if (_isUserProfilePlaceholder(value)) return '-';
     if (key == 'uid') return value.isEmpty ? '-' : value;
     if (key == 'passkey') return maskKey(value);
@@ -2925,25 +2561,17 @@ JSON.stringify({
   }
 
   String _formatUserProfileNumber(String value) {
-    final match = RegExp(
-      r'-?\d[\d,]*(?:\.\d+)?|-?\d+(?:[.,]\d+)?',
-    ).firstMatch(value);
+    final match = RegExp(r'-?\d[\d,]*(?:\.\d+)?|-?\d+(?:[.,]\d+)?').firstMatch(value);
     if (match == null) return '-';
-    final number = double.tryParse(
-      _normalizeUserProfileNumberText(match.group(0) ?? ''),
-    );
+    final number = double.tryParse(_normalizeUserProfileNumberText(match.group(0) ?? ''));
     if (number == null || !number.isFinite) return '-';
     return fmtCompact(number);
   }
 
   String _formatUserProfileInteger(String value) {
-    final match = RegExp(
-      r'-?\d[\d,]*(?:\.\d+)?|-?\d+(?:[.,]\d+)?',
-    ).firstMatch(value);
+    final match = RegExp(r'-?\d[\d,]*(?:\.\d+)?|-?\d+(?:[.,]\d+)?').firstMatch(value);
     if (match == null) return '-';
-    final number = double.tryParse(
-      _normalizeUserProfileNumberText(match.group(0) ?? ''),
-    );
+    final number = double.tryParse(_normalizeUserProfileNumberText(match.group(0) ?? ''));
     if (number == null || !number.isFinite || number < 0) return '-';
     final integer = number.roundToDouble();
     if (number != integer) return '-';
@@ -2962,9 +2590,7 @@ JSON.stringify({
   }
 
   String _formatUserProfileInvitation(String value) {
-    final match = RegExp(
-      r'(\d+)\s*(?:[/（(]\s*(\d+)\s*[）)]?)?',
-    ).firstMatch(value);
+    final match = RegExp(r'(\d+)\s*(?:[/（(]\s*(\d+)\s*[）)]?)?').firstMatch(value);
     if (match == null) return '-';
     final invitation = int.tryParse(match.group(1) ?? '') ?? 0;
     final temporary = int.tryParse(match.group(2) ?? '') ?? 0;
@@ -2978,10 +2604,7 @@ JSON.stringify({
 
     // 使用正则表达式匹配邮箱地址
     // 支持常见的邮箱格式：user@domain.com, user.name+tag@sub.domain.co.uk 等
-    final emailRegex = RegExp(
-      r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
-      caseSensitive: false,
-    );
+    final emailRegex = RegExp(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', caseSensitive: false);
 
     final match = emailRegex.firstMatch(trimmed);
     if (match != null) {
@@ -3001,11 +2624,9 @@ JSON.stringify({
     String? extractedCookie,
   }) async {
     if (!mounted || items.isEmpty) return;
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final siteInfo = _currentSiteInfoForWebsite(website);
-    final hasUid = items.any(
-      (item) => item.key == 'uid' && !_isUserProfilePlaceholder(item.rawValue),
-    );
+    final hasUid = items.any((item) => item.key == 'uid' && !_isUserProfilePlaceholder(item.rawValue));
     final grouped = <String, List<_BrowserUserProfileMetric>>{};
     for (final item in items) {
       grouped.putIfAbsent(item.group, () => []).add(item);
@@ -3027,10 +2648,7 @@ JSON.stringify({
               width: 30,
               height: 30,
               alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
               child: Icon(display.icon, size: 16, color: color),
             ),
             const SizedBox(width: 10),
@@ -3053,12 +2671,7 @@ JSON.stringify({
                     item.value,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: cs.foreground,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      height: 1.2,
-                    ),
+                    style: TextStyle(color: cs.foreground, fontSize: 14, fontWeight: FontWeight.w700, height: 1.2),
                   ),
                 ],
               ),
@@ -3074,31 +2687,21 @@ JSON.stringify({
         children: [
           Text(
             title,
-            style: TextStyle(
-              color: cs.foreground.withValues(alpha: 0.62),
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(color: cs.foreground.withValues(alpha: 0.62), fontSize: 12, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           LayoutBuilder(
             builder: (context, constraints) {
-              final columns = metrics.length > 1 && constraints.maxWidth >= 520
-                  ? 2
-                  : 1;
+              final columns = metrics.length > 1 && constraints.maxWidth >= 520 ? 2 : 1;
               const spacing = 8.0;
-              final width =
-                  (constraints.maxWidth - spacing * (columns - 1)) / columns;
+              final width = (constraints.maxWidth - spacing * (columns - 1)) / columns;
               return Wrap(
                 spacing: spacing,
                 runSpacing: spacing,
                 children: [
                   for (var i = 0; i < metrics.length; i++)
                     SizedBox(
-                      width:
-                          columns == 2 &&
-                              i == metrics.length - 1 &&
-                              metrics.length.isOdd
+                      width: columns == 2 && i == metrics.length - 1 && metrics.length.isOdd
                           ? constraints.maxWidth
                           : width,
                       child: metricTile(context, metrics[i]),
@@ -3113,10 +2716,7 @@ JSON.stringify({
 
     Widget content(BuildContext dialogContext) {
       return ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: 680,
-          maxHeight: MediaQuery.of(dialogContext).size.height * 0.78,
-        ),
+        constraints: BoxConstraints(maxWidth: 680, maxHeight: MediaQuery.of(dialogContext).size.height * 0.78),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -3127,28 +2727,16 @@ JSON.stringify({
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
                 decoration: BoxDecoration(
                   color: cs.destructive.withValues(alpha: 0.10),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: cs.destructive.withValues(alpha: 0.22),
-                    ),
-                  ),
+                  border: Border(bottom: BorderSide(color: cs.destructive.withValues(alpha: 0.22))),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      shadcn.LucideIcons.triangleAlert,
-                      size: 16,
-                      color: cs.destructive,
-                    ),
+                    Icon(LucideIcons.triangleAlert, size: 16, color: cs.destructive),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         '未抓取到 UID',
-                        style: TextStyle(
-                          color: cs.destructive,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: TextStyle(color: cs.destructive, fontSize: 13, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ],
@@ -3166,11 +2754,7 @@ JSON.stringify({
                       color: cs.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
-                      shadcn.LucideIcons.userRound,
-                      size: 20,
-                      color: cs.primary,
-                    ),
+                    child: Icon(LucideIcons.userRound, size: 20, color: cs.primary),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -3179,21 +2763,14 @@ JSON.stringify({
                       children: [
                         Text(
                           '用户页信息',
-                          style: TextStyle(
-                            color: cs.foreground,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
+                          style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: 3),
                         Text(
                           '${items.length} 项 · ${_displayUrl(_currentUrl)}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: cs.foreground.withValues(alpha: 0.52),
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: cs.foreground.withValues(alpha: 0.52), fontSize: 12),
                         ),
                       ],
                     ),
@@ -3209,8 +2786,7 @@ JSON.stringify({
                 children: [
                   for (final entry in grouped.entries) ...[
                     section(entry.key, entry.value),
-                    if (entry.key != grouped.keys.last)
-                      const SizedBox(height: 16),
+                    if (entry.key != grouped.keys.last) const SizedBox(height: 16),
                   ],
                 ],
               ),
@@ -3225,41 +2801,26 @@ JSON.stringify({
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) {
-          final saveButton = shadcn.Button.primary(
+          final saveButton = Button.primary(
             onPressed: saving || !hasUid
                 ? null
                 : () async {
                     setDialogState(() => saving = true);
-                    final ok = await _saveUserProfileToSite(
-                      website,
-                      siteInfo,
-                      items,
-                      extractedCookie: extractedCookie,
-                    );
+                    final ok = await _saveUserProfileToSite(website, siteInfo, items, extractedCookie: extractedCookie);
                     if (!dialogContext.mounted) return;
                     setDialogState(() => saving = false);
                     if (ok) Navigator.of(dialogContext).pop();
                   },
-            child: Text(
-              saving ? '保存中...' : (siteInfo == null ? '添加站点' : '更新站点'),
-            ),
+            child: Text(saving ? '保存中...' : (siteInfo == null ? '添加站点' : '更新站点')),
           );
-          return shadcn.AlertDialog(
+          return AlertDialog(
             content: content(dialogContext),
             actions: [
-              shadcn.Button.outline(
-                onPressed: saving
-                    ? null
-                    : () => Navigator.of(dialogContext).pop(),
+              Button.outline(
+                onPressed: saving ? null : () => Navigator.of(dialogContext).pop(),
                 child: const Text('关闭'),
               ),
-              if (hasUid)
-                saveButton
-              else
-                shadcn.Tooltip(
-                  tooltip: (_) => const Text('未抓取到 UID'),
-                  child: saveButton,
-                ),
+              if (hasUid) saveButton else Tooltip(tooltip: (_) => const Text('未抓取到 UID'), child: saveButton),
             ],
           );
         },
@@ -3269,19 +2830,14 @@ JSON.stringify({
 
   SiteInfo? _currentSiteInfoForWebsite(WebSite website) {
     final sites =
-        ProviderScope.containerOf(
-          context,
-          listen: false,
-        ).read(siteInfoListProvider).value ??
-        const <SiteInfo>[];
+        ProviderScope.containerOf(context, listen: false).read(siteInfoListProvider).value ?? const <SiteInfo>[];
     final configName = website.name.trim().toLowerCase();
     final siteId = widget.siteId?.trim().toLowerCase() ?? '';
     final currentHost = _uriHost(_currentUrl);
 
     for (final site in sites) {
       final siteName = site.site.trim().toLowerCase();
-      if (siteName.isNotEmpty &&
-          (siteName == configName || siteName == siteId)) {
+      if (siteName.isNotEmpty && (siteName == configName || siteName == siteId)) {
         return site;
       }
     }
@@ -3314,10 +2870,7 @@ JSON.stringify({
     }
 
     try {
-      final notifier = ProviderScope.containerOf(
-        context,
-        listen: false,
-      ).read(siteInfoListProvider.notifier);
+      final notifier = ProviderScope.containerOf(context, listen: false).read(siteInfoListProvider.notifier);
 
       // 优先使用提取的 Cookie，如果没有则从浏览器读取
       final cookie = extractedCookie?.trim().isNotEmpty == true
@@ -3329,9 +2882,7 @@ JSON.stringify({
           (siteInfo ??
                   SiteInfo(
                     id: 0,
-                    site: website.name.trim().isNotEmpty
-                        ? website.name.trim()
-                        : (widget.siteId?.trim() ?? ''),
+                    site: website.name.trim().isNotEmpty ? website.name.trim() : (widget.siteId?.trim() ?? ''),
                     nickname: website.nickname.trim(),
                     sortId: 1,
                     tags: website.tagList,
@@ -3352,16 +2903,10 @@ JSON.stringify({
                 username: raw('username') ?? siteInfo?.username,
                 email: raw('email') ?? siteInfo?.email,
                 passkey: raw('passkey') ?? siteInfo?.passkey,
-                timeJoin:
-                    _normalizedUserProfileDateTime(raw('time_join')) ??
-                    siteInfo?.timeJoin,
-                latestActive:
-                    _normalizedUserProfileDateTime(raw('latest_active')) ??
-                    siteInfo?.latestActive,
+                timeJoin: _normalizedUserProfileDateTime(raw('time_join')) ?? siteInfo?.timeJoin,
+                latestActive: _normalizedUserProfileDateTime(raw('latest_active')) ?? siteInfo?.latestActive,
                 cookie: cookie ?? siteInfo?.cookie,
-                localStorage: localStorage == null
-                    ? siteInfo?.localStorage
-                    : _optionalBrowserStorage(localStorage),
+                localStorage: localStorage == null ? siteInfo?.localStorage : _optionalBrowserStorage(localStorage),
               );
 
       if (siteInfo == null) {
@@ -3650,19 +3195,12 @@ JSON.stringify({
         .whereType<Object?>()
         .map((item) {
           if (item is Map) {
-            return _BrowserExtractedTorrent.fromMap(
-              Map<String, dynamic>.from(item),
-            );
+            return _BrowserExtractedTorrent.fromMap(Map<String, dynamic>.from(item));
           }
           return null;
         })
         .whereType<_BrowserExtractedTorrent>()
-        .where(
-          (item) =>
-              item.title.isNotEmpty ||
-              item.detailUrl.isNotEmpty ||
-              item.magnetUrl.isNotEmpty,
-        )
+        .where((item) => item.title.isNotEmpty || item.detailUrl.isNotEmpty || item.magnetUrl.isNotEmpty)
         .toList();
   }
 
@@ -3676,21 +3214,15 @@ JSON.stringify({
       }
     }
     if (data is! Map) return null;
-    final item = _BrowserExtractedTorrent.fromMap(
-      Map<String, dynamic>.from(data),
-    );
-    if (item.title.isEmpty &&
-        item.detailUrl.isEmpty &&
-        item.magnetUrl.isEmpty) {
+    final item = _BrowserExtractedTorrent.fromMap(Map<String, dynamic>.from(data));
+    if (item.title.isEmpty && item.detailUrl.isEmpty && item.magnetUrl.isEmpty) {
       return null;
     }
     return item;
   }
 
-  Future<void> _showExtractedTorrentDialog(
-    List<_BrowserExtractedTorrent> items,
-  ) async {
-    final cs = shadcn.Theme.of(context).colorScheme;
+  Future<void> _showExtractedTorrentDialog(List<_BrowserExtractedTorrent> items) async {
+    final cs = Theme.of(context).colorScheme;
     final selected = <int>{
       for (var i = 0; i < items.length; i += 1)
         if (items[i].hasPushableUrl) i,
@@ -3702,51 +3234,27 @@ JSON.stringify({
     bool sortAscending = false;
     bool panelExpanded = !context.isMobile;
 
-    final saleOptions =
-        items
-            .map((item) => item.sale.trim())
-            .where((item) => item.isNotEmpty)
-            .toSet()
-            .toList()
-          ..sort();
-    final categoryOptions =
-        items
-            .map((item) => item.category.trim())
-            .where((item) => item.isNotEmpty)
-            .toSet()
-            .toList()
-          ..sort();
+    final saleOptions = items.map((item) => item.sale.trim()).where((item) => item.isNotEmpty).toSet().toList()..sort();
+    final categoryOptions = items.map((item) => item.category.trim()).where((item) => item.isNotEmpty).toSet().toList()
+      ..sort();
     final tagOptions =
-        items
-            .expand((item) => item.tags)
-            .map((item) => item.trim())
-            .where((item) => item.isNotEmpty)
-            .toSet()
-            .toList()
+        items.expand((item) => item.tags).map((item) => item.trim()).where((item) => item.isNotEmpty).toSet().toList()
           ..sort();
 
     Widget content(BuildContext dialogContext, StateSetter setDialogState) {
       bool matchesCurrentFilters(_BrowserExtractedTorrent item) {
         final saleOk = saleFilter.isEmpty || item.sale.trim() == saleFilter;
-        final categoryOk =
-            categoryFilter.isEmpty || item.category.trim() == categoryFilter;
-        final tagOk =
-            tagFilters.isEmpty ||
-            item.tags.any((tag) => tagFilters.contains(tag.trim()));
+        final categoryOk = categoryFilter.isEmpty || item.category.trim() == categoryFilter;
+        final tagOk = tagFilters.isEmpty || item.tags.any((tag) => tagFilters.contains(tag.trim()));
         return saleOk && categoryOk && tagOk;
       }
 
       Iterable<MapEntry<int, _BrowserExtractedTorrent>> matchingEntries() {
-        return items.asMap().entries.where(
-          (entry) => matchesCurrentFilters(entry.value),
-        );
+        return items.asMap().entries.where((entry) => matchesCurrentFilters(entry.value));
       }
 
       List<int> matchingPushableKeys() {
-        return matchingEntries()
-            .where((entry) => entry.value.hasPushableUrl)
-            .map((entry) => entry.key)
-            .toList();
+        return matchingEntries().where((entry) => entry.value.hasPushableUrl).map((entry) => entry.key).toList();
       }
 
       final visibleEntries = matchingEntries().toList()
@@ -3754,15 +3262,9 @@ JSON.stringify({
           final left = a.value;
           final right = b.value;
           final result = switch (sortKey) {
-            _BrowserTorrentSortKey.name => left.titleSortValue.compareTo(
-              right.titleSortValue,
-            ),
-            _BrowserTorrentSortKey.seeders => left.seedersValue.compareTo(
-              right.seedersValue,
-            ),
-            _BrowserTorrentSortKey.size => left.sizeBytes.compareTo(
-              right.sizeBytes,
-            ),
+            _BrowserTorrentSortKey.name => left.titleSortValue.compareTo(right.titleSortValue),
+            _BrowserTorrentSortKey.seeders => left.seedersValue.compareTo(right.seedersValue),
+            _BrowserTorrentSortKey.size => left.sizeBytes.compareTo(right.sizeBytes),
           };
           if (result == 0) {
             return left.titleSortValue.compareTo(right.titleSortValue);
@@ -3775,13 +3277,8 @@ JSON.stringify({
           if (items[i].hasPushableUrl) i,
       ];
       final visibleKeys = matchingPushableKeys();
-      final allVisibleSelected =
-          visibleKeys.isNotEmpty &&
-          visibleKeys.every((key) => selected.contains(key));
-      final hasActiveFilter =
-          saleFilter.isNotEmpty ||
-          categoryFilter.isNotEmpty ||
-          tagFilters.isNotEmpty;
+      final allVisibleSelected = visibleKeys.isNotEmpty && visibleKeys.every((key) => selected.contains(key));
+      final hasActiveFilter = saleFilter.isNotEmpty || categoryFilter.isNotEmpty || tagFilters.isNotEmpty;
       selected.removeWhere((index) => !allKeys.contains(index));
 
       void syncSelectionToCurrentFilter() {
@@ -3848,14 +3345,10 @@ JSON.stringify({
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: selectedValue
-                  ? activeColor.withValues(alpha: 0.12)
-                  : cs.muted.withValues(alpha: 0.4),
+              color: selectedValue ? activeColor.withValues(alpha: 0.12) : cs.muted.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                color: selectedValue
-                    ? activeColor.withValues(alpha: 0.32)
-                    : cs.border.withValues(alpha: 0.7),
+                color: selectedValue ? activeColor.withValues(alpha: 0.32) : cs.border.withValues(alpha: 0.7),
               ),
             ),
             child: Text(
@@ -3863,9 +3356,7 @@ JSON.stringify({
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: selectedValue ? FontWeight.w700 : FontWeight.w500,
-                color: selectedValue
-                    ? activeColor
-                    : cs.foreground.withValues(alpha: 0.72),
+                color: selectedValue ? activeColor : cs.foreground.withValues(alpha: 0.72),
               ),
             ),
           ),
@@ -3877,20 +3368,14 @@ JSON.stringify({
           padding: const EdgeInsets.only(bottom: 6),
           child: Text(
             text,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: cs.foreground.withValues(alpha: 0.56),
-            ),
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: cs.foreground.withValues(alpha: 0.56)),
           ),
         );
       }
 
       Color saleColor(String sale) {
         final value = sale.toLowerCase();
-        if (value.contains('免费') ||
-            value.contains('free') ||
-            value.contains('0')) {
+        if (value.contains('免费') || value.contains('free') || value.contains('0')) {
           return const Color(0xFF10B981);
         }
         if (value.contains('2x') || value.contains('双倍')) {
@@ -3933,85 +3418,84 @@ JSON.stringify({
 
       Widget selectionActionButton() {
         return Builder(
-          builder: (menuContext) => shadcn.Button.ghost(
-              onPressed: items.isEmpty
-                  ? null
-                  : () => shadcn.showDropdown<void>(
-                      context: menuContext,
-                      alignment: Alignment.topCenter,
-                      offset: const Offset(0, 8),
-                      widthConstraint: shadcn.PopoverConstraint.intrinsic,
-                      heightConstraint: shadcn.PopoverConstraint.intrinsic,
-                      consumeOutsideTaps: false,
-                      builder: (_) => appMenu(
-                        children: [
-                          const shadcn.MenuLabel(child: Text('批量选择')),
-                          const shadcn.MenuDivider(),
-                          shadcn.MenuButton(
-                            enabled: allKeys.isNotEmpty,
-                            onPressed: (_) {
-                              setDialogState(() {
-                                selectAll();
-                              });
-                            },
-                            child: const Text('全选所有'),
-                          ),
-                          shadcn.MenuButton(
-                            enabled: visibleKeys.isNotEmpty,
-                            onPressed: (_) {
-                              setDialogState(() {
-                                invertVisible();
-                              });
-                            },
-                            child: const Text('反选当前'),
-                          ),
-                          shadcn.MenuButton(
-                            enabled: visibleKeys.isNotEmpty,
-                            onPressed: (_) {
-                              setDialogState(() {
-                                selectVisible();
-                              });
-                            },
-                            child: const Text('选择当前'),
-                          ),
-                          shadcn.MenuButton(
-                            enabled: visibleKeys.isNotEmpty,
-                            onPressed: (_) {
-                              setDialogState(() {
-                                selectOnlyVisible();
-                              });
-                            },
-                            child: const Text('仅选当前'),
-                          ),
-                          shadcn.MenuButton(
-                            enabled:
-                                visibleKeys.isNotEmpty && allVisibleSelected,
-                            onPressed: (_) {
-                              setDialogState(() {
-                                unselectVisible();
-                              });
-                            },
-                            child: const Text('取消当前'),
-                          ),
-                          shadcn.MenuButton(
-                            enabled: selected.isNotEmpty,
-                            onPressed: (_) {
-                              setDialogState(() {
-                                selected.clear();
-                              });
-                            },
-                            child: const Text('清空选择'),
-                          ),
-                        ],
-                      ),
+          builder: (menuContext) => Button.ghost(
+            onPressed: items.isEmpty
+                ? null
+                : () => showDropdown<void>(
+                    context: menuContext,
+                    alignment: Alignment.topCenter,
+                    offset: const Offset(0, 8),
+                    widthConstraint: PopoverConstraint.intrinsic,
+                    heightConstraint: PopoverConstraint.intrinsic,
+                    consumeOutsideTaps: false,
+                    builder: (_) => appMenu(
+                      children: [
+                        const MenuLabel(child: Text('批量选择')),
+                        const MenuDivider(),
+                        MenuButton(
+                          enabled: allKeys.isNotEmpty,
+                          onPressed: (_) {
+                            setDialogState(() {
+                              selectAll();
+                            });
+                          },
+                          child: const Text('全选所有'),
+                        ),
+                        MenuButton(
+                          enabled: visibleKeys.isNotEmpty,
+                          onPressed: (_) {
+                            setDialogState(() {
+                              invertVisible();
+                            });
+                          },
+                          child: const Text('反选当前'),
+                        ),
+                        MenuButton(
+                          enabled: visibleKeys.isNotEmpty,
+                          onPressed: (_) {
+                            setDialogState(() {
+                              selectVisible();
+                            });
+                          },
+                          child: const Text('选择当前'),
+                        ),
+                        MenuButton(
+                          enabled: visibleKeys.isNotEmpty,
+                          onPressed: (_) {
+                            setDialogState(() {
+                              selectOnlyVisible();
+                            });
+                          },
+                          child: const Text('仅选当前'),
+                        ),
+                        MenuButton(
+                          enabled: visibleKeys.isNotEmpty && allVisibleSelected,
+                          onPressed: (_) {
+                            setDialogState(() {
+                              unselectVisible();
+                            });
+                          },
+                          child: const Text('取消当前'),
+                        ),
+                        MenuButton(
+                          enabled: selected.isNotEmpty,
+                          onPressed: (_) {
+                            setDialogState(() {
+                              selected.clear();
+                            });
+                          },
+                          child: const Text('清空选择'),
+                        ),
+                      ],
                     ),
-              child: const Text('选择操作'),
-            ),
+                  ),
+            child: const Text('选择操作'),
+          ),
         );
       }
 
       Widget pushSelectedButton() {
-        return shadcn.Button.outline(
+        return Button.outline(
           onPressed: selected.isEmpty
               ? null
               : () async {
@@ -4025,9 +3509,7 @@ JSON.stringify({
         );
       }
 
-      final dialogHeight =
-          MediaQuery.of(dialogContext).size.height *
-          (dialogContext.isMobile ? 0.86 : 0.78);
+      final dialogHeight = MediaQuery.of(dialogContext).size.height * (dialogContext.isMobile ? 0.86 : 0.78);
       return SizedBox(
         width: dialogContext.isMobile ? double.infinity : 720,
         height: dialogHeight,
@@ -4048,10 +3530,7 @@ JSON.stringify({
                             const SizedBox(height: 4),
                             Text(
                               '共 ${items.length} 条，当前 ${visibleEntries.length} 条，可推送 ${visibleKeys.length} 条，已选 ${selected.length} 条',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: cs.foreground.withValues(alpha: 0.56),
-                              ),
+                              style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.56)),
                             ),
                           ],
                         ),
@@ -4067,55 +3546,34 @@ JSON.stringify({
                   ? Center(
                       child: Text(
                         '没有符合当前筛选条件的种子',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: cs.foreground.withValues(alpha: 0.5),
-                        ),
+                        style: TextStyle(fontSize: 13, color: cs.foreground.withValues(alpha: 0.5)),
                       ),
                     )
                   : ListView.separated(
                       itemCount: visibleEntries.length,
-                      separatorBuilder: (_, _) =>
-                          Divider(height: 1, color: cs.border),
+                      separatorBuilder: (_, _) => Divider(height: 1, color: cs.border),
                       itemBuilder: (itemContext, index) {
                         final entry = visibleEntries[index];
                         final item = entry.value;
                         final itemIndex = entry.key;
                         final isSelected = selected.contains(itemIndex);
                         final compact = dialogContext.isMobile;
-                        Widget metricBadge({
-                          required String text,
-                          IconData? icon,
-                          Color? color,
-                          bool filled = false,
-                        }) {
-                          final accent =
-                              color ?? cs.foreground.withValues(alpha: 0.72);
+                        Widget metricBadge({required String text, IconData? icon, Color? color, bool filled = false}) {
+                          final accent = color ?? cs.foreground.withValues(alpha: 0.72);
                           return Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: compact ? 7 : 8,
-                              vertical: compact ? 3 : 4,
-                            ),
+                            padding: EdgeInsets.symmetric(horizontal: compact ? 7 : 8, vertical: compact ? 3 : 4),
                             decoration: BoxDecoration(
-                              color: filled
-                                  ? accent.withValues(alpha: 0.12)
-                                  : cs.background.withValues(alpha: 0.6),
+                              color: filled ? accent.withValues(alpha: 0.12) : cs.background.withValues(alpha: 0.6),
                               borderRadius: BorderRadius.circular(999),
                               border: Border.all(
-                                color: filled
-                                    ? accent.withValues(alpha: 0.26)
-                                    : cs.border.withValues(alpha: 0.7),
+                                color: filled ? accent.withValues(alpha: 0.26) : cs.border.withValues(alpha: 0.7),
                               ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 if (icon != null) ...[
-                                  Icon(
-                                    icon,
-                                    size: compact ? 10 : 11,
-                                    color: accent,
-                                  ),
+                                  Icon(icon, size: compact ? 10 : 11, color: accent),
                                   const SizedBox(width: 4),
                                 ],
                                 Text(
@@ -4133,35 +3591,32 @@ JSON.stringify({
 
                         final metricBadges = <Widget>[
                           if (item.formattedCategory.isNotEmpty)
-                            metricBadge(
-                              text: item.formattedCategory,
-                              icon: shadcn.LucideIcons.folder,
-                            ),
+                            metricBadge(text: item.formattedCategory, icon: LucideIcons.folder),
                           if (item.displaySize.isNotEmpty)
                             metricBadge(
                               text: item.displaySize,
-                              icon: shadcn.LucideIcons.hardDrive,
+                              icon: LucideIcons.hardDrive,
                               color: const Color(0xFF2563EB),
                               filled: true,
                             ),
                           if (item.seeders.isNotEmpty)
                             metricBadge(
                               text: item.seeders,
-                              icon: shadcn.LucideIcons.arrowUp,
+                              icon: LucideIcons.arrowUp,
                               color: const Color(0xFF10B981),
                               filled: true,
                             ),
                           if (item.leechers.isNotEmpty)
                             metricBadge(
                               text: item.leechers,
-                              icon: shadcn.LucideIcons.arrowDown,
+                              icon: LucideIcons.arrowDown,
                               color: const Color(0xFFF59E0B),
                               filled: true,
                             ),
                           if (item.completers.isNotEmpty)
                             metricBadge(
                               text: item.completers,
-                              icon: shadcn.LucideIcons.badgeCheck,
+                              icon: LucideIcons.badgeCheck,
                               color: const Color(0xFF8B5CF6),
                               filled: true,
                             ),
@@ -4169,22 +3624,13 @@ JSON.stringify({
 
                         final saleBadge = item.sale.isEmpty
                             ? null
-                            : metricBadge(
-                                text: item.sale,
-                                color: saleColor(item.sale),
-                                filled: true,
-                              );
+                            : metricBadge(text: item.sale, color: saleColor(item.sale), filled: true);
 
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 180),
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 6,
-                          ),
+                          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                           decoration: BoxDecoration(
-                            color: isSelected
-                                ? cs.primary.withValues(alpha: 0.08)
-                                : cs.background,
+                            color: isSelected ? cs.primary.withValues(alpha: 0.08) : cs.background,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: isSelected
@@ -4202,22 +3648,20 @@ JSON.stringify({
                                   ]
                                 : null,
                           ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(14),
-                              onTap: item.hasPushableUrl
-                                  ? () {
-                                      setDialogState(() {
-                                        if (isSelected) {
-                                          selected.remove(itemIndex);
-                                        } else {
-                                          selected.add(itemIndex);
-                                        }
-                                      });
-                                    }
-                                  : null,
-                              child: Padding(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: item.hasPushableUrl
+                                ? () {
+                                    setDialogState(() {
+                                      if (isSelected) {
+                                        selected.remove(itemIndex);
+                                      } else {
+                                        selected.add(itemIndex);
+                                      }
+                                    });
+                                  }
+                                : null,
+                            child: Padding(
                                 padding: EdgeInsets.fromLTRB(
                                   compact ? 8 : 10,
                                   compact ? 6 : 7,
@@ -4229,81 +3673,55 @@ JSON.stringify({
                                   children: [
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Expanded(
                                                 child: Text(
-                                                  item.title.isEmpty
-                                                      ? item.primaryUrl
-                                                      : item.title,
+                                                  item.title.isEmpty ? item.primaryUrl : item.title,
                                                   maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                  overflow: TextOverflow.ellipsis,
                                                   style: TextStyle(
-                                                    fontSize: compact
-                                                        ? 12.5
-                                                        : 13.5,
+                                                    fontSize: compact ? 12.5 : 13.5,
                                                     fontWeight: FontWeight.w700,
                                                     color: cs.foreground,
                                                   ),
                                                 ),
                                               ),
-                                              if (saleBadge != null) ...[
-                                                const SizedBox(width: 8),
-                                                saleBadge,
-                                              ],
+                                              if (saleBadge != null) ...[const SizedBox(width: 8), saleBadge],
                                             ],
                                           ),
                                           if (item.subtitle.isNotEmpty)
                                             Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 2,
-                                              ),
+                                              padding: const EdgeInsets.only(top: 2),
                                               child: Text(
                                                 item.subtitle,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
-                                                  fontSize: compact
-                                                      ? 10.5
-                                                      : 11.5,
-                                                  color: cs.foreground
-                                                      .withValues(alpha: 0.68),
+                                                  fontSize: compact ? 10.5 : 11.5,
+                                                  color: cs.foreground.withValues(alpha: 0.68),
                                                 ),
                                               ),
                                             ),
                                           if (metricBadges.isNotEmpty)
                                             Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 6,
-                                              ),
-                                              child: Wrap(
-                                                spacing: 6,
-                                                runSpacing: 6,
-                                                children: metricBadges,
-                                              ),
+                                              padding: const EdgeInsets.only(top: 6),
+                                              child: Wrap(spacing: 6, runSpacing: 6, children: metricBadges),
                                             ),
                                           if (item.tags.isNotEmpty)
                                             Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 6,
-                                              ),
+                                              padding: const EdgeInsets.only(top: 6),
                                               child: Wrap(
                                                 spacing: 6,
                                                 runSpacing: 6,
                                                 children: [
-                                                  for (final tag
-                                                      in item.tags.take(6))
+                                                  for (final tag in item.tags.take(6))
                                                     metricBadge(
                                                       text: tag,
-                                                      color: const Color(
-                                                        0xFF8B5CF6,
-                                                      ),
+                                                      color: const Color(0xFF8B5CF6),
                                                       filled: true,
                                                     ),
                                                 ],
@@ -4313,31 +3731,22 @@ JSON.stringify({
                                       ),
                                     ),
                                     const SizedBox(width: 8),
-                                    shadcn.IconButton.ghost(
-                                      onPressed: item.hasPushableUrl
-                                          ? () => unawaited(pushPicked([item]))
-                                          : null,
-                                      icon: shadcn.Tooltip(
-                                        tooltip: (_) => Text(
-                                          item.hasPushableUrl
-                                              ? '推送此种子'
-                                              : '缺少可用链接',
-                                        ),
+                                    IconButton.ghost(
+                                      onPressed: item.hasPushableUrl ? () => unawaited(pushPicked([item])) : null,
+                                      icon: Tooltip(
+                                        tooltip: (_) => Text(item.hasPushableUrl ? '推送此种子' : '缺少可用链接'),
                                         child: Icon(
-                                          shadcn.LucideIcons.send,
+                                          LucideIcons.send,
                                           size: compact ? 16 : 17,
                                           color: item.hasPushableUrl
                                               ? cs.primary
-                                              : cs.foreground.withValues(
-                                                  alpha: 0.32,
-                                                ),
+                                              : cs.foreground.withValues(alpha: 0.32),
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
                           ),
                         );
                       },
@@ -4347,9 +3756,7 @@ JSON.stringify({
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-              decoration: BoxDecoration(
-                color: cs.muted.withValues(alpha: 0.22),
-              ),
+              decoration: BoxDecoration(color: cs.muted.withValues(alpha: 0.22)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -4357,20 +3764,14 @@ JSON.stringify({
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => setDialogState(
-                            () => panelExpanded = !panelExpanded,
-                          ),
+                          onTap: () => setDialogState(() => panelExpanded = !panelExpanded),
                           behavior: HitTestBehavior.opaque,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 '筛选与排序',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: cs.foreground,
-                                ),
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: cs.foreground),
                               ),
                               if (filterSummary.isNotEmpty)
                                 Padding(
@@ -4379,12 +3780,7 @@ JSON.stringify({
                                     filterSummary,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: cs.foreground.withValues(
-                                        alpha: 0.58,
-                                      ),
-                                    ),
+                                    style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.58)),
                                   ),
                                 ),
                             ],
@@ -4397,21 +3793,14 @@ JSON.stringify({
                       pushSelectedButton(),
                       if (hasActiveFilter) ...[
                         const SizedBox(width: 8),
-                        shadcn.Button.ghost(
-                          onPressed: () => setDialogState(clearFilters),
-                          child: const Text('重置'),
-                        ),
+                        Button.ghost(onPressed: () => setDialogState(clearFilters), child: const Text('重置')),
                       ],
                       const SizedBox(width: 6),
                       GestureDetector(
-                        onTap: () => setDialogState(
-                          () => panelExpanded = !panelExpanded,
-                        ),
+                        onTap: () => setDialogState(() => panelExpanded = !panelExpanded),
                         behavior: HitTestBehavior.opaque,
                         child: Icon(
-                          panelExpanded
-                              ? shadcn.LucideIcons.chevronDown
-                              : shadcn.LucideIcons.chevronUp,
+                          panelExpanded ? LucideIcons.chevronDown : LucideIcons.chevronUp,
                           size: 16,
                           color: cs.foreground.withValues(alpha: 0.72),
                         ),
@@ -4420,11 +3809,7 @@ JSON.stringify({
                   ),
                   if (panelExpanded)
                     ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight:
-                            dialogHeight *
-                            (dialogContext.isMobile ? 0.46 : 0.42),
-                      ),
+                      constraints: BoxConstraints(maxHeight: dialogHeight * (dialogContext.isMobile ? 0.46 : 0.42)),
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.only(top: 12),
                         child: Column(
@@ -4440,9 +3825,7 @@ JSON.stringify({
                                     children: [
                                       filterChip(
                                         label: '名称',
-                                        selectedValue:
-                                            sortKey ==
-                                            _BrowserTorrentSortKey.name,
+                                        selectedValue: sortKey == _BrowserTorrentSortKey.name,
                                         onTap: () => setDialogState(() {
                                           sortKey = _BrowserTorrentSortKey.name;
                                           sortAscending = true;
@@ -4450,20 +3833,15 @@ JSON.stringify({
                                       ),
                                       filterChip(
                                         label: '做种人数',
-                                        selectedValue:
-                                            sortKey ==
-                                            _BrowserTorrentSortKey.seeders,
+                                        selectedValue: sortKey == _BrowserTorrentSortKey.seeders,
                                         onTap: () => setDialogState(() {
-                                          sortKey =
-                                              _BrowserTorrentSortKey.seeders;
+                                          sortKey = _BrowserTorrentSortKey.seeders;
                                           sortAscending = false;
                                         }),
                                       ),
                                       filterChip(
                                         label: '大小',
-                                        selectedValue:
-                                            sortKey ==
-                                            _BrowserTorrentSortKey.size,
+                                        selectedValue: sortKey == _BrowserTorrentSortKey.size,
                                         onTap: () => setDialogState(() {
                                           sortKey = _BrowserTorrentSortKey.size;
                                           sortAscending = false;
@@ -4474,36 +3852,23 @@ JSON.stringify({
                                 ),
                                 const SizedBox(width: 8),
                                 GestureDetector(
-                                  onTap: () => setDialogState(
-                                    () => sortAscending = !sortAscending,
-                                  ),
+                                  onTap: () => setDialogState(() => sortAscending = !sortAscending),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                     decoration: BoxDecoration(
                                       color: cs.background,
                                       borderRadius: BorderRadius.circular(999),
-                                      border: Border.all(
-                                        color: cs.border.withValues(alpha: 0.7),
-                                      ),
+                                      border: Border.all(color: cs.border.withValues(alpha: 0.7)),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(
                                           sortAscending
-                                              ? shadcn
-                                                    .LucideIcons
-                                                    .arrowUpNarrowWide
-                                              : shadcn
-                                                    .LucideIcons
-                                                    .arrowDownWideNarrow,
+                                              ? LucideIcons.arrowUpNarrowWide
+                                              : LucideIcons.arrowDownWideNarrow,
                                           size: 12,
-                                          color: cs.foreground.withValues(
-                                            alpha: 0.72,
-                                          ),
+                                          color: cs.foreground.withValues(alpha: 0.72),
                                         ),
                                         const SizedBox(width: 6),
                                         Text(
@@ -4511,9 +3876,7 @@ JSON.stringify({
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
-                                            color: cs.foreground.withValues(
-                                              alpha: 0.72,
-                                            ),
+                                            color: cs.foreground.withValues(alpha: 0.72),
                                           ),
                                         ),
                                       ],
@@ -4531,20 +3894,14 @@ JSON.stringify({
                                 filterChip(
                                   label: '全部',
                                   selectedValue: saleFilter.isEmpty,
-                                  onTap: () => setDialogState(
-                                    () => updateFilters(() => saleFilter = ''),
-                                  ),
+                                  onTap: () => setDialogState(() => updateFilters(() => saleFilter = '')),
                                 ),
                                 for (final sale in saleOptions)
                                   filterChip(
                                     label: sale,
                                     selectedValue: saleFilter == sale,
                                     onTap: () => setDialogState(
-                                      () => updateFilters(
-                                        () => saleFilter = saleFilter == sale
-                                            ? ''
-                                            : sale,
-                                      ),
+                                      () => updateFilters(() => saleFilter = saleFilter == sale ? '' : sale),
                                     ),
                                     accent: saleColor(sale),
                                   ),
@@ -4560,11 +3917,7 @@ JSON.stringify({
                                   filterChip(
                                     label: '全部',
                                     selectedValue: categoryFilter.isEmpty,
-                                    onTap: () => setDialogState(
-                                      () => updateFilters(
-                                        () => categoryFilter = '',
-                                      ),
-                                    ),
+                                    onTap: () => setDialogState(() => updateFilters(() => categoryFilter = '')),
                                   ),
                                   for (final category in categoryOptions)
                                     filterChip(
@@ -4572,10 +3925,7 @@ JSON.stringify({
                                       selectedValue: categoryFilter == category,
                                       onTap: () => setDialogState(
                                         () => updateFilters(
-                                          () => categoryFilter =
-                                              categoryFilter == category
-                                              ? ''
-                                              : category,
+                                          () => categoryFilter = categoryFilter == category ? '' : category,
                                         ),
                                       ),
                                     ),
@@ -4592,9 +3942,7 @@ JSON.stringify({
                                   filterChip(
                                     label: '全部',
                                     selectedValue: tagFilters.isEmpty,
-                                    onTap: () => setDialogState(
-                                      () => updateFilters(tagFilters.clear),
-                                    ),
+                                    onTap: () => setDialogState(() => updateFilters(tagFilters.clear)),
                                   ),
                                   for (final tag in tagOptions)
                                     filterChip(
@@ -4630,8 +3978,7 @@ JSON.stringify({
         isScrollControlled: true,
         backgroundColor: cs.background,
         builder: (sheetContext) => StatefulBuilder(
-          builder: (sheetContext, setDialogState) =>
-              SafeArea(child: content(sheetContext, setDialogState)),
+          builder: (sheetContext, setDialogState) => SafeArea(child: content(sheetContext, setDialogState)),
         ),
       );
       return;
@@ -4640,25 +3987,20 @@ JSON.stringify({
     await appShowDialog<void>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) =>
-            shadcn.AlertDialog(content: content(dialogContext, setDialogState)),
+        builder: (dialogContext, setDialogState) => AlertDialog(content: content(dialogContext, setDialogState)),
       ),
     );
   }
 
-  Future<void> _showDownloaderSelectAndPush(
-    List<_BrowserExtractedTorrent> torrents,
-  ) async {
+  Future<void> _showDownloaderSelectAndPush(List<_BrowserExtractedTorrent> torrents) async {
     if (!mounted || _closing || torrents.isEmpty) return;
     await showAppSheet<void>(
       context: context,
       title: '选择下载器',
       showDefaultHeader: true,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      constraints: const BoxConstraints(
-        maxWidth: DownloaderSelectSheet.desktopWidth,
-      ),
+      backgroundColor: const Color(0x00000000),
+      constraints: const BoxConstraints(maxWidth: DownloaderSelectSheet.desktopWidth),
       builder: (sheetContext) => DownloaderSelectSheet(
         useDefaultHeader: true,
         onSelected: (downloader) async {
@@ -4685,17 +4027,13 @@ JSON.stringify({
           }
           final cookie = await _cookieHeaderFor(urls.first);
           if (!mounted || _closing) return;
-          final singleTorrent = torrents.length == 1
-              ? _toSearchTorrentInfo(torrents.first, cookie: cookie)
-              : null;
+          final singleTorrent = torrents.length == 1 ? _toSearchTorrentInfo(torrents.first, cookie: cookie) : null;
           if (context.isMobile) {
             await showAppSheet<void>(
               context: context,
               isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              constraints: const BoxConstraints(
-                maxWidth: PushTorrentSheet.desktopWidth,
-              ),
+              backgroundColor: const Color(0x00000000),
+              constraints: const BoxConstraints(maxWidth: PushTorrentSheet.desktopWidth),
               builder: (_) => PushTorrentSheet(
                 downloader: downloader,
                 torrent: singleTorrent,
@@ -4708,7 +4046,7 @@ JSON.stringify({
           } else {
             await appShowDialog<void>(
               context: context,
-              builder: (dialogContext) => shadcn.AlertDialog(
+              builder: (dialogContext) => AlertDialog(
                 content: SizedBox(
                   width: PushTorrentSheet.desktopWidth,
                   height: PushTorrentSheet.desktopHeight,
@@ -4730,35 +4068,23 @@ JSON.stringify({
     );
   }
 
-  SearchTorrentInfo _toSearchTorrentInfo(
-    _BrowserExtractedTorrent item, {
-    String? cookie,
-    String? overrideUrl,
-  }) {
-    final primaryUrl = (overrideUrl?.trim().isNotEmpty == true
-        ? overrideUrl!.trim()
-        : item.primaryUrl.trim());
+  SearchTorrentInfo _toSearchTorrentInfo(_BrowserExtractedTorrent item, {String? cookie, String? overrideUrl}) {
+    final primaryUrl = (overrideUrl?.trim().isNotEmpty == true ? overrideUrl!.trim() : item.primaryUrl.trim());
     final detailUrl = item.detailUrl.trim();
     final siteId = widget.siteId?.trim() ?? '';
     final torrentId = item.id.trim().isNotEmpty
         ? item.id.trim()
-        : _extractTorrentIdFromBrowserUrl(
-            primaryUrl.isNotEmpty ? primaryUrl : detailUrl,
-          );
+        : _extractTorrentIdFromBrowserUrl(primaryUrl.isNotEmpty ? primaryUrl : detailUrl);
     return SearchTorrentInfo(
       siteId: siteId,
       tid: torrentId,
       poster: item.poster,
-      category: item.formattedCategory.isNotEmpty
-          ? item.formattedCategory
-          : item.category,
+      category: item.formattedCategory.isNotEmpty ? item.formattedCategory : item.category,
       magnetUrl: primaryUrl,
       detailUrl: detailUrl,
       title: item.title.isNotEmpty ? item.title : primaryUrl,
       subtitle: item.subtitle,
-      cookie: cookie?.trim().isNotEmpty == true
-          ? cookie!.trim()
-          : widget.cookie,
+      cookie: cookie?.trim().isNotEmpty == true ? cookie!.trim() : widget.cookie,
       saleStatus: item.sale.isNotEmpty ? item.sale : '无优惠',
       saleExpire: item.saleExpire.isEmpty ? null : item.saleExpire,
       tags: item.tags,
@@ -4781,26 +4107,17 @@ JSON.stringify({
     return '';
   }
 
-  Future<SearchTorrentInfo?> _extractInterceptedTorrentInfo(
-    String torrentUrl, {
-    String? cookie,
-  }) async {
+  Future<SearchTorrentInfo?> _extractInterceptedTorrentInfo(String torrentUrl, {String? cookie}) async {
     final controller = _controller;
     if (controller == null || _closing || !mounted) return null;
 
     final detailWebsite = _currentDetailWebsiteConfig();
     if (detailWebsite != null) {
       try {
-        final raw = await controller.evaluateJavascript(
-          source: _buildTorrentDetailExtractScript(detailWebsite),
-        );
+        final raw = await controller.evaluateJavascript(source: _buildTorrentDetailExtractScript(detailWebsite));
         final item = _parseExtractedTorrentDetail(raw);
         if (item != null) {
-          return _toSearchTorrentInfo(
-            item,
-            cookie: cookie,
-            overrideUrl: torrentUrl,
-          );
+          return _toSearchTorrentInfo(item, cookie: cookie, overrideUrl: torrentUrl);
         }
       } catch (e, st) {
         AppLogger.warn('拦截种子下载时解析详情页种子信息失败: $e\n$st');
@@ -4810,17 +4127,11 @@ JSON.stringify({
     final listWebsite = _currentTorrentWebsiteConfig();
     if (listWebsite != null) {
       try {
-        final raw = await controller.evaluateJavascript(
-          source: _buildTorrentExtractScript(listWebsite),
-        );
+        final raw = await controller.evaluateJavascript(source: _buildTorrentExtractScript(listWebsite));
         final items = _parseExtractedTorrents(raw);
         final matched = _matchInterceptedTorrent(items, torrentUrl);
         if (matched != null) {
-          return _toSearchTorrentInfo(
-            matched,
-            cookie: cookie,
-            overrideUrl: torrentUrl,
-          );
+          return _toSearchTorrentInfo(matched, cookie: cookie, overrideUrl: torrentUrl);
         }
       } catch (e, st) {
         AppLogger.warn('拦截种子下载时解析列表页种子信息失败: $e\n$st');
@@ -4830,18 +4141,11 @@ JSON.stringify({
     return null;
   }
 
-  _BrowserExtractedTorrent? _matchInterceptedTorrent(
-    List<_BrowserExtractedTorrent> items,
-    String torrentUrl,
-  ) {
+  _BrowserExtractedTorrent? _matchInterceptedTorrent(List<_BrowserExtractedTorrent> items, String torrentUrl) {
     final targetUrl = _normalizeTorrentCompareUrl(torrentUrl);
     final targetId = _extractTorrentIdFromBrowserUrl(torrentUrl);
     for (final item in items) {
-      final candidates = <String>[
-        item.magnetUrl,
-        item.detailUrl,
-        item.primaryUrl,
-      ];
+      final candidates = <String>[item.magnetUrl, item.detailUrl, item.primaryUrl];
       for (final candidate in candidates) {
         final normalized = _normalizeTorrentCompareUrl(candidate);
         if (normalized.isNotEmpty && normalized == targetUrl) return item;
@@ -4866,9 +4170,7 @@ JSON.stringify({
             normalized == 'auth' ||
             normalized == 'token';
       });
-    return uri
-        .replace(queryParameters: query.isEmpty ? null : query)
-        .toString();
+    return uri.replace(queryParameters: query.isEmpty ? null : query).toString();
   }
 
   String _extractTorrentIdFromBrowserUrl(String value) {
@@ -4891,10 +4193,7 @@ JSON.stringify({
       }
     }
 
-    final match = RegExp(
-      r'([?&](?:tid|id|torrentid|topicid)=)([^&#]+)',
-      caseSensitive: false,
-    ).firstMatch(raw);
+    final match = RegExp(r'([?&](?:tid|id|torrentid|topicid)=)([^&#]+)', caseSensitive: false).firstMatch(raw);
     return match?.group(2)?.trim() ?? '';
   }
 
@@ -4912,9 +4211,7 @@ JSON.stringify({
 
   bool _isLoadedPageUrl(String url) {
     final uri = Uri.tryParse(url.trim());
-    return uri != null &&
-        (uri.scheme == 'http' || uri.scheme == 'https') &&
-        !_isTorrentUrl(url);
+    return uri != null && (uri.scheme == 'http' || uri.scheme == 'https') && !_isTorrentUrl(url);
   }
 
   bool _isTorrentDownloadRequest({
@@ -4945,9 +4242,7 @@ JSON.stringify({
     _torrentSheetOpen = true;
     _activeTorrentUrl = torrentUrl;
     if (mounted) {
-      final restoredUrl = (restoreUrl?.trim().isNotEmpty ?? false)
-          ? restoreUrl!.trim()
-          : _lastLoadedPageUrl.trim();
+      final restoredUrl = (restoreUrl?.trim().isNotEmpty ?? false) ? restoreUrl!.trim() : _lastLoadedPageUrl.trim();
       setState(() {
         if (restoredUrl.isNotEmpty) {
           _currentUrl = restoredUrl;
@@ -4963,10 +4258,8 @@ JSON.stringify({
       title: '选择下载器',
       showDefaultHeader: true,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      constraints: const BoxConstraints(
-        maxWidth: DownloaderSelectSheet.desktopWidth,
-      ),
+      backgroundColor: const Color(0x00000000),
+      constraints: const BoxConstraints(maxWidth: DownloaderSelectSheet.desktopWidth),
       builder: (sheetContext) => DownloaderSelectSheet(
         useDefaultHeader: true,
         onSelected: (downloader) async {
@@ -4976,10 +4269,7 @@ JSON.stringify({
           if (!mounted || _closing) return;
           final cookie = await _cookieHeaderFor(torrentUrl);
           if (!mounted || _closing) return;
-          final torrent = await _extractInterceptedTorrentInfo(
-            torrentUrl,
-            cookie: cookie,
-          );
+          final torrent = await _extractInterceptedTorrentInfo(torrentUrl, cookie: cookie);
           if (!mounted || _closing) return;
           final torrentId = torrent?.tid.trim().isNotEmpty == true
               ? torrent!.tid.trim()
@@ -4988,17 +4278,13 @@ JSON.stringify({
           await showAppSheet<void>(
             context: context,
             isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            constraints: const BoxConstraints(
-              maxWidth: PushTorrentSheet.desktopWidth,
-            ),
+            backgroundColor: const Color(0x00000000),
+            constraints: const BoxConstraints(maxWidth: PushTorrentSheet.desktopWidth),
             builder: (_) => PushTorrentSheet(
               downloader: downloader,
               torrent: torrent,
               initialUrl: torrentUrl,
-              initialIds: torrentId.isEmpty
-                  ? const <String>[]
-                  : <String>[torrentId],
+              initialIds: torrentId.isEmpty ? const <String>[] : <String>[torrentId],
               initialCookie: cookie,
               initialSiteId: widget.siteId,
             ),
@@ -5114,9 +4400,7 @@ JSON.stringify({
       final domainUrl = '${uri.scheme}://${uri.host}';
       AppLogger.info('从 WebView 提取最新 Cookie: $domainUrl');
 
-      final cookies = await CookieManager.instance().getCookies(
-        url: WebUri(domainUrl),
-      );
+      final cookies = await CookieManager.instance().getCookies(url: WebUri(domainUrl));
       AppLogger.info('从 WebView 获取到 ${cookies.length} 个 Cookie');
 
       if (cookies.isEmpty) {
@@ -5168,10 +4452,8 @@ JSON.stringify({
   Future<void> _showSiteTimeline() async {
     if (!mounted) return;
     final container = ProviderScope.containerOf(context, listen: false);
-    final websites =
-        container.read(websiteListProvider).value ?? const <WebSite>[];
-    final mySites =
-        container.read(siteInfoListProvider).value ?? const <SiteInfo>[];
+    final websites = container.read(websiteListProvider).value ?? const <WebSite>[];
+    final mySites = container.read(siteInfoListProvider).value ?? const <SiteInfo>[];
     if (websites.isEmpty) {
       Toast.warning('暂无站点配置');
       return;
@@ -5204,7 +4486,7 @@ JSON.stringify({
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setState) {
-          final cs = shadcn.Theme.of(dialogContext).colorScheme;
+          final cs = Theme.of(dialogContext).colorScheme;
           final ownedEntries = <_SiteTimelineEntry>[];
           final unownedEntries = <_SiteTimelineEntry>[];
           for (final entry in entries) {
@@ -5246,18 +4528,12 @@ JSON.stringify({
             });
           final filteredUnowned = unownedEntries.where(matches).toList()
             ..sort((a, b) => a.displayName.compareTo(b.displayName));
-          final displayList = <_SiteTimelineEntry>[
-            ...filteredOwned,
-            ...filteredUnowned,
-          ];
+          final displayList = <_SiteTimelineEntry>[...filteredOwned, ...filteredUnowned];
 
           Widget fieldLine(String label, String value) {
             return Row(
               children: [
-                Text(
-                  label,
-                  style: TextStyle(fontSize: 11, color: cs.mutedForeground),
-                ),
+                Text(label, style: TextStyle(fontSize: 11, color: cs.mutedForeground)),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -5273,11 +4549,9 @@ JSON.stringify({
           }
 
           Widget openUnownedAction(_SiteTimelineEntry entry) {
-            return shadcn.Button.ghost(
+            return Button.ghost(
               onPressed: () async {
-                final urls = entry.website.url
-                    .where((e) => e.trim().isNotEmpty)
-                    .toList();
+                final urls = entry.website.url.where((e) => e.trim().isNotEmpty).toList();
                 if (urls.isEmpty) {
                   Toast.warning('该站点未配置可用 URL');
                   return;
@@ -5296,7 +4570,7 @@ JSON.stringify({
                 }
                 final selected = await appShowDialog<String>(
                   context: dialogContext,
-                  builder: (ctx) => shadcn.AlertDialog(
+                  builder: (ctx) => AlertDialog(
                     title: const Text('选择站点地址'),
                     content: SizedBox(
                       width: 520,
@@ -5305,24 +4579,19 @@ JSON.stringify({
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             for (final url in urls)
-                              ListTile(
-                                title: Text(
-                                  url,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
                                 onTap: () => Navigator.of(ctx).pop(url),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                                  child: Text(url, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                ),
                               ),
                           ],
                         ),
                       ),
                     ),
-                    actions: [
-                      shadcn.Button.outline(
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        child: const Text('取消'),
-                      ),
-                    ],
+                    actions: [Button.outline(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消'))],
                   ),
                 );
                 if (selected == null || selected.isEmpty) return;
@@ -5340,7 +4609,7 @@ JSON.stringify({
             );
           }
 
-          return shadcn.AlertDialog(
+          return AlertDialog(
             title: const Text('站点时间轴'),
             content: SizedBox(
               width: context.isMobile ? double.infinity : 860,
@@ -5351,15 +4620,12 @@ JSON.stringify({
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      shadcn.Button.secondary(
+                      Button.secondary(
                         onPressed: () => setState(() {
                           ownership = switch (ownership) {
-                            _TimelineOwnership.all =>
-                              _TimelineOwnership.ownedOnly,
-                            _TimelineOwnership.ownedOnly =>
-                              _TimelineOwnership.unownedOnly,
-                            _TimelineOwnership.unownedOnly =>
-                              _TimelineOwnership.all,
+                            _TimelineOwnership.all => _TimelineOwnership.ownedOnly,
+                            _TimelineOwnership.ownedOnly => _TimelineOwnership.unownedOnly,
+                            _TimelineOwnership.unownedOnly => _TimelineOwnership.all,
                           };
                         }),
                         child: Text(switch (ownership) {
@@ -5368,15 +4634,12 @@ JSON.stringify({
                           _TimelineOwnership.unownedOnly => '未拥有站点',
                         }),
                       ),
-                      shadcn.Button.secondary(
+                      Button.secondary(
                         onPressed: () => setState(() {
                           inviteFilter = switch (inviteFilter) {
-                            _TimelineInviteFilter.all =>
-                              _TimelineInviteFilter.has,
-                            _TimelineInviteFilter.has =>
-                              _TimelineInviteFilter.none,
-                            _TimelineInviteFilter.none =>
-                              _TimelineInviteFilter.all,
+                            _TimelineInviteFilter.all => _TimelineInviteFilter.has,
+                            _TimelineInviteFilter.has => _TimelineInviteFilter.none,
+                            _TimelineInviteFilter.none => _TimelineInviteFilter.all,
                           };
                         }),
                         child: Text(switch (inviteFilter) {
@@ -5385,21 +4648,21 @@ JSON.stringify({
                           _TimelineInviteFilter.none => '邀请：无邀请',
                         }),
                       ),
-                      shadcn.Button.secondary(
+                      Button.secondary(
                         onPressed: () => setState(() => ascending = !ascending),
                         child: Text(ascending ? '注册时间正序' : '注册时间倒序'),
                       ),
                       Builder(
-                        builder: (menuContext) => shadcn.Button.ghost(
-                          onPressed: () => shadcn.showDropdown<void>(
+                        builder: (menuContext) => Button.ghost(
+                          onPressed: () => showDropdown<void>(
                             context: menuContext,
                             alignment: Alignment.topCenter,
                             offset: const Offset(0, 8),
                             consumeOutsideTaps: false,
                             builder: (_) => appMenu(
                               children: [
-                                const shadcn.MenuLabel(child: Text('显示字段')),
-                                const shadcn.MenuDivider(),
+                                const MenuLabel(child: Text('显示字段')),
+                                const MenuDivider(),
                                 for (final item in const [
                                   ('duration', '注册时长'),
                                   ('uploaded', '上传量'),
@@ -5409,17 +4672,14 @@ JSON.stringify({
                                   ('email', '邮箱'),
                                   ('uid', 'UID'),
                                 ])
-                                  shadcn.MenuButton(
+                                  MenuButton(
                                     onPressed: (_) => setState(() {
-                                      visibleFields[item.$1] =
-                                          !(visibleFields[item.$1] ?? true);
+                                      visibleFields[item.$1] = !(visibleFields[item.$1] ?? true);
                                     }),
                                     child: Row(
                                       children: [
                                         Icon(
-                                          (visibleFields[item.$1] ?? true)
-                                              ? shadcn.LucideIcons.check
-                                              : shadcn.LucideIcons.minus,
+                                          (visibleFields[item.$1] ?? true) ? LucideIcons.check : LucideIcons.minus,
                                           size: 14,
                                         ),
                                         const SizedBox(width: 8),
@@ -5457,37 +4717,21 @@ JSON.stringify({
                                   Expanded(
                                     child: Text(
                                       entry.displayName,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        color: cs.foreground,
-                                      ),
+                                      style: TextStyle(fontWeight: FontWeight.w700, color: cs.foreground),
                                     ),
                                   ),
-                                  if (!entry.isOwned)
-                                    shadcn.OutlineBadge(
-                                      child: const Text('未添加'),
-                                    ),
-                                  if (!entry.isOwned) ...[
-                                    const SizedBox(width: 8),
-                                    openUnownedAction(entry),
-                                  ],
+                                  if (!entry.isOwned) OutlineBadge(child: const Text('未添加')),
+                                  if (!entry.isOwned) ...[const SizedBox(width: 8), openUnownedAction(entry)],
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              if (visibleFields['duration'] == true)
-                                fieldLine('注册时长', entry.durationText),
-                              if (visibleFields['uploaded'] == true)
-                                fieldLine('上传量', entry.uploadedText),
-                              if (visibleFields['downloaded'] == true)
-                                fieldLine('下载量', entry.downloadedText),
-                              if (visibleFields['invitation'] == true)
-                                fieldLine('邀请数', '${entry.invitationCount}'),
-                              if (visibleFields['username'] == true)
-                                fieldLine('用户名', entry.usernameText),
-                              if (visibleFields['email'] == true)
-                                fieldLine('邮箱', entry.emailText),
-                              if (visibleFields['uid'] == true)
-                                fieldLine('UID', entry.uidText),
+                              if (visibleFields['duration'] == true) fieldLine('注册时长', entry.durationText),
+                              if (visibleFields['uploaded'] == true) fieldLine('上传量', entry.uploadedText),
+                              if (visibleFields['downloaded'] == true) fieldLine('下载量', entry.downloadedText),
+                              if (visibleFields['invitation'] == true) fieldLine('邀请数', '${entry.invitationCount}'),
+                              if (visibleFields['username'] == true) fieldLine('用户名', entry.usernameText),
+                              if (visibleFields['email'] == true) fieldLine('邮箱', entry.emailText),
+                              if (visibleFields['uid'] == true) fieldLine('UID', entry.uidText),
                             ],
                           ),
                         );
@@ -5497,12 +4741,7 @@ JSON.stringify({
                 ],
               ),
             ),
-            actions: [
-              shadcn.Button.outline(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('关闭'),
-              ),
-            ],
+            actions: [Button.outline(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('关闭'))],
           );
         },
       ),
@@ -5517,7 +4756,10 @@ JSON.stringify({
       final rawData = await controller.evaluateJavascript(source: _buildBonusPageExtractScript());
       if (!mounted || _closing) return;
       final parsed = _parseBonusPageData(rawData);
-      if (parsed == null) { Toast.warning('无法识别魔力值兑换页面结构'); return; }
+      if (parsed == null) {
+        Toast.warning('无法识别魔力值兑换页面结构');
+        return;
+      }
       final items = parsed.items;
       var currentBonus = parsed.currentBonus;
       if (website.myBonusRule.trim().isNotEmpty) {
@@ -5526,21 +4768,35 @@ JSON.stringify({
       }
       _bonusCurrent = currentBonus;
       AppLogger.info('魔力值页面提取: bonus=$currentBonus, items=${items.length}');
-      if (items.isEmpty) { Toast.warning('未找到可兑换项目'); return; }
+      if (items.isEmpty) {
+        Toast.warning('未找到可兑换项目');
+        return;
+      }
       final cookie = await _cookieHeaderFor(_currentUrl);
       if (!mounted || _closing) return;
-      final result = await showDialog<_BonusExchangeResult>(
+      final result = await appShowDialog<_BonusExchangeResult>(
         context: context,
-        builder: (_) => _BonusExchangeDialog(items: items, currentBonus: currentBonus,
+        builder: (_) => _BonusExchangeDialog(
+          items: items,
+          currentBonus: currentBonus,
           onExchange: (item, quantity, delaySeconds) async {
             Navigator.pop(context, _BonusExchangeResult(item: item, quantity: quantity, delaySeconds: delaySeconds));
           },
         ),
       );
       if (result != null && mounted && !_closing) {
-        await _executeBonusExchange(website: website, item: result.item, quantity: result.quantity, cookie: cookie, delaySeconds: result.delaySeconds);
+        await _executeBonusExchange(
+          website: website,
+          item: result.item,
+          quantity: result.quantity,
+          cookie: cookie,
+          delaySeconds: result.delaySeconds,
+        );
       }
-    } catch (e, st) { AppLogger.error('提取魔力值页面信息失败', e, st); if (mounted) Toast.error('提取魔力值页面信息失败'); }
+    } catch (e, st) {
+      AppLogger.error('提取魔力值页面信息失败', e, st);
+      if (mounted) Toast.error('提取魔力值页面信息失败');
+    }
   }
 
   String _buildBonusPageExtractScript() {
@@ -5667,54 +4923,114 @@ JSON.stringify({
   _BonusPageData? _parseBonusPageData(Object? raw) {
     if (raw == null) return null;
     String jsonStr;
-    if (raw is String) { jsonStr = raw; } else { jsonStr = raw.toString(); }
-    if (jsonStr.startsWith('"') && jsonStr.endsWith('"')) { try { jsonStr = jsonDecode(jsonStr) as String; } catch (_) {} }
+    if (raw is String) {
+      jsonStr = raw;
+    } else {
+      jsonStr = raw.toString();
+    }
+    if (jsonStr.startsWith('"') && jsonStr.endsWith('"')) {
+      try {
+        jsonStr = jsonDecode(jsonStr) as String;
+      } catch (_) {}
+    }
     try {
       final map = jsonDecode(jsonStr) as Map<String, dynamic>;
       final itemsRaw = map['items'] as List<dynamic>? ?? [];
-      final items = itemsRaw.map((e) {
-        final m = e as Map<String, dynamic>;
-        final hiddenRaw = m['hiddenInputs'] as Map<String, dynamic>? ?? {};
-        return _BonusItem(name: m['name']?.toString() ?? '', cost: (m['cost'] as num?)?.toDouble() ?? 0, optionValue: m['optionValue']?.toString() ?? '', formAction: m['formAction']?.toString() ?? '', disabled: m['disabled'] == true, buttonText: m['buttonText']?.toString() ?? '', hiddenInputs: hiddenRaw.map((k, v) => MapEntry(k.toString(), v.toString())));
-      }).where((i) => i.name.isNotEmpty).toList();
+      final items = itemsRaw
+          .map((e) {
+            final m = e as Map<String, dynamic>;
+            final hiddenRaw = m['hiddenInputs'] as Map<String, dynamic>? ?? {};
+            return _BonusItem(
+              name: m['name']?.toString() ?? '',
+              cost: (m['cost'] as num?)?.toDouble() ?? 0,
+              optionValue: m['optionValue']?.toString() ?? '',
+              formAction: m['formAction']?.toString() ?? '',
+              disabled: m['disabled'] == true,
+              buttonText: m['buttonText']?.toString() ?? '',
+              hiddenInputs: hiddenRaw.map((k, v) => MapEntry(k.toString(), v.toString())),
+            );
+          })
+          .where((i) => i.name.isNotEmpty)
+          .toList();
       return _BonusPageData(currentBonus: (map['currentBonus'] as num?)?.toDouble() ?? 0, items: items);
-    } catch (e) { AppLogger.warn('解析魔力值页面数据失败: $e'); return null; }
+    } catch (e) {
+      AppLogger.warn('解析魔力值页面数据失败: $e');
+      return null;
+    }
   }
 
-  Future<void> _executeBonusExchange({required WebSite website, required _BonusItem item, required int quantity, required String? cookie, required int delaySeconds}) async {
+  Future<void> _executeBonusExchange({
+    required WebSite website,
+    required _BonusItem item,
+    required int quantity,
+    required String? cookie,
+    required int delaySeconds,
+  }) async {
     final controller = _controller;
     if (controller == null || _closing || !mounted) return;
-    setState(() { _bonusExchanging = true; _bonusPaused = false; _bonusCancelled = false; });
+    setState(() {
+      _bonusExchanging = true;
+      _bonusPaused = false;
+      _bonusCancelled = false;
+    });
     try {
-      setState(() { _bonusItemName = item.name; _bonusCurrentIdx = 1; _bonusTotal = quantity; _bonusRemaining = _bonusCurrent; _bonusCountdown = 0; _bonusDelaySeconds = delaySeconds; });
+      setState(() {
+        _bonusItemName = item.name;
+        _bonusCurrentIdx = 1;
+        _bonusTotal = quantity;
+        _bonusRemaining = _bonusCurrent;
+        _bonusCountdown = 0;
+        _bonusDelaySeconds = delaySeconds;
+      });
       for (var i = 0; i < quantity; i++) {
         if (!mounted || _closing || _bonusCancelled) break;
-        while (_bonusPaused && mounted && !_closing && !_bonusCancelled) { await Future.delayed(const Duration(milliseconds: 300)); }
+        while (_bonusPaused && mounted && !_closing && !_bonusCancelled) {
+          await Future.delayed(const Duration(milliseconds: 300));
+        }
         if (_bonusCancelled) break;
-        setState(() { _bonusCurrentIdx = i + 1; _bonusCountdown = 0; });
+        setState(() {
+          _bonusCurrentIdx = i + 1;
+          _bonusCountdown = 0;
+        });
         final result = await controller.evaluateJavascript(source: _buildBonusSubmitScript(item, i + 1));
         final resultStr = result?.toString() ?? '';
         AppLogger.info('魔力值兑换 [$i/$quantity]: $resultStr');
-        if (resultStr.contains('error') || resultStr.contains('fail')) { if (mounted) Toast.warning('第 ${i + 1} 次兑换可能失败'); break; }
+        if (resultStr.contains('error') || resultStr.contains('fail')) {
+          if (mounted) Toast.warning('第 ${i + 1} 次兑换可能失败');
+          break;
+        }
         final afterBonus = _bonusCurrent - item.cost * (i + 1);
         setState(() => _bonusRemaining = afterBonus > 0 ? afterBonus : 0);
-        if (afterBonus < item.cost) { if (mounted) Toast.info('魔力值不足，停止兑换'); break; }
+        if (afterBonus < item.cost) {
+          if (mounted) Toast.info('魔力值不足，停止兑换');
+          break;
+        }
         await Future.delayed(const Duration(milliseconds: 1000));
         if (!mounted || _closing || _bonusCancelled) break;
         if (i < quantity - 1) {
           for (var d = delaySeconds; d > 0; d--) {
             if (!mounted || _closing || _bonusCancelled) break;
-            while (_bonusPaused && mounted && !_closing && !_bonusCancelled) { setState(() => _bonusCountdown = d); await Future.delayed(const Duration(milliseconds: 300)); }
+            while (_bonusPaused && mounted && !_closing && !_bonusCancelled) {
+              setState(() => _bonusCountdown = d);
+              await Future.delayed(const Duration(milliseconds: 300));
+            }
             if (_bonusCancelled) break;
             setState(() => _bonusCountdown = d);
             await Future.delayed(const Duration(seconds: 1));
           }
         }
       }
-    } catch (e, st) { AppLogger.error('执行魔力值兑换失败', e, st); if (mounted) Toast.error('兑换失败'); }
-    finally {
+    } catch (e, st) {
+      AppLogger.error('执行魔力值兑换失败', e, st);
+      if (mounted) Toast.error('兑换失败');
+    } finally {
       if (mounted) {
-        setState(() { _bonusExchanging = false; _bonusPaused = false; _bonusCancelled = false; _bonusCountdown = 0; });
+        setState(() {
+          _bonusExchanging = false;
+          _bonusPaused = false;
+          _bonusCancelled = false;
+          _bonusCountdown = 0;
+        });
         _controller?.reload().then((_) async {
           if (!mounted || _closing) return;
           final ws = _websiteConfigForCurrentSite();
@@ -5729,7 +5045,9 @@ JSON.stringify({
 
   String _buildBonusSubmitScript(_BonusItem item, int index) {
     final formAction = item.formAction.isNotEmpty ? item.formAction : '?action=exchange';
-    final allInputs = <String, String>{}..addAll(item.hiddenInputs)..['option'] = item.optionValue;
+    final allInputs = <String, String>{}
+      ..addAll(item.hiddenInputs)
+      ..['option'] = item.optionValue;
     final inputsJson = jsonEncode(allInputs);
     return '''
 (() => {
@@ -5827,7 +5145,9 @@ JSON.stringify({
     if (controller == null || rule.isEmpty) return 0;
     try {
       final escaped = jsonEncode(rule);
-      final raw = await controller.evaluateJavascript(source: '''
+      final raw = await controller.evaluateJavascript(
+        source:
+            '''
 (() => {
   try {
     const rule = $escaped;
@@ -5840,39 +5160,117 @@ JSON.stringify({
     return m ? m[1] : '';
   } catch (_) { return ''; }
 })();
-''');
+''',
+      );
       final str = raw?.toString().replaceAll('"', '').trim() ?? '';
-      if (str.isNotEmpty) { final v = double.tryParse(str); if (v != null && v > 0) return v; }
+      if (str.isNotEmpty) {
+        final v = double.tryParse(str);
+        if (v != null && v > 0) return v;
+      }
     } catch (_) {}
     return 0;
   }
 
-  Widget _buildBonusFlutterOverlay(shadcn.ColorScheme cs) {
+  Widget _buildBonusFlutterOverlay(ColorScheme cs) {
     final progress = _bonusTotal > 0 ? (_bonusCurrentIdx / _bonusTotal * 100).toInt() : 0;
     return Container(
-      width: 200, padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(color: Colors.black.withOpacity(0.88), borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 12)]),
-      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          shadcn.Icon(_bonusPaused ? shadcn.LucideIcons.pause : shadcn.LucideIcons.play, size: 14, color: _bonusPaused ? Colors.redAccent : const Color(0xFF10B981)),
-          const SizedBox(width: 4),
-          Expanded(child: Text(_bonusItemName, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis)),
-          Text('$_bonusCurrentIdx/$_bonusTotal', style: const TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.w600)),
-        ]),
-        const SizedBox(height: 6),
-        shadcn.LinearProgressIndicator(value: progress / 100.0, minHeight: 4, backgroundColor: Colors.white.withOpacity(0.15), color: const Color(0xFFF59E0B)),
-        const SizedBox(height: 6),
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text('剩余魔力 ${fmtCompact(_bonusRemaining)}', style: const TextStyle(color: Color(0xFF10B981), fontSize: 10)),
-          if (_bonusCountdown > 0) Text('⏱ ${_bonusCountdown}s', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 10)),
-        ]),
-        const SizedBox(height: 8),
-        Row(children: [
-          Expanded(child: GestureDetector(onTap: () => setState(() => _bonusPaused = !_bonusPaused), child: Container(padding: const EdgeInsets.symmetric(vertical: 6), decoration: BoxDecoration(color: _bonusPaused ? const Color(0xFF10B981) : const Color(0xFFF59E0B), borderRadius: BorderRadius.circular(6)), child: Center(child: Text(_bonusPaused ? '▶ 继续' : '⏸ 暂停', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))))),
-          const SizedBox(width: 6),
-          Expanded(child: GestureDetector(onTap: () => setState(() => _bonusCancelled = true), child: Container(padding: const EdgeInsets.symmetric(vertical: 6), decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(6)), child: const Center(child: Text('⏹ 停止', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))))),
-        ]),
-      ]),
+      width: 200,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Color(0xFF000000).withOpacity(0.88),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Color(0xFF000000).withOpacity(0.3), blurRadius: 12)],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                _bonusPaused ? LucideIcons.pause : LucideIcons.play,
+                size: 14,
+                color: _bonusPaused ? Color(0xFFEF4444) : const Color(0xFF10B981),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  _bonusItemName,
+                  style: const TextStyle(color: const Color(0xFFFFFFFF), fontSize: 11, fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text(
+                '$_bonusCurrentIdx/$_bonusTotal',
+                style: const TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          LinearProgressIndicator(
+            value: progress / 100.0,
+            minHeight: 4,
+            backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.15),
+            color: const Color(0xFFF59E0B),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '剩余魔力 ${fmtCompact(_bonusRemaining)}',
+                style: const TextStyle(color: Color(0xFF10B981), fontSize: 10),
+              ),
+              if (_bonusCountdown > 0)
+                Text('⏱ ${_bonusCountdown}s', style: const TextStyle(color: Color(0xFFF59E0B), fontSize: 10)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _bonusPaused = !_bonusPaused),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _bonusPaused ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Center(
+                      child: Text(
+                        _bonusPaused ? '▶ 继续' : '⏸ 暂停',
+                        style: const TextStyle(
+                          color: const Color(0xFFFFFFFF),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _bonusCancelled = true),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    decoration: BoxDecoration(color: Color(0xFFEF4444), borderRadius: BorderRadius.circular(6)),
+                    child: const Center(
+                      child: Text(
+                        '⏹ 停止',
+                        style: TextStyle(color: const Color(0xFFFFFFFF), fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -5913,21 +5311,15 @@ class _SiteTimelineEntry {
 
   int get invitationCount => mySite?.latestStatus?.invitation ?? 0;
 
-  String get uploadedText =>
-      uploadedBytes > 0 ? formatBytes(uploadedBytes) : '-';
+  String get uploadedText => uploadedBytes > 0 ? formatBytes(uploadedBytes) : '-';
 
-  String get downloadedText =>
-      downloadedBytes > 0 ? formatBytes(downloadedBytes) : '-';
+  String get downloadedText => downloadedBytes > 0 ? formatBytes(downloadedBytes) : '-';
 
-  String get usernameText => mySite?.username?.trim().isNotEmpty == true
-      ? mySite!.username!.trim()
-      : '-';
+  String get usernameText => mySite?.username?.trim().isNotEmpty == true ? mySite!.username!.trim() : '-';
 
-  String get emailText =>
-      mySite?.email?.trim().isNotEmpty == true ? mySite!.email!.trim() : '-';
+  String get emailText => mySite?.email?.trim().isNotEmpty == true ? mySite!.email!.trim() : '-';
 
-  String get uidText =>
-      mySite?.userId?.trim().isNotEmpty == true ? mySite!.userId!.trim() : '-';
+  String get uidText => mySite?.userId?.trim().isNotEmpty == true ? mySite!.userId!.trim() : '-';
 }
 
 class _UserAgentPreset {
@@ -5936,12 +5328,7 @@ class _UserAgentPreset {
   final String description;
   final String? userAgent;
 
-  const _UserAgentPreset({
-    required this.id,
-    required this.label,
-    required this.description,
-    required this.userAgent,
-  });
+  const _UserAgentPreset({required this.id, required this.label, required this.description, required this.userAgent});
 }
 
 class _BrowserUserProfileRule {
@@ -6026,11 +5413,9 @@ class _BrowserExtractedTorrent {
 
   String get primaryUrl => magnetUrl.isNotEmpty ? magnetUrl : detailUrl;
 
-  bool get hasPushableUrl =>
-      primaryUrl.trim().isNotEmpty || detailUrl.trim().isNotEmpty;
+  bool get hasPushableUrl => primaryUrl.trim().isNotEmpty || detailUrl.trim().isNotEmpty;
 
-  String get titleSortValue =>
-      (title.isNotEmpty ? title : primaryUrl).toLowerCase();
+  String get titleSortValue => (title.isNotEmpty ? title : primaryUrl).toLowerCase();
 
   int get seedersValue => _parseCompactInt(seeders);
 
@@ -6043,10 +5428,7 @@ class _BrowserExtractedTorrent {
   factory _BrowserExtractedTorrent.fromMap(Map<String, dynamic> map) {
     List<String> parseTags(dynamic value) {
       if (value is Iterable) {
-        return value
-            .map((item) => item?.toString().trim() ?? '')
-            .where((item) => item.isNotEmpty)
-            .toList();
+        return value.map((item) => item?.toString().trim() ?? '').where((item) => item.isNotEmpty).toList();
       }
       final text = value?.toString().trim() ?? '';
       return text.isEmpty ? const [] : <String>[text];
@@ -6055,9 +5437,7 @@ class _BrowserExtractedTorrent {
     String text(dynamic value) => value?.toString().trim() ?? '';
 
     return _BrowserExtractedTorrent(
-      id: text(
-        map['id'] ?? map['tid'] ?? map['torrentId'] ?? map['torrent_id'],
-      ),
+      id: text(map['id'] ?? map['tid'] ?? map['torrentId'] ?? map['torrent_id']),
       title: text(map['title']),
       subtitle: text(map['subtitle']),
       detailUrl: text(map['detailUrl']),
@@ -6133,10 +5513,7 @@ class _BrowserExtractedTorrent {
     if (text.isEmpty) return bytes > 0 ? formatBytes(bytes) : '';
     if (RegExp(r'[a-zA-Z\u4e00-\u9fa5]').hasMatch(text)) {
       return text.replaceAll(RegExp(r'\s+'), ' ').replaceAllMapped(
-        RegExp(
-          r'([0-9]+(?:\.[0-9]+)?)\s*([kmgtpe]?i?b?|bytes?)',
-          caseSensitive: false,
-        ),
+        RegExp(r'([0-9]+(?:\.[0-9]+)?)\s*([kmgtpe]?i?b?|bytes?)', caseSensitive: false),
         (match) {
           final number = match.group(1) ?? '';
           var unit = (match.group(2) ?? '').toUpperCase();
@@ -6158,12 +5535,22 @@ class _BonusItem {
   final bool disabled;
   final String buttonText;
   final Map<String, String> hiddenInputs;
-  const _BonusItem({required this.name, required this.cost, required this.optionValue, required this.formAction, required this.disabled, required this.buttonText, required this.hiddenInputs});
+
+  const _BonusItem({
+    required this.name,
+    required this.cost,
+    required this.optionValue,
+    required this.formAction,
+    required this.disabled,
+    required this.buttonText,
+    required this.hiddenInputs,
+  });
 }
 
 class _BonusPageData {
   final double currentBonus;
   final List<_BonusItem> items;
+
   const _BonusPageData({required this.currentBonus, required this.items});
 }
 
@@ -6171,6 +5558,7 @@ class _BonusExchangeResult {
   final _BonusItem item;
   final int quantity;
   final int delaySeconds;
+
   const _BonusExchangeResult({required this.item, required this.quantity, required this.delaySeconds});
 }
 
@@ -6178,7 +5566,9 @@ class _BonusExchangeDialog extends StatefulWidget {
   final List<_BonusItem> items;
   final double currentBonus;
   final Future<void> Function(_BonusItem item, int quantity, int delaySeconds) onExchange;
+
   const _BonusExchangeDialog({required this.items, required this.currentBonus, required this.onExchange});
+
   @override
   State<_BonusExchangeDialog> createState() => _BonusExchangeDialogState();
 }
@@ -6187,6 +5577,7 @@ class _BonusExchangeDialogState extends State<_BonusExchangeDialog> {
   int _selectedIndex = 0;
   final TextEditingController _qtyController = TextEditingController(text: '1');
   final TextEditingController _delayController = TextEditingController(text: '12');
+
   List<_BonusItem> get _exchangeable => widget.items.where((i) => !i.disabled).toList();
 
   @override
@@ -6197,97 +5588,217 @@ class _BonusExchangeDialogState extends State<_BonusExchangeDialog> {
       if (_selectedIndex < 0) _selectedIndex = 0;
     }
   }
+
   @override
-  void dispose() { _qtyController.dispose(); _delayController.dispose(); super.dispose(); }
+  void dispose() {
+    _qtyController.dispose();
+    _delayController.dispose();
+    super.dispose();
+  }
+
   int _maxQty(_BonusItem item) => item.cost <= 0 ? 0 : (widget.currentBonus / item.cost).floor();
+
   int _parseQty() => int.tryParse(_qtyController.text.trim()) ?? 0;
-  void _changeQty(int delta) { final cur = int.tryParse(_qtyController.text.trim()) ?? 0; final max = _exchangeable.isNotEmpty ? _maxQty(_exchangeable[_selectedIndex]) : 0; _qtyController.text = (cur + delta).clamp(1, max > 0 ? max : 1).toString(); setState(() {}); }
+
+  void _changeQty(int delta) {
+    final cur = int.tryParse(_qtyController.text.trim()) ?? 0;
+    final max = _exchangeable.isNotEmpty ? _maxQty(_exchangeable[_selectedIndex]) : 0;
+    _qtyController.text = (cur + delta).clamp(1, max > 0 ? max : 1).toString();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final exchangeable = _exchangeable;
     if (exchangeable.isEmpty) {
-      return Dialog(child: Container(width: 480, padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Text('没有可兑换的项目', style: TextStyle(color: cs.foreground)),
-        const SizedBox(height: 16),
-        shadcn.Button.secondary(onPressed: () => Navigator.pop(context), child: const Text('关闭')),
-      ])));
+      return Container(
+        width: 480,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('没有可兑换的项目', style: TextStyle(color: cs.foreground)),
+            const SizedBox(height: 16),
+            Button.secondary(onPressed: () => Navigator.pop(context), child: const Text('关闭')),
+          ],
+        ),
+      );
     }
     final si = _selectedIndex.clamp(0, exchangeable.length - 1);
     if (_selectedIndex != si) _selectedIndex = si;
     final item = exchangeable[_selectedIndex];
     final max = _maxQty(item);
-    return Dialog(
-      child: Container(
-        width: 480,
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      width: 480,
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              shadcn.Icon(shadcn.LucideIcons.gem, size: 18, color: const Color(0xFFF59E0B)),
-              const SizedBox(width: 8),
-              Text('魔力值兑换', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: cs.foreground)),
-              const Spacer(),
-              Text('当前: ${fmtCompact(widget.currentBonus)}', style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.5))),
-            ]),
+            Row(
+              children: [
+                Icon(LucideIcons.gem, size: 18, color: const Color(0xFFF59E0B)),
+                const SizedBox(width: 8),
+                Text(
+                  '魔力值兑换',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: cs.foreground),
+                ),
+                const Spacer(),
+                Text(
+                  '当前: ${fmtCompact(widget.currentBonus)}',
+                  style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.5)),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
-            Flexible(child: ListView.separated(
-              shrinkWrap: true, itemCount: exchangeable.length, separatorBuilder: (_, _) => const SizedBox(height: 3),
-              itemBuilder: (_, index) {
-                final it = exchangeable[index]; final sel = index == _selectedIndex; final mq = _maxQty(it);
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedIndex = index),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: sel ? cs.primary.withValues(alpha: 0.12) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: sel ? cs.primary : cs.border, width: sel ? 1.5 : 1),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: exchangeable.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 3),
+                itemBuilder: (_, index) {
+                  final it = exchangeable[index];
+                  final sel = index == _selectedIndex;
+                  final mq = _maxQty(it);
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedIndex = index),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: sel ? cs.primary.withValues(alpha: 0.12) : const Color(0x00000000),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: sel ? cs.primary : cs.border, width: sel ? 1.5 : 1),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  it.name,
+                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: cs.foreground),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '魔力 ${fmtCompact(it.cost)} / 次',
+                                  style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.5)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            mq > 0 ? 'x$mq' : '不足',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: mq > 0 ? const Color(0xFF10B981) : cs.foreground.withValues(alpha: 0.3),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Row(children: [
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(it.name, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: cs.foreground)),
-                        const SizedBox(height: 2),
-                        Text('魔力 ${fmtCompact(it.cost)} / 次', style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.5))),
-                      ])),
-                      Text(mq > 0 ? 'x$mq' : '不足', style: TextStyle(fontSize: 11, color: mq > 0 ? const Color(0xFF10B981) : cs.foreground.withValues(alpha: 0.3))),
-                    ]),
-                  ),
-                );
-              },
-            )),
-            const SizedBox(height: 10),
-            Row(children: [
-              Text('数量:', style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.6))),
-              const SizedBox(width: 6),
-              GestureDetector(onTap: () => _changeQty(-1), child: Container(width: 28, height: 28, decoration: BoxDecoration(border: Border.all(color: cs.border), borderRadius: BorderRadius.circular(4)), child: shadcn.Icon(shadcn.LucideIcons.minus, size: 14, color: cs.foreground.withValues(alpha: 0.6)))),
-              const SizedBox(width: 4),
-              SizedBox(width: 48, height: 28, child: TextField(controller: _qtyController, keyboardType: TextInputType.number, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: cs.foreground), decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2), border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: cs.border))), onChanged: (_) => setState(() {}))),
-              const SizedBox(width: 4),
-              GestureDetector(onTap: () => _changeQty(1), child: Container(width: 28, height: 28, decoration: BoxDecoration(border: Border.all(color: cs.border), borderRadius: BorderRadius.circular(4)), child: shadcn.Icon(shadcn.LucideIcons.plus, size: 14, color: cs.foreground.withValues(alpha: 0.6)))),
-              const SizedBox(width: 6),
-              GestureDetector(onTap: () { _qtyController.text = max.toString(); setState(() {}); }, child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: cs.primary.withOpacity(0.15), borderRadius: BorderRadius.circular(4)), child: Text('MAX', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.primary)))),
-              const Spacer(),
-              Text('间隔:', style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.5))),
-              const SizedBox(width: 4),
-              SizedBox(width: 40, height: 28, child: TextField(controller: _delayController, keyboardType: TextInputType.number, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: cs.foreground), decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2), border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: cs.border))))),
-              Text('s', style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.4))),
-            ]),
-            const SizedBox(height: 10),
-            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-              shadcn.Button.secondary(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-              const SizedBox(width: 8),
-              shadcn.Button.primary(
-                onPressed: max > 0 && _parseQty() > 0 ? () { final qty = _parseQty(); if (qty > 0) { final d = (int.tryParse(_delayController.text.trim()) ?? 12).clamp(12, 120); Navigator.pop(context, _BonusExchangeResult(item: item, quantity: qty, delaySeconds: d)); } } : null,
-                child: const Text('兑换'),
+                  );
+                },
               ),
-            ]),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Text('数量:', style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.6))),
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () => _changeQty(-1),
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: cs.border),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Icon(LucideIcons.minus, size: 14, color: cs.foreground.withValues(alpha: 0.6)),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 48,
+                  height: 28,
+                  child: ShadTextField(
+                    controller: _qtyController,
+                    keyboardType: TextInputType.number,                    style: TextStyle(fontSize: 12, color: cs.foreground),
+                    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: () => _changeQty(1),
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: cs.border),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Icon(LucideIcons.plus, size: 14, color: cs.foreground.withValues(alpha: 0.6)),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () {
+                    _qtyController.text = max.toString();
+                    setState(() {});
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: cs.primary.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'MAX',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cs.primary),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text('间隔:', style: TextStyle(fontSize: 12, color: cs.foreground.withValues(alpha: 0.5))),
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 40,
+                  height: 28,
+                  child: ShadTextField(
+                    controller: _delayController,
+                    keyboardType: TextInputType.number,                    style: TextStyle(fontSize: 12, color: cs.foreground),
+                    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                  ),
+                ),
+                Text('s', style: TextStyle(fontSize: 11, color: cs.foreground.withValues(alpha: 0.4))),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Button.secondary(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+                const SizedBox(width: 8),
+                Button.primary(
+                  onPressed: max > 0 && _parseQty() > 0
+                      ? () {
+                          final qty = _parseQty();
+                          if (qty > 0) {
+                            final d = (int.tryParse(_delayController.text.trim()) ?? 12).clamp(12, 120);
+                            Navigator.pop(context, _BonusExchangeResult(item: item, quantity: qty, delaySeconds: d));
+                          }
+                        }
+                      : null,
+                  child: const Text('兑换'),
+                ),
+              ],
+            ),
           ],
         ),
-      ),
     );
   }
 }
