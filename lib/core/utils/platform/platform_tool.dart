@@ -1,7 +1,7 @@
+import 'package:flutter/widgets.dart';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 
 class PlatformTool {
   static Never exitProcess([int code = 0]) {

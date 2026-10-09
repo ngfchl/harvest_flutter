@@ -3,11 +3,11 @@ import 'dart:ui' as ui;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app.dart';
@@ -72,7 +72,7 @@ Future<void> _startApp() async {
   if (PlatformTool.isAndroid() || PlatformTool.isIOS()) {
     AppLogger.debug("============处理状态栏背景颜色透明问题===========");
     SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+      const SystemUiOverlayStyle(statusBarColor: Color(0x00000000)),
     );
     AppLogger.debug("============处理状态栏背景颜色透明问题完成===========");
     AppLogger.debug("============设置SystemUiMode为edgeToEdge===========");
@@ -109,7 +109,7 @@ Future<void> _startApp() async {
         size: Size(width, height),
         center: true,
         minimumSize: const Size(360, 400),
-        backgroundColor: isWindows ? Colors.white : Colors.transparent,
+        backgroundColor: isWindows ? const Color(0xFFFFFFFF) : Color(0x00000000),
         title: 'Harvest',
         titleBarStyle: TitleBarStyle.hidden,
         windowButtonVisibility: false,
@@ -207,7 +207,7 @@ Future<void> _showStartupFailure(Object error) async {
         size: Size(520, 320),
         center: true,
         minimumSize: Size(420, 260),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFFFFFFF),
         title: 'Harvest',
       );
       await windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -236,18 +236,16 @@ class _StartupFailureApp extends StatelessWidget {
         ? '本地数据文件正在被另一个 Harvest 进程占用。请关闭已经打开的 Harvest 窗口，或在活动监视器中结束残留的 harvest 进程后再启动。'
         : '本地存储初始化失败，请查看日志中的详细错误信息。';
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
-        body: Center(
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 520),
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFFFFFFFF),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                   boxShadow: const [
@@ -282,8 +280,10 @@ class _StartupFailureApp extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      SelectableText(
+                      Text(
                         error.toString(),
+                        maxLines: 6,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 12,
                           height: 1.4,
@@ -294,7 +294,7 @@ class _StartupFailureApp extends StatelessWidget {
                         const SizedBox(height: 20),
                         Align(
                           alignment: Alignment.centerRight,
-                          child: FilledButton(
+                          child: PrimaryButton(
                             onPressed: () => PlatformTool.exitProcess(0),
                             child: const Text('退出'),
                           ),
@@ -307,7 +307,6 @@ class _StartupFailureApp extends StatelessWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }

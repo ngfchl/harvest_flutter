@@ -1,5 +1,5 @@
+import 'package:flutter/widgets.dart';
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/material.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 ClassicHeader appRefreshHeader(

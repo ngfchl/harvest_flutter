@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 Color appSurfaceColor(BuildContext context, Color color) => color;
 
 Color appSurfaceBorderColor(BuildContext context, [double alpha = 0.62]) =>
-    shadcn.Theme.of(context).colorScheme.border.withValues(alpha: alpha);
+    Theme.of(context).colorScheme.border.withValues(alpha: alpha);
 
 class AppSurfaceContainer extends StatelessWidget {
   final Widget child;
@@ -36,26 +35,20 @@ class AppSurfaceContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final radius = borderRadius ?? theme.borderRadiusMd;
     Widget content = DecoratedBox(
       decoration: BoxDecoration(
         color: color ?? appSurfaceColor(context, cs.card),
         borderRadius: radius,
-        border: Border.all(
-          color: borderColor ?? appSurfaceBorderColor(context),
-          width: borderWidth,
-        ),
+        border: Border.all(color: borderColor ?? appSurfaceBorderColor(context), width: borderWidth),
       ),
       child: padding == null ? child : Padding(padding: padding!, child: child),
     );
 
     if (clip) {
-      content = ClipRRect(
-        borderRadius: radius.resolve(Directionality.of(context)),
-        child: content,
-      );
+      content = ClipRRect(borderRadius: radius.resolve(Directionality.of(context)), child: content);
     }
 
     if (width != null || height != null) {
@@ -90,7 +83,7 @@ class AppSurfaceCard extends StatelessWidget {
     return AppSurfaceContainer(
       margin: margin,
       padding: padding,
-      borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+      borderRadius: Theme.of(context).borderRadiusMd,
       color: color,
       borderColor: borderColor,
       child: child,
@@ -105,7 +98,7 @@ class AppBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return ColoredBox(color: cs.background, child: child);
   }
 }

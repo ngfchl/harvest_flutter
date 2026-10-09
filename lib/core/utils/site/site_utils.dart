@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import '../formatters/date_time_formatter.dart';
 import '../formatters/file_size_formatter.dart';
@@ -56,5 +56,5 @@ Color levelColor(String l) => switch (l) {
   'EliteUser' => Color(0xFF008B8B),
   'PowerUser' => Color(0xFFDAA520),
   'Peasant' => Color(0xFF708090),
-  _ => Colors.grey,
+  _ => const Color(0xFF9E9E9E),
 };

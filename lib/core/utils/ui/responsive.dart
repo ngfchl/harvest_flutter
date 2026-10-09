@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 const kMobileBreakpoint = 600.0;
 const kDesktopBreakpoint = 1024.0;

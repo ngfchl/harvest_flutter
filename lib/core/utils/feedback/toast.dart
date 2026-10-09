@@ -1,7 +1,8 @@
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:flutter/widgets.dart';
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
 
 import '../navigation/navigator_key.dart';
 
@@ -10,10 +11,10 @@ import '../navigation/navigator_key.dart';
 // ══════════════════════════════════════════════════════════
 
 enum ToastType {
-  success(Icons.check_circle_outline_outlined, Color(0xFF22C55E), '成功'),
-  error(Icons.error_outline_outlined, Color(0xFFF87171), '失败'),
-  warning(Icons.warning_amber_outlined, Color(0xFFFBBF24), '警告'),
-  info(Icons.info_outlined, Color(0xFF94A3B8), '提示');
+  success(shadcn.LucideIcons.circleCheck, Color(0xFF22C55E), '成功'),
+  error(shadcn.LucideIcons.circleAlert, Color(0xFFF87171), '失败'),
+  warning(shadcn.LucideIcons.triangleAlert, Color(0xFFFBBF24), '警告'),
+  info(shadcn.LucideIcons.info, Color(0xFF94A3B8), '提示');
 
   final IconData icon;
   final Color color;
@@ -118,18 +119,18 @@ class _ToastWidgetState extends State<_ToastWidget> with SingleTickerProviderSta
                   decoration: BoxDecoration(
                     color: widget.color.withValues(alpha: 0.65),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
+                    border: Border.all(color: Color(0xFFFFFFFF).withValues(alpha: 0.28)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     spacing: 10,
                     children: [
-                      Icon(widget.icon, color: Colors.white, size: 20),
+                      Icon(widget.icon, color: const Color(0xFFFFFFFF), size: 20),
                       Flexible(
                         child: Text(
                           widget.message,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: const Color(0xFFFFFFFF),
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                             height: 1.3,

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/utils.dart';
 
@@ -21,9 +21,7 @@ class AuthInterceptor extends Interceptor {
     applyNoToastHeader(options);
 
     if (_isAuthExemptPath(options.path)) {
-      AppLogger.debug(
-        '[Auth] auth exempt request: ${options.method} ${options.path}',
-      );
+      AppLogger.debug('[Auth] auth exempt request: ${options.method} ${options.path}');
       return handler.next(options);
     }
 
@@ -31,15 +29,11 @@ class AuthInterceptor extends Interceptor {
     if (token != null && token.isNotEmpty) {
       _logoutScheduled = false;
       options.headers['Authorization'] = 'Bearer $token';
-      AppLogger.debug(
-        '[Auth] token attached: ${options.method} ${options.path}',
-      );
+      AppLogger.debug('[Auth] token attached: ${options.method} ${options.path}');
       return handler.next(options);
     }
 
-    AppLogger.warn(
-      '[Auth] request canceled without token: ${options.method} ${options.path}',
-    );
+    AppLogger.warn('[Auth] request canceled without token: ${options.method} ${options.path}');
     return handler.reject(_silentCancel(options));
   }
 
@@ -51,8 +45,7 @@ class AuthInterceptor extends Interceptor {
   }
 
   bool _isSilentCancel(DioException err) {
-    return err.type == DioExceptionType.cancel &&
-        err.error?.toString() == silentAuthCancelReason;
+    return err.type == DioExceptionType.cancel && err.error?.toString() == silentAuthCancelReason;
   }
 
   @override
@@ -66,9 +59,7 @@ class AuthInterceptor extends Interceptor {
     final alreadyLoggedOut = status == 401 && _isAlreadyLoggedOut;
 
     if (!alreadyLoggedOut) {
-      AppLogger.warn(
-        '[Auth] request error path=${err.requestOptions.path} status=$status',
-      );
+      AppLogger.warn('[Auth] request error path=${err.requestOptions.path} status=$status');
     }
 
     if (_isAuthExemptPath(err.requestOptions.path)) {
@@ -77,10 +68,7 @@ class AuthInterceptor extends Interceptor {
 
     if (isServerSetupRequiredError(err)) {
       AppLogger.warn('[Auth] server setup required, logout scheduled');
-      await _logout(
-        openSetupAfterLogout: true,
-        setupBaseUrl: AppConfig.baseUrl,
-      );
+      await _logout(openSetupAfterLogout: true, setupBaseUrl: AppConfig.baseUrl);
       return handler.reject(_silentCancel(err.requestOptions));
     }
 
@@ -90,9 +78,7 @@ class AuthInterceptor extends Interceptor {
         err.type == DioExceptionType.sendTimeout ||
         err.type == DioExceptionType.receiveTimeout) {
       if (!suppressErrorToast(err.requestOptions)) {
-        Toast.error(
-          requestToastMessage(err.requestOptions, '请求超时或连接失败，请检查网络或服务器地址'),
-        );
+        Toast.error(requestToastMessage(err.requestOptions, '请求超时或连接失败，请检查网络或服务器地址'));
       }
       return handler.next(err);
     }
@@ -100,12 +86,7 @@ class AuthInterceptor extends Interceptor {
     // 非 401 → 直接提示
     if (status != 401) {
       if (!suppressErrorToast(err.requestOptions)) {
-        Toast.error(
-          requestToastMessage(
-            err.requestOptions,
-            _extractMsg(status, responseData),
-          ),
-        );
+        Toast.error(requestToastMessage(err.requestOptions, _extractMsg(status, responseData)));
       }
       return handler.next(err);
     }
@@ -124,9 +105,7 @@ class AuthInterceptor extends Interceptor {
 
     // 获取 refreshToken
     final refreshToken = HiveManager.get<String>(StorageKeys.refreshToken);
-    AppLogger.debug(
-      '[Auth] refresh token exists=${refreshToken?.isNotEmpty == true}',
-    );
+    AppLogger.debug('[Auth] refresh token exists=${refreshToken?.isNotEmpty == true}');
 
     // 没有 refreshToken → 静默登出
     if (refreshToken == null || refreshToken.isEmpty) {
@@ -166,20 +145,13 @@ class AuthInterceptor extends Interceptor {
     AppLogger.info('[Auth] refreshing access token');
 
     try {
-      final res = await Dio().post(
-        '${AppConfig.baseUrl}${API.TOKEN_REFRESH}',
-        data: {'refresh': refreshToken},
-      );
+      final res = await Dio().post('${AppConfig.baseUrl}${API.TOKEN_REFRESH}', data: {'refresh': refreshToken});
 
       AppLogger.info('[Auth] access token refreshed');
 
-      final currentRefreshToken = HiveManager.get<String>(
-        StorageKeys.refreshToken,
-      );
+      final currentRefreshToken = HiveManager.get<String>(StorageKeys.refreshToken);
       if (currentRefreshToken != refreshToken) {
-        AppLogger.warn(
-          '[Auth] auth state changed during refresh, retry canceled',
-        );
+        AppLogger.warn('[Auth] auth state changed during refresh, retry canceled');
         for (var c in _waitQueue) {
           c.complete();
         }
@@ -227,11 +199,7 @@ class AuthInterceptor extends Interceptor {
 
   /// 构造一个静默取消的 DioException，不会被 UI 层当作真正的错误弹出
   DioException _silentCancel(RequestOptions options) {
-    return DioException(
-      requestOptions: options,
-      type: DioExceptionType.cancel,
-      error: silentAuthCancelReason,
-    );
+    return DioException(requestOptions: options, type: DioExceptionType.cancel, error: silentAuthCancelReason);
   }
 
   /// 提取错误消息
@@ -248,10 +216,7 @@ class AuthInterceptor extends Interceptor {
     return '请求失败 (${status ?? '网络异常'})';
   }
 
-  Future<void> _logout({
-    bool openSetupAfterLogout = false,
-    String? setupBaseUrl,
-  }) async {
+  Future<void> _logout({bool openSetupAfterLogout = false, String? setupBaseUrl}) async {
     if (_logoutScheduled) return;
 
     final accessToken = HiveManager.get(StorageKeys.accessToken);
@@ -273,12 +238,7 @@ class AuthInterceptor extends Interceptor {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final logout = globalLogout;
       if (logout != null) {
-        unawaited(
-          logout(
-            openSetupAfterLogout: openSetupAfterLogout,
-            setupBaseUrl: setupBaseUrl,
-          ),
-        );
+        unawaited(logout(openSetupAfterLogout: openSetupAfterLogout, setupBaseUrl: setupBaseUrl));
       }
       _logoutScheduled = false;
     });

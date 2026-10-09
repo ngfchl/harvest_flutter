@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,9 +13,7 @@ import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/notice/provider/notice_provider.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:harvest/widgets/app_dialog.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-// ignore: implementation_imports
-import 'package:shadcn_flutter/src/components/locale/shadcn_localizations_en.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'core/theme/theme_provider.dart';
@@ -31,8 +28,7 @@ class MyApp extends ConsumerStatefulWidget {
   ConsumerState<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends ConsumerState<MyApp>
-    with WidgetsBindingObserver, WindowListener {
+class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver, WindowListener {
   late Brightness _platformBrightness;
   AppLifecycleState _lifecycleState = AppLifecycleState.resumed;
   Timer? _foregroundRefreshTimer;
@@ -46,10 +42,8 @@ class _MyAppState extends ConsumerState<MyApp>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _platformBrightness =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness;
-    _lifecycleState =
-        WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed;
+    _platformBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    _lifecycleState = WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed;
     if (PlatformTool.isDesktopOS()) {
       windowManager.addListener(this);
     }
@@ -83,8 +77,7 @@ class _MyAppState extends ConsumerState<MyApp>
       return true;
     }
     if (PlatformTool.isWindows()) {
-      if (event.logicalKey == LogicalKeyboardKey.f4 &&
-          HardwareKeyboard.instance.isAltPressed) {
+      if (event.logicalKey == LogicalKeyboardKey.f4 && HardwareKeyboard.instance.isAltPressed) {
         _showQuitConfirmation();
         return true;
       }
@@ -107,18 +100,12 @@ class _MyAppState extends ConsumerState<MyApp>
     }
     final confirmed = await appShowDialog<bool>(
       context: ctx,
-      builder: (ctx) => shadcn.AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('确认退出'),
         content: const Text('确定要退出 Harvest 吗？'),
         actions: [
-          shadcn.Button.outline(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
-          ),
-          shadcn.Button.destructive(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('退出'),
-          ),
+          Button.outline(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+          Button.destructive(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('退出')),
         ],
       ),
     );
@@ -129,8 +116,7 @@ class _MyAppState extends ConsumerState<MyApp>
 
   @override
   void didChangePlatformBrightness() {
-    final brightness =
-        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
     if (_platformBrightness == brightness) return;
     setState(() => _platformBrightness = brightness);
   }
@@ -210,19 +196,13 @@ class _MyAppState extends ConsumerState<MyApp>
         }
       }
 
-      final normalized = Size(
-        size.width.roundToDouble(),
-        size.height.roundToDouble(),
-      );
+      final normalized = Size(size.width.roundToDouble(), size.height.roundToDouble());
       if (_lastSavedWindowSize == normalized) return;
 
       _lastSavedWindowSize = normalized;
       await Future.wait([
         HiveManager.set(StorageKeys.windowSizeWidth, normalized.width.toInt()),
-        HiveManager.set(
-          StorageKeys.windowSizeHeight,
-          normalized.height.toInt(),
-        ),
+        HiveManager.set(StorageKeys.windowSizeHeight, normalized.height.toInt()),
       ]);
     } catch (error, stackTrace) {
       debugPrint('保存窗口尺寸失败: $error\n$stackTrace');
@@ -240,9 +220,7 @@ class _MyAppState extends ConsumerState<MyApp>
     _backgroundNoticeRefreshTimer = null;
     if (_lifecycleState != AppLifecycleState.resumed) return;
 
-    final delay = ref
-        .read(appAutoRefreshControllerProvider)
-        .timeUntilNextRefresh;
+    final delay = ref.read(appAutoRefreshControllerProvider).timeUntilNextRefresh;
 
     _foregroundRefreshTimer = Timer(delay, () {
       if (!mounted || _lifecycleState != AppLifecycleState.resumed) return;
@@ -283,9 +261,7 @@ class _MyAppState extends ConsumerState<MyApp>
     if (running != null) return running;
 
     final next = ref.read(noticeHistoryProvider.notifier).refresh();
-    _runningBackgroundNoticeRefresh = next.whenComplete(
-      () => _runningBackgroundNoticeRefresh = null,
-    );
+    _runningBackgroundNoticeRefresh = next.whenComplete(() => _runningBackgroundNoticeRefresh = null);
     return _runningBackgroundNoticeRefresh!;
   }
 
@@ -307,7 +283,7 @@ class _MyAppState extends ConsumerState<MyApp>
     final themeState = ref.watch(themeProvider);
     final loggedIn = ref.watch(authProvider).loggedIn;
 
-    return shadcn.ShadcnApp.router(
+    return ShadcnApp.router(
       debugShowCheckedModeBanner: false,
 
       routerConfig: ref.watch(routerProvider),
@@ -315,9 +291,7 @@ class _MyAppState extends ConsumerState<MyApp>
         final content = child ?? const SizedBox.shrink();
         return _GlobalKeyboardDismiss(
           child: DesktopWindowControlsOverlay(
-            child: shadcn.DrawerOverlay(
-              child: loggedIn ? _LoggedInAppChrome(child: content) : content,
-            ),
+            child: DrawerOverlay(child: loggedIn ? _LoggedInAppChrome(child: content) : content),
           ),
         );
       },
@@ -339,10 +313,10 @@ class _MyAppState extends ConsumerState<MyApp>
       theme: themeState.shadcnLight,
       darkTheme: themeState.shadcnDark,
       themeMode: switch (themeState.mode) {
-        shadcn.ThemeMode.dark => shadcn.ThemeMode.dark,
-        shadcn.ThemeMode.light => shadcn.ThemeMode.light,
-        shadcn.ThemeMode.system => shadcn.ThemeMode.system,
-        _ => shadcn.ThemeMode.system,
+        ThemeMode.dark => ThemeMode.dark,
+        ThemeMode.light => ThemeMode.light,
+        ThemeMode.system => ThemeMode.system,
+        _ => ThemeMode.system,
       },
     );
   }
@@ -375,15 +349,14 @@ class _LoggedInAppChrome extends ConsumerWidget {
     return Overlay(
       initialEntries: [
         OverlayEntry(
-          builder: (_) => Row(
-            children: [
-              if (sidebarVisible)
-                SizedBox(
-                  width: 260,
-                  child: GlobalNavigationSidebar(ref: ref, persistent: true),
-                ),
-              Expanded(child: child),
-            ],
+          builder: (overlayContext) => ColoredBox(
+            color: Theme.of(overlayContext).colorScheme.background,
+            child: Row(
+              children: [
+                if (sidebarVisible) SizedBox(width: 260, child: GlobalNavigationSidebar(ref: ref, persistent: true)),
+                Expanded(child: child),
+              ],
+            ),
           ),
         ),
       ],
@@ -475,17 +448,15 @@ class _GlobalKeyboardDismissState extends State<_GlobalKeyboardDismiss> {
   }
 }
 
-class _AppShadcnLocalizationsDelegate
-    extends LocalizationsDelegate<shadcn.ShadcnLocalizations> {
+class _AppShadcnLocalizationsDelegate extends LocalizationsDelegate<ShadcnLocalizations> {
   const _AppShadcnLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) =>
-      locale.languageCode == 'zh' || locale.languageCode == 'en';
+  bool isSupported(Locale locale) => locale.languageCode == 'zh' || locale.languageCode == 'en';
 
   @override
-  Future<shadcn.ShadcnLocalizations> load(Locale locale) {
-    return SynchronousFuture<shadcn.ShadcnLocalizations>(
+  Future<ShadcnLocalizations> load(Locale locale) {
+    return SynchronousFuture<ShadcnLocalizations>(
       locale.languageCode == 'zh'
           ? _AppShadcnLocalizationsZh(locale.toString())
           : ShadcnLocalizationsEn(locale.toString()),
