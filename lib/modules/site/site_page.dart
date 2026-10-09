@@ -1,20 +1,20 @@
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
-import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/site/model/site_config.dart';
 import 'package:harvest/modules/site/model/site_info.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/browser_page.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter_material/shadcn_flutter_material.dart';
 
 import '../../widgets/cache_status_banner.dart';
 import '../shell/provider/screenshot_provider.dart';
@@ -86,36 +86,22 @@ class _SitePageState extends ConsumerState<SitePage> {
     final mobile = context.isMobile;
     final cacheInfo = ref.watch(siteInfoCacheInfoProvider);
 
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final pageBackground = appSurfaceColor(context, cs.background);
     final bottomNavHeight = ShellBottomSpacing.value(context);
 
     return AppBackground(
-      child: Material(
+      child: ColoredBox(
         color: pageBackground,
         child: Stack(
           children: [
             Column(
               children: [
-                if (!mobile && _showFilter)
-                  SiteFilterPanel(
-                    onClose: () => setState(() => _showFilter = false),
-                  ),
-                _buildToolbar(
-                  context,
-                  filteredSites.length,
-                  totalCount,
-                  hasFilters,
-                  mobile,
-                ),
+                if (!mobile && _showFilter) SiteFilterPanel(onClose: () => setState(() => _showFilter = false)),
+                _buildToolbar(context, filteredSites.length, totalCount, hasFilters, mobile),
                 CacheStatusBanner(
                   info: cacheInfo,
-                  margin: EdgeInsets.fromLTRB(
-                    mobile ? 12 : 16,
-                    0,
-                    mobile ? 12 : 16,
-                    6,
-                  ),
+                  margin: EdgeInsets.fromLTRB(mobile ? 12 : 16, 0, mobile ? 12 : 16, 6),
                 ),
                 Expanded(
                   child: EasyRefresh(
@@ -123,20 +109,12 @@ class _SitePageState extends ConsumerState<SitePage> {
                     header: appRefreshHeader(context),
                     child: sitesAsync.when(
                       loading: () => _buildLoading(context),
-                      error: (e, _) =>
-                          SiteErrorView(error: e, onRetry: _refresh),
+                      error: (e, _) => SiteErrorView(error: e, onRetry: _refresh),
                       data: (_) {
                         if (filteredSites.isEmpty) {
-                          return _buildEmptyState(
-                            context,
-                            hasFilters: hasFilters,
-                            mobile: mobile,
-                          );
+                          return _buildEmptyState(context, hasFilters: hasFilters, mobile: mobile);
                         }
-                        return SiteListView(
-                          sites: filteredSites,
-                          controller: _scrollController,
-                        );
+                        return SiteListView(sites: filteredSites, controller: _scrollController);
                       },
                     ),
                   ),
@@ -147,9 +125,9 @@ class _SitePageState extends ConsumerState<SitePage> {
               Positioned(
                 right: 16,
                 bottom: bottomNavHeight + 28,
-                child: shadcn.Tooltip(
+                child: Tooltip(
                   tooltip: (_) => const Text('回到顶部'),
-                  child: shadcn.Button.ghost(
+                  child: Button.ghost(
                     onPressed: () {
                       _scrollController.animateTo(
                         0,
@@ -157,7 +135,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                         curve: Curves.easeOut,
                       );
                     },
-                    child: const Icon(shadcn.LucideIcons.arrowUp, size: 18),
+                    child: const Icon(LucideIcons.arrowUp, size: 18),
                   ),
                 ),
               ),
@@ -172,7 +150,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   }
 
   Widget _buildLoading(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.only(bottom: ShellBottomSpacing.value(context)),
@@ -182,7 +160,7 @@ class _SitePageState extends ConsumerState<SitePage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              shadcn.CircularProgressIndicator(strokeWidth: 2.4, color: cs.primary),
+              CircularProgressIndicator(strokeWidth: 2.4, color: cs.primary),
               const SizedBox(height: 16),
               Text('加载中...', style: TextStyle(color: cs.mutedForeground, fontSize: 13)),
             ],
@@ -193,7 +171,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   }
 
   Widget _buildEmptyState(BuildContext context, {required bool hasFilters, required bool mobile}) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final title = hasFilters ? '没有符合筛选条件的站点' : '暂无站点数据';
     final subtitle = hasFilters ? '当前筛选条件没有匹配结果，可以清除筛选后重新查看。' : '还没有添加站点。可以从内置配置添加站点，或上传自定义 TOML 配置。';
@@ -226,7 +204,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      hasFilters ? shadcn.LucideIcons.searchX : shadcn.LucideIcons.panelTopOpen,
+                      hasFilters ? LucideIcons.searchX : LucideIcons.panelTopOpen,
                       size: 22,
                       color: cs.primary,
                     ),
@@ -245,7 +223,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                   ),
                   const SizedBox(height: 16),
                   if (hasFilters)
-                    shadcn.Button.primary(
+                    Button.primary(
                       onPressed: () {
                         _searchCtrl.clear();
                         ref.read(siteFilterStateProvider).clearAll();
@@ -259,12 +237,12 @@ class _SitePageState extends ConsumerState<SitePage> {
                       runSpacing: 10,
                       alignment: WrapAlignment.center,
                       children: [
-                        shadcn.Button.primary(
+                        Button.primary(
                           onPressed: () => _openAdd(context),
                           alignment: Alignment.center,
                           child: const Text('添加站点'),
                         ),
-                        shadcn.Button.outline(
+                        Button.outline(
                           onPressed: () => _openImportTomlDialog(context),
                           alignment: Alignment.center,
                           child: const Text('上传配置'),
@@ -283,7 +261,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   // ── 工具栏 ──
 
   Widget _buildToolbar(BuildContext context, int current, int total, bool hasFilters, bool mobile) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return AppSurfaceContainer(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: mobile ? 8 : 5),
@@ -312,7 +290,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   // ── 计数 ──
 
   Widget _buildCounter(BuildContext context, int current, int total, bool hasFilters) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
     return Text.rich(
@@ -334,7 +312,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   // ── 搜索框 ──
 
   Widget _buildSearchField(BuildContext context, {double height = 38}) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return SizedBox(
       height: height,
       child: ShadTextField(
@@ -343,9 +321,9 @@ class _SitePageState extends ConsumerState<SitePage> {
         maxLines: 1,
         onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         features: [
-          shadcn.InputFeature.clear(
-            visibility: shadcn.InputFeatureVisibility.textNotEmpty,
-            icon: Icon(shadcn.LucideIcons.x, size: 12, color: cs.mutedForeground),
+          InputFeature.clear(
+            visibility: InputFeatureVisibility.textNotEmpty,
+            icon: Icon(LucideIcons.x, size: 12, color: cs.mutedForeground),
           ),
         ],
       ),
@@ -355,7 +333,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   // ── 筛选按钮 ──
 
   Widget _filterButton(BuildContext context, bool hasFilters, VoidCallback onTap) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -368,7 +346,7 @@ class _SitePageState extends ConsumerState<SitePage> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(shadcn.LucideIcons.slidersHorizontal, size: 14, color: hasFilters ? cs.primary : cs.mutedForeground),
+            Icon(LucideIcons.slidersHorizontal, size: 14, color: hasFilters ? cs.primary : cs.mutedForeground),
             const SizedBox(width: 5),
             Text(
               '筛选',
@@ -386,21 +364,21 @@ class _SitePageState extends ConsumerState<SitePage> {
 
   Widget _buildCardStyleMenu(BuildContext context) {
     return Builder(
-      builder: (menuContext) => shadcn.IconButton.ghost(
-        onPressed: () => shadcn.showDropdown<void>(
+      builder: (menuContext) => IconButton.ghost(
+        onPressed: () => showDropdown<void>(
           context: menuContext,
           alignment: Alignment.topCenter,
           offset: const Offset(0, 8),
-          widthConstraint: shadcn.PopoverConstraint.intrinsic,
-          heightConstraint: shadcn.PopoverConstraint.intrinsic,
+          widthConstraint: PopoverConstraint.intrinsic,
+          heightConstraint: PopoverConstraint.intrinsic,
           consumeOutsideTaps: false,
           builder: (dropdownContext) => Consumer(
             builder: (context, ref, _) {
               final current = ref.watch(siteCardStyleProvider);
               return appMenu(
                 children: [
-                  shadcn.MenuLabel(child: const Text('卡片样式')),
-                  const shadcn.MenuDivider(),
+                  MenuLabel(child: const Text('卡片样式')),
+                  const MenuDivider(),
                   _cardStyleTile(dropdownContext, SiteCardStyle.style1, current, '样式 1'),
                   _cardStyleTile(dropdownContext, SiteCardStyle.style2, current, '样式 2'),
                   _cardStyleTile(dropdownContext, SiteCardStyle.style3, current, '样式 3'),
@@ -410,7 +388,7 @@ class _SitePageState extends ConsumerState<SitePage> {
             },
           ),
         ),
-        icon: shadcn.Tooltip(
+        icon: Tooltip(
           tooltip: (_) => const Text('卡片样式'),
           child: const Icon(Icons.dashboard_customize_outlined, size: 18),
         ),
@@ -418,10 +396,10 @@ class _SitePageState extends ConsumerState<SitePage> {
     );
   }
 
-  shadcn.MenuButton _cardStyleTile(BuildContext context, SiteCardStyle style, SiteCardStyle current, String title) {
+  MenuButton _cardStyleTile(BuildContext context, SiteCardStyle style, SiteCardStyle current, String title) {
     final selected = style == current;
     final cs = siteColors(context);
-    return shadcn.MenuButton(
+    return MenuButton(
       onPressed: (_) => setSiteCardStyle(ref, style),
       autoClose: true,
       child: SizedBox(
@@ -450,7 +428,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                 AnimatedOpacity(
                   duration: const Duration(milliseconds: 120),
                   opacity: selected ? 1 : 0,
-                  child: Icon(shadcn.LucideIcons.check, size: 16, color: cs.primary),
+                  child: Icon(LucideIcons.check, size: 16, color: cs.primary),
                 ),
               ],
             ),
@@ -461,7 +439,7 @@ class _SitePageState extends ConsumerState<SitePage> {
   }
 
   Widget _cardStylePreview(BuildContext context, SiteCardStyle style) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return SizedBox(
       width: 76,
       height: 56,
@@ -697,13 +675,13 @@ class _SitePageState extends ConsumerState<SitePage> {
   Widget _buildSiteCreateMenu(BuildContext context) {
     final anchorContext = context;
     return Builder(
-      builder: (menuContext) => shadcn.IconButton.ghost(
-        onPressed: () => shadcn.showDropdown<void>(
+      builder: (menuContext) => IconButton.ghost(
+        onPressed: () => showDropdown<void>(
           context: menuContext,
           builder: (_) => appMenu(
             children: [
               _menuAction(
-                icon: shadcn.LucideIcons.plus,
+                icon: LucideIcons.plus,
                 label: '添加站点',
                 onPressed: () {
                   if (!anchorContext.mounted) return;
@@ -711,7 +689,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                 },
               ),
               _menuAction(
-                icon: shadcn.LucideIcons.fileUp,
+                icon: LucideIcons.fileUp,
                 label: '上传配置',
                 onPressed: () {
                   if (!anchorContext.mounted) return;
@@ -719,7 +697,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                 },
               ),
               _menuAction(
-                icon: shadcn.LucideIcons.fileCode,
+                icon: LucideIcons.fileCode,
                 label: '生成配置',
                 onPressed: () {
                   if (!anchorContext.mounted) return;
@@ -727,7 +705,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                 },
               ),
               _menuAction(
-                icon: shadcn.LucideIcons.gitBranchPlus,
+                icon: LucideIcons.gitBranchPlus,
                 label: '站点时间轴',
                 onPressed: () {
                   if (!anchorContext.mounted) return;
@@ -737,16 +715,13 @@ class _SitePageState extends ConsumerState<SitePage> {
             ],
           ),
         ),
-        icon: shadcn.Tooltip(
-          tooltip: (_) => const Text('站点操作'),
-          child: const Icon(shadcn.LucideIcons.plus, size: 18),
-        ),
+        icon: Tooltip(tooltip: (_) => const Text('站点操作'), child: const Icon(LucideIcons.plus, size: 18)),
       ),
     );
   }
 
-  shadcn.MenuButton _menuAction({required IconData icon, required String label, required VoidCallback onPressed}) {
-    return shadcn.MenuButton(leading: Icon(icon), onPressed: (_) => onPressed(), child: Text(label));
+  MenuButton _menuAction({required IconData icon, required String label, required VoidCallback onPressed}) {
+    return MenuButton(leading: Icon(icon), onPressed: (_) => onPressed(), child: Text(label));
   }
 
   // ── 移动端筛选弹窗 ──
@@ -812,7 +787,7 @@ class _SitePageState extends ConsumerState<SitePage> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setState) {
-          final cs = shadcn.Theme.of(dialogContext).colorScheme;
+          final cs = Theme.of(dialogContext).colorScheme;
           final enabledOwnedEntries = <_SiteTimelineEntry>[];
           final disabledOwnedEntries = <_SiteTimelineEntry>[];
           final unownedEntries = <_SiteTimelineEntry>[];
@@ -866,7 +841,7 @@ class _SitePageState extends ConsumerState<SitePage> {
           ];
 
           Widget openUnownedAction(_SiteTimelineEntry entry) {
-            return shadcn.Button.ghost(
+            return Button.ghost(
               onPressed: () async {
                 final urls = entry.website.url.where((e) => e.trim().isNotEmpty).toList();
                 if (urls.isEmpty) {
@@ -891,9 +866,9 @@ class _SitePageState extends ConsumerState<SitePage> {
                 final selected = await appShowDialog<String>(
                   context: dialogContext,
                   builder: (ctx) {
-                    final cs = shadcn.Theme.of(ctx).colorScheme;
-                    final typo = shadcn.Theme.of(ctx).typography;
-                    return shadcn.AlertDialog(
+                    final cs = Theme.of(ctx).colorScheme;
+                    final typo = Theme.of(ctx).typography;
+                    return AlertDialog(
                       title: const Text('选择站点地址'),
                       content: SizedBox(
                         width: 560,
@@ -914,7 +889,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                                       ),
                                       child: Row(
                                         children: [
-                                          Icon(shadcn.LucideIcons.globe, size: 15, color: cs.mutedForeground),
+                                          Icon(LucideIcons.globe, size: 15, color: cs.mutedForeground),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Column(
@@ -939,7 +914,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                                               ],
                                             ),
                                           ),
-                                          Icon(shadcn.LucideIcons.chevronRight, size: 15, color: cs.mutedForeground),
+                                          Icon(LucideIcons.chevronRight, size: 15, color: cs.mutedForeground),
                                         ],
                                       ),
                                     ),
@@ -951,9 +926,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                           ),
                         ),
                       ),
-                      actions: [
-                        shadcn.Button.outline(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
-                      ],
+                      actions: [Button.outline(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消'))],
                     );
                   },
                 );
@@ -1001,9 +974,9 @@ class _SitePageState extends ConsumerState<SitePage> {
                 final selected = await appShowDialog<String>(
                   context: dialogContext,
                   builder: (ctx) {
-                    final cs = shadcn.Theme.of(ctx).colorScheme;
-                    final typo = shadcn.Theme.of(ctx).typography;
-                    return shadcn.AlertDialog(
+                    final cs = Theme.of(ctx).colorScheme;
+                    final typo = Theme.of(ctx).typography;
+                    return AlertDialog(
                       title: const Text('选择站点地址'),
                       content: SizedBox(
                         width: 560,
@@ -1024,7 +997,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                                       ),
                                       child: Row(
                                         children: [
-                                          Icon(shadcn.LucideIcons.globe, size: 15, color: cs.mutedForeground),
+                                          Icon(LucideIcons.globe, size: 15, color: cs.mutedForeground),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Column(
@@ -1049,7 +1022,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                                               ],
                                             ),
                                           ),
-                                          Icon(shadcn.LucideIcons.chevronRight, size: 15, color: cs.mutedForeground),
+                                          Icon(LucideIcons.chevronRight, size: 15, color: cs.mutedForeground),
                                         ],
                                       ),
                                     ),
@@ -1061,9 +1034,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                           ),
                         ),
                       ),
-                      actions: [
-                        shadcn.Button.outline(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
-                      ],
+                      actions: [Button.outline(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消'))],
                     );
                   },
                 );
@@ -1089,7 +1060,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                 ),
                 child: Text(
                   '打开',
-                  style: shadcn.Theme.of(
+                  style: Theme.of(
                     dialogContext,
                   ).typography.xSmall.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                 ),
@@ -1097,9 +1068,9 @@ class _SitePageState extends ConsumerState<SitePage> {
             );
           }
 
-          final timelineData = <shadcn.TimelineData>[
+          final timelineData = <TimelineData>[
             for (final entry in displayList)
-              shadcn.TimelineData(
+              TimelineData(
                 color: entry.isOwned
                     ? (entry.isDisabled ? cs.mutedForeground.withValues(alpha: 0.72) : cs.primary)
                     : cs.mutedForeground.withValues(alpha: 0.42),
@@ -1115,7 +1086,7 @@ class _SitePageState extends ConsumerState<SitePage> {
               ),
           ];
 
-          return shadcn.AlertDialog(
+          return AlertDialog(
             title: const Text('站点时间轴'),
             content: SizedBox(
               width: context.isMobile ? double.infinity : 860,
@@ -1126,7 +1097,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                     spacing: 6,
                     runSpacing: 6,
                     children: [
-                      shadcn.Button.secondary(
+                      Button.secondary(
                         onPressed: () => setState(() {
                           ownership = switch (ownership) {
                             _TimelineOwnership.all => _TimelineOwnership.ownedOnly,
@@ -1140,7 +1111,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                           _TimelineOwnership.unownedOnly => '未拥有站点',
                         }).xSmall,
                       ),
-                      shadcn.Button.secondary(
+                      Button.secondary(
                         onPressed: () => setState(() {
                           inviteFilter = switch (inviteFilter) {
                             _TimelineInviteFilter.all => _TimelineInviteFilter.has,
@@ -1154,11 +1125,11 @@ class _SitePageState extends ConsumerState<SitePage> {
                           _TimelineInviteFilter.none => '邀请：无邀请',
                         }).xSmall,
                       ),
-                      shadcn.Button.secondary(
+                      Button.secondary(
                         onPressed: () => setState(() => ascending = !ascending),
                         child: Text(ascending ? '注册时间正序' : '注册时间倒序').xSmall,
                       ),
-                      shadcn.Button.secondary(
+                      Button.secondary(
                         onPressed: () => setState(() {
                           showDurationOnTitle = !showDurationOnTitle;
                           HiveManager.set(StorageKeys.siteTimelineTitleShowDuration, showDurationOnTitle);
@@ -1166,16 +1137,16 @@ class _SitePageState extends ConsumerState<SitePage> {
                         child: Text(showDurationOnTitle ? '标题显示：注册时长' : '标题显示：注册日期').xSmall,
                       ),
                       Builder(
-                        builder: (menuContext) => shadcn.Button.ghost(
-                          onPressed: () => shadcn.showDropdown<void>(
+                        builder: (menuContext) => Button.ghost(
+                          onPressed: () => showDropdown<void>(
                             context: menuContext,
                             alignment: Alignment.topCenter,
                             offset: const Offset(0, 8),
                             consumeOutsideTaps: false,
                             builder: (_) => appMenu(
                               children: [
-                                const shadcn.MenuLabel(child: Text('显示字段')),
-                                const shadcn.MenuDivider(),
+                                const MenuLabel(child: Text('显示字段')),
+                                const MenuDivider(),
                                 for (final item in const [
                                   ('duration', '注册时长'),
                                   ('uploaded', '上传量'),
@@ -1185,7 +1156,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                                   ('email', '邮箱'),
                                   ('uid', 'UID'),
                                 ])
-                                  shadcn.MenuButton(
+                                  MenuButton(
                                     onPressed: (_) => setState(() {
                                       visibleFields[item.$1] = !(visibleFields[item.$1] ?? true);
                                       HiveManager.set(StorageKeys.siteTimelineVisibleFields, visibleFields);
@@ -1193,9 +1164,7 @@ class _SitePageState extends ConsumerState<SitePage> {
                                     child: Row(
                                       children: [
                                         Icon(
-                                          (visibleFields[item.$1] ?? true)
-                                              ? shadcn.LucideIcons.check
-                                              : shadcn.LucideIcons.minus,
+                                          (visibleFields[item.$1] ?? true) ? LucideIcons.check : LucideIcons.minus,
                                           size: 14,
                                         ),
                                         const SizedBox(width: 8),
@@ -1213,8 +1182,8 @@ class _SitePageState extends ConsumerState<SitePage> {
                   ),
                   const SizedBox(height: 10),
                   Expanded(
-                    child: shadcn.ComponentTheme(
-                      data: shadcn.TimelineTheme(
+                    child: ComponentTheme(
+                      data: TimelineTheme(
                         dotSize: 10,
                         spacing: 12,
                         rowGap: 10,
@@ -1224,16 +1193,14 @@ class _SitePageState extends ConsumerState<SitePage> {
                       ),
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.only(right: 6),
-                        child: shadcn.Timeline(data: timelineData),
+                        child: Timeline(data: timelineData),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            actions: [
-              shadcn.Button.outline(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('关闭')),
-            ],
+            actions: [Button.outline(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('关闭'))],
           );
         },
       ),
@@ -1245,20 +1212,17 @@ class _SitePageState extends ConsumerState<SitePage> {
     var uploading = false;
     var overwrite = false;
 
-    showDialog<void>(
+    appShowDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
-          final theme = shadcn.Theme.of(ctx);
+          final theme = Theme.of(ctx);
           final cs = theme.colorScheme;
 
           Future<void> selectFiles() async {
             List<PlatformFile> result = [];
             try {
-              result = await FilePicker.pickFiles(
-                type: FileType.custom,
-                allowedExtensions: const ['toml'],
-              );
+              result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: const ['toml']);
             } on PlatformException catch (e) {
               AppLogger.error('选择 TOML 配置文件失败', e);
               if (e.code == 'ENTITLEMENT_NOT_FOUND') {
@@ -1324,17 +1288,17 @@ class _SitePageState extends ConsumerState<SitePage> {
           }
 
           return Center(
-            child: shadcn.AlertDialog(
+            child: AlertDialog(
               title: Text(
                 '上传站点配置',
                 style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
               ),
               actions: [
-                shadcn.Button.ghost(onPressed: uploading ? null : () => closeAppSheet(ctx), child: const Text('取消')),
-                shadcn.Button.primary(
+                Button.ghost(onPressed: uploading ? null : () => closeAppSheet(ctx), child: const Text('取消')),
+                Button.primary(
                   onPressed: uploading ? null : upload,
                   child: uploading
-                      ? const SizedBox(width: 16, height: 16, child: shadcn.CircularProgressIndicator(strokeWidth: 2.2))
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2.2))
                       : Text('上传${files.isEmpty ? '' : ' ${files.length} 个'}'),
                 ),
               ],
@@ -1349,14 +1313,14 @@ class _SitePageState extends ConsumerState<SitePage> {
                     Row(
                       children: [
                         Expanded(
-                          child: shadcn.Button.outline(
+                          child: Button.outline(
                             onPressed: uploading ? null : selectFiles,
                             child: Text(files.isEmpty ? '选择 TOML 文件' : '重新选择 TOML 文件'),
                           ),
                         ),
                         if (files.isNotEmpty) ...[
                           const SizedBox(width: 10),
-                          shadcn.Button.ghost(
+                          Button.ghost(
                             onPressed: uploading
                                 ? null
                                 : () {
@@ -1407,7 +1371,7 @@ class _OverwriteOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return Container(
@@ -1435,7 +1399,7 @@ class _OverwriteOption extends StatelessWidget {
               ],
             ),
           ),
-          shadcn.Switch(value: overwrite, onChanged: enabled ? onChanged : null),
+          Switch(value: overwrite, onChanged: enabled ? onChanged : null),
         ],
       ),
     );
@@ -1447,7 +1411,7 @@ class _TomlUploadEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
 
@@ -1462,7 +1426,7 @@ class _TomlUploadEmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(shadcn.LucideIcons.fileUp, size: 24, color: cs.mutedForeground),
+          Icon(LucideIcons.fileUp, size: 24, color: cs.mutedForeground),
           const SizedBox(height: 8),
           Text('支持多选 .toml 配置文件', style: typo.small.copyWith(color: cs.mutedForeground)),
         ],
@@ -1479,7 +1443,7 @@ class _TomlFileList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return ConstrainedBox(
@@ -1497,7 +1461,7 @@ class _TomlFileList extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(shadcn.LucideIcons.fileCode, size: 18, color: cs.mutedForeground),
+                    Icon(LucideIcons.fileCode, size: 18, color: cs.mutedForeground),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -1517,10 +1481,7 @@ class _TomlFileList extends StatelessWidget {
                         ],
                       ),
                     ),
-                    shadcn.IconButton.ghost(
-                      onPressed: () => onRemove(i),
-                      icon: const Icon(shadcn.LucideIcons.x, size: 16),
-                    ),
+                    IconButton.ghost(onPressed: () => onRemove(i), icon: const Icon(LucideIcons.x, size: 16)),
                   ],
                 ),
               ),
@@ -1545,7 +1506,7 @@ class _MobileFilterSheet extends ConsumerWidget {
     final filter = ref.watch(siteFilterStateProvider);
     final hasFilters = filter.hasActiveFilters;
     final totalCount = sitesAsync.value?.length ?? 0;
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final media = MediaQuery.of(context);
@@ -1593,9 +1554,9 @@ class _MobileFilterSheet extends ConsumerWidget {
                         maxLines: 1,
                         onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                         features: [
-                          shadcn.InputFeature.clear(
-                            visibility: shadcn.InputFeatureVisibility.textNotEmpty,
-                            icon: Icon(shadcn.LucideIcons.x, size: 12, color: cs.mutedForeground),
+                          InputFeature.clear(
+                            visibility: InputFeatureVisibility.textNotEmpty,
+                            icon: Icon(LucideIcons.x, size: 12, color: cs.mutedForeground),
                           ),
                         ],
                       ),
@@ -1627,21 +1588,19 @@ Widget _siteTimelineRow({
   required Map<String, bool> visibleFields,
   required Widget Function(_SiteTimelineEntry entry) openUnownedAction,
 }) {
-  final theme = shadcn.Theme.of(context);
+  final theme = Theme.of(context);
   final cs = theme.colorScheme;
   final titleTime = showDurationOnTitle ? entry.durationText : entry.registeredAtText;
   final showStates = entry.isDisabled || !entry.isOwned;
   final items = <_TimelineMetric>[
     if (visibleFields['uploaded'] == true)
-      _TimelineMetric(label: '上传量', value: entry.uploadedText, icon: shadcn.LucideIcons.upload),
+      _TimelineMetric(label: '上传量', value: entry.uploadedText, icon: LucideIcons.upload),
     if (visibleFields['downloaded'] == true)
-      _TimelineMetric(label: '下载量', value: entry.downloadedText, icon: shadcn.LucideIcons.download),
+      _TimelineMetric(label: '下载量', value: entry.downloadedText, icon: LucideIcons.download),
     if (visibleFields['username'] == true)
-      _TimelineMetric(label: '用户名', value: entry.usernameText, icon: shadcn.LucideIcons.userRound),
-    if (visibleFields['email'] == true)
-      _TimelineMetric(label: '邮箱', value: entry.emailText, icon: shadcn.LucideIcons.mail),
-    if (visibleFields['uid'] == true)
-      _TimelineMetric(label: 'UID', value: entry.uidText, icon: shadcn.LucideIcons.hash),
+      _TimelineMetric(label: '用户名', value: entry.usernameText, icon: LucideIcons.userRound),
+    if (visibleFields['email'] == true) _TimelineMetric(label: '邮箱', value: entry.emailText, icon: LucideIcons.mail),
+    if (visibleFields['uid'] == true) _TimelineMetric(label: 'UID', value: entry.uidText, icon: LucideIcons.hash),
   ];
 
   return Container(
@@ -1675,7 +1634,7 @@ Widget _siteTimelineRow({
                 ],
                 _timelineTitleMeta(
                   context,
-                  icon: showDurationOnTitle ? shadcn.LucideIcons.clock : shadcn.LucideIcons.calendar,
+                  icon: showDurationOnTitle ? LucideIcons.clock : LucideIcons.calendar,
                   text: titleTime,
                   tooltip: showDurationOnTitle ? '注册时长：$titleTime' : '注册时间：$titleTime',
                 ),
@@ -1723,7 +1682,7 @@ Widget _siteTimelineRow({
 }
 
 Widget _timelineLinksIndicator(BuildContext context, List<String> urls) {
-  final theme = shadcn.Theme.of(context);
+  final theme = Theme.of(context);
   final cs = theme.colorScheme;
   final availableUrls = urls.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
   final tooltip = availableUrls.isEmpty
@@ -1735,26 +1694,26 @@ Widget _timelineLinksIndicator(BuildContext context, List<String> urls) {
     alignment: Alignment.center,
     decoration: BoxDecoration(color: cs.muted.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(999)),
     child: Icon(
-      availableUrls.isEmpty ? shadcn.LucideIcons.globeLock : shadcn.LucideIcons.globe,
+      availableUrls.isEmpty ? LucideIcons.globeLock : LucideIcons.globe,
       size: 12,
       color: availableUrls.isEmpty ? cs.mutedForeground.withValues(alpha: 0.58) : cs.primary,
     ),
   );
 
-  return shadcn.Tooltip(
+  return Tooltip(
     tooltip: (_) => Text(tooltip, style: theme.typography.xSmall.copyWith(color: cs.foreground)),
     child: child,
   );
 }
 
 Widget _timelineInvitationBadge(BuildContext context, {required int count}) {
-  final theme = shadcn.Theme.of(context);
+  final theme = Theme.of(context);
   final cs = theme.colorScheme;
-  final child = shadcn.SecondaryBadge(
+  final child = SecondaryBadge(
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(shadcn.LucideIcons.ticket, size: 11, color: cs.foreground),
+        Icon(LucideIcons.ticket, size: 11, color: cs.foreground),
         const SizedBox(width: 4),
         Text(
           '$count',
@@ -1764,7 +1723,7 @@ Widget _timelineInvitationBadge(BuildContext context, {required int count}) {
     ),
   );
 
-  return shadcn.Tooltip(tooltip: (_) => Text('邀请数：$count'), child: child);
+  return Tooltip(tooltip: (_) => Text('邀请数：$count'), child: child);
 }
 
 Widget _timelineTitleMeta(
@@ -1773,7 +1732,7 @@ Widget _timelineTitleMeta(
   required String text,
   required String tooltip,
 }) {
-  final theme = shadcn.Theme.of(context);
+  final theme = Theme.of(context);
   final cs = theme.colorScheme;
   final child = Container(
     constraints: const BoxConstraints(maxWidth: 120),
@@ -1800,7 +1759,7 @@ Widget _timelineTitleMeta(
     ),
   );
 
-  return shadcn.Tooltip(tooltip: (_) => Text(tooltip), child: child);
+  return Tooltip(tooltip: (_) => Text(tooltip), child: child);
 }
 
 class _TimelineMetric {
@@ -1814,7 +1773,7 @@ class _TimelineMetric {
 }
 
 Widget _timelineMetricTile(BuildContext context, _TimelineMetric metric) {
-  final theme = shadcn.Theme.of(context);
+  final theme = Theme.of(context);
   final cs = theme.colorScheme;
   final tile = Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
@@ -1865,11 +1824,11 @@ Widget _timelineMetricTile(BuildContext context, _TimelineMetric metric) {
     ),
   );
 
-  return shadcn.Tooltip(tooltip: (_) => Text(metric.tooltip), child: tile);
+  return Tooltip(tooltip: (_) => Text(metric.tooltip), child: tile);
 }
 
 Widget _timelineStateTag(BuildContext context, String text) {
-  final theme = shadcn.Theme.of(context);
+  final theme = Theme.of(context);
   final cs = theme.colorScheme;
   return Container(
     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),

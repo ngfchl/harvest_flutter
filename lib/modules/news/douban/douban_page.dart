@@ -1,10 +1,10 @@
+import 'package:flutter/widgets.dart';
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 
-import '../widgets/news_bottom_padding.dart';
 import '../provider/media_info_settings_provider.dart';
+import '../widgets/news_bottom_padding.dart';
 import 'provider/douban_provider.dart';
 import 'widgets/douban_card.dart';
 import 'widgets/douban_detail_sheet.dart';
@@ -17,9 +17,7 @@ class DoubanPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final enabled = ref.watch(
-      mediaInfoSettingsProvider.select((settings) => settings.doubanEnabled),
-    );
+    final enabled = ref.watch(mediaInfoSettingsProvider.select((settings) => settings.doubanEnabled));
     if (!enabled) return const SizedBox.shrink();
 
     return EasyRefresh(
@@ -51,9 +49,7 @@ class DoubanPage extends ConsumerWidget {
                   title: m.title,
                   posterUrl: m.poster,
                   rating: m.ratingNum.isNotEmpty ? m.ratingNum : null,
-                  subtitle: m.quote.isNotEmpty
-                      ? m.quote
-                      : (m.subtitle.isNotEmpty ? m.subtitle.first : null),
+                  subtitle: m.quote.isNotEmpty ? m.quote : (m.subtitle.isNotEmpty ? m.subtitle.first : null),
                   badge: '#${m.rank}',
                   cookie: m.cookie.isNotEmpty ? m.cookie : null,
                   // ← 传 cookie
@@ -101,8 +97,7 @@ class DoubanPage extends ConsumerWidget {
                   title: m.title,
                   posterUrl: m.cover.url,
                   rating: m.rating != null ? '${m.rating!.value}' : null,
-                  subtitle:
-                      m.cardSubtitle.isNotEmpty ? m.cardSubtitle : null,
+                  subtitle: m.cardSubtitle.isNotEmpty ? m.cardSubtitle : null,
                   badge: m.hasLinewatch ? '可播' : null,
                   onTap: () => openDoubanDetail(context, m.id),
                 ),

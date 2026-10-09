@@ -1,16 +1,17 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/download/model/downloader.dart';
 import 'package:harvest/modules/download/model/downloader_category.dart';
-import 'package:harvest/modules/download/provider/downloader_provider.dart'
-    as download_providers;
+import 'package:harvest/modules/download/provider/downloader_provider.dart' as download_providers;
 import 'package:harvest/modules/download/service/downloader_service.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter_material/shadcn_flutter_material.dart';
 
 import '../model/torrent_model.dart';
 import '../provider/downloader_provider.dart';
@@ -28,7 +29,7 @@ class CollapsedDesktopSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return AppSurfaceContainer(
       width: 42,
       borderRadius: BorderRadius.zero,
@@ -38,12 +39,9 @@ class CollapsedDesktopSidebar extends StatelessWidget {
         alignment: Alignment.topCenter,
         child: Padding(
           padding: const EdgeInsets.only(top: 12),
-          child: shadcn.Tooltip(
+          child: Tooltip(
             tooltip: (_) => const Text('展开筛选栏'),
-            child: shadcn.IconButton.ghost(
-              onPressed: onExpand,
-              icon: const Icon(shadcn.LucideIcons.panelLeftOpen, size: 16),
-            ),
+            child: IconButton.ghost(onPressed: onExpand, icon: const Icon(LucideIcons.panelLeftOpen, size: 16)),
           ),
         ),
       ),
@@ -68,8 +66,7 @@ class DesktopTorrentSidebar extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<DesktopTorrentSidebar> createState() =>
-      _DesktopTorrentSidebarState();
+  ConsumerState<DesktopTorrentSidebar> createState() => _DesktopTorrentSidebarState();
 }
 
 class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
@@ -79,22 +76,10 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
   bool _categorySortByCount = false;
   bool _tagSortByCount = false;
   bool _siteSortByCount = false;
-  static const List<String> _sectionIds = [
-    'status',
-    'error',
-    'category',
-    'tag',
-    'site',
-  ];
+  static const List<String> _sectionIds = ['status', 'error', 'category', 'tag', 'site'];
   static const double _sectionBottomGap = 8;
   static const double _collapsedSectionHeight = 38;
-  final Map<String, double> _sectionWeights = {
-    'status': 1.25,
-    'error': 0.9,
-    'category': 1,
-    'tag': 1,
-    'site': 1,
-  };
+  final Map<String, double> _sectionWeights = {'status': 1.25, 'error': 0.9, 'category': 1, 'tag': 1, 'site': 1};
 
   @override
   void initState() {
@@ -110,37 +95,23 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final desktopStatus = ref.watch(desktopTorrentStatusFilterProvider);
     final category = ref.watch(torrentCategoryProvider);
     final selectedTags = ref.watch(torrentTagProvider);
     final site = ref.watch(torrentSiteFilterProvider);
     final errorDetail = ref.watch(torrentErrorDetailFilterProvider);
-    final categories = ref.watch(
-      availableCategoriesProvider(widget.downloaderId),
-    );
+    final categories = ref.watch(availableCategoriesProvider(widget.downloaderId));
     final tags = ref.watch(availableTagsProvider(widget.downloaderId));
     final sites = ref.watch(availableTorrentSitesProvider(widget.downloaderId));
-    final availableErrorDetails = ref.watch(
-      availableErrorDetailsProvider(widget.downloaderId),
-    );
+    final availableErrorDetails = ref.watch(availableErrorDetailsProvider(widget.downloaderId));
     final downloader = widget.downloader;
     final isQb = widget.downloaderType == DownloaderType.qbittorrent;
     final isTransmission = widget.downloaderType == DownloaderType.transmission;
-    final showErrorDetail =
-        isTransmission && desktopStatus == DesktopTorrentStatusFilter.error;
-    final sectionIds = showErrorDetail
-        ? _sectionIds
-        : _sectionIds.where((id) => id != 'error').toList();
-    final allTorrents =
-        ref
-            .watch(torrentListProvider(widget.downloaderId))
-            .value
-            ?.torrents ??
-        const <Torrent>[];
-    final cleanableErrorTorrents = allTorrents
-        .where(isCleanableTorrentError)
-        .toList();
+    final showErrorDetail = isTransmission && desktopStatus == DesktopTorrentStatusFilter.error;
+    final sectionIds = showErrorDetail ? _sectionIds : _sectionIds.where((id) => id != 'error').toList();
+    final allTorrents = ref.watch(torrentListProvider(widget.downloaderId)).value?.torrents ?? const <Torrent>[];
+    final cleanableErrorTorrents = allTorrents.where(isCleanableTorrentError).toList();
     final statusCounts = desktopStatusCounts(allTorrents);
 
     final categoryCounts = <String, int>{};
@@ -166,27 +137,15 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
     final errorCounts = <String, int>{};
     for (final torrent in allTorrents) {
       if (!torrent.hasError) continue;
-      final detail = torrent.effectiveErrorMessage.isEmpty
-          ? '未知错误'
-          : torrent.effectiveErrorMessage;
+      final detail = torrent.effectiveErrorMessage.isEmpty ? '未知错误' : torrent.effectiveErrorMessage;
       errorCounts[detail] = (errorCounts[detail] ?? 0) + 1;
     }
-    final sortedErrorDetails = _sortedFilterLabels(
-      availableErrorDetails,
-      errorCounts,
-      sortByCount: _errorSortByCount,
-    );
-    final sortedTags = _sortedFilterLabels(
-      tags,
-      tagCounts,
-      sortByCount: _tagSortByCount,
-    );
+    final sortedErrorDetails = _sortedFilterLabels(availableErrorDetails, errorCounts, sortByCount: _errorSortByCount);
+    final sortedTags = _sortedFilterLabels(tags, tagCounts, sortByCount: _tagSortByCount);
     final sortedSites = List.of(sites)
       ..sort((a, b) {
         if (_siteSortByCount) {
-          final countCompare = (siteCounts[b.key] ?? 0).compareTo(
-            siteCounts[a.key] ?? 0,
-          );
+          final countCompare = (siteCounts[b.key] ?? 0).compareTo(siteCounts[a.key] ?? 0);
           if (countCompare != 0) return countCompare;
         }
         return a.displayName.compareTo(b.displayName);
@@ -205,27 +164,17 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
               children: [
                 Text(
                   '筛选',
-                  style: TextStyle(
-                    color: cs.foreground,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(color: cs.foreground, fontSize: 15, fontWeight: FontWeight.w700),
                 ),
                 const Spacer(),
-                shadcn.Tooltip(
+                Tooltip(
                   tooltip: (_) => const Text('收起筛选栏'),
-                  child: shadcn.IconButton.ghost(
+                  child: IconButton.ghost(
                     onPressed: widget.onCollapse,
-                    icon: const Icon(
-                      shadcn.LucideIcons.panelLeftClose,
-                      size: 15,
-                    ),
+                    icon: const Icon(LucideIcons.panelLeftClose, size: 15),
                   ),
                 ),
-                shadcn.Button.ghost(
-                  onPressed: _resetFilters,
-                  child: const Text('重置'),
-                ),
+                Button.ghost(onPressed: _resetFilters, child: const Text('重置')),
               ],
             ),
           ),
@@ -234,22 +183,14 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
             child: ShadTextField(
               controller: _searchCtrl,
               hintText: '搜索种子名称...',
-              features: const [
-                shadcn.InputFeature.leading(
-                  Icon(shadcn.LucideIcons.search, size: 14),
-                ),
-              ],
-              onChanged: (v) =>
-                  ref.read(torrentSearchProvider.notifier).state = v,
+              features: const [InputFeature.leading(Icon(LucideIcons.search, size: 14))],
+              onChanged: (v) => ref.read(torrentSearchProvider.notifier).state = v,
             ),
           ),
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final sectionHeights = _resolvedSectionHeights(
-                  constraints.maxHeight,
-                  sectionIds,
-                );
+                final sectionHeights = _resolvedSectionHeights(constraints.maxHeight, sectionIds);
                 return Column(
                   children: [
                     DesktopResizableFilterSection(
@@ -262,20 +203,15 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                         padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
                         children: [
                           DesktopFilterItem(
-                            icon: shadcn.LucideIcons.list,
+                            icon: LucideIcons.list,
                             label: DesktopTorrentStatusFilter.all.label,
-                            count:
-                                statusCounts[DesktopTorrentStatusFilter.all] ??
-                                0,
-                            selected:
-                                desktopStatus == DesktopTorrentStatusFilter.all,
-                            onTap: () => _setDesktopStatus(
-                              DesktopTorrentStatusFilter.all,
-                            ),
+                            count: statusCounts[DesktopTorrentStatusFilter.all] ?? 0,
+                            selected: desktopStatus == DesktopTorrentStatusFilter.all,
+                            onTap: () => _setDesktopStatus(DesktopTorrentStatusFilter.all),
                           ),
                           DesktopStatusGroup(
                             title: '活动中的',
-                            icon: shadcn.LucideIcons.activity,
+                            icon: LucideIcons.activity,
                             group: DesktopTorrentStatusFilter.active,
                             children: const [
                               DesktopTorrentStatusFilter.downloadingActive,
@@ -287,7 +223,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                           ),
                           DesktopStatusGroup(
                             title: '暂停的',
-                            icon: shadcn.LucideIcons.pause,
+                            icon: LucideIcons.pause,
                             group: DesktopTorrentStatusFilter.paused,
                             children: const [
                               DesktopTorrentStatusFilter.pausedDownloading,
@@ -299,7 +235,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                           ),
                           DesktopStatusGroup(
                             title: '等待中',
-                            icon: shadcn.LucideIcons.timer,
+                            icon: LucideIcons.timer,
                             group: DesktopTorrentStatusFilter.waiting,
                             children: const [
                               DesktopTorrentStatusFilter.downloadWaiting,
@@ -312,61 +248,32 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                             onTap: _setDesktopStatus,
                           ),
                           DesktopFilterItem(
-                            icon: shadcn.LucideIcons.rotateCw,
+                            icon: LucideIcons.rotateCw,
                             label: DesktopTorrentStatusFilter.checking.label,
-                            count:
-                                statusCounts[DesktopTorrentStatusFilter
-                                    .checking] ??
-                                0,
-                            selected:
-                                desktopStatus ==
-                                DesktopTorrentStatusFilter.checking,
-                            onTap: () => _setDesktopStatus(
-                              DesktopTorrentStatusFilter.checking,
-                            ),
+                            count: statusCounts[DesktopTorrentStatusFilter.checking] ?? 0,
+                            selected: desktopStatus == DesktopTorrentStatusFilter.checking,
+                            onTap: () => _setDesktopStatus(DesktopTorrentStatusFilter.checking),
                           ),
                           DesktopFilterItem(
-                            icon: shadcn.LucideIcons.clock,
-                            label:
-                                DesktopTorrentStatusFilter.checkWaiting.label,
-                            count:
-                                statusCounts[DesktopTorrentStatusFilter
-                                    .checkWaiting] ??
-                                0,
-                            selected:
-                                desktopStatus ==
-                                DesktopTorrentStatusFilter.checkWaiting,
-                            onTap: () => _setDesktopStatus(
-                              DesktopTorrentStatusFilter.checkWaiting,
-                            ),
+                            icon: LucideIcons.clock,
+                            label: DesktopTorrentStatusFilter.checkWaiting.label,
+                            count: statusCounts[DesktopTorrentStatusFilter.checkWaiting] ?? 0,
+                            selected: desktopStatus == DesktopTorrentStatusFilter.checkWaiting,
+                            onTap: () => _setDesktopStatus(DesktopTorrentStatusFilter.checkWaiting),
                           ),
                           DesktopFilterItem(
-                            icon: shadcn.LucideIcons.check,
+                            icon: LucideIcons.check,
                             label: DesktopTorrentStatusFilter.completed.label,
-                            count:
-                                statusCounts[DesktopTorrentStatusFilter
-                                    .completed] ??
-                                0,
-                            selected:
-                                desktopStatus ==
-                                DesktopTorrentStatusFilter.completed,
-                            onTap: () => _setDesktopStatus(
-                              DesktopTorrentStatusFilter.completed,
-                            ),
+                            count: statusCounts[DesktopTorrentStatusFilter.completed] ?? 0,
+                            selected: desktopStatus == DesktopTorrentStatusFilter.completed,
+                            onTap: () => _setDesktopStatus(DesktopTorrentStatusFilter.completed),
                           ),
                           DesktopFilterItem(
-                            icon: shadcn.LucideIcons.circleAlert,
+                            icon: LucideIcons.circleAlert,
                             label: DesktopTorrentStatusFilter.error.label,
-                            count:
-                                statusCounts[DesktopTorrentStatusFilter
-                                    .error] ??
-                                0,
-                            selected:
-                                desktopStatus ==
-                                DesktopTorrentStatusFilter.error,
-                            onTap: () => _setDesktopStatus(
-                              DesktopTorrentStatusFilter.error,
-                            ),
+                            count: statusCounts[DesktopTorrentStatusFilter.error] ?? 0,
+                            selected: desktopStatus == DesktopTorrentStatusFilter.error,
+                            onTap: () => _setDesktopStatus(DesktopTorrentStatusFilter.error),
                           ),
                         ],
                       ),
@@ -381,54 +288,32 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                         actions: [
                           if (cleanableErrorTorrents.isNotEmpty)
                             DesktopFilterActionButton(
-                              icon: shadcn.LucideIcons.trash2,
+                              icon: LucideIcons.trash2,
                               tooltip: '清理可删除错误种子',
-                              onTap: () => _confirmCleanErrorTorrents(
-                                cleanableErrorTorrents,
-                                allTorrents,
-                              ),
+                              onTap: () => _confirmCleanErrorTorrents(cleanableErrorTorrents, allTorrents),
                             ),
                           _sortModeButton(
                             sortByCount: _errorSortByCount,
-                            onTap: () => setState(
-                              () => _errorSortByCount = !_errorSortByCount,
-                            ),
+                            onTap: () => setState(() => _errorSortByCount = !_errorSortByCount),
                           ),
                         ],
                         child: ListView(
                           padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
                           children: [
                             DesktopFilterItem(
-                              icon: shadcn.LucideIcons.list,
+                              icon: LucideIcons.list,
                               label: '全部错误',
-                              count: errorCounts.values.fold<int>(
-                                0,
-                                (sum, value) => sum + value,
-                              ),
+                              count: errorCounts.values.fold<int>(0, (sum, value) => sum + value),
                               selected: errorDetail.isEmpty,
-                              onTap: () =>
-                                  ref
-                                          .read(
-                                            torrentErrorDetailFilterProvider
-                                                .notifier,
-                                          )
-                                          .state =
-                                      '',
+                              onTap: () => ref.read(torrentErrorDetailFilterProvider.notifier).state = '',
                             ),
                             for (final detail in sortedErrorDetails)
                               DesktopFilterItem(
-                                icon: shadcn.LucideIcons.circleAlert,
+                                icon: LucideIcons.circleAlert,
                                 label: detail,
                                 count: errorCounts[detail] ?? 0,
                                 selected: errorDetail == detail,
-                                onTap: () =>
-                                    ref
-                                            .read(
-                                              torrentErrorDetailFilterProvider
-                                                  .notifier,
-                                            )
-                                            .state =
-                                        detail,
+                                onTap: () => ref.read(torrentErrorDetailFilterProvider.notifier).state = detail,
                               ),
                           ],
                         ),
@@ -438,18 +323,15 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                       height: sectionHeights['category'] ?? 38,
                       collapsed: _isSectionCollapsed('category'),
                       onToggle: () => _toggleSection('category'),
-                      onResize: (d) =>
-                          _resizeSection('category', d, sectionIds),
+                      onResize: (d) => _resizeSection('category', d, sectionIds),
                       actions: [
                         _sortModeButton(
                           sortByCount: _categorySortByCount,
-                          onTap: () => setState(
-                            () => _categorySortByCount = !_categorySortByCount,
-                          ),
+                          onTap: () => setState(() => _categorySortByCount = !_categorySortByCount),
                         ),
                         if (isQb && downloader != null)
                           DesktopFilterActionButton(
-                            icon: shadcn.LucideIcons.plus,
+                            icon: LucideIcons.plus,
                             tooltip: '新增分类',
                             onTap: () => _showCategoryEditor(downloader),
                           ),
@@ -458,15 +340,11 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                         padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
                         children: [
                           DesktopFilterItem(
-                            icon: shadcn.LucideIcons.folder,
+                            icon: LucideIcons.folder,
                             label: '全部分类',
                             count: allTorrents.length,
                             selected: category.isEmpty,
-                            onTap: () =>
-                                ref
-                                        .read(torrentCategoryProvider.notifier)
-                                        .state =
-                                    '',
+                            onTap: () => ref.read(torrentCategoryProvider.notifier).state = '',
                           ),
                           ...desktopCategoryFilterItems(
                             categories: categories,
@@ -474,30 +352,19 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                             selectedCategory: category,
                             tree: !isQb,
                             sortByCount: _categorySortByCount,
-                            onSelect: (item) =>
-                                ref
-                                        .read(torrentCategoryProvider.notifier)
-                                        .state =
-                                    item,
-                            trailingActionsBuilder: (item) =>
-                                isQb && downloader != null
+                            onSelect: (item) => ref.read(torrentCategoryProvider.notifier).state = item,
+                            trailingActionsBuilder: (item) => isQb && downloader != null
                                 ? [
                                     DesktopInlineActionButton(
-                                      icon: shadcn.LucideIcons.pencil,
+                                      icon: LucideIcons.pencil,
                                       tooltip: '编辑分类',
-                                      onTap: () => _showCategoryEditor(
-                                        downloader,
-                                        categoryName: item,
-                                      ),
+                                      onTap: () => _showCategoryEditor(downloader, categoryName: item),
                                     ),
                                     DesktopInlineActionButton(
-                                      icon: shadcn.LucideIcons.trash2,
+                                      icon: LucideIcons.trash2,
                                       tooltip: '删除分类',
                                       destructive: true,
-                                      onTap: () => _confirmDeleteCategory(
-                                        downloader,
-                                        item,
-                                      ),
+                                      onTap: () => _confirmDeleteCategory(downloader, item),
                                     ),
                                   ]
                                 : const [],
@@ -514,13 +381,11 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                       actions: [
                         _sortModeButton(
                           sortByCount: _tagSortByCount,
-                          onTap: () => setState(
-                            () => _tagSortByCount = !_tagSortByCount,
-                          ),
+                          onTap: () => setState(() => _tagSortByCount = !_tagSortByCount),
                         ),
                         if (isQb && downloader != null)
                           DesktopFilterActionButton(
-                            icon: shadcn.LucideIcons.plus,
+                            icon: LucideIcons.plus,
                             tooltip: '新增标签',
                             onTap: () => _showTagEditor(downloader),
                           ),
@@ -529,17 +394,15 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                         padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
                         children: [
                           DesktopFilterItem(
-                            icon: shadcn.LucideIcons.tags,
+                            icon: LucideIcons.tags,
                             label: '全部标签',
                             count: allTorrents.length,
                             selected: selectedTags.isEmpty,
-                            onTap: () =>
-                                ref.read(torrentTagProvider.notifier).state =
-                                    const <String>{},
+                            onTap: () => ref.read(torrentTagProvider.notifier).state = const <String>{},
                           ),
                           for (final item in sortedTags)
                             DesktopFilterItem(
-                              icon: shadcn.LucideIcons.tag,
+                              icon: LucideIcons.tag,
                               label: item,
                               count: tagCounts[item] ?? 0,
                               selected: selectedTags.contains(item),
@@ -550,25 +413,20 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                                 } else {
                                   next.add(item);
                                 }
-                                ref.read(torrentTagProvider.notifier).state =
-                                    next;
+                                ref.read(torrentTagProvider.notifier).state = next;
                               },
                               trailingActions: isQb && downloader != null
                                   ? [
                                       DesktopInlineActionButton(
-                                        icon: shadcn.LucideIcons.pencil,
+                                        icon: LucideIcons.pencil,
                                         tooltip: '编辑标签',
-                                        onTap: () => _showTagEditor(
-                                          downloader,
-                                          oldTag: item,
-                                        ),
+                                        onTap: () => _showTagEditor(downloader, oldTag: item),
                                       ),
                                       DesktopInlineActionButton(
-                                        icon: shadcn.LucideIcons.trash2,
+                                        icon: LucideIcons.trash2,
                                         tooltip: '删除标签',
                                         destructive: true,
-                                        onTap: () =>
-                                            _confirmDeleteTag(downloader, item),
+                                        onTap: () => _confirmDeleteTag(downloader, item),
                                       ),
                                     ]
                                   : const [],
@@ -585,45 +443,31 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                       actions: [
                         _sortModeButton(
                           sortByCount: _siteSortByCount,
-                          onTap: () => setState(
-                            () => _siteSortByCount = !_siteSortByCount,
-                          ),
+                          onTap: () => setState(() => _siteSortByCount = !_siteSortByCount),
                         ),
                       ],
                       child: ListView(
                         padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
                         children: [
                           DesktopFilterItem(
-                            icon: shadcn.LucideIcons.globe,
+                            icon: LucideIcons.globe,
                             label: '全部站点',
                             count: allTorrents.length,
                             selected: site.isEmpty,
-                            onTap: () =>
-                                ref
-                                        .read(
-                                          torrentSiteFilterProvider.notifier,
-                                        )
-                                        .state =
-                                    '',
+                            onTap: () => ref.read(torrentSiteFilterProvider.notifier).state = '',
                           ),
                           for (final item in sortedSites)
                             DesktopFilterItem(
-                              icon: shadcn.LucideIcons.globe,
+                              icon: LucideIcons.globe,
                               label: item.displayName,
                               count: siteCounts[item.key] ?? 0,
                               selected: site == item.key,
-                              onTap: () =>
-                                  ref
-                                      .read(torrentSiteFilterProvider.notifier)
-                                      .state = item
-                                      .key,
+                              onTap: () => ref.read(torrentSiteFilterProvider.notifier).state = item.key,
                             ),
                         ],
                       ),
                     ),
-                    if (_collapsedSections.where(sectionIds.contains).length ==
-                        sectionIds.length)
-                      const Spacer(),
+                    if (_collapsedSections.where(sectionIds.contains).length == sectionIds.length) const Spacer(),
                   ],
                 );
               },
@@ -634,11 +478,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
     );
   }
 
-  List<String> _sortedFilterLabels(
-    List<String> items,
-    Map<String, int> counts, {
-    required bool sortByCount,
-  }) {
+  List<String> _sortedFilterLabels(List<String> items, Map<String, int> counts, {required bool sortByCount}) {
     return List<String>.from(items)..sort((a, b) {
       if (sortByCount) {
         final countCompare = (counts[b] ?? 0).compareTo(counts[a] ?? 0);
@@ -648,49 +488,24 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
     });
   }
 
-  DesktopFilterActionButton _sortModeButton({
-    required bool sortByCount,
-    required VoidCallback onTap,
-  }) {
+  DesktopFilterActionButton _sortModeButton({required bool sortByCount, required VoidCallback onTap}) {
     return DesktopFilterActionButton(
-      icon: sortByCount
-          ? Icons.format_list_numbered_rounded
-          : Icons.sort_by_alpha_rounded,
+      icon: sortByCount ? Icons.format_list_numbered_rounded : Icons.sort_by_alpha_rounded,
       tooltip: sortByCount ? '当前按数量排序，点击恢复默认排序' : '当前为默认排序，点击按数量排序',
       onTap: onTap,
     );
   }
 
-  Map<String, double> _resolvedSectionHeights(
-    double availableHeight,
-    List<String> sectionIds,
-  ) {
-    final expanded = sectionIds
-        .where((id) => !_isSectionCollapsed(id))
-        .toList();
-    final collapsed = sectionIds
-        .where((id) => _isSectionCollapsed(id))
-        .toList();
-    final heights = <String, double>{
-      for (final id in collapsed) id: _collapsedSectionHeight,
-    };
+  Map<String, double> _resolvedSectionHeights(double availableHeight, List<String> sectionIds) {
+    final expanded = sectionIds.where((id) => !_isSectionCollapsed(id)).toList();
+    final collapsed = sectionIds.where((id) => _isSectionCollapsed(id)).toList();
+    final heights = <String, double>{for (final id in collapsed) id: _collapsedSectionHeight};
 
     if (expanded.isEmpty) return heights;
 
-    final sectionArea =
-        (availableHeight - sectionIds.length * _sectionBottomGap).clamp(
-          0.0,
-          double.infinity,
-        );
-    final expandedArea =
-        (sectionArea - collapsed.length * _collapsedSectionHeight).clamp(
-          0.0,
-          double.infinity,
-        );
-    final totalWeight = expanded.fold<double>(
-      0,
-      (sum, id) => sum + (_sectionWeights[id] ?? 1),
-    );
+    final sectionArea = (availableHeight - sectionIds.length * _sectionBottomGap).clamp(0.0, double.infinity);
+    final expandedArea = (sectionArea - collapsed.length * _collapsedSectionHeight).clamp(0.0, double.infinity);
+    final totalWeight = expanded.fold<double>(0, (sum, id) => sum + (_sectionWeights[id] ?? 1));
 
     for (final id in expanded) {
       heights[id] = expandedArea * ((_sectionWeights[id] ?? 1) / totalWeight);
@@ -703,9 +518,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
 
   void _toggleSection(String id) {
     setState(() {
-      _isSectionCollapsed(id)
-          ? _collapsedSections.remove(id)
-          : _collapsedSections.add(id);
+      _isSectionCollapsed(id) ? _collapsedSections.remove(id) : _collapsedSections.add(id);
     });
   }
 
@@ -715,9 +528,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
     if (expanded.length <= 1) return;
     final index = expanded.indexOf(id);
     if (index == -1) return;
-    final neighbor = index < expanded.length - 1
-        ? expanded[index + 1]
-        : expanded[index - 1];
+    final neighbor = index < expanded.length - 1 ? expanded[index + 1] : expanded[index - 1];
     const sensitivity = 180.0;
     final weightDelta = delta / sensitivity;
     setState(() {
@@ -725,10 +536,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
       final neighborWeight = _sectionWeights[neighbor] ?? 1;
       final next = (current + weightDelta).clamp(0.35, 4.0);
       _sectionWeights[id] = next;
-      _sectionWeights[neighbor] = (neighborWeight - (next - current)).clamp(
-        0.35,
-        4.0,
-      );
+      _sectionWeights[neighbor] = (neighborWeight - (next - current)).clamp(0.35, 4.0);
     });
   }
 
@@ -743,18 +551,14 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
     _searchCtrl.clear();
     ref.read(torrentSearchProvider.notifier).state = '';
     ref.read(torrentFilterProvider.notifier).state = TorrentFilter.all;
-    ref.read(desktopTorrentStatusFilterProvider.notifier).state =
-        DesktopTorrentStatusFilter.all;
+    ref.read(desktopTorrentStatusFilterProvider.notifier).state = DesktopTorrentStatusFilter.all;
     ref.read(torrentCategoryProvider.notifier).state = '';
     ref.read(torrentTagProvider.notifier).state = const <String>{};
     ref.read(torrentSiteFilterProvider.notifier).state = '';
     ref.read(torrentErrorDetailFilterProvider.notifier).state = '';
   }
 
-  void _confirmCleanErrorTorrents(
-    List<Torrent> targets,
-    List<Torrent> allTorrents,
-  ) {
+  void _confirmCleanErrorTorrents(List<Torrent> targets, List<Torrent> allTorrents) {
     if (targets.isEmpty) {
       Toast.info('没有可清理的错误种子');
       return;
@@ -762,28 +566,20 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
     showDesktopConfirmDialog(
       context,
       title: '清理错误种子',
-      message:
-          '将清理 ${targets.length} 个可确认删除的错误种子。无其他站点做种时会同时删除文件；存在其他做种时仅删除种子。',
+      message: '将清理 ${targets.length} 个可确认删除的错误种子。无其他站点做种时会同时删除文件；存在其他做种时仅删除种子。',
       destructive: true,
       onConfirm: () => _cleanErrorTorrents(targets, allTorrents),
     );
   }
 
-  Future<void> _cleanErrorTorrents(
-    List<Torrent> targets,
-    List<Torrent> allTorrents,
-  ) async {
+  Future<void> _cleanErrorTorrents(List<Torrent> targets, List<Torrent> allTorrents) async {
     final summary = await deleteTorrentsWithOptionalFiles(
       type: widget.downloaderType,
       torrents: targets,
       allTorrents: allTorrents,
       deleteFilesWhenUnpreserved: true,
-      onAction: (action, params) => executeTorrentAction(
-        ref: ref,
-        downloaderId: widget.downloaderId,
-        action: action,
-        params: params,
-      ),
+      onAction: (action, params) =>
+          executeTorrentAction(ref: ref, downloaderId: widget.downloaderId, action: action, params: params),
     );
 
     if (!summary.success) {
@@ -791,25 +587,16 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
       return;
     }
 
-    unawaited(
-      ref.read(torrentListProvider(widget.downloaderId).notifier).refresh(),
-    );
-    final keptFileText = summary.metadataOnlyCount > 0
-        ? '，${summary.metadataOnlyCount} 个保留文件'
-        : '';
+    unawaited(ref.read(torrentListProvider(widget.downloaderId).notifier).refresh());
+    final keptFileText = summary.metadataOnlyCount > 0 ? '，${summary.metadataOnlyCount} 个保留文件' : '';
     Toast.success('已清理 ${summary.total} 个错误种子$keptFileText');
   }
 
-  Future<void> _showCategoryEditor(
-    Downloader downloader, {
-    String? categoryName,
-  }) async {
+  Future<void> _showCategoryEditor(Downloader downloader, {String? categoryName}) async {
     final editing = categoryName != null;
     DownloaderCategory? category;
     if (editing) {
-      final categories = await ref.read(
-        download_providers.downloaderCategoriesProvider(downloader.id).future,
-      );
+      final categories = await ref.read(download_providers.downloaderCategoriesProvider(downloader.id).future);
       for (final item in categories) {
         if (item.name == categoryName) {
           category = item;
@@ -820,7 +607,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
     if (!mounted) return;
     final nameCtrl = TextEditingController(text: categoryName ?? '');
     final pathCtrl = TextEditingController(text: category?.savePath ?? '');
-    showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => DesktopInputDialog(
         title: editing ? '编辑分类' : '新增分类',
@@ -837,26 +624,12 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
           }
           try {
             if (editing) {
-              await DownloaderService.editCategory(
-                downloader.id,
-                category: name,
-                savePath: pathCtrl.text.trim(),
-              );
+              await DownloaderService.editCategory(downloader.id, category: name, savePath: pathCtrl.text.trim());
             } else {
-              await DownloaderService.createCategory(
-                downloader.id,
-                category: name,
-                savePath: pathCtrl.text.trim(),
-              );
+              await DownloaderService.createCategory(downloader.id, category: name, savePath: pathCtrl.text.trim());
             }
-            ref.invalidate(
-              download_providers.downloaderCategoriesProvider(downloader.id),
-            );
-            unawaited(
-              ref
-                  .read(torrentListProvider(widget.downloaderId).notifier)
-                  .refresh(),
-            );
+            ref.invalidate(download_providers.downloaderCategoriesProvider(downloader.id));
+            unawaited(ref.read(torrentListProvider(widget.downloaderId).notifier).refresh());
             if (ctx.mounted) Navigator.pop(ctx);
             Toast.success(editing ? '分类已更新' : '分类已创建');
           } catch (e, st) {
@@ -877,17 +650,11 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
       onConfirm: () async {
         try {
           await DownloaderService.deleteCategory(downloader.id, category);
-          ref.invalidate(
-            download_providers.downloaderCategoriesProvider(downloader.id),
-          );
+          ref.invalidate(download_providers.downloaderCategoriesProvider(downloader.id));
           if (ref.read(torrentCategoryProvider) == category) {
             ref.read(torrentCategoryProvider.notifier).state = '';
           }
-          unawaited(
-            ref
-                .read(torrentListProvider(widget.downloaderId).notifier)
-                .refresh(),
-          );
+          unawaited(ref.read(torrentListProvider(widget.downloaderId).notifier).refresh());
           Toast.success('分类已删除');
         } catch (e, st) {
           AppLogger.error('删除 QB 分类失败', e, st);
@@ -900,7 +667,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
   void _showTagEditor(Downloader downloader, {String? oldTag}) {
     final editing = oldTag != null;
     final tagCtrl = TextEditingController(text: oldTag ?? '');
-    showDialog(
+    appShowDialog(
       context: context,
       builder: (ctx) => DesktopInputDialog(
         title: editing ? '编辑标签' : '新增标签',
@@ -918,9 +685,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
             } else if (!editing) {
               await DownloaderService.createTag(downloader.id, tag);
             }
-            ref.invalidate(
-              download_providers.downloaderTagsProvider(downloader.id),
-            );
+            ref.invalidate(download_providers.downloaderTagsProvider(downloader.id));
             final selectedTags = ref.read(torrentTagProvider);
             if (oldTag != null && selectedTags.contains(oldTag)) {
               final next = Set<String>.of(selectedTags)
@@ -928,11 +693,7 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
                 ..add(tag);
               ref.read(torrentTagProvider.notifier).state = next;
             }
-            unawaited(
-              ref
-                  .read(torrentListProvider(widget.downloaderId).notifier)
-                  .refresh(),
-            );
+            unawaited(ref.read(torrentListProvider(widget.downloaderId).notifier).refresh());
             if (ctx.mounted) Navigator.pop(ctx);
             Toast.success(editing ? '标签已更新' : '标签已创建');
           } catch (e, st) {
@@ -944,18 +705,9 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
     );
   }
 
-  Future<void> _replaceTag(
-    Downloader downloader,
-    String oldTag,
-    String newTag,
-  ) async {
+  Future<void> _replaceTag(Downloader downloader, String oldTag, String newTag) async {
     await DownloaderService.createTag(downloader.id, newTag);
-    final torrents =
-        ref
-            .read(torrentListProvider(widget.downloaderId))
-            .value
-            ?.torrents ??
-        const <Torrent>[];
+    final torrents = ref.read(torrentListProvider(widget.downloaderId)).value?.torrents ?? const <Torrent>[];
     final hashes = torrents
         .where((t) => t.labels.contains(oldTag))
         .map((t) => t.hashString)
@@ -984,19 +736,13 @@ class _DesktopTorrentSidebarState extends ConsumerState<DesktopTorrentSidebar> {
       onConfirm: () async {
         try {
           await DownloaderService.deleteTag(downloader.id, tag);
-          ref.invalidate(
-            download_providers.downloaderTagsProvider(downloader.id),
-          );
+          ref.invalidate(download_providers.downloaderTagsProvider(downloader.id));
           final selectedTags = ref.read(torrentTagProvider);
           if (selectedTags.contains(tag)) {
             final next = Set<String>.of(selectedTags)..remove(tag);
             ref.read(torrentTagProvider.notifier).state = next;
           }
-          unawaited(
-            ref
-                .read(torrentListProvider(widget.downloaderId).notifier)
-                .refresh(),
-          );
+          unawaited(ref.read(torrentListProvider(widget.downloaderId).notifier).refresh());
           Toast.success('标签已删除');
         } catch (e, st) {
           AppLogger.error('删除 QB 标签失败', e, st);

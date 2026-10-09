@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/torrent_model.dart';
 import '../model/torrent_site_matcher.dart';
@@ -33,7 +31,7 @@ class DesktopTorrentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final color = statusColor(torrent.torrentStatus, torrent.hasError);
 
     return GestureDetector(
@@ -45,26 +43,17 @@ class DesktopTorrentRow extends StatelessWidget {
         height: 48,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         color: selected ? cs.primary.withValues(alpha: 0.08) : null,
-        child: Row(
-          children: [
-            for (final column in columns) _buildCell(context, column, color),
-          ],
-        ),
+        child: Row(children: [for (final column in columns) _buildCell(context, column, color)]),
       ),
     );
   }
 
   Widget _buildCell(BuildContext context, TorrentColumn column, Color color) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final hasError = torrent.hasError;
-    final errorText = torrent.effectiveErrorMessage.isEmpty
-        ? '种子存在错误'
-        : torrent.effectiveErrorMessage;
+    final errorText = torrent.effectiveErrorMessage.isEmpty ? '种子存在错误' : torrent.effectiveErrorMessage;
     return switch (column) {
-      TorrentColumn.queueId => DesktopCell(
-        width: column.width,
-        text: '${torrent.queuePosition}',
-      ),
+      TorrentColumn.queueId => DesktopCell(width: column.width, text: '${torrent.queuePosition}'),
       TorrentColumn.name => DesktopCell(
         width: column.width,
         child: Row(
@@ -72,21 +61,15 @@ class DesktopTorrentRow extends StatelessWidget {
             StatusDot(color: color),
             const SizedBox(width: 9),
             if (hasError)
-              shadcn.Tooltip(
+              Tooltip(
                 tooltip: (_) => Text(errorText).xSmall,
                 child: Container(
                   margin: const EdgeInsets.only(right: 6),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 2,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: BoxDecoration(
                     color: cs.destructive.withValues(alpha: 0.12),
-                    borderRadius: shadcn.Theme.of(context).borderRadiusSm,
-                    border: Border.all(
-                      color: cs.destructive.withValues(alpha: 0.35),
-                      width: 0.5,
-                    ),
+                    borderRadius: Theme.of(context).borderRadiusSm,
+                    border: Border.all(color: cs.destructive.withValues(alpha: 0.35), width: 0.5),
                   ),
                   child: DefaultTextStyle.merge(
                     style: TextStyle(color: cs.destructive),
@@ -96,7 +79,7 @@ class DesktopTorrentRow extends StatelessWidget {
               ),
             Expanded(
               child: hasError
-                  ? shadcn.Tooltip(
+                  ? Tooltip(
                       tooltip: (_) => Text(errorText).xSmall,
                       child: DefaultTextStyle.merge(
                         style: TextStyle(color: cs.destructive),
@@ -134,9 +117,7 @@ class DesktopTorrentRow extends StatelessWidget {
       ),
       TorrentColumn.totalSize => DesktopCell(
         width: column.width,
-        text: TorrentUtils.formatBytes(
-          torrent.totalSize > 0 ? torrent.totalSize : torrent.sizeWhenDone,
-        ),
+        text: TorrentUtils.formatBytes(torrent.totalSize > 0 ? torrent.totalSize : torrent.sizeWhenDone),
       ),
       TorrentColumn.status => DesktopCell(
         width: column.width,
@@ -146,14 +127,8 @@ class DesktopTorrentRow extends StatelessWidget {
         width: column.width,
         child: InlineProgress(value: torrent.percentDone, color: color),
       ),
-      TorrentColumn.seeds => DesktopCell(
-        width: column.width,
-        text: '${torrent.peersGettingFromUs}',
-      ),
-      TorrentColumn.peers => DesktopCell(
-        width: column.width,
-        text: '${torrent.peersSendingToUs}',
-      ),
+      TorrentColumn.seeds => DesktopCell(width: column.width, text: '${torrent.peersGettingFromUs}'),
+      TorrentColumn.peers => DesktopCell(width: column.width, text: '${torrent.peersSendingToUs}'),
       TorrentColumn.download => DesktopCell(
         width: column.width,
         text: TorrentUtils.formatSpeed(torrent.rateDownload),
@@ -164,32 +139,18 @@ class DesktopTorrentRow extends StatelessWidget {
         text: TorrentUtils.formatSpeed(torrent.rateUpload),
         color: torrent.rateUpload > 0 ? colorSeeding : null,
       ),
-      TorrentColumn.eta => DesktopCell(
-        width: column.width,
-        text: desktopTorrentEta(torrent),
-      ),
-      TorrentColumn.ratio => DesktopCell(
-        width: column.width,
-        text: TorrentUtils.formatRatio(torrent.uploadRatio),
-      ),
+      TorrentColumn.eta => DesktopCell(width: column.width, text: desktopTorrentEta(torrent)),
+      TorrentColumn.ratio => DesktopCell(width: column.width, text: TorrentUtils.formatRatio(torrent.uploadRatio)),
       TorrentColumn.category => DesktopCell(
         width: column.width,
-        text: torrentCategoryLabel(torrent).isEmpty
-            ? '-'
-            : torrentCategoryLabel(torrent),
+        text: torrentCategoryLabel(torrent).isEmpty ? '-' : torrentCategoryLabel(torrent),
       ),
       TorrentColumn.tags => DesktopCell(
         width: column.width,
         text: torrent.labels.isEmpty ? '-' : torrent.labels.join(', '),
       ),
-      TorrentColumn.added => DesktopCell(
-        width: column.width,
-        text: desktopTorrentTime(torrent.addedDate),
-      ),
-      TorrentColumn.completed => DesktopCell(
-        width: column.width,
-        text: desktopTorrentTime(torrent.doneDate),
-      ),
+      TorrentColumn.added => DesktopCell(width: column.width, text: desktopTorrentTime(torrent.addedDate)),
+      TorrentColumn.completed => DesktopCell(width: column.width, text: desktopTorrentTime(torrent.doneDate)),
       TorrentColumn.tracker => DesktopCell(
         width: column.width,
         text: siteMatch?.displayName ?? desktopTorrentTracker(torrent),
@@ -203,32 +164,18 @@ class DesktopTorrentRow extends StatelessWidget {
         width: column.width,
         text: TorrentUtils.formatBytes(torrent.downloadedEver),
       ),
-      TorrentColumn.uploaded => DesktopCell(
-        width: column.width,
-        text: TorrentUtils.formatBytes(torrent.uploadedEver),
-      ),
-      TorrentColumn.sessionTransfer => DesktopCell(
-        width: column.width,
-        text: '-',
-      ),
+      TorrentColumn.uploaded => DesktopCell(width: column.width, text: TorrentUtils.formatBytes(torrent.uploadedEver)),
+      TorrentColumn.sessionTransfer => DesktopCell(width: column.width, text: '-'),
       TorrentColumn.savePath => DesktopCell(
         width: column.width,
         text: torrent.downloadDir.isEmpty ? '-' : torrent.downloadDir,
       ),
       TorrentColumn.ratioLimit => DesktopCell(
         width: column.width,
-        text: torrent.seedRatioLimit <= 0
-            ? '-'
-            : TorrentUtils.formatRatio(torrent.seedRatioLimit),
+        text: torrent.seedRatioLimit <= 0 ? '-' : TorrentUtils.formatRatio(torrent.seedRatioLimit),
       ),
-      TorrentColumn.lastSeenComplete => DesktopCell(
-        width: column.width,
-        text: '-',
-      ),
-      TorrentColumn.activity => DesktopCell(
-        width: column.width,
-        text: desktopTorrentTime(torrent.activityDate),
-      ),
+      TorrentColumn.lastSeenComplete => DesktopCell(width: column.width, text: '-'),
+      TorrentColumn.activity => DesktopCell(width: column.width, text: desktopTorrentTime(torrent.activityDate)),
     };
   }
 }
@@ -241,21 +188,11 @@ class DesktopCell extends StatelessWidget {
   final Color? color;
   final Widget? child;
 
-  const DesktopCell({
-    super.key,
-    required this.width,
-    this.text,
-    this.color,
-    this.child,
-  });
+  const DesktopCell({super.key, required this.width, this.text, this.color, this.child});
 
   @override
   Widget build(BuildContext context) {
-    final content = Text(
-      text ?? '',
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    ).xSmall;
+    final content = Text(text ?? '', maxLines: 1, overflow: TextOverflow.ellipsis).xSmall;
     return SizedBox(
       width: width,
       child:
@@ -301,17 +238,10 @@ class StatusPill extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: shadcn.Theme.of(context).borderRadiusSm,
-        ),
+        decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: Theme.of(context).borderRadiusSm),
         child: DefaultTextStyle.merge(
           style: TextStyle(color: color),
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ).xSmall.medium,
+          child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis).xSmall.medium,
         ),
       ),
     );
@@ -328,16 +258,16 @@ class InlineProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
         Expanded(
-          child: shadcn.LinearProgressIndicator(
+          child: LinearProgressIndicator(
             value: value.clamp(0.0, 1.0),
             backgroundColor: cs.border,
             color: color,
             minHeight: 5,
-            borderRadius: shadcn.Theme.of(context).borderRadiusSm,
+            borderRadius: Theme.of(context).borderRadiusSm,
           ),
         ),
         const SizedBox(width: 7),

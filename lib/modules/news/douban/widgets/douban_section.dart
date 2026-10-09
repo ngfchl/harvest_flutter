@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:harvest/core/utils/utils.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 class DoubanSection extends StatelessWidget {
   final String title;
@@ -9,13 +7,7 @@ class DoubanSection extends StatelessWidget {
   final VoidCallback? onSeeAll;
   final bool isLoading;
 
-  const DoubanSection({
-    super.key,
-    required this.title,
-    required this.items,
-    this.onSeeAll,
-    this.isLoading = false,
-  });
+  const DoubanSection({super.key, required this.title, required this.items, this.onSeeAll, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
@@ -33,11 +25,7 @@ class DoubanSection extends StatelessWidget {
             children: [
               Text(title).base.bold,
               const Spacer(),
-              if (onSeeAll != null)
-                shadcn.Button.link(
-                  onPressed: onSeeAll,
-                  child: const Text('查看全部'),
-                ),
+              if (onSeeAll != null) Button.link(onPressed: onSeeAll, child: const Text('查看全部')),
             ],
           ),
         ),
@@ -45,13 +33,10 @@ class DoubanSection extends StatelessWidget {
         if (isLoading)
           SizedBox(
             height: cardHeight,
-            child: const Center(child: shadcn.CircularProgressIndicator()),
+            child: const Center(child: CircularProgressIndicator()),
           )
         else if (items.isEmpty)
-          SizedBox(
-            height: 80,
-            child: Center(child: const Text('暂无数据').small.muted),
-          )
+          SizedBox(height: 80, child: Center(child: const Text('暂无数据').small.muted))
         else
           SizedBox(
             height: cardHeight,

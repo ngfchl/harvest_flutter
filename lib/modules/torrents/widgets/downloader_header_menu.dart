@@ -1,9 +1,8 @@
-import 'package:harvest/widgets/shadcn_compat.dart';
-import 'package:flutter/material.dart';
 import 'package:harvest/modules/download/model/downloader.dart';
 import 'package:harvest/widgets/app_menu.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
+import 'package:harvest/widgets/shadcn_compat.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter_material/shadcn_flutter_material.dart';
 
 class HeaderMenuAction {
   final String id;
@@ -49,24 +48,24 @@ class DownloaderHeaderMenu extends StatelessWidget {
     final isQb = downloaderType == DownloaderType.qbittorrent;
 
     final actions = <HeaderMenuAction>[
-      HeaderMenuAction('refresh', shadcn.LucideIcons.refreshCw, '刷新列表', onRefresh),
-      HeaderMenuAction('start', shadcn.LucideIcons.play, '开始当前列表', currentCount > 0 ? onStart : null),
-      HeaderMenuAction('pause', shadcn.LucideIcons.pause, '暂停当前列表', currentCount > 0 ? onPause : null),
+      HeaderMenuAction('refresh', LucideIcons.refreshCw, '刷新列表', onRefresh),
+      HeaderMenuAction('start', LucideIcons.play, '开始当前列表', currentCount > 0 ? onStart : null),
+      HeaderMenuAction('pause', LucideIcons.pause, '暂停当前列表', currentCount > 0 ? onPause : null),
       HeaderMenuAction('reannounce', Icons.campaign_outlined, '重新汇报当前列表', currentCount > 0 ? onReannounce : null),
       HeaderMenuAction('recheck', Icons.fact_check_outlined, '重新校验当前列表', currentCount > 0 ? onRecheck : null),
-      HeaderMenuAction('speed', shadcn.LucideIcons.gauge, '限速设置', downloader != null ? onSpeedLimitSettings : null),
+      HeaderMenuAction('speed', LucideIcons.gauge, '限速设置', downloader != null ? onSpeedLimitSettings : null),
       if (isQb) ...[
-        HeaderMenuAction('category', shadcn.LucideIcons.tags, '分类管理', downloader != null ? onCategoryManagement : null),
-        HeaderMenuAction('tag', shadcn.LucideIcons.tag, '标签管理', downloader != null ? onTagManagement : null),
-        HeaderMenuAction('trackers', shadcn.LucideIcons.replace, '批量替换 Tracker', onReplaceTrackers),
+        HeaderMenuAction('category', LucideIcons.tags, '分类管理', downloader != null ? onCategoryManagement : null),
+        HeaderMenuAction('tag', LucideIcons.tag, '标签管理', downloader != null ? onTagManagement : null),
+        HeaderMenuAction('trackers', LucideIcons.replace, '批量替换 Tracker', onReplaceTrackers),
       ],
     ];
 
     return Builder(
-      builder: (anchorContext) => shadcn.Tooltip(
+      builder: (anchorContext) => Tooltip(
         tooltip: (_) => const Text('更多操作'),
-        child: shadcn.IconButton.ghost(
-          icon: const Icon(shadcn.LucideIcons.ellipsisVertical),
+        child: IconButton.ghost(
+          icon: const Icon(LucideIcons.ellipsisVertical),
           onPressed: () => _showMenu(anchorContext, actions),
         ),
       ),
@@ -79,23 +78,21 @@ class DownloaderHeaderMenu extends StatelessWidget {
       context: anchorContext,
       alignment: Alignment.topRight,
       anchorAlignment: Alignment.bottomRight,
-      widthConstraint: shadcn.PopoverConstraint.intrinsic,
+      widthConstraint: PopoverConstraint.intrinsic,
       offset: const Offset(0, 8),
       consumeOutsideTaps: false,
       regionGroupId: menuKey,
-      overlayBarrier: shadcn.OverlayBarrier(
-        borderRadius: BorderRadius.circular(shadcn.Theme.of(anchorContext).radiusMd),
-      ),
-      builder: (_) => shadcn.Data.inherit(
-        data: shadcn.DropdownMenuData(menuKey),
+      overlayBarrier: OverlayBarrier(borderRadius: BorderRadius.circular(Theme.of(anchorContext).radiusMd)),
+      builder: (_) => Data.inherit(
+        data: DropdownMenuData(menuKey),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 220),
           child: appMenu(
             children: [
-              shadcn.MenuLabel(child: Text('当前列表 $currentCount 个种子').small),
-              const shadcn.MenuDivider(),
+              MenuLabel(child: Text('当前列表 $currentCount 个种子').small),
+              const MenuDivider(),
               for (final action in actions)
-                shadcn.MenuButton(
+                MenuButton(
                   leading: Icon(action.icon, size: 16),
                   enabled: action.onTap != null,
                   onPressed: (_) => action.onTap?.call(),

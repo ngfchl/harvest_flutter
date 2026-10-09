@@ -1,12 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest/core/config/app_config.dart';
-import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/utils/utils.dart';
@@ -22,27 +20,21 @@ import 'package:harvest/modules/shell/widgets/log_floating_overlay.dart';
 import 'package:harvest/modules/site/site_timeline_page.dart';
 import 'package:harvest/modules/user/provider/user_management_provider.dart';
 import 'package:harvest/modules/user/user_management_page.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/app_dialog.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter_material/shadcn_flutter_material.dart';
 
-final desktopNavigationSidebarVisibleProvider = StateProvider<bool>(
-  (_) => true,
-);
+final desktopNavigationSidebarVisibleProvider = StateProvider<bool>((_) => true);
 
 class GlobalDrawerSwipeArea extends ConsumerStatefulWidget {
   final Widget child;
   final double edgeWidth;
   final double openThreshold;
 
-  const GlobalDrawerSwipeArea({
-    super.key,
-    required this.child,
-    this.edgeWidth = 32,
-    this.openThreshold = 24,
-  });
+  const GlobalDrawerSwipeArea({super.key, required this.child, this.edgeWidth = 32, this.openThreshold = 24});
 
   @override
-  ConsumerState<GlobalDrawerSwipeArea> createState() =>
-      _GlobalDrawerSwipeAreaState();
+  ConsumerState<GlobalDrawerSwipeArea> createState() => _GlobalDrawerSwipeAreaState();
 }
 
 class _GlobalDrawerSwipeAreaState extends ConsumerState<GlobalDrawerSwipeArea> {
@@ -104,9 +96,9 @@ Future<void> showGlobalDrawer(BuildContext context, WidgetRef ref) async {
   final maxWidth = screenWidth < 420 ? screenWidth * 0.78 : 292.0;
   final minWidth = maxWidth < 236 ? maxWidth : 236.0;
   final width = (screenWidth * 0.68).clamp(minWidth, maxWidth).toDouble();
-  final completer = shadcn.openDrawerOverlay<void>(
+  final completer = openDrawerOverlay<void>(
     context: context,
-    position: shadcn.OverlayPosition.left,
+    position: OverlayPosition.left,
     expands: false,
     constraints: BoxConstraints.tightFor(width: width),
     alignment: Alignment.centerLeft,
@@ -131,21 +123,14 @@ class GlobalNavigationSidebar extends StatelessWidget {
   final WidgetRef ref;
   final bool persistent;
 
-  const GlobalNavigationSidebar({
-    super.key,
-    required this.ref,
-    this.drawerContext,
-    this.persistent = false,
-  });
+  const GlobalNavigationSidebar({super.key, required this.ref, this.drawerContext, this.persistent = false});
 
   Future<void> _close() {
     if (persistent || drawerContext == null) return Future<void>.value();
-    return shadcn.closeDrawer<void>(drawerContext!);
+    return closeDrawer<void>(drawerContext!);
   }
 
-  void _afterClose(
-    void Function(NavigatorState nav, BuildContext context) action,
-  ) {
+  void _afterClose(void Function(NavigatorState nav, BuildContext context) action) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final nav = navigatorKey.currentState;
       final context = navigatorKey.currentContext;
@@ -197,18 +182,12 @@ class GlobalNavigationSidebar extends StatelessWidget {
   Future<void> _confirmRestartServer(BuildContext context) async {
     final ok = await appShowDialog<bool>(
       context: context,
-      builder: (ctx) => shadcn.AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('重启服务器'),
         content: const Text('确定要重启服务器吗？重启期间服务会短暂不可用。'),
         actions: [
-          shadcn.Button.outline(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
-          ),
-          shadcn.Button.destructive(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('重启'),
-          ),
+          Button.outline(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+          Button.destructive(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('重启')),
         ],
       ),
     );
@@ -226,9 +205,7 @@ class GlobalNavigationSidebar extends StatelessWidget {
 
   Future<void> _switchAccount() async {
     await _close();
-    ref
-        .read(authProvider.notifier)
-        .logout(redirectTo: '/login-history');
+    ref.read(authProvider.notifier).logout(redirectTo: '/login-history');
   }
 
   Future<void> _logout() async {
@@ -252,230 +229,167 @@ class GlobalNavigationSidebar extends StatelessWidget {
     final privacy = ref.watch(privacyModeProvider);
 
     return SizedBox.expand(
-      child: Material(
-        color: cs.background,
-        child: SafeArea(
-          right: false,
-          child: Container(
-            margin: tokens.edgeOnly(top: 6, right: 6, bottom: 6),
-            decoration: BoxDecoration(
-              color: cs.background,
-              border: Border.all(
-                color: cs.border.withValues(alpha: 0.7),
-                width: 0.8,
-              ),
-              borderRadius: BorderRadius.circular(theme.radiusLg),
-              boxShadow: [
-                BoxShadow(
-                  color: cs.foreground.withValues(alpha: 0.08),
-                  blurRadius: 24,
-                  offset: const Offset(8, 0),
-                ),
-              ],
-            ),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return shadcn.NavigationSidebar(
-                  backgroundColor: cs.background,
-                  surfaceBlur: 0,
-                  surfaceOpacity: 1,
-                  spacing: tokens.size(4),
-                  labelType: shadcn.NavigationLabelType.expanded,
-                  labelPosition: shadcn.NavigationLabelPosition.end,
-                  labelSize: shadcn.NavigationLabelSize.large,
-                  padding: tokens.edgeOnly(
-                    left: 12,
-                    top: 8,
-                    right: 12,
-                    bottom: 10,
+      child: SafeArea(
+        right: false,
+        child: Container(
+          margin: tokens.edgeOnly(top: 6, right: 6, bottom: 6),
+          decoration: BoxDecoration(
+            color: cs.background,
+            border: Border.all(color: cs.border.withValues(alpha: 0.7), width: 0.8),
+            borderRadius: BorderRadius.circular(theme.radiusLg),
+            boxShadow: [
+              BoxShadow(color: cs.foreground.withValues(alpha: 0.04), blurRadius: 16, offset: const Offset(4, 0)),
+            ],
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return NavigationSidebar(
+                backgroundColor: cs.background,
+                surfaceBlur: 0,
+                surfaceOpacity: 1,
+                spacing: tokens.size(4),
+                labelType: NavigationLabelType.expanded,
+                labelPosition: NavigationLabelPosition.end,
+                labelSize: NavigationLabelSize.large,
+                padding: tokens.edgeOnly(left: 12, top: 8, right: 12, bottom: 10),
+                constraints: BoxConstraints.tightFor(width: constraints.maxWidth, height: constraints.maxHeight),
+                selectedKey: selectedKey,
+                header: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: tokens.edgeOnly(left: 14, top: persistent ? 46 : 22, right: 8, bottom: 4),
+                      child: _GlobalDrawerAccountHeader(
+                        user: user,
+                        server: AppConfig.baseUrl,
+                        authInfo: authInfo,
+                        privacy: privacy,
+                        trailing: persistent
+                            ? null
+                            : IconButton.ghost(
+                                size: ButtonSize.small,
+                                density: ButtonDensity.iconDense,
+                                onPressed: _close,
+                                icon: const SizedBox(width: 32, height: 32, child: Icon(LucideIcons.x, size: 20)),
+                              ),
+                      ),
+                    ),
                   ),
-                  constraints: BoxConstraints.tightFor(
-                    width: constraints.maxWidth,
-                    height: constraints.maxHeight,
-                  ),
-                  selectedKey: selectedKey,
-                  header: [
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: tokens.edgeOnly(
-                          left: 14,
-                          top: persistent ? 46 : 22,
-                          right: 8,
-                          bottom: 4,
-                        ),
-                        child: _GlobalDrawerAccountHeader(
-                          user: user,
-                          server: AppConfig.baseUrl,
-                          authInfo: authInfo,
-                          privacy: privacy,
-                          trailing: persistent
-                              ? null
-                              : shadcn.IconButton.ghost(
-                                  size: shadcn.ButtonSize.small,
-                                  density: shadcn.ButtonDensity.iconDense,
-                                  onPressed: _close,
-                                  icon: const SizedBox(
-                                    width: 32,
-                                    height: 32,
-                                    child: Icon(shadcn.LucideIcons.x, size: 20),
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ),
-                    shadcn.NavigationDivider(
-                      color: cs.border.withValues(alpha: 0.72),
-                    ),
-                  ],
-                  footer: [
-                    shadcn.NavigationDivider(
-                      color: cs.border.withValues(alpha: 0.72),
-                    ),
-                    if (isSuperuser)
-                      _navButton(
-                        context,
-                        label: '服务重启',
-                        icon: shadcn.LucideIcons.serverCog,
-                        onPressed: _restartServer,
-                      ),
-                    if (showAccountSwitcher)
-                      _navButton(
-                        context,
-                        label: '切换账号',
-                        icon: shadcn.LucideIcons.users,
-                        onPressed: _switchAccount,
-                      ),
-                    _navButton(
-                      context,
-                      label: '退出登录',
-                      icon: shadcn.LucideIcons.logOut,
-                      onPressed: _logout,
-                      destructive: true,
-                    ),
-                  ],
-                  children: [
-                    _navSectionLabel(context, '常用入口'),
-                    if (isSuperuser)
-                      _navItem(
-                        context,
-                        key: 'dashboard',
-                        label: '数据仪表',
-                        icon: shadcn.LucideIcons.layoutDashboard,
-                        onTap: () => _go('/dashboard'),
-                      ),
+                  NavigationDivider(color: cs.border.withValues(alpha: 0.72)),
+                ],
+                footer: [
+                  NavigationDivider(color: cs.border.withValues(alpha: 0.72)),
+                  if (isSuperuser)
+                    _navButton(context, label: '服务重启', icon: LucideIcons.serverCog, onPressed: _restartServer),
+                  if (showAccountSwitcher)
+                    _navButton(context, label: '切换账号', icon: LucideIcons.users, onPressed: _switchAccount),
+                  _navButton(context, label: '退出登录', icon: LucideIcons.logOut, onPressed: _logout, destructive: true),
+                ],
+                children: [
+                  _navSectionLabel(context, '常用入口'),
+                  if (isSuperuser)
                     _navItem(
                       context,
-                      key: 'search',
-                      label: '全局搜索',
-                      icon: shadcn.LucideIcons.search,
-                      onTap: () => _go('/search'),
+                      key: 'dashboard',
+                      label: '数据仪表',
+                      icon: LucideIcons.layoutDashboard,
+                      onTap: () => _go('/dashboard'),
                     ),
-                    if (!isSuperuser && showNews)
+                  _navItem(
+                    context,
+                    key: 'search',
+                    label: '全局搜索',
+                    icon: LucideIcons.search,
+                    onTap: () => _go('/search'),
+                  ),
+                  if (!isSuperuser && showNews)
+                    _navItem(
+                      context,
+                      key: 'news',
+                      label: '资讯中心',
+                      icon: LucideIcons.newspaper,
+                      onTap: () => _go('/home'),
+                    ),
+                  if (isSuperuser) ...[
+                    _navGap(context, 8),
+                    _navSectionLabel(context, '站点内容'),
+                    if (showNews)
                       _navItem(
                         context,
                         key: 'news',
                         label: '资讯中心',
-                        icon: shadcn.LucideIcons.newspaper,
+                        icon: LucideIcons.newspaper,
                         onTap: () => _go('/home'),
                       ),
-                    if (isSuperuser) ...[
-                      _navGap(context, 8),
-                      _navSectionLabel(context, '站点内容'),
-                      if (showNews)
-                        _navItem(
-                          context,
-                          key: 'news',
-                          label: '资讯中心',
-                          icon: shadcn.LucideIcons.newspaper,
-                          onTap: () => _go('/home'),
-                        ),
-                      _navItem(
-                        context,
-                        key: 'sites',
-                        label: '站点数据',
-                        icon: shadcn.LucideIcons.globe,
-                        onTap: () => _go('/sites'),
-                      ),
-                      _navButton(
-                        context,
-                        label: '站点动态',
-                        icon: shadcn.LucideIcons.gitBranchPlus,
-                        onPressed: () => _push(const SiteTimelinePage()),
-                      ),
-                    ],
-                    _navGap(context, 8),
-                    _navSectionLabel(context, '下载任务'),
+                    _navItem(context, key: 'sites', label: '站点数据', icon: LucideIcons.globe, onTap: () => _go('/sites')),
+                    _navButton(
+                      context,
+                      label: '站点动态',
+                      icon: LucideIcons.gitBranchPlus,
+                      onPressed: () => _push(const SiteTimelinePage()),
+                    ),
+                  ],
+                  _navGap(context, 8),
+                  _navSectionLabel(context, '下载任务'),
+                  _navItem(
+                    context,
+                    key: 'downloads',
+                    label: '下载管理',
+                    icon: LucideIcons.download,
+                    onTap: () => _go('/downloads'),
+                  ),
+                  if (isSuperuser)
                     _navItem(
                       context,
-                      key: 'downloads',
-                      label: '下载管理',
-                      icon: shadcn.LucideIcons.download,
-                      onTap: () => _go('/downloads'),
+                      key: 'tasks',
+                      label: '任务列表',
+                      icon: LucideIcons.listTodo,
+                      onTap: () => _go('/tasks'),
                     ),
-                    if (isSuperuser)
-                      _navItem(
-                        context,
-                        key: 'tasks',
-                        label: '任务列表',
-                        icon: shadcn.LucideIcons.listTodo,
-                        onTap: () => _go('/tasks'),
-                      ),
-                    if (isSuperuser) ...[
-                      _navGap(context, 8),
-                      _navSectionLabel(context, '系统维护'),
+                  if (isSuperuser) ...[
+                    _navGap(context, 8),
+                    _navSectionLabel(context, '系统维护'),
+                    _navButton(
+                      context,
+                      label: '设置中心',
+                      icon: LucideIcons.settings,
+                      onPressed: () => _push(const OptionPage()),
+                    ),
+                    _navButton(
+                      context,
+                      label: '程序更新',
+                      icon: LucideIcons.arrowUpFromLine,
+                      onPressed: () => _push(const UpdatePage()),
+                    ),
+                    if (!kIsWeb)
                       _navButton(
                         context,
-                        label: '设置中心',
-                        icon: shadcn.LucideIcons.settings,
-                        onPressed: () => _push(const OptionPage()),
+                        label: '应用升级',
+                        icon: LucideIcons.circleArrowUp,
+                        onPressed: () => _pushRoute('/app-upgrade'),
                       ),
-                      _navButton(
-                        context,
-                        label: '程序更新',
-                        icon: shadcn.LucideIcons.arrowUpFromLine,
-                        onPressed: () => _push(const UpdatePage()),
-                      ),
-                      if (!kIsWeb)
-                        _navButton(
-                          context,
-                          label: '应用升级',
-                          icon: shadcn.LucideIcons.circleArrowUp,
-                          onPressed: () => _pushRoute('/app-upgrade'),
-                        ),
-                      _navButton(
-                        context,
-                        label: '日志中心',
-                        icon: shadcn.LucideIcons.scrollText,
-                        onPressed: _openLogCenter,
-                      ),
-                      _navButton(
-                        context,
-                        label: '日志浮窗',
-                        icon: shadcn.LucideIcons.terminal,
-                        onPressed: _openLogs,
-                      ),
-                    ],
-                    if (isSuperuser) ...[
-                      _navGap(context, 8),
-                      _navSectionLabel(context, '用户权限'),
-                      _navButton(
-                        context,
-                        label: '用户中心',
-                        icon: shadcn.LucideIcons.user,
-                        onPressed: () => _push(const UserManagementPage()),
-                      ),
-                      if (showAdminUser)
-                        _navButton(
-                          context,
-                          label: '授权管理',
-                          icon: shadcn.LucideIcons.shieldCheck,
-                          onPressed: () => _push(const AdminUserPage()),
-                        ),
-                    ],
+                    _navButton(context, label: '日志中心', icon: LucideIcons.scrollText, onPressed: _openLogCenter),
+                    _navButton(context, label: '日志浮窗', icon: LucideIcons.terminal, onPressed: _openLogs),
                   ],
-                );
-              },
-            ),
+                  if (isSuperuser) ...[
+                    _navGap(context, 8),
+                    _navSectionLabel(context, '用户权限'),
+                    _navButton(
+                      context,
+                      label: '用户中心',
+                      icon: LucideIcons.user,
+                      onPressed: () => _push(const UserManagementPage()),
+                    ),
+                    if (showAdminUser)
+                      _navButton(
+                        context,
+                        label: '授权管理',
+                        icon: LucideIcons.shieldCheck,
+                        onPressed: () => _push(const AdminUserPage()),
+                      ),
+                  ],
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -536,10 +450,10 @@ class GlobalNavigationSidebar extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     final tokens = _GlobalDrawerTokens.of(context);
-    return shadcn.NavigationItem(
+    return NavigationItem(
       key: ValueKey<String>(key),
       label: Text(label, style: _navLabelStyle(tokens)),
-      overflow: shadcn.NavigationOverflow.ellipsis,
+      overflow: NavigationOverflow.ellipsis,
       spacing: tokens.size(9),
       style: _navButtonStyle,
       selectedStyle: _selectedNavButtonStyle,
@@ -560,9 +474,9 @@ class GlobalNavigationSidebar extends StatelessWidget {
     final tokens = _GlobalDrawerTokens.of(context);
     final color = destructive ? tokens.cs.destructive : null;
     final labelStyle = _navLabelStyle(tokens, color: color);
-    return shadcn.NavigationButton(
+    return NavigationButton(
       label: Text(label, style: labelStyle),
-      overflow: shadcn.NavigationOverflow.ellipsis,
+      overflow: NavigationOverflow.ellipsis,
       spacing: tokens.size(9),
       style: _navButtonStyle,
       onPressed: onPressed,
@@ -579,12 +493,12 @@ class GlobalNavigationSidebar extends StatelessWidget {
   }
 }
 
-const _navButtonStyle = shadcn.ButtonStyle.ghost();
-const _selectedNavButtonStyle = shadcn.ButtonStyle.secondary();
+const _navButtonStyle = ButtonStyle.ghost();
+const _selectedNavButtonStyle = ButtonStyle.secondary();
 
 class _GlobalDrawerTokens {
-  final shadcn.ThemeData theme;
-  final shadcn.ColorScheme cs;
+  final ThemeData theme;
+  final ColorScheme cs;
   final double densityScale;
   final double textScale;
 
@@ -596,12 +510,8 @@ class _GlobalDrawerTokens {
   });
 
   factory _GlobalDrawerTokens.of(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
-    final densityScale =
-        ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(
-          0.72,
-          1.18,
-        );
+    final theme = Theme.of(context);
+    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.72, 1.18);
     final textScale = theme.scaling.clamp(0.86, 1.22);
     return _GlobalDrawerTokens._(
       theme: theme,
@@ -613,17 +523,8 @@ class _GlobalDrawerTokens {
 
   double size(num value) => value * densityScale;
 
-  EdgeInsets edgeOnly({
-    num left = 0,
-    num top = 0,
-    num right = 0,
-    num bottom = 0,
-  }) => EdgeInsets.only(
-    left: size(left),
-    top: size(top),
-    right: size(right),
-    bottom: size(bottom),
-  );
+  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) =>
+      EdgeInsets.only(left: size(left), top: size(top), right: size(right), bottom: size(bottom));
 }
 
 class _GlobalDrawerAccountHeader extends StatelessWidget {
@@ -665,11 +566,7 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
       children: [
         Row(
           children: [
-            shadcn.Avatar(
-              initials: initial,
-              size: tokens.size(40),
-              backgroundColor: cs.primary,
-            ),
+            Avatar(initials: initial, size: tokens.size(40), backgroundColor: cs.primary),
             SizedBox(width: tokens.size(11)),
             Expanded(
               child: Column(
@@ -679,27 +576,19 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
                     displayName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.typography.base.copyWith(
-                      color: cs.foreground,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: theme.typography.base.copyWith(color: cs.foreground, fontWeight: FontWeight.w800),
                   ),
                   SizedBox(height: tokens.size(3)),
                   Text(
                     displayServer,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.typography.small.copyWith(
-                      color: cs.mutedForeground,
-                    ),
+                    style: theme.typography.small.copyWith(color: cs.mutedForeground),
                   ),
                 ],
               ),
             ),
-            if (trailing != null) ...[
-              SizedBox(width: tokens.size(6)),
-              trailing!,
-            ],
+            if (trailing != null) ...[SizedBox(width: tokens.size(6)), trailing!],
           ],
         ),
         SizedBox(height: tokens.size(13)),
@@ -714,17 +603,9 @@ class _GlobalDrawerAccountHeader extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _GlobalDrawerAuthLine(
-                  icon: shadcn.LucideIcons.mail,
-                  label: '授权邮箱',
-                  value: displayAuthEmail,
-                ),
+                _GlobalDrawerAuthLine(icon: LucideIcons.mail, label: '授权邮箱', value: displayAuthEmail),
                 SizedBox(height: tokens.size(7)),
-                _GlobalDrawerAuthLine(
-                  icon: shadcn.LucideIcons.calendarClock,
-                  label: '授权时间',
-                  value: displayAuthTime,
-                ),
+                _GlobalDrawerAuthLine(icon: LucideIcons.calendarClock, label: '授权时间', value: displayAuthTime),
               ],
             ),
           ),
@@ -739,11 +620,7 @@ class _GlobalDrawerAuthLine extends StatelessWidget {
   final String label;
   final String value;
 
-  const _GlobalDrawerAuthLine({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
+  const _GlobalDrawerAuthLine({required this.icon, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -759,11 +636,7 @@ class _GlobalDrawerAuthLine extends StatelessWidget {
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: theme.typography.small.copyWith(
-            color: cs.mutedForeground,
-            fontWeight: FontWeight.w700,
-            height: 1.1,
-          ),
+          style: theme.typography.small.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w700, height: 1.1),
         ),
         SizedBox(width: tokens.size(8)),
         Expanded(
@@ -826,20 +699,11 @@ String _maskSidebarValue(String value, bool privacy, {String empty = '--'}) {
 }
 
 String _authInfoEmail(Object? authInfo, dynamic user) {
-  final email = _findAuthInfoValue(authInfo, const [
-    'email',
-    'mail',
-    'user_email',
-    'invite_email',
-  ]);
+  final email = _findAuthInfoValue(authInfo, const ['email', 'mail', 'user_email', 'invite_email']);
   final emailText = _stringValue(email);
   if (emailText.isNotEmpty) return emailText;
 
-  final username = _findAuthInfoValue(authInfo, const [
-    'username',
-    'user_name',
-    'name',
-  ]);
+  final username = _findAuthInfoValue(authInfo, const ['username', 'user_name', 'name']);
   final usernameText = _stringValue(username);
   if (_looksLikeEmail(usernameText)) return usernameText;
 
@@ -916,20 +780,14 @@ String _formatAuthTimestamp(num value) {
   final timestamp = value.toInt();
   if (timestamp <= 0) return '';
   if (timestamp > 100000000000) {
-    return formatDateTimeMinute(
-      DateTime.fromMillisecondsSinceEpoch(timestamp).toLocal(),
-    );
+    return formatDateTimeMinute(DateTime.fromMillisecondsSinceEpoch(timestamp).toLocal());
   }
   if (timestamp > 1000000000) {
-    return formatDateTimeMinute(
-      DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal(),
-    );
+    return formatDateTimeMinute(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal());
   }
   return timestamp.toString();
 }
 
-String _stringValue(dynamic value) =>
-    value == null ? '' : value.toString().trim();
+String _stringValue(dynamic value) => value == null ? '' : value.toString().trim();
 
-bool _looksLikeEmail(String value) =>
-    value.contains('@') && value.contains('.');
+bool _looksLikeEmail(String value) => value.contains('@') && value.contains('.');

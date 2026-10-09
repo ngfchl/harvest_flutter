@@ -1,11 +1,11 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/shadcn_compat.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' hide Chip;
 
 import '../model/site_config.dart';
 import '../model/site_info.dart';
@@ -22,12 +22,10 @@ void showAddSiteSheet(BuildContext context) {
     showAppSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: shadcn.Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.background,
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
-        final maxHeight =
-            (media.size.height - media.padding.top - media.viewInsets.bottom) *
-            0.66;
+        final maxHeight = (media.size.height - media.padding.top - media.viewInsets.bottom) * 0.66;
         return GestureDetector(
           behavior: HitTestBehavior.translucent,
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
@@ -41,11 +39,8 @@ void showAddSiteSheet(BuildContext context) {
   } else {
     appShowDialog(
       context: context,
-      builder: (_) => shadcn.AlertDialog(
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480, maxHeight: 600),
-          child: sheet,
-        ),
+      builder: (_) => AlertDialog(
+        content: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 480, maxHeight: 600), child: sheet),
       ),
     );
   }
@@ -66,21 +61,17 @@ class _SwitchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final active = option.value;
 
     return Container(
       height: 42,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: active
-            ? cs.primary.withValues(alpha: 0.08)
-            : cs.muted.withValues(alpha: 0.25),
+        color: active ? cs.primary.withValues(alpha: 0.08) : cs.muted.withValues(alpha: 0.25),
         borderRadius: siteRadius(context, size: "md"),
         border: Border.all(
-          color: active
-              ? cs.primary.withValues(alpha: 0.28)
-              : cs.border.withValues(alpha: 0.55),
+          color: active ? cs.primary.withValues(alpha: 0.28) : cs.border.withValues(alpha: 0.55),
           width: 0.5,
         ),
       ),
@@ -99,7 +90,7 @@ class _SwitchCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 6),
-          shadcn.Switch(value: active, onChanged: option.onChange),
+          Switch(value: active, onChanged: option.onChange),
         ],
       ),
     );
@@ -117,7 +108,7 @@ void showSiteForm(
     showAppSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: shadcn.Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.background,
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.85,
         maxChildSize: 0.95,
@@ -138,14 +129,10 @@ void showSiteForm(
   } else {
     appShowDialog(
       context: context,
-      builder: (_) => shadcn.AlertDialog(
+      builder: (_) => AlertDialog(
         content: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520, maxHeight: 720),
-          child: SiteFormSheet(
-            site: site,
-            siteName: siteName,
-            showBackToList: showBackToList,
-          ),
+          child: SiteFormSheet(site: site, siteName: siteName, showBackToList: showBackToList),
         ),
       ),
     );
@@ -177,15 +164,12 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
   Widget build(BuildContext context) {
     final unaddedAsync = ref.watch(unaddedSitesProvider);
     final mobile = context.isMobile;
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     final content = unaddedAsync.when(
       loading: () => const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32),
-          child: shadcn.CircularProgressIndicator(),
-        ),
+        child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()),
       ),
       error: (e, _) => Padding(
         padding: const EdgeInsets.all(24),
@@ -194,10 +178,7 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
           children: [
             Text('加载失败: $e'),
             const SizedBox(height: 16),
-            shadcn.Button.primary(
-              onPressed: () => ref.invalidate(unaddedSitesProvider),
-              child: const Text('重试'),
-            ),
+            Button.primary(onPressed: () => ref.invalidate(unaddedSitesProvider), child: const Text('重试')),
           ],
         ),
       ),
@@ -208,11 +189,7 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  shadcn.LucideIcons.check,
-                  size: 48,
-                  color: cs.mutedForeground,
-                ),
+                Icon(LucideIcons.check, size: 48, color: cs.mutedForeground),
                 const SizedBox(height: 16),
                 Text('所有站点已添加', style: theme.typography.large),
               ],
@@ -222,9 +199,7 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
 
         final filtered = _query.isEmpty
             ? names
-            : names
-                  .where((n) => n.toLowerCase().contains(_query.toLowerCase()))
-                  .toList();
+            : names.where((n) => n.toLowerCase().contains(_query.toLowerCase())).toList();
 
         return Column(
           mainAxisSize: MainAxisSize.max,
@@ -234,18 +209,15 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
                 children: [
-                  shadcn.IconButton.ghost(
+                  IconButton.ghost(
                     onPressed: () => closeAppSheet(context),
-                    icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 16),
+                    icon: const Icon(LucideIcons.arrowRightLeft, size: 16),
                   ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       '选择站点 (${names.length})',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -260,19 +232,12 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
                 decoration: BoxDecoration(
                   color: cs.muted.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: cs.border.withValues(alpha: 0.6),
-                    width: 0.6,
-                  ),
+                  border: Border.all(color: cs.border.withValues(alpha: 0.6), width: 0.6),
                 ),
                 child: Row(
                   children: [
                     const SizedBox(width: 12),
-                    Icon(
-                      shadcn.LucideIcons.search,
-                      size: 15,
-                      color: cs.mutedForeground,
-                    ),
+                    Icon(LucideIcons.search, size: 15, color: cs.mutedForeground),
                     const SizedBox(width: 8),
                     Expanded(
                       child: ShadTextField(
@@ -290,11 +255,7 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
                         },
                         child: Padding(
                           padding: const EdgeInsets.only(left: 4, right: 10),
-                          child: Icon(
-                            shadcn.LucideIcons.x,
-                            size: 14,
-                            color: cs.mutedForeground,
-                          ),
+                          child: Icon(LucideIcons.x, size: 14, color: cs.mutedForeground),
                         ),
                       )
                     else
@@ -310,10 +271,7 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
             if (filtered.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text(
-                  '没有匹配的站点',
-                  style: TextStyle(color: cs.mutedForeground, fontSize: 13),
-                ),
+                child: Text('没有匹配的站点', style: TextStyle(color: cs.mutedForeground, fontSize: 13)),
               )
             else
               Flexible(
@@ -326,23 +284,13 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
                     decoration: BoxDecoration(
                       color: cs.muted.withValues(alpha: 0.28),
                       borderRadius: siteRadius(context, size: "md"),
-                      border: Border.all(
-                        color: cs.border.withValues(alpha: 0.45),
-                        width: 0.5,
-                      ),
+                      border: Border.all(color: cs.border.withValues(alpha: 0.45), width: 0.5),
                     ),
-                    child: Material(
-                      type: MaterialType.transparency,
-                      child: ListTile(
-                        dense: true,
-                        title: Text(filtered[i]),
-                        trailing: Icon(
-                          shadcn.LucideIcons.chevronRight,
-                          size: 16,
-                          color: cs.mutedForeground,
-                        ),
-                        onTap: () => _openAddForm(context, ref, filtered[i]),
-                      ),
+                    child: ListTile(
+                      dense: true,
+                      title: Text(filtered[i]),
+                      trailing: Icon(LucideIcons.chevronRight, size: 16, color: cs.mutedForeground),
+                      onTap: () => _openAddForm(context, ref, filtered[i]),
                     ),
                   ),
                 ),
@@ -353,18 +301,11 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
     );
 
     final sheet = Container(
-      padding: EdgeInsets.fromLTRB(
-        mobile ? 12 : 16,
-        mobile ? 0 : 16,
-        mobile ? 12 : 16,
-        mobile ? 12 : 16,
-      ),
+      padding: EdgeInsets.fromLTRB(mobile ? 12 : 16, mobile ? 0 : 16, mobile ? 12 : 16, mobile ? 12 : 16),
       decoration: BoxDecoration(
         color: cs.background,
         borderRadius: mobile
-            ? BorderRadius.vertical(
-                top: siteRadius(context, size: "xl").topLeft,
-              )
+            ? BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft)
             : siteRadius(context, size: "xl"),
       ),
       clipBehavior: Clip.antiAlias,
@@ -377,17 +318,11 @@ class _AddSiteSheetState extends ConsumerState<AddSiteSheet> {
   void _openAddForm(BuildContext context, WidgetRef ref, String siteName) {
     final configs = ref.read(websiteListProvider).value ?? [];
     final config = configs.firstWhereOrNull((c) => c.name == siteName);
-    final rootContext =
-        navigatorKey.currentContext ?? Navigator.of(context).context;
+    final rootContext = navigatorKey.currentContext ?? Navigator.of(context).context;
     closeAppSheet(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!rootContext.mounted) return;
-      showSiteForm(
-        rootContext,
-        siteName: siteName,
-        config: config,
-        showBackToList: true,
-      );
+      showSiteForm(rootContext, siteName: siteName, config: config, showBackToList: true);
     });
   }
 }
@@ -402,13 +337,7 @@ class SiteFormSheet extends ConsumerStatefulWidget {
   final ScrollController? scrollController;
   final bool showBackToList;
 
-  const SiteFormSheet({
-    super.key,
-    this.site,
-    this.siteName,
-    this.scrollController,
-    this.showBackToList = false,
-  });
+  const SiteFormSheet({super.key, this.site, this.siteName, this.scrollController, this.showBackToList = false});
 
   @override
   ConsumerState<SiteFormSheet> createState() => _SiteFormSheetState();
@@ -495,9 +424,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     _configApplied = true;
     if (_mirrorCtrl.text.isEmpty) _mirrorCtrl.text = c.url.firstOrNull ?? '';
     if (!_isEdit && _nicknameCtrl.text.trim().isEmpty) {
-      final preferredName = c.nickname.trim().isNotEmpty
-          ? c.nickname.trim()
-          : c.name.trim();
+      final preferredName = c.nickname.trim().isNotEmpty ? c.nickname.trim() : c.name.trim();
       if (preferredName.isNotEmpty) {
         _nicknameCtrl.text = preferredName;
       }
@@ -514,8 +441,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
   }
 
   void _backToAddList() {
-    final rootContext =
-        navigatorKey.currentContext ?? Navigator.of(context).context;
+    final rootContext = navigatorKey.currentContext ?? Navigator.of(context).context;
     closeAppSheet(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!rootContext.mounted) return;
@@ -524,19 +450,17 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final showBack = widget.showBackToList && !_isEdit;
 
     return SizedBox(
       height: 44,
       child: Row(
         children: [
-          shadcn.IconButton.ghost(
+          IconButton.ghost(
             onPressed: showBack ? _backToAddList : () => closeAppSheet(context),
             icon: Icon(
-              showBack
-                  ? shadcn.LucideIcons.chevronLeft
-                  : shadcn.LucideIcons.arrowLeft,
+              showBack ? LucideIcons.chevronLeft : LucideIcons.arrowRightLeft,
               size: 18,
               color: cs.foreground.withValues(alpha: 0.7),
             ),
@@ -547,11 +471,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
               _isEdit ? '编辑站点' : '添加站点',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: cs.foreground,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: cs.foreground),
             ),
           ),
           const SizedBox(width: 10),
@@ -562,20 +482,13 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
               decoration: BoxDecoration(
                 color: cs.primary.withValues(alpha: 0.08),
                 borderRadius: siteRadius(context, size: "md"),
-                border: Border.all(
-                  color: cs.primary.withValues(alpha: 0.2),
-                  width: 0.5,
-                ),
+                border: Border.all(color: cs.primary.withValues(alpha: 0.2), width: 0.5),
               ),
               child: Text(
                 _siteName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: cs.primary,
-                ),
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: cs.primary),
               ),
             ),
           ),
@@ -603,7 +516,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
         .when(
           loading: () => const Padding(
             padding: EdgeInsets.all(48),
-            child: Center(child: shadcn.CircularProgressIndicator()),
+            child: Center(child: CircularProgressIndicator()),
           ),
           error: (e, _) => Padding(
             padding: const EdgeInsets.all(48),
@@ -627,15 +540,10 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     final mobile = context.isMobile;
     final configUrls = config?.url ?? [];
     final configTags = config?.tagList ?? [];
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     final form = Padding(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        mobile ? 0 : 12,
-        16,
-        MediaQuery.of(context).viewInsets.bottom + 12,
-      ),
+      padding: EdgeInsets.fromLTRB(16, mobile ? 0 : 12, 16, MediaQuery.of(context).viewInsets.bottom + 12),
       child: Column(
         children: [
           _buildHeader(context),
@@ -679,24 +587,20 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
           Row(
             children: [
               Expanded(
-                child: shadcn.Button.outline(
+                child: Button.outline(
                   onPressed: () => closeAppSheet(context),
                   child: Center(child: const Text('取消')),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: shadcn.Button.primary(
+                child: Button.primary(
                   onPressed: _saving ? null : _save,
                   child: _saving
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: Center(
-                            child: shadcn.CircularProgressIndicator(
-                              strokeWidth: 2.2,
-                            ),
-                          ),
+                          child: Center(child: CircularProgressIndicator(strokeWidth: 2.2)),
                         )
                       : Center(child: const Text('保存')),
                 ),
@@ -707,27 +611,22 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
       ),
     );
 
-    final wrapped = Material(
-      color: cs.background,
+    final wrapped = ClipRRect(
       borderRadius: mobile
           ? BorderRadius.vertical(top: siteRadius(context, size: "xl").topLeft)
           : siteRadius(context, size: "xl"),
-      clipBehavior: Clip.antiAlias,
-      child: form,
+      child: ColoredBox(color: cs.background, child: form),
     );
 
     final layered = wrapped;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: layered,
-    );
+    return Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: layered);
   }
 
   // ────────────── 辅助 ──────────────
 
   Widget _availabilitySection(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return _formSection(context, null, [
@@ -739,36 +638,24 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
               children: [
                 Text(
                   '启用站点',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: cs.foreground,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w600, color: cs.foreground),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   _available ? '站点正常运行中' : '站点已停用',
-                  style: theme.typography.xSmall.copyWith(
-                    color: _available ? cs.primary : cs.mutedForeground,
-                  ),
+                  style: theme.typography.xSmall.copyWith(color: _available ? cs.primary : cs.mutedForeground),
                 ),
               ],
             ),
           ),
-          shadcn.Switch(
-            value: _available,
-            onChanged: (v) => setState(() => _available = v),
-          ),
+          Switch(value: _available, onChanged: (v) => setState(() => _available = v)),
         ],
       ),
     ]);
   }
 
-  Widget _formSection(
-    BuildContext context,
-    String? title,
-    List<Widget> children,
-  ) {
-    final theme = shadcn.Theme.of(context);
+  Widget _formSection(BuildContext context, String? title, List<Widget> children) {
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return Column(
@@ -777,10 +664,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
         if (title != null) ...[
           Text(
             title,
-            style: theme.typography.small.copyWith(
-              color: cs.foreground,
-              fontWeight: FontWeight.w700,
-            ),
+            style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
         ],
@@ -809,21 +693,13 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     );
   }
 
-  Widget _formField(
-    String label,
-    TextEditingController controller, {
-    String? hint,
-    int maxLines = 1,
-  }) {
+  Widget _formField(String label, TextEditingController controller, {String? hint, int maxLines = 1}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: shadcn.Theme.of(context).colorScheme.foreground,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.foreground),
         ),
         const SizedBox(height: 8),
         ShadTextField(
@@ -837,7 +713,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
   }
 
   Widget _tagEditor(BuildContext context, List<String> configTags) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final customTags = _selectedTags.where((t) => !configTags.contains(t));
 
     return Column(
@@ -845,10 +721,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
       children: [
         Text(
           '标签',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: cs.foreground,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w600, color: cs.foreground),
         ),
         const SizedBox(height: 8),
         if (configTags.isNotEmpty)
@@ -860,18 +733,11 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
               return FilterChip(
                 label: Text(
                   tag,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: selected ? siteColors(context).background : null,
-                  ),
+                  style: TextStyle(fontSize: 12, color: selected ? siteColors(context).background : null),
                 ),
                 selected: selected,
                 selectedColor: cs.primary,
-                onSelected: (value) => setState(
-                  () => value
-                      ? _selectedTags.add(tag)
-                      : _selectedTags.remove(tag),
-                ),
+                onSelected: (value) => setState(() => value ? _selectedTags.add(tag) : _selectedTags.remove(tag)),
               );
             }).toList(),
           ),
@@ -882,15 +748,11 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
               child: ShadTextField(
                 controller: _tagInputCtrl,
                 hintText: '自定义标签',
-                onSubmitted: (_) =>
-                    FocusManager.instance.primaryFocus?.unfocus(),
+                onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
               ),
             ),
             const SizedBox(width: 8),
-            shadcn.Button.outline(
-              onPressed: _addCustomTag,
-              child: const Text('添加'),
-            ),
+            Button.outline(onPressed: _addCustomTag, child: const Text('添加')),
           ],
         ),
         if (customTags.isNotEmpty) ...[
@@ -902,7 +764,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
                 .map(
                   (tag) => Chip(
                     label: Text(tag, style: const TextStyle(fontSize: 12)),
-                    deleteIcon: const Icon(Icons.close, size: 16),
+                    deleteIcon: const Icon(LucideIcons.x, size: 16),
                     onDeleted: () => setState(() => _selectedTags.remove(tag)),
                   ),
                 )
@@ -914,11 +776,9 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
   }
 
   Widget _mirrorEditor(BuildContext context, List<String> configUrls) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final selected = configUrls.contains(_mirrorCtrl.text)
-        ? _mirrorCtrl.text
-        : null;
+    final selected = configUrls.contains(_mirrorCtrl.text) ? _mirrorCtrl.text : null;
     final displayText = selected ?? '选择镜像地址';
 
     return Column(
@@ -926,28 +786,20 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
       children: [
         Text(
           '镜像',
-          style: theme.typography.small.copyWith(
-            color: cs.foreground,
-            fontWeight: FontWeight.w600,
-          ),
+          style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         if (configUrls.isNotEmpty) ...[
           GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () => setState(
-              () => _mirrorOptionsExpanded = !_mirrorOptionsExpanded,
-            ),
+            onTap: () => setState(() => _mirrorOptionsExpanded = !_mirrorOptionsExpanded),
             child: Container(
               height: 38,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
                 color: cs.background,
                 borderRadius: siteRadius(context, size: "md"),
-                border: Border.all(
-                  color: cs.border.withValues(alpha: 0.72),
-                  width: 0.6,
-                ),
+                border: Border.all(color: cs.border.withValues(alpha: 0.72), width: 0.6),
               ),
               child: Row(
                 children: [
@@ -957,9 +809,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.typography.small.copyWith(
-                        color: selected == null
-                            ? cs.mutedForeground
-                            : cs.foreground,
+                        color: selected == null ? cs.mutedForeground : cs.foreground,
                       ),
                     ),
                   ),
@@ -967,11 +817,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
                   AnimatedRotation(
                     turns: _mirrorOptionsExpanded ? 0.5 : 0,
                     duration: const Duration(milliseconds: 160),
-                    child: Icon(
-                      shadcn.LucideIcons.chevronDown,
-                      size: 16,
-                      color: cs.mutedForeground,
-                    ),
+                    child: Icon(LucideIcons.chevronDown, size: 16, color: cs.mutedForeground),
                   ),
                 ],
               ),
@@ -984,20 +830,14 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
               decoration: BoxDecoration(
                 color: cs.background,
                 borderRadius: siteRadius(context, size: "md"),
-                border: Border.all(
-                  color: cs.border.withValues(alpha: 0.62),
-                  width: 0.6,
-                ),
+                border: Border.all(color: cs.border.withValues(alpha: 0.62), width: 0.6),
               ),
               clipBehavior: Clip.antiAlias,
               child: ListView.separated(
                 shrinkWrap: true,
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 itemCount: configUrls.length,
-                separatorBuilder: (_, _) => Divider(
-                  height: 1,
-                  color: cs.border.withValues(alpha: 0.32),
-                ),
+                separatorBuilder: (_, _) => Divider(height: 1, color: cs.border.withValues(alpha: 0.32)),
                 itemBuilder: (context, index) {
                   final url = configUrls[index];
                   final active = url == selected;
@@ -1008,13 +848,8 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
                       _mirrorOptionsExpanded = false;
                     }),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 9,
-                      ),
-                      color: active
-                          ? cs.primary.withValues(alpha: 0.08)
-                          : cs.background,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+                      color: active ? cs.primary.withValues(alpha: 0.08) : cs.background,
                       child: Row(
                         children: [
                           Expanded(
@@ -1024,19 +859,13 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
                               overflow: TextOverflow.ellipsis,
                               style: theme.typography.small.copyWith(
                                 color: active ? cs.primary : cs.foreground,
-                                fontWeight: active
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
+                                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                               ),
                             ),
                           ),
                           if (active) ...[
                             const SizedBox(width: 8),
-                            Icon(
-                              shadcn.LucideIcons.check,
-                              size: 15,
-                              color: cs.primary,
-                            ),
+                            Icon(LucideIcons.check, size: 15, color: cs.primary),
                           ],
                         ],
                       ),
@@ -1061,52 +890,21 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     final options = [
       _SiteSwitchOption('自动签到', _signIn, (v) => setState(() => _signIn = v)),
       _SiteSwitchOption('获取信息', _getInfo, (v) => setState(() => _getInfo = v)),
-      _SiteSwitchOption(
-        '辅种任务',
-        _repeatTorrents,
-        (v) => setState(() => _repeatTorrents = v),
-      ),
-      _SiteSwitchOption(
-        'Free 刷流',
-        _brushFree,
-        (v) => setState(() => _brushFree = v),
-      ),
-      _SiteSwitchOption(
-        'RSS 刷流',
-        _brushRss,
-        (v) => setState(() => _brushRss = v),
-      ),
-      _SiteSwitchOption(
-        'HR 识别',
-        _hrDiscern,
-        (v) => setState(() => _hrDiscern = v),
-      ),
-      _SiteSwitchOption(
-        '搜索种子',
-        _searchTorrents,
-        (v) => setState(() => _searchTorrents = v),
-      ),
-      _SiteSwitchOption(
-        '首页展示',
-        _showInDash,
-        (v) => setState(() => _showInDash = v),
-      ),
-      _SiteSwitchOption(
-        '拆包刷流',
-        _packageFile,
-        (v) => setState(() => _packageFile = v),
-      ),
+      _SiteSwitchOption('辅种任务', _repeatTorrents, (v) => setState(() => _repeatTorrents = v)),
+      _SiteSwitchOption('Free 刷流', _brushFree, (v) => setState(() => _brushFree = v)),
+      _SiteSwitchOption('RSS 刷流', _brushRss, (v) => setState(() => _brushRss = v)),
+      _SiteSwitchOption('HR 识别', _hrDiscern, (v) => setState(() => _hrDiscern = v)),
+      _SiteSwitchOption('搜索种子', _searchTorrents, (v) => setState(() => _searchTorrents = v)),
+      _SiteSwitchOption('首页展示', _showInDash, (v) => setState(() => _showInDash = v)),
+      _SiteSwitchOption('拆包刷流', _packageFile, (v) => setState(() => _packageFile = v)),
     ];
 
     return _formSection(context, '功能开关', [
       LayoutBuilder(
         builder: (context, constraints) {
           const spacing = 8.0;
-          final columns = constraints.maxWidth >= 520
-              ? 3
-              : (constraints.maxWidth >= 300 ? 2 : 1);
-          final itemWidth =
-              (constraints.maxWidth - spacing * (columns - 1)) / columns;
+          final columns = constraints.maxWidth >= 520 ? 3 : (constraints.maxWidth >= 300 ? 2 : 1);
+          final itemWidth = (constraints.maxWidth - spacing * (columns - 1)) / columns;
 
           return Wrap(
             spacing: spacing,
@@ -1124,8 +922,7 @@ class _SiteFormSheetState extends ConsumerState<SiteFormSheet> {
     ]);
   }
 
-  String? _opt(TextEditingController c) =>
-      c.text.trim().isEmpty ? null : c.text.trim();
+  String? _opt(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
 
   Future<void> _save() async {
     if (_saving) return;

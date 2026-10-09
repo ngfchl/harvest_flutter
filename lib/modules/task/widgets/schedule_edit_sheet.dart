@@ -1,12 +1,11 @@
-import 'package:harvest/widgets/shadcn_compat.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/shadcn_compat.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/crontab.dart';
 import '../model/schedule.dart';
@@ -50,15 +49,9 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
     _nameCtrl = TextEditingController(text: task?.name ?? '');
     _minuteCtrl = TextEditingController(text: task?.crontab?.minute ?? '1');
     _hourCtrl = TextEditingController(text: task?.crontab?.hour ?? '*');
-    _dayOfWeekCtrl = TextEditingController(
-      text: task?.crontab?.dayOfWeek ?? '*',
-    );
-    _dayOfMonthCtrl = TextEditingController(
-      text: task?.crontab?.dayOfMonth ?? '*',
-    );
-    _monthOfYearCtrl = TextEditingController(
-      text: task?.crontab?.monthOfYear ?? '*',
-    );
+    _dayOfWeekCtrl = TextEditingController(text: task?.crontab?.dayOfWeek ?? '*');
+    _dayOfMonthCtrl = TextEditingController(text: task?.crontab?.dayOfMonth ?? '*');
+    _monthOfYearCtrl = TextEditingController(text: task?.crontab?.monthOfYear ?? '*');
     _selectedTaskType = task?.task.isNotEmpty == true ? task?.task : null;
     _enabled = task?.enabled ?? true;
   }
@@ -143,7 +136,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
     if (!context.isMobile) {
       appShowDialog<void>(
         context: context,
-        builder: (dialogContext) => shadcn.ModalContainer(
+        builder: (dialogContext) => ModalContainer(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 360, maxHeight: 420),
             child: Column(
@@ -154,17 +147,11 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                       ),
-                      shadcn.IconButton.ghost(
+                      IconButton.ghost(
                         onPressed: () => Navigator.of(dialogContext).pop(),
-                        icon: const Icon(shadcn.LucideIcons.x, size: 16),
+                        icon: const Icon(LucideIcons.x, size: 16),
                       ),
                     ],
                   ),
@@ -179,22 +166,16 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                           builder: (context) {
                             final selectedOption = option == selected;
                             return _SheetTile(
-                              title: _selectedOptionTitle(
-                                dialogContext,
-                                labelBuilder(option),
-                                selectedOption,
-                              ),
+                              title: _selectedOptionTitle(dialogContext, labelBuilder(option), selectedOption),
                               onTap: () {
                                 onSelected(option);
                                 Navigator.of(dialogContext).pop();
                               },
                               trailing: selectedOption
                                   ? Icon(
-                                      shadcn.LucideIcons.check,
+                                      LucideIcons.check,
                                       size: 18,
-                                      color: shadcn.Theme.of(
-                                        dialogContext,
-                                      ).colorScheme.primary,
+                                      color: Theme.of(dialogContext).colorScheme.primary,
                                     )
                                   : null,
                             );
@@ -214,9 +195,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
 
     showAppSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => SafeArea(
         top: false,
         child: Column(
@@ -224,13 +203,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
             Flexible(
               child: SingleChildScrollView(
@@ -238,23 +211,13 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                   children: options.map((t) {
                     final selectedOption = t == selected;
                     return _SheetTile(
-                      title: _selectedOptionTitle(
-                        context,
-                        labelBuilder(t),
-                        selectedOption,
-                      ),
+                      title: _selectedOptionTitle(context, labelBuilder(t), selectedOption),
                       onTap: () {
                         onSelected(t);
                         closeAppSheet(ctx);
                       },
                       trailing: selectedOption
-                          ? Icon(
-                              shadcn.LucideIcons.check,
-                              size: 18,
-                              color: shadcn.Theme.of(
-                                context,
-                              ).colorScheme.primary,
-                            )
+                          ? Icon(LucideIcons.check, size: 18, color: Theme.of(context).colorScheme.primary)
                           : null,
                     );
                   }).toList(),
@@ -268,18 +231,11 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
     );
   }
 
-  Widget _selectedOptionTitle(
-    BuildContext context,
-    String label,
-    bool selected,
-  ) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+  Widget _selectedOptionTitle(BuildContext context, String label, bool selected) {
+    final cs = Theme.of(context).colorScheme;
     return Text(
       label,
-      style: TextStyle(
-        color: selected ? cs.primary : null,
-        fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-      ),
+      style: TextStyle(color: selected ? cs.primary : null, fontWeight: selected ? FontWeight.w700 : FontWeight.w400),
     );
   }
 
@@ -314,18 +270,12 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            _isEdit ? '编辑任务' : '添加任务',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
+          Text(_isEdit ? '编辑任务' : '添加任务', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           Row(
             children: [
               const Text('高级', style: TextStyle(fontSize: 13)),
               const SizedBox(width: 4),
-              Switch(
-                value: _advance,
-                onChanged: (v) => setState(() => _advance = v),
-              ),
+              Switch(value: _advance, onChanged: (v) => setState(() => _advance = v)),
             ],
           ),
         ],
@@ -335,10 +285,10 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
 
   Widget _buildForm(AsyncValue<List<String>> taskTypesAsync) {
     return taskTypesAsync.when(
-      loading: () => const Center(child: shadcn.CircularProgressIndicator()),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('加载失败: $e')),
       data: (types) {
-        final cs = shadcn.Theme.of(context).colorScheme;
+        final cs = Theme.of(context).colorScheme;
         final filtered = types.where((t) => !t.contains('种子迁移')).toList();
         return SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -351,22 +301,13 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                     subtitle: Text(
                       _selectedTaskType ?? '请选择',
                       style: TextStyle(
-                        color: _selectedTaskType == null
-                            ? cs.mutedForeground
-                            : cs.foreground,
+                        color: _selectedTaskType == null ? cs.mutedForeground : cs.foreground,
                         fontSize: _selectedTaskType == null ? 12 : 18,
-                        fontWeight: _selectedTaskType == null
-                            ? FontWeight.w400
-                            : FontWeight.w900,
+                        fontWeight: _selectedTaskType == null ? FontWeight.w400 : FontWeight.w900,
                       ),
                     ),
-                    helper: _selectedTaskType != null
-                        ? null
-                        : const Text('选择要执行的后台任务类型'),
-                    trailing: const Icon(
-                      shadcn.LucideIcons.chevronRight,
-                      size: 18,
-                    ),
+                    helper: _selectedTaskType != null ? null : const Text('选择要执行的后台任务类型'),
+                    trailing: const Icon(LucideIcons.chevronRight, size: 18),
                     onTap: () => _showSelectSheet<String>(
                       title: '选择任务',
                       options: filtered,
@@ -404,10 +345,7 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
                   _SheetTile(
                     title: const Text('开启任务'),
                     helper: const Text('关闭后任务不会被调度执行'),
-                    trailing: Switch(
-                      value: _enabled,
-                      onChanged: (v) => setState(() => _enabled = v),
-                    ),
+                    trailing: Switch(value: _enabled, onChanged: (v) => setState(() => _enabled = v)),
                   ),
                 ],
               ),
@@ -447,22 +385,20 @@ class _ScheduleEditSheetState extends ConsumerState<ScheduleEditSheet> {
       child: Row(
         children: [
           Expanded(
-            child: shadcn.Button.outline(
+            child: Button.outline(
               onPressed: () => closeAppSheet(context),
               child: Center(child: const Text('取消')),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: shadcn.Button.primary(
+            child: Button.primary(
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox(
                       width: 16,
                       height: 16,
-                      child: Center(
-                        child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-                      ),
+                      child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
                     )
                   : Center(child: const Text('保存')),
             ),
@@ -480,7 +416,7 @@ class _SheetGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: cs.border),
@@ -498,18 +434,12 @@ class _SheetTile extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
 
-  const _SheetTile({
-    required this.title,
-    this.subtitle,
-    this.helper,
-    this.trailing,
-    this.onTap,
-  });
+  const _SheetTile({required this.title, this.subtitle, this.helper, this.trailing, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    return InkWell(
+    final cs = Theme.of(context).colorScheme;
+    return GestureDetector(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

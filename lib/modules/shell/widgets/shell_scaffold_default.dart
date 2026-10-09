@@ -1,6 +1,5 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import 'shell_bottom_navigation.dart';
 
@@ -32,13 +31,13 @@ class ShellScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return Stack(
       children: [
         const Positioned.fill(child: _ShellBackground()),
         Positioned.fill(
-          child: shadcn.ComponentTheme(
-            data: shadcn.ScaffoldTheme(backgroundColor: cs.background),
+          child: ComponentTheme(
+            data: ScaffoldTheme(backgroundColor: cs.background),
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTapDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
@@ -75,7 +74,7 @@ class _ShellBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return ColoredBox(color: cs.background);
   }
 }

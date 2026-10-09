@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/ui/responsive.dart';
 import 'package:harvest/modules/download/model/downloader.dart';
 import 'package:harvest/modules/download/provider/downloader_speed_provider.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/torrent_model.dart';
 import '../provider/downloader_provider.dart';
@@ -18,7 +17,7 @@ class StatsBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final items = buildTorrentStatsBarItems(
       context: context,
       ref: ref,
@@ -53,7 +52,7 @@ List<Widget> buildTorrentStatsBarItems({
   Downloader? downloader,
   VoidCallback? onOpenSpeedSettings,
 }) {
-  final cs = shadcn.Theme.of(context).colorScheme;
+  final cs = Theme.of(context).colorScheme;
   final data = ref.watch(torrentListProvider(downloaderId)).value;
   final status = data?.status;
   final speedMap = ref.watch(downloaderSpeedProvider);
@@ -94,7 +93,7 @@ List<Widget> buildTorrentStatsBarItems({
   return [
     StatusBarCount(label: '总数', count: totalCount),
     StatusBarMetric(
-      icon: shadcn.LucideIcons.activity,
+      icon: LucideIcons.activity,
       label: '活动',
       value: '$activeCount',
       color: const Color(0xFF0D9488),
@@ -102,7 +101,7 @@ List<Widget> buildTorrentStatsBarItems({
       showLabel: false,
     ),
     StatusBarMetric(
-      icon: shadcn.LucideIcons.pause,
+      icon: LucideIcons.pause,
       label: '暂停',
       value: '$pausedCount',
       color: cs.mutedForeground,
@@ -111,7 +110,7 @@ List<Widget> buildTorrentStatsBarItems({
     ),
     if (limited)
       StatusBarLimitMetric(
-        icon: shadcn.LucideIcons.gauge,
+        icon: LucideIcons.gauge,
         uploadValue: _formatLimitValue(uploadLimit * (downloader?.isQb == true ? 1 : 1000)),
         downloadValue: _formatLimitValue(downloadLimit * (downloader?.isQb == true ? 1 : 1000)),
         tooltip: onOpenSpeedSettings == null ? null : '打开限速设置',
@@ -220,7 +219,7 @@ class StatusBarMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final content = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -244,7 +243,7 @@ class StatusBarMetric extends StatelessWidget {
         : GestureDetector(onTap: onTap, behavior: HitTestBehavior.opaque, child: content);
 
     if (tooltip != null) {
-      return shadcn.Tooltip(tooltip: (_) => Text(tooltip!), child: child);
+      return Tooltip(tooltip: (_) => Text(tooltip!), child: child);
     }
     return child;
   }
@@ -268,7 +267,7 @@ class StatusBarLimitMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final content = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -302,7 +301,7 @@ class StatusBarLimitMetric extends StatelessWidget {
         : GestureDetector(onTap: onTap, behavior: HitTestBehavior.opaque, child: content);
 
     if (tooltip != null) {
-      return shadcn.Tooltip(tooltip: (_) => Text(tooltip!), child: child);
+      return Tooltip(tooltip: (_) => Text(tooltip!), child: child);
     }
     return child;
   }
@@ -316,7 +315,7 @@ class StatusBarTrafficGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final labelStyle = TextStyle(fontSize: 11, color: cs.mutedForeground, fontWeight: FontWeight.w500);
     const valueStyle = TextStyle(
       fontSize: 11,
@@ -324,18 +323,18 @@ class StatusBarTrafficGroup extends StatelessWidget {
       fontFeatures: [FontFeature.tabularFigures()],
     );
 
-    return shadcn.Tooltip(
+    return Tooltip(
       tooltip: (_) => const Text('数据量详情：箭头向上为总上传量（括号内为本次上传），箭头向下为总下载量（括号内为本次下载）'),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('数据量', style: labelStyle),
           const SizedBox(width: 8),
-          const Icon(shadcn.LucideIcons.arrowUp, size: 12, color: colorSeeding),
+          const Icon(LucideIcons.arrowUp, size: 12, color: colorSeeding),
           const SizedBox(width: 4),
           Text(uploadValue, style: valueStyle.copyWith(color: colorSeeding)),
           const SizedBox(width: 10),
-          const Icon(shadcn.LucideIcons.arrowDown, size: 12, color: colorDownloading),
+          const Icon(LucideIcons.arrowDown, size: 12, color: colorDownloading),
           const SizedBox(width: 4),
           Text(downloadValue, style: valueStyle.copyWith(color: colorDownloading)),
         ],
@@ -352,7 +351,7 @@ class StatusBarCount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -389,7 +388,7 @@ class StatusBarIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final button = GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -400,7 +399,7 @@ class StatusBarIconButton extends StatelessWidget {
     );
 
     if (tooltip == null) return button;
-    return shadcn.Tooltip(tooltip: (_) => Text(tooltip!), child: button);
+    return Tooltip(tooltip: (_) => Text(tooltip!), child: button);
   }
 }
 
@@ -424,7 +423,7 @@ class StatusBarPillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typo = shadcn.Theme.of(context).typography;
+    final typo = Theme.of(context).typography;
     final button = GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -449,6 +448,6 @@ class StatusBarPillButton extends StatelessWidget {
     );
 
     if (tooltip == null) return button;
-    return shadcn.Tooltip(tooltip: (_) => Text(tooltip!), child: button);
+    return Tooltip(tooltip: (_) => Text(tooltip!), child: button);
   }
 }

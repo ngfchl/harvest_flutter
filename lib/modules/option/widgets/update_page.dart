@@ -1,11 +1,10 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../provider/update_provider.dart';
 import 'update_panel.dart';
@@ -24,33 +23,27 @@ class UpdatePage extends ConsumerWidget {
       onBack: () => Navigator.of(context).pop(),
       child: GlobalDrawerSwipeArea(
         child: AppBackground(
-          child: shadcn.Scaffold(
+          child: Scaffold(
             backgroundColor: pageBackground,
             headers: [
-              shadcn.AppBar(
+              AppBar(
                 height: kAppHeaderHeight - 12,
                 padding: appHeaderPadding(context),
                 backgroundColor: pageBackground,
                 title: Text(
                   '程序更新',
-                  style: theme.typography.large.copyWith(
-                    color: cs.foreground,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                 ),
                 leading: [
-                  shadcn.IconButton.ghost(
-                    icon: Icon(
-                      shadcn.LucideIcons.arrowLeft,
-                      size: tokens.iconSm,
-                    ),
+                  IconButton.ghost(
+                    icon: Icon(LucideIcons.arrowLeft, size: tokens.iconSm),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
                 trailing: const [DebugThemeButton.shadcn()],
               ),
             ],
-            child: shadcn.RefreshTrigger(
+            child: RefreshTrigger(
               onRefresh: () => ref.read(updateProvider.notifier).refresh(),
               child: ListView(
                 padding: tokens.edgeOnly(top: 8, bottom: 24),
@@ -65,8 +58,8 @@ class UpdatePage extends ConsumerWidget {
 }
 
 class _UpdatePageThemeTokens {
-  final shadcn.ThemeData theme;
-  final shadcn.ColorScheme cs;
+  final ThemeData theme;
+  final ColorScheme cs;
   final double densityScale;
   final double textScale;
 
@@ -78,12 +71,8 @@ class _UpdatePageThemeTokens {
   });
 
   factory _UpdatePageThemeTokens.of(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
-    final densityScale =
-        ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(
-          0.55,
-          1.45,
-        );
+    final theme = Theme.of(context);
+    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.55, 1.45);
     final textScale = theme.scaling.clamp(0.86, 1.30);
     return _UpdatePageThemeTokens._(
       theme: theme,
@@ -99,15 +88,6 @@ class _UpdatePageThemeTokens {
 
   double get iconSm => font(16);
 
-  EdgeInsets edgeOnly({
-    num left = 0,
-    num top = 0,
-    num right = 0,
-    num bottom = 0,
-  }) => EdgeInsets.only(
-    left: size(left),
-    top: size(top),
-    right: size(right),
-    bottom: size(bottom),
-  );
+  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) =>
+      EdgeInsets.only(left: size(left), top: size(top), right: size(right), bottom: size(bottom));
 }

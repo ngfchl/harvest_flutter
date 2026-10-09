@@ -1,16 +1,15 @@
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
-import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/auth/user_model.dart';
+import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
-import 'package:harvest/modules/shell/widgets/global_drawer_swipe_area.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import 'model/user_management_model.dart';
 import 'provider/user_management_provider.dart';
@@ -49,8 +48,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                 child: _Header(
                   title: '用户中心',
                   onBack: () => Navigator.of(context).pop(),
-                  onRefresh: () =>
-                      ref.read(managedUserListProvider.notifier).refresh(),
+                  onRefresh: () => ref.read(managedUserListProvider.notifier).refresh(),
                 ),
               ),
               Expanded(
@@ -66,12 +64,9 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                         error: (error, _) => _ErrorBlock(
                           title: '用户列表加载失败',
                           error: error,
-                          onRetry: () => ref
-                              .read(managedUserListProvider.notifier)
-                              .refresh(),
+                          onRetry: () => ref.read(managedUserListProvider.notifier).refresh(),
                         ),
-                        data: (items) =>
-                            _buildUserManagement(items, currentUser),
+                        data: (items) => _buildUserManagement(items, currentUser),
                       ),
                     ],
                   ),
@@ -132,8 +127,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
             currentUsername: currentUser?.username,
             canManageStatus: canManageStatus,
             onEdit: (user) => _openUserDialog(user: user),
-            onResetPassword: (user) =>
-                _openUserDialog(user: user, resetPassword: true),
+            onResetPassword: (user) => _openUserDialog(user: user, resetPassword: true),
             onToggleStatus: _toggleUserStatus,
             onDelete: _confirmDelete,
           ),
@@ -141,10 +135,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
     );
   }
 
-  ManagedUser? _findCurrentManagedUser(
-    List<ManagedUser> users,
-    User? currentUser,
-  ) {
+  ManagedUser? _findCurrentManagedUser(List<ManagedUser> users, User? currentUser) {
     if (currentUser == null) return null;
     for (final user in users) {
       if (user.id == currentUser.id || user.username == currentUser.username) {
@@ -167,7 +158,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
           final tokens = _UserManagementThemeTokens.of(ctx);
-          return shadcn.AlertDialog(
+          return AlertDialog(
             title: Text(title),
             content: GestureDetector(
               behavior: HitTestBehavior.translucent,
@@ -182,8 +173,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                       enabled: !resetPassword,
                       autofocus: !isEdit,
                       placeholder: const Text('用户名'),
-                      onSubmitted: (_) =>
-                          FocusManager.instance.primaryFocus?.unfocus(),
+                      onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                     tokens.vGap(12),
                     ShadTextField(
@@ -191,27 +181,22 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                       obscureText: true,
                       autofocus: resetPassword,
                       placeholder: Text(resetPassword ? '新密码' : '密码'),
-                      onSubmitted: (_) =>
-                          FocusManager.instance.primaryFocus?.unfocus(),
+                      onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                     tokens.vGap(12),
                     ShadTextField(
                       controller: confirmCtrl,
                       obscureText: true,
                       placeholder: const Text('确认密码'),
-                      onSubmitted: (_) =>
-                          FocusManager.instance.primaryFocus?.unfocus(),
+                      onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                   ],
                 ),
               ),
             ),
             actions: [
-              shadcn.Button.outline(
-                onPressed: saving ? null : () => Navigator.of(ctx).pop(),
-                child: const Text('取消'),
-              ),
-              shadcn.Button.primary(
+              Button.outline(onPressed: saving ? null : () => Navigator.of(ctx).pop(), child: const Text('取消')),
+              Button.primary(
                 onPressed: saving
                     ? null
                     : () async {
@@ -232,25 +217,14 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                         }
                         setDialogState(() => saving = true);
                         try {
-                          final credentials = UserCredentials(
-                            username: username,
-                            password: password,
-                          );
+                          final credentials = UserCredentials(username: username, password: password);
                           if (isEdit) {
-                            await ref
-                                .read(managedUserListProvider.notifier)
-                                .updateUser(user.id, credentials);
+                            await ref.read(managedUserListProvider.notifier).updateUser(user.id, credentials);
                           } else {
-                            await ref
-                                .read(managedUserListProvider.notifier)
-                                .createUser(credentials);
+                            await ref.read(managedUserListProvider.notifier).createUser(credentials);
                           }
                           if (ctx.mounted) Navigator.of(ctx).pop();
-                          Toast.success(
-                            resetPassword
-                                ? '密码已重置'
-                                : (isEdit ? '用户已更新' : '用户已添加'),
-                          );
+                          Toast.success(resetPassword ? '密码已重置' : (isEdit ? '用户已更新' : '用户已添加'));
                         } catch (_) {
                           if (ctx.mounted) setDialogState(() => saving = false);
                         }
@@ -259,9 +233,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
                     ? SizedBox(
                         width: tokens.iconMd,
                         height: tokens.iconMd,
-                        child: shadcn.CircularProgressIndicator(
-                          strokeWidth: tokens.size(2),
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: tokens.size(2)),
                       )
                     : Text(isEdit ? '保存' : '添加'),
               ),
@@ -275,21 +247,16 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
   void _confirmDelete(ManagedUser user) {
     appShowDialog(
       context: context,
-      builder: (ctx) => shadcn.AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('确认删除'),
         content: Text('确定要删除用户「${user.username}」吗？'),
         actions: [
-          shadcn.Button.outline(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('取消'),
-          ),
-          shadcn.Button.destructive(
+          Button.outline(onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
+          Button.destructive(
             onPressed: () async {
               Navigator.of(ctx).pop();
               try {
-                await ref
-                    .read(managedUserListProvider.notifier)
-                    .deleteUser(user.id);
+                await ref.read(managedUserListProvider.notifier).deleteUser(user.id);
                 Toast.success('用户已删除');
               } catch (_) {}
             },
@@ -303,9 +270,7 @@ class _UserManagementPageState extends ConsumerState<UserManagementPage> {
   Future<void> _toggleUserStatus(ManagedUser user) async {
     final nextActive = !user.isActive;
     try {
-      await ref
-          .read(managedUserListProvider.notifier)
-          .updateUserStatus(user, nextActive);
+      await ref.read(managedUserListProvider.notifier).updateUserStatus(user, nextActive);
       Toast.success(nextActive ? '用户已启用' : '用户已禁用');
     } catch (_) {}
   }
@@ -316,11 +281,7 @@ class _Header extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onRefresh;
 
-  const _Header({
-    required this.title,
-    required this.onBack,
-    required this.onRefresh,
-  });
+  const _Header({required this.title, required this.onBack, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
@@ -331,16 +292,12 @@ class _Header extends StatelessWidget {
     return SizedBox(
       height: kAppHeaderHeight,
       child: Padding(
-        padding: appHeaderPadding(
-          context,
-          top: tokens.size(6),
-          bottom: tokens.size(6),
-        ),
+        padding: appHeaderPadding(context, top: tokens.size(6), bottom: tokens.size(6)),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            shadcn.IconButton.ghost(
-              icon: Icon(shadcn.LucideIcons.chevronLeft, size: tokens.iconLg),
+            IconButton.ghost(
+              icon: Icon(LucideIcons.chevronLeft, size: tokens.iconLg),
               onPressed: onBack,
             ),
             Expanded(
@@ -348,14 +305,11 @@ class _Header extends StatelessWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.typography.large.copyWith(
-                  color: cs.foreground,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
               ),
             ),
-            shadcn.IconButton.ghost(
-              icon: Icon(shadcn.LucideIcons.refreshCw, size: tokens.iconMd),
+            IconButton.ghost(
+              icon: Icon(LucideIcons.refreshCw, size: tokens.iconMd),
               onPressed: onRefresh,
             ),
           ],
@@ -384,7 +338,7 @@ class _UserToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final tokens = _UserManagementThemeTokens.of(context);
@@ -397,32 +351,23 @@ class _UserToolbar extends StatelessWidget {
             onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
             placeholder: const Text('搜索用户名、邮箱或 ID'),
             features: [
-              shadcn.InputFeature.leading(
-                Icon(
-                  shadcn.LucideIcons.search,
-                  size: tokens.iconSm,
-                  color: cs.mutedForeground,
-                ),
-              ),
+              InputFeature.leading(Icon(LucideIcons.search, size: tokens.iconSm, color: cs.mutedForeground)),
               if (controller.text.isNotEmpty)
-                shadcn.InputFeature.trailing(
-                  shadcn.IconButton.ghost(
+                InputFeature.trailing(
+                  IconButton.ghost(
                     onPressed: onClear,
-                    icon: Icon(shadcn.LucideIcons.x, size: tokens.iconSm),
+                    icon: Icon(LucideIcons.x, size: tokens.iconSm),
                   ),
                 ),
             ],
           ),
         ),
         tokens.hGap(8),
-        Text(
-          '$current / $total',
-          style: typo.small.copyWith(color: cs.mutedForeground),
-        ),
+        Text('$current / $total', style: typo.small.copyWith(color: cs.mutedForeground)),
         tokens.hGap(8),
-        shadcn.IconButton.primary(
+        IconButton.primary(
           onPressed: onAdd,
-          icon: Icon(shadcn.LucideIcons.userPlus, size: tokens.iconMd),
+          icon: Icon(LucideIcons.userPlus, size: tokens.iconMd),
         ),
       ],
     );
@@ -488,14 +433,8 @@ class _UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = _UserManagementThemeTokens.of(context);
     final cs = tokens.cs;
-    final initial = user.username.isEmpty
-        ? '?'
-        : user.username.substring(0, 1).toUpperCase();
-    return shadcn.Avatar(
-      initials: initial,
-      size: tokens.avatarSize,
-      backgroundColor: cs.primary,
-    );
+    final initial = user.username.isEmpty ? '?' : user.username.substring(0, 1).toUpperCase();
+    return Avatar(initials: initial, size: tokens.avatarSize, backgroundColor: cs.primary);
   }
 }
 
@@ -507,7 +446,7 @@ class _UserSubtitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final tokens = _UserManagementThemeTokens.of(context);
@@ -521,15 +460,8 @@ class _UserSubtitle extends StatelessWidget {
             spacing: tokens.size(6),
             runSpacing: tokens.size(4),
             children: [
-              Text(
-                'ID ${user.id}',
-                style: typo.xSmall.copyWith(color: cs.mutedForeground),
-              ),
-              if (user.email.isNotEmpty)
-                Text(
-                  user.email,
-                  style: typo.xSmall.copyWith(color: cs.mutedForeground),
-                ),
+              Text('ID ${user.id}', style: typo.xSmall.copyWith(color: cs.mutedForeground)),
+              if (user.email.isNotEmpty) Text(user.email, style: typo.xSmall.copyWith(color: cs.mutedForeground)),
             ],
           ),
           tokens.vGap(6),
@@ -537,13 +469,9 @@ class _UserSubtitle extends StatelessWidget {
             spacing: tokens.size(6),
             runSpacing: tokens.size(6),
             children: [
-              _StatusPill(
-                text: user.isActive ? '启用' : '停用',
-                active: user.isActive,
-              ),
+              _StatusPill(text: user.isActive ? '启用' : '停用', active: user.isActive),
               if (user.isStaff) const _StatusPill(text: '管理员', active: true),
-              if (user.isSuperuser)
-                const _StatusPill(text: '超级用户', active: true),
+              if (user.isSuperuser) const _StatusPill(text: '超级用户', active: true),
               if (isCurrentUser) const _StatusPill(text: '当前用户', active: true),
             ],
           ),
@@ -561,8 +489,8 @@ class _StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (active) return shadcn.SecondaryBadge(child: Text(text));
-    return shadcn.OutlineBadge(child: Text(text));
+    if (active) return SecondaryBadge(child: Text(text));
+    return OutlineBadge(child: Text(text));
   }
 }
 
@@ -592,9 +520,7 @@ class _UserTile extends StatelessWidget {
       onLongPress: () => _showMenu(context),
       onSecondaryTap: () => _showMenu(context),
       child: AppSurfaceCard(
-        padding: _UserManagementThemeTokens.of(
-          context,
-        ).edgeFromLTRB(12, 10, 12, 10),
+        padding: _UserManagementThemeTokens.of(context).edgeFromLTRB(12, 10, 12, 10),
         child: Row(
           children: [
             _UserAvatar(user: user),
@@ -608,8 +534,8 @@ class _UserTile extends StatelessWidget {
                     user.username.isEmpty ? '未命名用户' : user.username,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: shadcn.Theme.of(context).typography.small.copyWith(
-                      color: shadcn.Theme.of(context).colorScheme.foreground,
+                    style: Theme.of(context).typography.small.copyWith(
+                      color: Theme.of(context).colorScheme.foreground,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -626,7 +552,7 @@ class _UserTile extends StatelessWidget {
   void _showMenu(BuildContext context) {
     appShowDialog<void>(
       context: context,
-      builder: (ctx) => shadcn.AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: Text(user.username.isEmpty ? '用户操作' : user.username),
         content: SizedBox(
           width: _UserManagementThemeTokens.of(ctx).dialogWidth,
@@ -634,7 +560,7 @@ class _UserTile extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               _ActionTile(
-                icon: shadcn.LucideIcons.squarePen,
+                icon: LucideIcons.squarePen,
                 title: '编辑',
                 onTap: () {
                   Navigator.pop(ctx);
@@ -642,7 +568,7 @@ class _UserTile extends StatelessWidget {
                 },
               ),
               _ActionTile(
-                icon: shadcn.LucideIcons.keyRound,
+                icon: LucideIcons.keyRound,
                 title: '重置密码',
                 onTap: () {
                   Navigator.pop(ctx);
@@ -651,9 +577,7 @@ class _UserTile extends StatelessWidget {
               ),
               if (canManageStatus && !isCurrentUser)
                 _ActionTile(
-                  icon: user.isActive
-                      ? shadcn.LucideIcons.pause
-                      : shadcn.LucideIcons.play,
+                  icon: user.isActive ? LucideIcons.pause : LucideIcons.play,
                   title: user.isActive ? '禁用' : '启用',
                   onTap: () {
                     Navigator.pop(ctx);
@@ -661,7 +585,7 @@ class _UserTile extends StatelessWidget {
                   },
                 ),
               _ActionTile(
-                icon: shadcn.LucideIcons.trash2,
+                icon: LucideIcons.trash2,
                 title: '删除',
                 destructive: true,
                 onTap: () {
@@ -692,14 +616,9 @@ class _LoadingBlock extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            shadcn.CircularProgressIndicator(strokeWidth: tokens.size(2)),
+            CircularProgressIndicator(strokeWidth: tokens.size(2)),
             tokens.vGap(10),
-            Text(
-              label,
-              style: tokens.theme.typography.small.copyWith(
-                color: cs.mutedForeground,
-              ),
-            ),
+            Text(label, style: tokens.theme.typography.small.copyWith(color: cs.mutedForeground)),
           ],
         ),
       ),
@@ -712,23 +631,16 @@ class _ErrorBlock extends StatelessWidget {
   final Object error;
   final VoidCallback onRetry;
 
-  const _ErrorBlock({
-    required this.title,
-    required this.error,
-    required this.onRetry,
-  });
+  const _ErrorBlock({required this.title, required this.error, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return _PanelTile(
-      leading: Icon(shadcn.LucideIcons.circleAlert, color: cs.destructive),
+      leading: Icon(LucideIcons.circleAlert, color: cs.destructive),
       title: Text(title),
       subtitle: Text('$error'),
-      trailing: shadcn.Button.outline(
-        onPressed: onRetry,
-        child: const Text('重试'),
-      ),
+      trailing: Button.outline(onPressed: onRetry, child: const Text('重试')),
     );
   }
 }
@@ -745,12 +657,7 @@ class _EmptyBlock extends StatelessWidget {
     return AppSurfaceCard(
       padding: tokens.edgeAll(18),
       child: Center(
-        child: Text(
-          text,
-          style: tokens.theme.typography.small.copyWith(
-            color: cs.mutedForeground,
-          ),
-        ),
+        child: Text(text, style: tokens.theme.typography.small.copyWith(color: cs.mutedForeground)),
       ),
     );
   }
@@ -762,12 +669,7 @@ class _PanelTile extends StatelessWidget {
   final Widget? subtitle;
   final Widget? trailing;
 
-  const _PanelTile({
-    this.leading,
-    required this.title,
-    this.subtitle,
-    this.trailing,
-  });
+  const _PanelTile({this.leading, required this.title, this.subtitle, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -790,9 +692,7 @@ class _PanelTile extends StatelessWidget {
                 if (subtitle != null) ...[
                   tokens.vGap(2),
                   DefaultTextStyle.merge(
-                    style: theme.typography.xSmall.copyWith(
-                      color: cs.mutedForeground,
-                    ),
+                    style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
                     child: subtitle!,
                   ),
                 ],
@@ -812,12 +712,7 @@ class _ActionTile extends StatelessWidget {
   final VoidCallback onTap;
   final bool destructive;
 
-  const _ActionTile({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-    this.destructive = false,
-  });
+  const _ActionTile({required this.icon, required this.title, required this.onTap, this.destructive = false});
 
   @override
   Widget build(BuildContext context) {
@@ -825,21 +720,18 @@ class _ActionTile extends StatelessWidget {
     final theme = tokens.theme;
     final cs = tokens.cs;
     final color = destructive ? cs.destructive : null;
-    return shadcn.Button.ghost(
+    return Button.ghost(
       alignment: Alignment.centerLeft,
       onPressed: onTap,
       leading: Icon(icon, size: tokens.iconMd, color: color),
-      child: Text(
-        title,
-        style: theme.typography.small.copyWith(color: color ?? cs.foreground),
-      ),
+      child: Text(title, style: theme.typography.small.copyWith(color: color ?? cs.foreground)),
     );
   }
 }
 
 class _UserManagementThemeTokens {
-  final shadcn.ThemeData theme;
-  final shadcn.ColorScheme cs;
+  final ThemeData theme;
+  final ColorScheme cs;
   final double densityScale;
   final double textScale;
 
@@ -851,12 +743,8 @@ class _UserManagementThemeTokens {
   });
 
   factory _UserManagementThemeTokens.of(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
-    final densityScale =
-        ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(
-          0.55,
-          1.45,
-        );
+    final theme = Theme.of(context);
+    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.55, 1.45);
     final textScale = theme.scaling.clamp(0.86, 1.30);
     return _UserManagementThemeTokens._(
       theme: theme,
@@ -883,25 +771,13 @@ class _UserManagementThemeTokens {
   EdgeInsets edgeAll(num value) => EdgeInsets.all(size(value));
 
   EdgeInsets edgeSymmetric({num horizontal = 0, num vertical = 0}) =>
-      EdgeInsets.symmetric(
-        horizontal: size(horizontal),
-        vertical: size(vertical),
-      );
+      EdgeInsets.symmetric(horizontal: size(horizontal), vertical: size(vertical));
 
   EdgeInsets edgeFromLTRB(num left, num top, num right, num bottom) =>
       EdgeInsets.fromLTRB(size(left), size(top), size(right), size(bottom));
 
-  EdgeInsets edgeOnly({
-    num left = 0,
-    num top = 0,
-    num right = 0,
-    num bottom = 0,
-  }) => EdgeInsets.only(
-    left: size(left),
-    top: size(top),
-    right: size(right),
-    bottom: size(bottom),
-  );
+  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) =>
+      EdgeInsets.only(left: size(left), top: size(top), right: size(right), bottom: size(bottom));
 
   SizedBox hGap(num value) => SizedBox(width: size(value));
 

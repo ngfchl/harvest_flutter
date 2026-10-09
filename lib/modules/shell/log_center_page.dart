@@ -1,9 +1,9 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/theme/app_surface.dart';
@@ -13,7 +13,8 @@ import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/debug_theme_button.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
 import 'package:path/path.dart' as p;
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter_material/shadcn_flutter_material.dart';
 
 import 'widgets/shell_scaffold.dart';
 
@@ -30,12 +31,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
   static const double _minLogFontSize = 8;
   static const double _maxLogFontSize = 16;
   static const double _defaultLogFontSize = 12;
-  static const List<LogLevel> _serverLevels = [
-    LogLevel.debug,
-    LogLevel.info,
-    LogLevel.warn,
-    LogLevel.error,
-  ];
+  static const List<LogLevel> _serverLevels = [LogLevel.debug, LogLevel.info, LogLevel.warn, LogLevel.error];
 
   final _scrollController = ScrollController();
 
@@ -66,12 +62,9 @@ class _LogCenterPageState extends State<LogCenterPage> {
   DateTime? _serverLastUpdatedAt;
   String? _serverNotice;
 
-  List<String> get _activeLines =>
-      _source == _LogPageSource.app ? _appVisibleLines : _serverLines;
+  List<String> get _activeLines => _source == _LogPageSource.app ? _appVisibleLines : _serverLines;
 
-  bool get _hasOlder => _source == _LogPageSource.app
-      ? _appVisibleStart > 0
-      : _serverLoadedCount < _serverTotal;
+  bool get _hasOlder => _source == _LogPageSource.app ? _appVisibleStart > 0 : _serverLoadedCount < _serverTotal;
 
   @override
   void initState() {
@@ -106,15 +99,10 @@ class _LogCenterPageState extends State<LogCenterPage> {
 
   bool _isNearBottom() {
     if (!_scrollController.hasClients) return false;
-    return _scrollController.position.maxScrollExtent -
-            _scrollController.offset <=
-        72;
+    return _scrollController.position.maxScrollExtent - _scrollController.offset <= 72;
   }
 
-  Future<void> _activateSource(
-    _LogPageSource source, {
-    bool resetScroll = false,
-  }) async {
+  Future<void> _activateSource(_LogPageSource source, {bool resetScroll = false}) async {
     _appTailTimer?.cancel();
     _serverPollTimer?.cancel();
     if (mounted) {
@@ -137,9 +125,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
   Future<void> _loadInitialApp({bool resetScroll = false}) async {
     try {
       final snapshot = await _readAppSnapshot();
-      final start = snapshot.lines.length > _pageSize
-          ? snapshot.lines.length - _pageSize
-          : 0;
+      final start = snapshot.lines.length > _pageSize ? snapshot.lines.length - _pageSize : 0;
       if (!mounted) return;
       setState(() {
         _appLogPath = snapshot.logPath;
@@ -162,48 +148,28 @@ class _LogCenterPageState extends State<LogCenterPage> {
     }
   }
 
-  _AppSnapshot _buildAppSnapshotFromLines(
-    List<String> lines, {
-    required String logPath,
-    required int fileLength,
-  }) {
+  _AppSnapshot _buildAppSnapshotFromLines(List<String> lines, {required String logPath, required int fileLength}) {
     return _AppSnapshot(lines: lines, logPath: logPath, fileLength: fileLength);
   }
 
   Future<_AppSnapshot> _readAppSnapshot() async {
     if (kIsWeb) {
       final lines = List<String>.from(AppLogger.memoryLogLines);
-      return _buildAppSnapshotFromLines(
-        lines,
-        logPath: AppLogger.memoryLogPath,
-        fileLength: lines.length,
-      );
+      return _buildAppSnapshotFromLines(lines, logPath: AppLogger.memoryLogPath, fileLength: lines.length);
     }
 
     final file = await AppLogger.currentLogFile();
     if (file == null) {
-      return _buildAppSnapshotFromLines(
-        const [],
-        logPath: 'APP日志',
-        fileLength: 0,
-      );
+      return _buildAppSnapshotFromLines(const [], logPath: 'APP日志', fileLength: 0);
     }
     final exists = await file.exists();
     if (!exists) {
-      return _buildAppSnapshotFromLines(
-        const [],
-        logPath: file.path,
-        fileLength: 0,
-      );
+      return _buildAppSnapshotFromLines(const [], logPath: file.path, fileLength: 0);
     }
     final bytes = await file.readAsBytes();
     final content = utf8.decode(bytes, allowMalformed: true);
     final lines = content.split('\n').where((line) => line.isNotEmpty).toList();
-    return _buildAppSnapshotFromLines(
-      lines,
-      logPath: file.path,
-      fileLength: bytes.length,
-    );
+    return _buildAppSnapshotFromLines(lines, logPath: file.path, fileLength: bytes.length);
   }
 
   void _startAppPolling() {
@@ -222,9 +188,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
       final next = snapshot.lines;
       if (!_samePrefix(previous, next)) {
         final visibleCount = _appVisibleLines.length;
-        final nextStart = next.length > visibleCount
-            ? next.length - visibleCount
-            : 0;
+        final nextStart = next.length > visibleCount ? next.length - visibleCount : 0;
         if (!mounted) return;
         setState(() {
           _appLogPath = snapshot.logPath;
@@ -273,18 +237,11 @@ class _LogCenterPageState extends State<LogCenterPage> {
 
   Future<void> _loadOlderApp() async {
     if (_loadingOlder || _appVisibleStart <= 0) return;
-    final previousMaxExtent = _scrollController.hasClients
-        ? _scrollController.position.maxScrollExtent
-        : 0.0;
-    final previousOffset = _scrollController.hasClients
-        ? _scrollController.offset
-        : 0.0;
+    final previousMaxExtent = _scrollController.hasClients ? _scrollController.position.maxScrollExtent : 0.0;
+    final previousOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
     _loadingOlder = true;
     try {
-      final nextStart = (_appVisibleStart - _pageSize).clamp(
-        0,
-        _appVisibleStart,
-      );
+      final nextStart = (_appVisibleStart - _pageSize).clamp(0, _appVisibleStart);
       final prepend = _appAllLines.sublist(nextStart, _appVisibleStart);
       if (!mounted) return;
       setState(() {
@@ -382,12 +339,8 @@ class _LogCenterPageState extends State<LogCenterPage> {
 
   Future<void> _loadOlderServer() async {
     if (_loadingOlder || !_hasOlder) return;
-    final previousMaxExtent = _scrollController.hasClients
-        ? _scrollController.position.maxScrollExtent
-        : 0.0;
-    final previousOffset = _scrollController.hasClients
-        ? _scrollController.offset
-        : 0.0;
+    final previousMaxExtent = _scrollController.hasClients ? _scrollController.position.maxScrollExtent : 0.0;
+    final previousOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
     _loadingOlder = true;
     try {
       await _syncLatestServer(silent: true);
@@ -429,18 +382,11 @@ class _LogCenterPageState extends State<LogCenterPage> {
   Future<_ServerLogPage> _fetchServerPage({required int offset}) async {
     final data = await Http.get<Map<String, dynamic>>(
       '/api/auth/logs',
-      queryParameters: {
-        'limit': _pageSize.clamp(1, 500),
-        'offset': offset,
-        'level': _levelParam(_serverLevel),
-      },
+      queryParameters: {'limit': _pageSize.clamp(1, 500), 'offset': offset, 'level': _levelParam(_serverLevel)},
     );
     final rawItems = data['items'];
     final items = rawItems is List
-        ? rawItems
-              .whereType<Map>()
-              .map((e) => Map<String, dynamic>.from(e))
-              .toList()
+        ? rawItems.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList()
         : const <Map<String, dynamic>>[];
     return _ServerLogPage(
       items: items,
@@ -466,9 +412,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
   }
 
   int _tailPrefixOverlap(List<String> existingKeys, List<String> incomingKeys) {
-    final max = existingKeys.length < incomingKeys.length
-        ? existingKeys.length
-        : incomingKeys.length;
+    final max = existingKeys.length < incomingKeys.length ? existingKeys.length : incomingKeys.length;
     for (var length = max; length > 0; length--) {
       var matched = true;
       for (var i = 0; i < length; i++) {
@@ -499,11 +443,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
         _scrollController.jumpTo(target);
         return;
       }
-      _scrollController.animateTo(
-        target,
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
-      );
+      _scrollController.animateTo(target, duration: const Duration(milliseconds: 180), curve: Curves.easeOut);
     });
   }
 
@@ -563,9 +503,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
   }
 
   void _changeLogFontSize(double delta) {
-    final next = (_logFontSize + delta)
-        .clamp(_minLogFontSize, _maxLogFontSize)
-        .toDouble();
+    final next = (_logFontSize + delta).clamp(_minLogFontSize, _maxLogFontSize).toDouble();
     if (next == _logFontSize) return;
     setState(() => _logFontSize = next);
   }
@@ -613,10 +551,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
   List<_IndexedLine> get _filteredLines {
     final lines = _activeLines;
     if (_filter == _FilterLevel.all) {
-      return List.generate(
-        lines.length,
-        (index) => _IndexedLine(index, lines[index]),
-      );
+      return List.generate(lines.length, (index) => _IndexedLine(index, lines[index]));
     }
     final result = <_IndexedLine>[];
     for (var i = 0; i < lines.length; i++) {
@@ -647,7 +582,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final pageBackground = appSurfaceColor(context, cs.background);
 
@@ -655,23 +590,20 @@ class _LogCenterPageState extends State<LogCenterPage> {
       onBack: () => Navigator.of(context).pop(),
       child: GlobalDrawerSwipeArea(
         child: AppBackground(
-          child: shadcn.Scaffold(
+          child: Scaffold(
             backgroundColor: pageBackground,
             headers: [
-              shadcn.AppBar(
+              AppBar(
                 height: kAppHeaderHeight - 12,
                 padding: appHeaderPadding(context),
                 backgroundColor: pageBackground,
                 title: Text(
                   '日志中心',
-                  style: theme.typography.large.copyWith(
-                    color: cs.foreground,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                 ),
                 leading: [
-                  shadcn.IconButton.ghost(
-                    icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 18),
+                  IconButton.ghost(
+                    icon: const Icon(LucideIcons.arrowLeft, size: 18),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -703,7 +635,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
 
   Widget _buildHeader(BuildContext context) {
     final colors = _LogPalette.of(context);
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       decoration: BoxDecoration(
@@ -722,20 +654,11 @@ class _LogCenterPageState extends State<LogCenterPage> {
                 behavior: HitTestBehavior.opaque,
                 onTap: _toggleFollowing,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 5,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
-                    color: _following
-                        ? colors.success.withValues(alpha: 0.14)
-                        : colors.subtle.withValues(alpha: 0.14),
+                    color: _following ? colors.success.withValues(alpha: 0.14) : colors.subtle.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: _following
-                          ? colors.success.withValues(alpha: 0.24)
-                          : colors.border,
-                    ),
+                    border: Border.all(color: _following ? colors.success.withValues(alpha: 0.24) : colors.border),
                   ),
                   child: Text(
                     _following ? '跟随最新' : '暂停跟随',
@@ -748,11 +671,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
                 ),
               ),
               const Spacer(),
-              if (_loadingOlder || _loadingLatest)
-                shadcn.CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: colors.primary,
-                ),
+              if (_loadingOlder || _loadingLatest) CircularProgressIndicator(strokeWidth: 2, color: colors.primary),
             ],
           ),
           const SizedBox(height: 10),
@@ -768,32 +687,16 @@ class _LogCenterPageState extends State<LogCenterPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _source == _LogPageSource.app
-                      ? '顶部下拉获取更早日志，底部上拉检查最新日志。'
-                      : '顶部下拉读取更早分页，底部上拉同步最新写入。',
-                  style: theme.typography.small.copyWith(
-                    color: colors.foreground,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  _source == _LogPageSource.app ? '顶部下拉获取更早日志，底部上拉检查最新日志。' : '顶部下拉读取更早分页，底部上拉同步最新写入。',
+                  style: theme.typography.small.copyWith(color: colors.foreground, fontWeight: FontWeight.w600),
                 ),
-                if (_serverNotice != null &&
-                    _source == _LogPageSource.server) ...[
+                if (_serverNotice != null && _source == _LogPageSource.server) ...[
                   const SizedBox(height: 6),
-                  Text(
-                    _serverNotice!,
-                    style: theme.typography.xSmall.copyWith(
-                      color: colors.muted,
-                    ),
-                  ),
+                  Text(_serverNotice!, style: theme.typography.xSmall.copyWith(color: colors.muted)),
                 ],
                 if (_error != null) ...[
                   const SizedBox(height: 6),
-                  Text(
-                    _error!,
-                    style: theme.typography.xSmall.copyWith(
-                      color: colors.error,
-                    ),
-                  ),
+                  Text(_error!, style: theme.typography.xSmall.copyWith(color: colors.error)),
                 ],
               ],
             ),
@@ -814,15 +717,9 @@ class _LogCenterPageState extends State<LogCenterPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: selected
-              ? colors.primary.withValues(alpha: 0.14)
-              : colors.surface,
+          color: selected ? colors.primary.withValues(alpha: 0.14) : colors.surface,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: selected
-                ? colors.primary.withValues(alpha: 0.28)
-                : colors.border,
-          ),
+          border: Border.all(color: selected ? colors.primary.withValues(alpha: 0.28) : colors.border),
         ),
         child: Text(
           source.label,
@@ -853,15 +750,9 @@ class _LogCenterPageState extends State<LogCenterPage> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               margin: const EdgeInsets.only(right: 6),
               decoration: BoxDecoration(
-                color: selected
-                    ? levelColor.withValues(alpha: 0.14)
-                    : colors.surface,
+                color: selected ? levelColor.withValues(alpha: 0.14) : colors.surface,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: selected
-                      ? levelColor.withValues(alpha: 0.32)
-                      : colors.border,
-                ),
+                border: Border.all(color: selected ? levelColor.withValues(alpha: 0.32) : colors.border),
               ),
               child: Text(
                 level.label,
@@ -880,12 +771,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
 
   Widget _buildLoading(BuildContext context) {
     final colors = _LogPalette.of(context);
-    return Center(
-      child: shadcn.CircularProgressIndicator(
-        strokeWidth: 2.2,
-        color: colors.primary,
-      ),
-    );
+    return Center(child: CircularProgressIndicator(strokeWidth: 2.2, color: colors.primary));
   }
 
   Widget _buildLogList(BuildContext context) {
@@ -900,26 +786,18 @@ class _LogCenterPageState extends State<LogCenterPage> {
           Center(
             child: Text(
               '暂无日志',
-              style: TextStyle(
-                color: colors.subtle,
-                fontSize: _logFontSize + 1,
-              ),
+              style: TextStyle(color: colors.subtle, fontSize: _logFontSize + 1),
             ),
           ),
         ],
       );
     }
     return SelectionArea(
-      key: ValueKey(
-        'log-center-selection-${_source.name}-${_filter.name}-$_selectionEpoch',
-      ),
+      key: ValueKey('log-center-selection-${_source.name}-${_filter.name}-$_selectionEpoch'),
       child: ListView.builder(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.only(
-          top: 8,
-          bottom: ShellBottomSpacing.value(context) + 16,
-        ),
+        padding: EdgeInsets.only(top: 8, bottom: ShellBottomSpacing.value(context) + 16),
         itemCount: filtered.length,
         itemBuilder: (_, index) => _buildLine(context, filtered[index]),
       ),
@@ -958,27 +836,17 @@ class _LogCenterPageState extends State<LogCenterPage> {
               width: 2,
               height: (_logFontSize * 1.2).clamp(10.0, 18.0).toDouble(),
               margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(1),
-              ),
+              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(1)),
             ),
           ),
           SelectionContainer.disabled(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               margin: const EdgeInsets.only(right: 6, top: 1),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(4),
-              ),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(4)),
               child: Text(
                 _getLevelTag(item.line),
-                style: TextStyle(
-                  color: color,
-                  fontSize: tagFontSize,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(color: color, fontSize: tagFontSize, fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -1013,54 +881,14 @@ class _LogCenterPageState extends State<LogCenterPage> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _toolBtn(
-                    context,
-                    icon: shadcn.LucideIcons.minus,
-                    label: '缩小',
-                    onTap: () => _changeLogFontSize(-1),
-                  ),
-                  _toolBtn(
-                    context,
-                    icon: shadcn.LucideIcons.plus,
-                    label: '放大',
-                    onTap: () => _changeLogFontSize(1),
-                  ),
-                  _toolBtn(
-                    context,
-                    icon: Icons.vertical_align_top_rounded,
-                    label: '到顶',
-                    onTap: _scrollToTop,
-                  ),
-                  _toolBtn(
-                    context,
-                    icon: Icons.vertical_align_bottom_rounded,
-                    label: '到底',
-                    onTap: _jumpToBottom,
-                  ),
-                  _toolBtn(
-                    context,
-                    icon: Icons.copy_rounded,
-                    label: '复制',
-                    onTap: _copyAll,
-                  ),
-                  _toolBtn(
-                    context,
-                    icon: shadcn.LucideIcons.share2,
-                    label: '分享',
-                    onTap: _shareLogs,
-                  ),
-                  _toolBtn(
-                    context,
-                    icon: shadcn.LucideIcons.trash2,
-                    label: '清空',
-                    onTap: _clearLogs,
-                  ),
-                  _toolBtn(
-                    context,
-                    icon: shadcn.LucideIcons.refreshCw,
-                    label: '重载',
-                    onTap: _refreshCurrentSource,
-                  ),
+                  _toolBtn(context, icon: LucideIcons.minus, label: '缩小', onTap: () => _changeLogFontSize(-1)),
+                  _toolBtn(context, icon: LucideIcons.plus, label: '放大', onTap: () => _changeLogFontSize(1)),
+                  _toolBtn(context, icon: Icons.vertical_align_top_rounded, label: '到顶', onTap: _scrollToTop),
+                  _toolBtn(context, icon: Icons.vertical_align_bottom_rounded, label: '到底', onTap: _jumpToBottom),
+                  _toolBtn(context, icon: Icons.copy_rounded, label: '复制', onTap: _copyAll),
+                  _toolBtn(context, icon: LucideIcons.share2, label: '分享', onTap: _shareLogs),
+                  _toolBtn(context, icon: LucideIcons.trash2, label: '清空', onTap: _clearLogs),
+                  _toolBtn(context, icon: LucideIcons.refreshCw, label: '重载', onTap: _refreshCurrentSource),
                 ],
               ),
             ),
@@ -1070,12 +898,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
     );
   }
 
-  Widget _toolBtn(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
+  Widget _toolBtn(BuildContext context, {required IconData icon, required String label, required VoidCallback onTap}) {
     final colors = _LogPalette.of(context);
     return GestureDetector(
       onTap: onTap,
@@ -1117,9 +940,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
-              _filter == _FilterLevel.all
-                  ? '${_activeLines.length} 行'
-                  : '${filtered.length}/${_activeLines.length}',
+              _filter == _FilterLevel.all ? '${_activeLines.length} 行' : '${filtered.length}/${_activeLines.length}',
               style: TextStyle(
                 color: filterColor.withValues(alpha: 0.82),
                 fontSize: 10,
@@ -1145,26 +966,15 @@ class _LogCenterPageState extends State<LogCenterPage> {
   }
 
   Widget _levelStrip(BuildContext context) {
-    final levels = _source == _LogPageSource.app
-        ? LogLevel.values
-        : _serverLevels;
-    final current = _source == _LogPageSource.app
-        ? AppLogger.level
-        : _serverLevel;
+    final levels = _source == _LogPageSource.app ? LogLevel.values : _serverLevels;
+    final current = _source == _LogPageSource.app ? AppLogger.level : _serverLevel;
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final level in levels)
-          _levelChip(context, level, selected: current == level),
-      ],
+      children: [for (final level in levels) _levelChip(context, level, selected: current == level)],
     );
   }
 
-  Widget _levelChip(
-    BuildContext context,
-    LogLevel level, {
-    required bool selected,
-  }) {
+  Widget _levelChip(BuildContext context, LogLevel level, {required bool selected}) {
     final colors = _LogPalette.of(context);
     final color = _levelColor(context, level);
     return GestureDetector(
@@ -1176,11 +986,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
         decoration: BoxDecoration(
           color: selected ? color.withValues(alpha: 0.14) : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: selected
-                ? color.withValues(alpha: 0.32)
-                : colors.border.withValues(alpha: 0.6),
-          ),
+          border: Border.all(color: selected ? color.withValues(alpha: 0.32) : colors.border.withValues(alpha: 0.6)),
         ),
         child: Text(
           level.name.toUpperCase(),
@@ -1252,9 +1058,7 @@ class _LogCenterPageState extends State<LogCenterPage> {
     if (bracketMatch != null) {
       return line.substring(bracketMatch.end);
     }
-    final pipeMatch = RegExp(
-      r'^\s*\d{4}-\d{2}-\d{2}[^|]*\|\s*[A-Z]+\s*\|\s*',
-    ).matchAsPrefix(line);
+    final pipeMatch = RegExp(r'^\s*\d{4}-\d{2}-\d{2}[^|]*\|\s*[A-Z]+\s*\|\s*').matchAsPrefix(line);
     if (pipeMatch != null) {
       return line.substring(pipeMatch.end);
     }
@@ -1262,17 +1066,11 @@ class _LogCenterPageState extends State<LogCenterPage> {
   }
 
   String _lineLevel(String line) {
-    final bracket = RegExp(
-      r'\[(VERBOSE|TRACE|DEBUG|INFO|WARN|WARNING|ERROR)\]',
-    ).firstMatch(line);
+    final bracket = RegExp(r'\[(VERBOSE|TRACE|DEBUG|INFO|WARN|WARNING|ERROR)\]').firstMatch(line);
     if (bracket != null) return bracket.group(1)!;
-    final pipe = RegExp(
-      r'\|\s*(VERBOSE|TRACE|DEBUG|INFO|WARN|WARNING|ERROR)\s*\|',
-    ).firstMatch(line);
+    final pipe = RegExp(r'\|\s*(VERBOSE|TRACE|DEBUG|INFO|WARN|WARNING|ERROR)\s*\|').firstMatch(line);
     if (pipe != null) return pipe.group(1)!;
-    final plain = RegExp(
-      r'\b(VERBOSE|TRACE|DEBUG|INFO|WARN|WARNING|ERROR)\b',
-    ).firstMatch(line);
+    final plain = RegExp(r'\b(VERBOSE|TRACE|DEBUG|INFO|WARN|WARNING|ERROR)\b').firstMatch(line);
     if (plain != null) return plain.group(1)!;
     return '';
   }
@@ -1298,28 +1096,18 @@ class _LogCenterPageState extends State<LogCenterPage> {
     if (display != null && display.isNotEmpty) return display;
     final raw = entry['raw']?.toString();
     if (raw != null && raw.isNotEmpty) return raw;
-    final timestamp =
-        entry['timestamp']?.toString() ?? entry['logged_at']?.toString() ?? '';
+    final timestamp = entry['timestamp']?.toString() ?? entry['logged_at']?.toString() ?? '';
     final level = entry['level']?.toString() ?? '';
     final message = entry['message']?.toString() ?? '';
-    return [
-      timestamp,
-      level,
-      message,
-    ].where((value) => value.isNotEmpty).join(' | ');
+    return [timestamp, level, message].where((value) => value.isNotEmpty).join(' | ');
   }
 
   String _entryKey(Map<String, dynamic> entry) {
     final id = entry['id']?.toString();
     if (id != null && id.isNotEmpty) return id;
-    final timestamp =
-        entry['timestamp']?.toString() ?? entry['logged_at']?.toString() ?? '';
+    final timestamp = entry['timestamp']?.toString() ?? entry['logged_at']?.toString() ?? '';
     final level = entry['level']?.toString() ?? '';
-    final message =
-        entry['display']?.toString() ??
-        entry['raw']?.toString() ??
-        entry['message']?.toString() ??
-        '';
+    final message = entry['display']?.toString() ?? entry['raw']?.toString() ?? entry['message']?.toString() ?? '';
     return '$timestamp|$level|$message';
   }
 }
@@ -1336,11 +1124,7 @@ class _AppSnapshot {
   final String logPath;
   final int fileLength;
 
-  const _AppSnapshot({
-    required this.lines,
-    required this.logPath,
-    required this.fileLength,
-  });
+  const _AppSnapshot({required this.lines, required this.logPath, required this.fileLength});
 }
 
 class _ServerLogPage {

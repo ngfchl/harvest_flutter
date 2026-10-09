@@ -1,18 +1,19 @@
-import 'package:flutter/material.dart';
+import 'package:harvest/widgets/shadcn_compat.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 void showDesktopConfirmDialog(
-    BuildContext context, {
-      required String title,
-      required String message,
-      required Future<void> Function() onConfirm,
-      bool destructive = false,
-    }) {
-  showDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required Future<void> Function() onConfirm,
+  bool destructive = false,
+}) {
+  appShowDialog(
     context: context,
     builder: (ctx) {
-      final cs = shadcn.Theme.of(ctx).colorScheme;
+      final cs = Theme.of(ctx).colorScheme;
       return Dialog(
         backgroundColor: cs.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -33,34 +34,28 @@ void showDesktopConfirmDialog(
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  message,
-                  style: TextStyle(color: cs.mutedForeground, fontSize: 13),
-                ),
+                Text(message, style: TextStyle(color: cs.mutedForeground, fontSize: 13)),
                 const SizedBox(height: 18),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: const Text('取消'),
-                    ),
+                    Button.ghost(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
                     const SizedBox(width: 8),
                     destructive
-                        ? shadcn.Button.destructive(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        onConfirm();
-                      },
-                      child: const Text('确认'),
-                    )
-                        : shadcn.Button.primary(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        onConfirm();
-                      },
-                      child: const Text('确认'),
-                    ),
+                        ? Button.destructive(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              onConfirm();
+                            },
+                            child: const Text('确认'),
+                          )
+                        : Button.primary(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              onConfirm();
+                            },
+                            child: const Text('确认'),
+                          ),
                   ],
                 ),
               ],
@@ -94,7 +89,7 @@ class DesktopInputDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return Dialog(
       backgroundColor: cs.background,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -108,11 +103,7 @@ class DesktopInputDialog extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(
-                  color: cs.foreground,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(color: cs.foreground, fontSize: 16, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 14),
               ShadTextField(
@@ -133,15 +124,9 @@ class DesktopInputDialog extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  shadcn.Button.ghost(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('取消'),
-                  ),
+                  Button.ghost(onPressed: () => Navigator.pop(context), child: const Text('取消')),
                   const SizedBox(width: 8),
-                  shadcn.Button.primary(
-                    onPressed: onSubmit,
-                    child: const Text('保存'),
-                  ),
+                  Button.primary(onPressed: onSubmit, child: const Text('保存')),
                 ],
               ),
             ],

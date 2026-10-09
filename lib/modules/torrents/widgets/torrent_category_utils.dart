@@ -1,7 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/widgets.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/torrent_model.dart';
 import 'desktop_filter_item.dart';
@@ -48,7 +47,7 @@ double categoryTreeIndent(String category) {
 
 IconData categoryTreeIcon(String category) {
   final depth = category.split('/').where((part) => part.isNotEmpty).length;
-  return depth <= 1 ? shadcn.LucideIcons.folder : shadcn.LucideIcons.folderOpen;
+  return depth <= 1 ? LucideIcons.folder : LucideIcons.folderOpen;
 }
 
 List<Widget> desktopCategoryFilterItems({
@@ -71,7 +70,7 @@ List<Widget> desktopCategoryFilterItems({
   return [
     for (final item in sorted)
       DesktopFilterItem(
-        icon: tree ? categoryTreeIcon(item) : shadcn.LucideIcons.folder,
+        icon: tree ? categoryTreeIcon(item) : LucideIcons.folder,
         label: tree ? categoryTreeLabel(item) : item,
         count: counts[item] ?? 0,
         selected: selectedCategory == item,

@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/widgets/app_sheet.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../../download/model/downloader.dart';
 import '../model/torrent_model.dart';
@@ -13,11 +12,7 @@ class TorrentListToolbar extends ConsumerStatefulWidget {
   final int downloaderId;
   final DownloaderType downloaderType;
 
-  const TorrentListToolbar({
-    super.key,
-    required this.downloaderId,
-    required this.downloaderType,
-  });
+  const TorrentListToolbar({super.key, required this.downloaderId, required this.downloaderType});
 
   @override
   ConsumerState<TorrentListToolbar> createState() => _TorrentListToolbarState();
@@ -35,7 +30,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return AppSurfaceContainer(
@@ -46,15 +41,9 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
         padding: const EdgeInsets.only(left: 12, right: 6),
         child: Row(
           children: [
-            Expanded(
-              child: _showSearch
-                  ? _buildSearchField(context)
-                  : const SizedBox.shrink(),
-            ),
+            Expanded(child: _showSearch ? _buildSearchField(context) : const SizedBox.shrink()),
             _ToolBtn(
-              icon: _showSearch
-                  ? shadcn.LucideIcons.x
-                  : shadcn.LucideIcons.search,
+              icon: _showSearch ? LucideIcons.x : LucideIcons.search,
               active: _showSearch,
               onTap: () => setState(() {
                 _showSearch = !_showSearch;
@@ -64,11 +53,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                 }
               }),
             ),
-            _ToolBtn(
-              icon: shadcn.LucideIcons.listFilter,
-              active: _hasActiveFilter(),
-              onTap: () => _showFilterPicker(context),
-            ),
+            _ToolBtn(icon: LucideIcons.listFilter, active: _hasActiveFilter(), onTap: () => _showFilterPicker(context)),
           ],
         ),
       ),
@@ -98,9 +83,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
   }
 
   void _showFilterPicker(BuildContext context) {
-    final categories = ref.read(
-      availableCategoriesProvider(widget.downloaderId),
-    );
+    final categories = ref.read(availableCategoriesProvider(widget.downloaderId));
     final tags = ref.read(availableTagsProvider(widget.downloaderId));
     final sites = ref.read(availableTorrentSitesProvider(widget.downloaderId));
     var currentStatus = ref.read(torrentFilterProvider);
@@ -114,7 +97,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
       context: context,
       builder: (sheetContext) => StatefulBuilder(
         builder: (sheetContext, setSheetState) {
-          final cs = shadcn.Theme.of(sheetContext).colorScheme;
+          final cs = Theme.of(sheetContext).colorScheme;
 
           void resetFilters() {
             setSheetState(() {
@@ -129,8 +112,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
             ref.read(torrentCategoryProvider.notifier).state = '';
             ref.read(torrentTagProvider.notifier).state = const <String>{};
             ref.read(torrentSiteFilterProvider.notifier).state = '';
-            ref.read(torrentSortProvider.notifier).state =
-                TorrentSort.queuePosition;
+            ref.read(torrentSortProvider.notifier).state = TorrentSort.queuePosition;
             ref.read(torrentSortAscProvider.notifier).state = true;
           }
 
@@ -146,11 +128,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sheetHeader(
-                      sheetContext,
-                      onReset: resetFilters,
-                      onClose: () => closeAppSheet(sheetContext),
-                    ),
+                    _sheetHeader(sheetContext, onReset: resetFilters, onClose: () => closeAppSheet(sheetContext)),
                     _chipSection(
                       sheetContext,
                       title: '排序',
@@ -160,9 +138,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                             sheetContext,
                             label: sort.label,
                             selected: sort == currentSort,
-                            selectedIcon: sortAsc
-                                ? shadcn.LucideIcons.arrowUp
-                                : shadcn.LucideIcons.arrowDown,
+                            selectedIcon: sortAsc ? LucideIcons.arrowUp : LucideIcons.arrowDown,
                             onTap: () {
                               setSheetState(() {
                                 if (sort == currentSort) {
@@ -172,10 +148,8 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                                   sortAsc = true;
                                 }
                               });
-                              ref.read(torrentSortProvider.notifier).state =
-                                  sort;
-                              ref.read(torrentSortAscProvider.notifier).state =
-                                  sortAsc;
+                              ref.read(torrentSortProvider.notifier).state = sort;
+                              ref.read(torrentSortAscProvider.notifier).state = sortAsc;
                             },
                           ),
                       ],
@@ -191,8 +165,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                             selected: filter == currentStatus,
                             onTap: () {
                               setSheetState(() => currentStatus = filter);
-                              ref.read(torrentFilterProvider.notifier).state =
-                                  filter;
+                              ref.read(torrentFilterProvider.notifier).state = filter;
                             },
                           ),
                       ],
@@ -208,8 +181,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                             selected: currentCat.isEmpty,
                             onTap: () {
                               setSheetState(() => currentCat = '');
-                              ref.read(torrentCategoryProvider.notifier).state =
-                                  '';
+                              ref.read(torrentCategoryProvider.notifier).state = '';
                             },
                           ),
                           for (final category in categories)
@@ -219,10 +191,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                               selected: currentCat == category,
                               onTap: () {
                                 setSheetState(() => currentCat = category);
-                                ref
-                                        .read(torrentCategoryProvider.notifier)
-                                        .state =
-                                    category;
+                                ref.read(torrentCategoryProvider.notifier).state = category;
                               },
                             ),
                         ],
@@ -238,10 +207,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                             selected: currentSite.isEmpty,
                             onTap: () {
                               setSheetState(() => currentSite = '');
-                              ref
-                                      .read(torrentSiteFilterProvider.notifier)
-                                      .state =
-                                  '';
+                              ref.read(torrentSiteFilterProvider.notifier).state = '';
                             },
                           ),
                           for (final site in sites)
@@ -251,10 +217,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                               selected: currentSite == site.key,
                               onTap: () {
                                 setSheetState(() => currentSite = site.key);
-                                ref
-                                    .read(torrentSiteFilterProvider.notifier)
-                                    .state = site
-                                    .key;
+                                ref.read(torrentSiteFilterProvider.notifier).state = site.key;
                               },
                             ),
                         ],
@@ -270,8 +233,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                             selected: currentTags.isEmpty,
                             onTap: () {
                               setSheetState(() => currentTags = <String>{});
-                              ref.read(torrentTagProvider.notifier).state =
-                                  const <String>{};
+                              ref.read(torrentTagProvider.notifier).state = const <String>{};
                             },
                           ),
                           for (final tag in tags)
@@ -289,8 +251,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
                                   }
                                   currentTags = next;
                                 });
-                                ref.read(torrentTagProvider.notifier).state =
-                                    currentTags;
+                                ref.read(torrentTagProvider.notifier).state = currentTags;
                               },
                             ),
                         ],
@@ -305,12 +266,8 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
     );
   }
 
-  Widget _sheetHeader(
-    BuildContext context, {
-    required VoidCallback onReset,
-    required VoidCallback onClose,
-  }) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+  Widget _sheetHeader(BuildContext context, {required VoidCallback onReset, required VoidCallback onClose}) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
@@ -326,29 +283,18 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
           const SizedBox(width: 12),
           Text(
             '筛选与排序',
-            style: TextStyle(
-              color: cs.foreground,
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(color: cs.foreground, fontSize: 15, fontWeight: FontWeight.w700),
           ),
           const Spacer(),
-          shadcn.Button.ghost(onPressed: onReset, child: const Text('重置')),
-          shadcn.IconButton.ghost(
-            onPressed: onClose,
-            icon: const Icon(shadcn.LucideIcons.x, size: 16),
-          ),
+          Button.ghost(onPressed: onReset, child: const Text('重置')),
+          IconButton.ghost(onPressed: onClose, icon: const Icon(LucideIcons.x, size: 16)),
         ],
       ),
     );
   }
 
-  Widget _chipSection(
-    BuildContext context, {
-    required String title,
-    required List<Widget> children,
-  }) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+  Widget _chipSection(BuildContext context, {required String title, required List<Widget> children}) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
       child: Column(
@@ -356,11 +302,7 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
         children: [
           Text(
             title,
-            style: TextStyle(
-              color: cs.mutedForeground,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(color: cs.mutedForeground, fontSize: 12, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
           Wrap(spacing: 8, runSpacing: 8, children: children),
@@ -374,13 +316,11 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
     required String label,
     required bool selected,
     required VoidCallback onTap,
-    IconData selectedIcon = shadcn.LucideIcons.check,
+    IconData selectedIcon = LucideIcons.check,
   }) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxWidth: MediaQuery.sizeOf(context).width - 48,
-      ),
+      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 48),
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
@@ -389,19 +329,14 @@ class _TorrentListToolbarState extends ConsumerState<TorrentListToolbar> {
           height: 32,
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: selected
-                ? cs.primary.withValues(alpha: 0.12)
-                : cs.foreground.withValues(alpha: 0.035),
+            color: selected ? cs.primary.withValues(alpha: 0.12) : cs.foreground.withValues(alpha: 0.035),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: selected ? cs.primary : cs.border),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (selected) ...[
-                Icon(selectedIcon, size: 13, color: cs.primary),
-                const SizedBox(width: 5),
-              ],
+              if (selected) ...[Icon(selectedIcon, size: 13, color: cs.primary), const SizedBox(width: 5)],
               Flexible(
                 child: Text(
                   label,
@@ -427,25 +362,17 @@ class _ToolBtn extends StatelessWidget {
   final bool active;
   final VoidCallback onTap;
 
-  const _ToolBtn({
-    required this.icon,
-    this.active = false,
-    required this.onTap,
-  });
+  const _ToolBtn({required this.icon, this.active = false, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: Icon(
-          icon,
-          size: 18,
-          color: active ? cs.primary : cs.mutedForeground,
-        ),
+        child: Icon(icon, size: 18, color: active ? cs.primary : cs.mutedForeground),
       ),
     );
   }

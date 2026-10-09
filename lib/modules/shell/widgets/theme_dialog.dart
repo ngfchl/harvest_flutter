@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
-import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/utils/platform/platform_tool.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/app_dialog.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -47,12 +46,10 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
     final current = ref.watch(themeProvider);
     final notifier = ref.read(themeProvider.notifier);
     final tokens = _ThemeDialogTokens.of(context);
-    final currentWidth =
-        HiveManager.get(StorageKeys.windowSizeWidth)?.toDouble() ?? 1440;
-    final currentHeight =
-        HiveManager.get(StorageKeys.windowSizeHeight)?.toDouble() ?? 900;
+    final currentWidth = HiveManager.get(StorageKeys.windowSizeWidth)?.toDouble() ?? 1440;
+    final currentHeight = HiveManager.get(StorageKeys.windowSizeHeight)?.toDouble() ?? 900;
 
-    return shadcn.AlertDialog(
+    return AlertDialog(
       padding: EdgeInsets.symmetric(horizontal: tokens.panelHorizontalPadding, vertical: tokens.panelVerticalPadding),
       content: SizedBox(
         width: tokens.dialogWidth,
@@ -83,7 +80,7 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
                             width: sectionWidth,
                             child: _section(
                               context,
-                              icon: shadcn.LucideIcons.contrast,
+                              icon: LucideIcons.contrast,
                               title: '明暗模式',
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -91,31 +88,19 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
                                   Row(
                                     children: [
                                       Expanded(
-                                        child: _modeButton(
-                                          context,
-                                          ref,
-                                          shadcn.ThemeMode.light,
-                                          shadcn.LucideIcons.sun,
-                                          '亮色',
-                                        ),
+                                        child: _modeButton(context, ref, ThemeMode.light, LucideIcons.sun, '亮色'),
+                                      ),
+                                      tokens.hGap(6),
+                                      Expanded(
+                                        child: _modeButton(context, ref, ThemeMode.dark, LucideIcons.moon, '暗色'),
                                       ),
                                       tokens.hGap(6),
                                       Expanded(
                                         child: _modeButton(
                                           context,
                                           ref,
-                                          shadcn.ThemeMode.dark,
-                                          shadcn.LucideIcons.moon,
-                                          '暗色',
-                                        ),
-                                      ),
-                                      tokens.hGap(6),
-                                      Expanded(
-                                        child: _modeButton(
-                                          context,
-                                          ref,
-                                          shadcn.ThemeMode.system,
-                                          shadcn.LucideIcons.monitorCog,
+                                          ThemeMode.system,
+                                          LucideIcons.monitorCog,
                                           '自动',
                                         ),
                                       ),
@@ -130,7 +115,7 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
                             width: maxWidth,
                             child: _section(
                               context,
-                              icon: shadcn.LucideIcons.swatchBook,
+                              icon: LucideIcons.swatchBook,
                               title: '颜色',
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -173,7 +158,7 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
                             width: sectionWidth,
                             child: _section(
                               context,
-                              icon: shadcn.LucideIcons.slidersHorizontal,
+                              icon: LucideIcons.slidersHorizontal,
                               title: '形态',
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -241,7 +226,7 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
                               width: sectionWidth,
                               child: _section(
                                 context,
-                                icon: shadcn.LucideIcons.monitor,
+                                icon: LucideIcons.monitor,
                                 title: '窗口尺寸',
                                 child: _windowSizeGrid(
                                   context,
@@ -352,7 +337,7 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
             height: tokens.size(34),
             alignment: Alignment.center,
             decoration: BoxDecoration(color: cs.primary, borderRadius: BorderRadius.circular(tokens.sectionRadius)),
-            child: Icon(shadcn.LucideIcons.palette, size: tokens.iconMd, color: cs.primaryForeground),
+            child: Icon(LucideIcons.palette, size: tokens.iconMd, color: cs.primaryForeground),
           ),
           tokens.hGap(10),
           Expanded(
@@ -363,9 +348,9 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
               style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w800),
             ),
           ),
-          shadcn.IconButton.ghost(
+          IconButton.ghost(
             onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(shadcn.LucideIcons.x, size: tokens.iconMd),
+            icon: Icon(LucideIcons.x, size: tokens.iconMd),
           ),
         ],
       ),
@@ -457,15 +442,15 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
     return Row(
       children: [
         Expanded(
-          child: shadcn.Button.outline(
+          child: Button.outline(
             onPressed: notifier.reset,
-            leading: Icon(shadcn.LucideIcons.rotateCcw, size: tokens.iconSm),
+            leading: Icon(LucideIcons.rotateCcw, size: tokens.iconSm),
             child: const Center(child: Text('恢复默认')),
           ),
         ),
         tokens.hGap(8),
         Expanded(
-          child: shadcn.Button.primary(
+          child: Button.primary(
             onPressed: () => Navigator.of(context).pop(),
             child: const Center(child: Text('关闭')),
           ),
@@ -583,12 +568,12 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
     final color = AppThemeOptions.colorScheme(option.id, 'base', cs.brightness == Brightness.dark).primary;
     final background = selected ? color : cs.secondary;
     final foreground = selected
-        ? ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+        ? estimateBrightnessForColor(color) == Brightness.dark
               ? Colors.white
               : Colors.black
         : color;
     final subtleBackground = Color.alphaBlend(color.withValues(alpha: tokens.isDark ? 0.18 : 0.10), cs.secondary);
-    return shadcn.Tooltip(
+    return Tooltip(
       tooltip: (_) => Text(_baseLabel(option.id)),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -669,8 +654,8 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: tokens.sliderThumbPadding),
-              child: shadcn.Slider(
-                value: shadcn.SliderValue.single(_sliderPosition(value, min, max)),
+              child: Slider(
+                value: SliderValue.single(_sliderPosition(value, min, max)),
                 onChanged: (sliderValue) => onChanged(_sliderValue(sliderValue.value, min, max)),
               ),
             ),
@@ -740,8 +725,8 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
   }) {
     final tokens = _ThemeDialogTokens.of(context);
     final cs = tokens.cs;
-    final checkColor = ThemeData.estimateBrightnessForColor(color) == Brightness.dark ? Colors.white : Colors.black;
-    return shadcn.Tooltip(
+    final checkColor = estimateBrightnessForColor(color) == Brightness.dark ? Colors.white : Colors.black;
+    return Tooltip(
       tooltip: (_) => Text(label),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -767,7 +752,7 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
                 height: tokens.accentDotSize,
                 decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               ),
-              if (selected) Icon(shadcn.LucideIcons.check, size: tokens.size(13), color: checkColor),
+              if (selected) Icon(LucideIcons.check, size: tokens.size(13), color: checkColor),
             ],
           ),
         ),
@@ -775,7 +760,7 @@ class _ThemeDialogState extends ConsumerState<ThemeDialog> {
     );
   }
 
-  Widget _modeButton(BuildContext context, WidgetRef ref, shadcn.ThemeMode mode, IconData icon, String label) {
+  Widget _modeButton(BuildContext context, WidgetRef ref, ThemeMode mode, IconData icon, String label) {
     final tokens = _ThemeDialogTokens.of(context);
     final current = ref.watch(themeProvider);
     final theme = tokens.theme;
@@ -825,9 +810,16 @@ class _WindowPreset {
   const _WindowPreset(this.label, this.width, this.height);
 }
 
+/// 估算颜色明暗(替代 material 的 ThemeData.estimateBrightnessForColor)。
+Brightness estimateBrightnessForColor(Color color) {
+  final l =
+      0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+  return l > 0.5 ? Brightness.light : Brightness.dark;
+}
+
 class _ThemeDialogTokens {
-  final shadcn.ThemeData theme;
-  final shadcn.ColorScheme cs;
+  final ThemeData theme;
+  final ColorScheme cs;
   final double densityScale;
   final double textScale;
   final Size mediaSize;
@@ -841,7 +833,7 @@ class _ThemeDialogTokens {
   });
 
   factory _ThemeDialogTokens.of(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final mediaSize = MediaQuery.sizeOf(context);
     final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.55, 1.45);
     final textScale = theme.scaling.clamp(0.86, 1.30);
@@ -963,8 +955,8 @@ String _densityLabel(String id) => switch (id) {
   _ => id,
 };
 
-String _modeLabel(shadcn.ThemeMode mode) => switch (mode) {
-  shadcn.ThemeMode.light => '亮色',
-  shadcn.ThemeMode.dark => '暗色',
-  shadcn.ThemeMode.system => '自动',
+String _modeLabel(ThemeMode mode) => switch (mode) {
+  ThemeMode.light => '亮色',
+  ThemeMode.dark => '暗色',
+  ThemeMode.system => '自动',
 };

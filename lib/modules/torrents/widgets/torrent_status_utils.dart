@@ -1,5 +1,4 @@
-import 'package:flutter/widgets.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/torrent_model.dart';
 import '../provider/downloader_provider.dart';
@@ -10,12 +9,8 @@ String torrentIdentityKey(Torrent torrent) {
   return 'name:${torrent.name}:${torrent.addedDate}';
 }
 
-Map<DesktopTorrentStatusFilter, int> desktopStatusCounts(
-  List<Torrent> torrents,
-) {
-  final counts = {
-    for (final filter in DesktopTorrentStatusFilter.values) filter: 0,
-  };
+Map<DesktopTorrentStatusFilter, int> desktopStatusCounts(List<Torrent> torrents) {
+  final counts = {for (final filter in DesktopTorrentStatusFilter.values) filter: 0};
   counts[DesktopTorrentStatusFilter.all] = torrents.length;
   for (final torrent in torrents) {
     for (final filter in DesktopTorrentStatusFilter.values) {
@@ -30,24 +25,21 @@ Map<DesktopTorrentStatusFilter, int> desktopStatusCounts(
 
 IconData desktopStatusIcon(DesktopTorrentStatusFilter filter) {
   return switch (filter) {
-    DesktopTorrentStatusFilter.all => shadcn.LucideIcons.list,
-    DesktopTorrentStatusFilter.active => shadcn.LucideIcons.activity,
-    DesktopTorrentStatusFilter.downloadingActive =>
-      shadcn.LucideIcons.arrowDown,
-    DesktopTorrentStatusFilter.uploadingActive => shadcn.LucideIcons.arrowUp,
-    DesktopTorrentStatusFilter.waiting => shadcn.LucideIcons.timer,
-    DesktopTorrentStatusFilter.downloadWaiting => shadcn.LucideIcons.clock,
-    DesktopTorrentStatusFilter.seedWaiting => shadcn.LucideIcons.clock,
-    DesktopTorrentStatusFilter.checking => shadcn.LucideIcons.rotateCw,
-    DesktopTorrentStatusFilter.checkWaiting => shadcn.LucideIcons.clock,
-    DesktopTorrentStatusFilter.paused => shadcn.LucideIcons.pause,
-    DesktopTorrentStatusFilter.pausedDownloading => shadcn.LucideIcons.pause,
-    DesktopTorrentStatusFilter.pausedCompleted => shadcn.LucideIcons.pause,
-    DesktopTorrentStatusFilter.stalledDownloading =>
-      shadcn.LucideIcons.circleDashed,
-    DesktopTorrentStatusFilter.stalledUploading =>
-      shadcn.LucideIcons.circleDashed,
-    DesktopTorrentStatusFilter.completed => shadcn.LucideIcons.check,
-    DesktopTorrentStatusFilter.error => shadcn.LucideIcons.circleAlert,
+    DesktopTorrentStatusFilter.all => LucideIcons.list,
+    DesktopTorrentStatusFilter.active => LucideIcons.activity,
+    DesktopTorrentStatusFilter.downloadingActive => LucideIcons.arrowDown,
+    DesktopTorrentStatusFilter.uploadingActive => LucideIcons.arrowUp,
+    DesktopTorrentStatusFilter.waiting => LucideIcons.timer,
+    DesktopTorrentStatusFilter.downloadWaiting => LucideIcons.clock,
+    DesktopTorrentStatusFilter.seedWaiting => LucideIcons.clock,
+    DesktopTorrentStatusFilter.checking => LucideIcons.rotateCw,
+    DesktopTorrentStatusFilter.checkWaiting => LucideIcons.clock,
+    DesktopTorrentStatusFilter.paused => LucideIcons.pause,
+    DesktopTorrentStatusFilter.pausedDownloading => LucideIcons.pause,
+    DesktopTorrentStatusFilter.pausedCompleted => LucideIcons.pause,
+    DesktopTorrentStatusFilter.stalledDownloading => LucideIcons.circleDashed,
+    DesktopTorrentStatusFilter.stalledUploading => LucideIcons.circleDashed,
+    DesktopTorrentStatusFilter.completed => LucideIcons.check,
+    DesktopTorrentStatusFilter.error => LucideIcons.circleAlert,
   };
 }

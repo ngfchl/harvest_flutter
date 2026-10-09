@@ -1,15 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
-import 'package:harvest/core/utils/ui/responsive.dart';
 import 'package:harvest/core/utils/parsers/size_parser.dart';
+import 'package:harvest/core/utils/ui/responsive.dart';
 import 'package:harvest/modules/download/model/downloader.dart';
 import 'package:harvest/modules/download/model/downloader_speed.dart';
-import 'package:harvest/modules/download/provider/downloader_provider.dart'
-    as download_providers;
+import 'package:harvest/modules/download/provider/downloader_provider.dart' as download_providers;
 import 'package:harvest/modules/download/provider/downloader_speed_provider.dart';
 import 'package:harvest/modules/download/widgets/downloader_speed_setting.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/torrent_model.dart';
 import '../provider/downloader_provider.dart';
@@ -38,14 +36,12 @@ class TorrentRefreshBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final enabled = ref.watch(speedEnabledProvider);
     final paused = ref.watch(torrentRefreshPausedProvider(downloaderId));
     final remaining = ref.watch(torrentRefreshRemainingProvider(downloaderId));
     final speedMap = ref.watch(downloaderSpeedProvider);
-    final prefs = ref
-        .watch(download_providers.downloaderPrefsProvider(downloaderId))
-        .value;
+    final prefs = ref.watch(download_providers.downloaderPrefsProvider(downloaderId)).value;
 
     final running = enabled && !paused;
     final min = remaining ~/ 60;
@@ -64,28 +60,23 @@ class TorrentRefreshBar extends ConsumerWidget {
         ? cs.destructive
         : cs.primary;
     final statusText = running ? countdown : (enabled ? '暂停' : '关闭');
-    final compactLayout =
-        compact || MediaQuery.sizeOf(context).width < kMobileBreakpoint;
+    final compactLayout = compact || MediaQuery.sizeOf(context).width < kMobileBreakpoint;
     final statusItems = <Widget>[
       _RefreshStatusMetric(
-        icon: running ? shadcn.LucideIcons.radio : shadcn.LucideIcons.pause,
+        icon: running ? LucideIcons.radio : LucideIcons.pause,
         value: statusText,
         color: statusColor,
         tooltip: running ? '下次刷新倒计时' : statusText,
       ),
       _RefreshStatusMetric(
-        icon: shadcn.LucideIcons.zap,
+        icon: LucideIcons.zap,
         value: modeText,
         color: modeColor,
-        tooltip: onToggleSpeedMode == null
-            ? modeText
-            : (slowMode ? '切换为极速模式' : '切换为龟速模式'),
-        onTap: onToggleSpeedMode == null
-            ? null
-            : () => onToggleSpeedMode!(!slowMode),
+        tooltip: onToggleSpeedMode == null ? modeText : (slowMode ? '切换为极速模式' : '切换为龟速模式'),
+        onTap: onToggleSpeedMode == null ? null : () => onToggleSpeedMode!(!slowMode),
       ),
       StatusBarMetric(
-        icon: shadcn.LucideIcons.arrowUp,
+        icon: LucideIcons.arrowUp,
         label: '上传',
         value: TorrentUtils.formatSpeed(uploadSpeed),
         color: colorSeeding,
@@ -93,7 +84,7 @@ class TorrentRefreshBar extends ConsumerWidget {
         showLabel: false,
       ),
       StatusBarMetric(
-        icon: shadcn.LucideIcons.arrowDown,
+        icon: LucideIcons.arrowDown,
         label: '下载',
         value: TorrentUtils.formatSpeed(downloadSpeed),
         color: colorDownloading,
@@ -101,7 +92,7 @@ class TorrentRefreshBar extends ConsumerWidget {
         showLabel: false,
       ),
       _RefreshStatusMetric(
-        icon: shadcn.LucideIcons.hardDrive,
+        icon: LucideIcons.hardDrive,
         value: freeSpace > 0 ? TorrentUtils.formatBytes(freeSpace) : '-',
         color: cs.mutedForeground,
         tooltip: '剩余空间',
@@ -117,12 +108,7 @@ class TorrentRefreshBar extends ConsumerWidget {
     ];
 
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        compactLayout ? 10 : 16,
-        8,
-        compactLayout ? 8 : 12,
-        8,
-      ),
+      padding: EdgeInsets.fromLTRB(compactLayout ? 10 : 16, 8, compactLayout ? 8 : 12, 8),
       decoration: BoxDecoration(
         color: appSurfaceColor(context, cs.background),
         border: Border(bottom: BorderSide(color: cs.border, width: 0.5)),
@@ -131,11 +117,7 @@ class TorrentRefreshBar extends ConsumerWidget {
         children: [
           Expanded(
             child: compactLayout
-                ? StatusBarInlineRow(
-                    spacing: 7,
-                    height: 18,
-                    children: statusItems,
-                  )
+                ? StatusBarInlineRow(spacing: 7, height: 18, children: statusItems)
                 : Wrap(
                     spacing: 14,
                     runSpacing: 8,
@@ -146,14 +128,14 @@ class TorrentRefreshBar extends ConsumerWidget {
           SizedBox(width: compactLayout ? 6 : 8),
           StatusBarIconButton(
             onTap: onRefresh,
-            icon: shadcn.LucideIcons.refreshCw,
+            icon: LucideIcons.refreshCw,
             tooltip: '刷新',
             color: cs.mutedForeground,
             compact: compactLayout,
           ),
           StatusBarIconButton(
             onTap: () => showSpeedSettings(context, ref),
-            icon: shadcn.LucideIcons.settings,
+            icon: LucideIcons.settings,
             tooltip: '刷新设置',
             color: cs.mutedForeground,
             compact: compactLayout,
@@ -162,21 +144,12 @@ class TorrentRefreshBar extends ConsumerWidget {
             onTap: enabled
                 ? () {
                     final nextPaused = !paused;
-                    ref
-                            .read(
-                              torrentRefreshPausedProvider(
-                                downloaderId,
-                              ).notifier,
-                            )
-                            .state =
-                        nextPaused;
-                    ref
-                        .read(torrentListProvider(downloaderId).notifier)
-                        .setWsPaused(nextPaused);
+                    ref.read(torrentRefreshPausedProvider(downloaderId).notifier).state = nextPaused;
+                    ref.read(torrentListProvider(downloaderId).notifier).setWsPaused(nextPaused);
                     onRefreshStateChanged();
                   }
                 : null,
-            icon: paused ? shadcn.LucideIcons.play : shadcn.LucideIcons.pause,
+            icon: paused ? LucideIcons.play : LucideIcons.pause,
             tooltip: paused ? '恢复自动刷新' : '暂停自动刷新',
             color: cs.mutedForeground,
             compact: compactLayout,
@@ -194,9 +167,7 @@ class TorrentRefreshBar extends ConsumerWidget {
       for (final entry in speedMap.entries) {
         final key = entry.key.toLowerCase();
         final dataId = entry.value.downloaderId.toLowerCase();
-        if (key == id ||
-            dataId == id ||
-            (wsKey != null && (key == wsKey || dataId == wsKey))) {
+        if (key == id || dataId == id || (wsKey != null && (key == wsKey || dataId == wsKey))) {
           liveInfo = entry.value.info;
           break;
         }
@@ -266,9 +237,7 @@ class TorrentRefreshBar extends ConsumerWidget {
     if (value is int) return value;
     if (value is num) return value.toInt();
     if (value is String) {
-      return int.tryParse(value) ??
-          double.tryParse(value)?.toInt() ??
-          parseSizeToBytes(value);
+      return int.tryParse(value) ?? double.tryParse(value)?.toInt() ?? parseSizeToBytes(value);
     }
     return 0;
   }
@@ -310,12 +279,8 @@ class _RefreshStatusMetric extends StatelessWidget {
 
     final child = onTap == null
         ? content
-        : GestureDetector(
-            onTap: onTap,
-            behavior: HitTestBehavior.opaque,
-            child: content,
-          );
+        : GestureDetector(onTap: onTap, behavior: HitTestBehavior.opaque, child: content);
 
-    return shadcn.Tooltip(tooltip: (_) => Text(tooltip), child: child);
+    return Tooltip(tooltip: (_) => Text(tooltip), child: child);
   }
 }

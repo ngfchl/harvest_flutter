@@ -1,3 +1,4 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 // ========================
 // pages/task/task_page.dart
 // ========================
@@ -7,16 +8,15 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
-import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/modules/download/provider/downloader_provider.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_menu.dart';
 import 'package:harvest/widgets/app_sheet.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../../widgets/cache_status_banner.dart';
 import '../shell/provider/screenshot_provider.dart';
@@ -43,37 +43,24 @@ class _TaskPageState extends ConsumerState<TaskPage> {
   @override
   Widget build(BuildContext context) {
     final tasksAsync = ref.watch(scheduleProvider);
-    final theme = shadcn.Theme.of(context);
-    final pageBackground = appSurfaceColor(
-      context,
-      theme.colorScheme.background,
-    );
+    final theme = Theme.of(context);
+    final pageBackground = appSurfaceColor(context, theme.colorScheme.background);
 
     return AppBackground(
-      child: shadcn.Scaffold(
+      child: Scaffold(
         backgroundColor: pageBackground,
         child: Column(
           children: [
-            _TaskTabBar(
-              index: _tabIndex,
-              onChanged: (index) => setState(() => _tabIndex = index),
-            ),
+            _TaskTabBar(index: _tabIndex, onChanged: (index) => setState(() => _tabIndex = index)),
             Expanded(
               child: IndexedStack(
                 index: _tabIndex,
                 children: [
                   tasksAsync.when(
-                    loading: () => const Center(
-                      child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    error: (e, _) => _ErrorView(
-                      error: e,
-                      onRetry: () => ref.invalidate(scheduleProvider),
-                    ),
-                    data: (tasks) => _TaskListView(
-                      tasks: tasks,
-                      onAdd: (buttonContext) => _openAdd(buttonContext, ref),
-                    ),
+                    loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    error: (e, _) => _ErrorView(error: e, onRetry: () => ref.invalidate(scheduleProvider)),
+                    data: (tasks) =>
+                        _TaskListView(tasks: tasks, onAdd: (buttonContext) => _openAdd(buttonContext, ref)),
                   ),
                   const _TaskResultListView(),
                 ],
@@ -87,30 +74,30 @@ class _TaskPageState extends ConsumerState<TaskPage> {
 
   void _openAdd(BuildContext buttonContext, WidgetRef ref) {
     final pageContext = context;
-    shadcn.showDropdown<void>(
+    showDropdown<void>(
       context: buttonContext,
       alignment: Alignment.topCenter,
       offset: const Offset(0, 8),
-      widthConstraint: shadcn.PopoverConstraint.intrinsic,
-      heightConstraint: shadcn.PopoverConstraint.intrinsic,
+      widthConstraint: PopoverConstraint.intrinsic,
+      heightConstraint: PopoverConstraint.intrinsic,
       consumeOutsideTaps: false,
-      builder: (_) => shadcn.DropdownMenu(
+      builder: (_) => DropdownMenu(
         children: [
-          shadcn.MenuLabel(child: const Text('添加任务')),
-          const shadcn.MenuDivider(),
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.calendarClock),
+          MenuLabel(child: const Text('添加任务')),
+          const MenuDivider(),
+          MenuButton(
+            leading: const Icon(LucideIcons.calendarClock),
             onPressed: (overlayContext) async {
-              unawaited(shadcn.closeOverlay(overlayContext));
+              unawaited(closeOverlay(overlayContext));
               if (!pageContext.mounted) return;
               _openEdit(pageContext, ref, null, isTorrentMove: false);
             },
             child: const Text('普通任务'),
           ),
-          shadcn.MenuButton(
-            leading: const Icon(shadcn.LucideIcons.arrowRightLeft),
+          MenuButton(
+            leading: const Icon(LucideIcons.arrowRightLeft),
             onPressed: (overlayContext) async {
-              unawaited(shadcn.closeOverlay(overlayContext));
+              unawaited(closeOverlay(overlayContext));
               if (!pageContext.mounted) return;
               _openEdit(pageContext, ref, null, isTorrentMove: true);
             },
@@ -130,7 +117,7 @@ class _TaskTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final horizontalInset = context.isMobile ? 12.0 : 16.0;
 
@@ -142,12 +129,12 @@ class _TaskTabBar extends StatelessWidget {
       ),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: shadcn.Tabs(
+        child: Tabs(
           index: index,
           onChanged: onChanged,
           children: const [
-            shadcn.TabItem(child: Text('计划任务')),
-            shadcn.TabItem(child: Text('执行记录')),
+            TabItem(child: Text('计划任务')),
+            TabItem(child: Text('执行记录')),
           ],
         ),
       ),
@@ -156,35 +143,21 @@ class _TaskTabBar extends StatelessWidget {
 }
 
 /// 打开编辑
-void _openEdit(
-  BuildContext context,
-  WidgetRef ref,
-  Schedule? task, {
-  bool? isTorrentMove,
-}) {
+void _openEdit(BuildContext context, WidgetRef ref, Schedule? task, {bool? isTorrentMove}) {
   final useTorrentMove = isTorrentMove ?? task?.task.contains('种子迁移') ?? false;
   final isMobile = context.isMobile;
 
-  final sheet = useTorrentMove
-      ? TorrentMoveEditSheet(task: task)
-      : ScheduleEditSheet(task: task);
+  final sheet = useTorrentMove ? TorrentMoveEditSheet(task: task) : ScheduleEditSheet(task: task);
 
   if (isMobile) {
-    showAppSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => sheet,
-    );
+    showAppSheet<void>(context: context, isScrollControlled: true, builder: (_) => sheet);
   } else {
-    showDialog<void>(
+    appShowDialog<void>(
       context: context,
       builder: (_) => Dialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-        backgroundColor: shadcn.Theme.of(context).colorScheme.background,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480, maxHeight: 640),
-          child: sheet,
-        ),
+        backgroundColor: Theme.of(context).colorScheme.background,
+        child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 480, maxHeight: 640), child: sheet),
       ),
     );
   }
@@ -203,22 +176,16 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            shadcn.LucideIcons.triangleAlert,
-            size: 48,
-            color: shadcn.Theme.of(context).colorScheme.destructive,
-          ),
+          Icon(LucideIcons.triangleAlert, size: 48, color: Theme.of(context).colorScheme.destructive),
           const SizedBox(height: 16),
-          Text('加载失败', style: shadcn.Theme.of(context).typography.large),
+          Text('加载失败', style: Theme.of(context).typography.large),
           const SizedBox(height: 8),
           Text(
             '$error',
-            style: shadcn.Theme.of(context).typography.small.copyWith(
-              color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-            ),
+            style: Theme.of(context).typography.small.copyWith(color: Theme.of(context).colorScheme.mutedForeground),
           ),
           const SizedBox(height: 24),
-          shadcn.Button.primary(onPressed: onRetry, child: const Text('重试')),
+          Button.primary(onPressed: onRetry, child: const Text('重试')),
         ],
       ),
     );
@@ -241,15 +208,11 @@ class _TaskStatusBar extends StatelessWidget {
   final int disabledCount;
   final ValueChanged<BuildContext> onAdd;
 
-  const _TaskStatusBar({
-    required this.enabledCount,
-    required this.disabledCount,
-    required this.onAdd,
-  });
+  const _TaskStatusBar({required this.enabledCount, required this.disabledCount, required this.onAdd});
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final horizontalInset = context.isMobile ? 12.0 : 24.0;
     final totalCount = enabledCount + disabledCount;
@@ -269,7 +232,7 @@ class _TaskStatusBar extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 StatusBarMetric(
-                  icon: shadcn.LucideIcons.radio,
+                  icon: LucideIcons.radio,
                   label: '启用',
                   value: '$enabledCount',
                   color: enabledCount > 0 ? cs.primary : cs.mutedForeground,
@@ -283,7 +246,7 @@ class _TaskStatusBar extends StatelessWidget {
           Builder(
             builder: (buttonContext) => StatusBarIconButton(
               onTap: () => onAdd(buttonContext),
-              icon: shadcn.LucideIcons.plus,
+              icon: LucideIcons.plus,
               tooltip: '添加任务',
               color: cs.mutedForeground,
             ),
@@ -303,8 +266,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       registerPageScrollController(ref, 4, _scrollController);
-      ref.read(activeScrollControllerProvider.notifier).state =
-          _scrollController;
+      ref.read(activeScrollControllerProvider.notifier).state = _scrollController;
     });
   }
 
@@ -326,18 +288,9 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
         children: [
           CacheStatusBanner(
             info: cacheInfo,
-            margin: EdgeInsets.fromLTRB(
-              context.isMobile ? 12 : 16,
-              8,
-              context.isMobile ? 12 : 16,
-              6,
-            ),
+            margin: EdgeInsets.fromLTRB(context.isMobile ? 12 : 16, 8, context.isMobile ? 12 : 16, 6),
           ),
-          _TaskStatusBar(
-            enabledCount: enabledCount,
-            disabledCount: disabledCount,
-            onAdd: widget.onAdd,
-          ),
+          _TaskStatusBar(enabledCount: enabledCount, disabledCount: disabledCount, onAdd: widget.onAdd),
           Expanded(
             child: EasyRefresh(
               onRefresh: _refresh,
@@ -345,27 +298,16 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
               child: ListView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.only(
-                  bottom: 16 + ShellBottomSpacing.value(context),
-                ),
+                padding: EdgeInsets.only(bottom: 16 + ShellBottomSpacing.value(context)),
                 children: [
                   SizedBox(height: MediaQuery.sizeOf(context).height * 0.3),
                   Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          shadcn.LucideIcons.calendarOff,
-                          size: 48,
-                          color: shadcn.Theme.of(
-                            context,
-                          ).colorScheme.mutedForeground,
-                        ),
+                        Icon(LucideIcons.calendarOff, size: 48, color: Theme.of(context).colorScheme.mutedForeground),
                         const SizedBox(height: 16),
-                        Text(
-                          '暂无计划任务',
-                          style: shadcn.Theme.of(context).typography.large,
-                        ),
+                        Text('暂无计划任务', style: Theme.of(context).typography.large),
                       ],
                     ),
                   ),
@@ -381,25 +323,14 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
       children: [
         CacheStatusBanner(
           info: cacheInfo,
-          margin: EdgeInsets.fromLTRB(
-            context.isMobile ? 12 : 16,
-            8,
-            context.isMobile ? 12 : 16,
-            2,
-          ),
+          margin: EdgeInsets.fromLTRB(context.isMobile ? 12 : 16, 8, context.isMobile ? 12 : 16, 2),
         ),
-        _TaskStatusBar(
-          enabledCount: enabledCount,
-          disabledCount: disabledCount,
-          onAdd: widget.onAdd,
-        ),
+        _TaskStatusBar(enabledCount: enabledCount, disabledCount: disabledCount, onAdd: widget.onAdd),
         Expanded(
           child: EasyRefresh(
             onRefresh: _refresh,
             header: appRefreshHeader(context),
-            child: context.isDesktop
-                ? _buildDesktopGrid(context)
-                : _buildMobileList(context),
+            child: context.isDesktop ? _buildDesktopGrid(context) : _buildMobileList(context),
           ),
         ),
       ],
@@ -417,12 +348,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
   Widget _buildMobileList(BuildContext context) {
     return ListView.separated(
       controller: _scrollController,
-      padding: EdgeInsets.fromLTRB(
-        12,
-        8,
-        12,
-        16 + ShellBottomSpacing.value(context),
-      ),
+      padding: EdgeInsets.fromLTRB(12, 8, 12, 16 + ShellBottomSpacing.value(context)),
       itemCount: widget.tasks.length,
       separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, index) => _buildTile(context, widget.tasks[index]),
@@ -436,25 +362,16 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
         final width = constraints.maxWidth;
         final crossAxisCount = (width / 320).floor().clamp(2, 6).toInt();
         const spacing = 8.0;
-        final itemWidth =
-            (width - 32 - (crossAxisCount - 1) * spacing) / crossAxisCount;
+        final itemWidth = (width - 32 - (crossAxisCount - 1) * spacing) / crossAxisCount;
 
         return ListView(
           controller: _scrollController,
-          padding: EdgeInsets.fromLTRB(
-            16,
-            12,
-            16,
-            16 + ShellBottomSpacing.value(context),
-          ),
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 16 + ShellBottomSpacing.value(context)),
           children: [
             Wrap(
               spacing: spacing,
               runSpacing: spacing,
-              children: [
-                for (final task in widget.tasks)
-                  SizedBox(width: itemWidth, child: _buildTile(context, task)),
-              ],
+              children: [for (final task in widget.tasks) SizedBox(width: itemWidth, child: _buildTile(context, task))],
             ),
           ],
         );
@@ -465,22 +382,15 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
   Widget _buildTile(BuildContext context, Schedule task) {
     final crontabList = ref.watch(crontabListProvider).value ?? [];
     final taskCrontabExpress = task.crontab?.express.trim() ?? '';
-    final matchedCrontabExpress =
-        crontabList
-            .firstWhereOrNull((c) => c.id == task.crontabId)
-            ?.express
-            .trim() ??
-        '';
-    final express = taskCrontabExpress.isNotEmpty
-        ? taskCrontabExpress
-        : matchedCrontabExpress;
+    final matchedCrontabExpress = crontabList.firstWhereOrNull((c) => c.id == task.crontabId)?.express.trim() ?? '';
+    final express = taskCrontabExpress.isNotEmpty ? taskCrontabExpress : matchedCrontabExpress;
 
     final icon = _taskIcon(task.task);
     final isMobile = context.isMobile;
     final isDesktop = context.isDesktop;
     final kwargsSummary = _taskKwargsSummary(task);
     final showExtraParamSlot = kwargsSummary != null || isDesktop;
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final gap = theme.density.baseGap * theme.scaling;
@@ -488,29 +398,19 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
     final heightScale = theme.scaling.clamp(0.92, 1.18).toDouble();
     final iconBadgeSize = (isMobile ? 42.0 : 44.0) * heightScale;
     final switchWidth = 36.0 * theme.scaling;
-    final cardHeight =
-        (isMobile ? (kwargsSummary == null ? 88.0 : 112.0) : 108.0) *
-        heightScale;
+    final cardHeight = (isMobile ? (kwargsSummary == null ? 88.0 : 112.0) : 108.0) * heightScale;
     final accent = task.enabled ? cs.primary : cs.mutedForeground;
     final titleColor = task.enabled ? cs.foreground : cs.mutedForeground;
     final cardRadius = BorderRadius.circular(theme.radiusLg);
     final cardColor = task.enabled
         ? appSurfaceColor(context, cs.card)
-        : appSurfaceColor(
-            context,
-            Color.alphaBlend(
-              cs.mutedForeground.withValues(alpha: 0.035),
-              cs.card,
-            ),
-          );
-    final cardBorderColor = task.enabled
-        ? cs.border.withValues(alpha: 0.78)
-        : cs.border.withValues(alpha: 0.64);
+        : appSurfaceColor(context, Color.alphaBlend(cs.mutedForeground.withValues(alpha: 0.035), cs.card));
+    final cardBorderColor = task.enabled ? cs.border.withValues(alpha: 0.78) : cs.border.withValues(alpha: 0.64);
     final shadowColor = Theme.of(context).brightness == Brightness.dark
         ? Colors.black.withValues(alpha: 0.30)
         : Colors.black.withValues(alpha: 0.10);
 
-    return shadcn.ContextMenu(
+    return ContextMenu(
       items: _taskMenuItems(context, task),
       child: SizedBox(
         height: cardHeight,
@@ -520,11 +420,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
             borderRadius: cardRadius,
             border: Border.all(color: cardBorderColor, width: 0.6),
             boxShadow: [
-              BoxShadow(
-                color: shadowColor,
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
+              BoxShadow(color: shadowColor, blurRadius: 16, offset: const Offset(0, 6)),
               BoxShadow(
                 color: cs.primary.withValues(alpha: task.enabled ? 0.045 : 0),
                 blurRadius: 12,
@@ -546,23 +442,13 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    contentPadding,
-                    gap * 0.72,
-                    contentPadding * 0.85,
-                    gap * 0.72,
-                  ),
+                  padding: EdgeInsets.fromLTRB(contentPadding, gap * 0.72, contentPadding * 0.85, gap * 0.72),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Row(
                         children: [
-                          _buildTaskIconBadge(
-                            context,
-                            icon,
-                            task.enabled,
-                            size: iconBadgeSize,
-                          ),
+                          _buildTaskIconBadge(context, icon, task.enabled, size: iconBadgeSize),
                           SizedBox(width: gap * 0.85),
                           Expanded(
                             child: Column(
@@ -571,20 +457,12 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
                               children: [
                                 Text(
                                   task.name,
-                                  style: typo.small.copyWith(
-                                    color: titleColor,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: typo.small.copyWith(color: titleColor, fontWeight: FontWeight.w700),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 SizedBox(height: gap * 0.52),
-                                _buildTaskParamLine(
-                                  context,
-                                  task: task,
-                                  icon: icon,
-                                  express: express,
-                                ),
+                                _buildTaskParamLine(context, task: task, icon: icon, express: express),
                               ],
                             ),
                           ),
@@ -593,11 +471,9 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
                             width: switchWidth,
                             child: Align(
                               alignment: Alignment.center,
-                              child: shadcn.Switch(
+                              child: Switch(
                                 value: task.enabled,
-                                onChanged: (v) => ref
-                                    .read(scheduleProvider.notifier)
-                                    .toggle(task.id, v),
+                                onChanged: (v) => ref.read(scheduleProvider.notifier).toggle(task.id, v),
                               ),
                             ),
                           ),
@@ -610,11 +486,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
                             SizedBox(width: iconBadgeSize + gap * 0.85),
                             Expanded(
                               child: kwargsSummary != null
-                                  ? _buildTaskExtraParamLine(
-                                      context,
-                                      task,
-                                      kwargsSummary,
-                                    )
+                                  ? _buildTaskExtraParamLine(context, task, kwargsSummary)
                                   : const SizedBox(height: 22),
                             ),
                             SizedBox(width: gap * 0.8 + switchWidth),
@@ -658,7 +530,7 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
           flex: 3,
           child: _buildTaskParamPill(
             context,
-            icon: shadcn.LucideIcons.clock3,
+            icon: LucideIcons.clock3,
             label: express,
             color: _taskTagColor(context, 1),
             enabled: task.enabled,
@@ -671,17 +543,10 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
     return SizedBox(height: 24, child: Row(children: children));
   }
 
-  Widget _buildTaskExtraParamLine(
-    BuildContext context,
-    Schedule task,
-    String summary,
-  ) {
+  Widget _buildTaskExtraParamLine(BuildContext context, Schedule task, String summary) {
     return SizedBox(
       height: 22,
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: _buildKwargsBadge(context, task, summary),
-      ),
+      child: Align(alignment: Alignment.centerLeft, child: _buildKwargsBadge(context, task, summary)),
     );
   }
 
@@ -693,30 +558,20 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
     required bool enabled,
     bool monospace = false,
   }) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final gap = theme.density.baseGap * theme.scaling;
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final contentColor = enabled
-        ? color
-        : Color.lerp(cs.mutedForeground, color, 0.58)!;
+    final contentColor = enabled ? color : Color.lerp(cs.mutedForeground, color, 0.58)!;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: contentColor.withValues(
-          alpha: enabled ? (dark ? 0.18 : 0.11) : (dark ? 0.12 : 0.075),
-        ),
+        color: contentColor.withValues(alpha: enabled ? (dark ? 0.18 : 0.11) : (dark ? 0.12 : 0.075)),
         borderRadius: BorderRadius.circular(theme.radiusSm),
-        border: Border.all(
-          color: contentColor.withValues(alpha: enabled ? 0.30 : 0.20),
-          width: 0.5,
-        ),
+        border: Border.all(color: contentColor.withValues(alpha: enabled ? 0.30 : 0.20), width: 0.5),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: gap * 0.62,
-          vertical: gap * 0.28,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: gap * 0.62, vertical: gap * 0.28),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -743,32 +598,19 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
   }
 
   Color _taskTagColor(BuildContext context, int index) {
-    final primary = shadcn.Theme.of(context).colorScheme.primary;
+    final primary = Theme.of(context).colorScheme.primary;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final hsl = HSLColor.fromColor(primary);
-    final saturation = (hsl.saturation * (dark ? 0.88 : 1.0))
-        .clamp(0.46, 0.78)
-        .toDouble();
-    final lightness = dark
-        ? hsl.lightness.clamp(0.58, 0.70).toDouble()
-        : hsl.lightness.clamp(0.34, 0.50).toDouble();
+    final saturation = (hsl.saturation * (dark ? 0.88 : 1.0)).clamp(0.46, 0.78).toDouble();
+    final lightness = dark ? hsl.lightness.clamp(0.58, 0.70).toDouble() : hsl.lightness.clamp(0.34, 0.50).toDouble();
     const offsets = <double>[0, -72, -144];
     final hue = (hsl.hue + offsets[index % offsets.length]) % 360;
 
-    return hsl
-        .withHue(hue < 0 ? hue + 360 : hue)
-        .withSaturation(saturation)
-        .withLightness(lightness)
-        .toColor();
+    return hsl.withHue(hue < 0 ? hue + 360 : hue).withSaturation(saturation).withLightness(lightness).toColor();
   }
 
-  Widget _buildTaskIconBadge(
-    BuildContext context,
-    IconData icon,
-    bool enabled, {
-    required double size,
-  }) {
-    final theme = shadcn.Theme.of(context);
+  Widget _buildTaskIconBadge(BuildContext context, IconData icon, bool enabled, {required double size}) {
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final accent = enabled ? cs.primary : cs.mutedForeground;
 
@@ -778,67 +620,61 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
       decoration: BoxDecoration(
         color: accent.withValues(alpha: enabled ? 0.12 : 0.08),
         borderRadius: BorderRadius.circular(theme.radiusMd),
-        border: Border.all(
-          color: accent.withValues(alpha: enabled ? 0.24 : 0.16),
-          width: 0.5,
-        ),
+        border: Border.all(color: accent.withValues(alpha: enabled ? 0.24 : 0.16), width: 0.5),
       ),
       child: Icon(icon, size: size * 0.5, color: accent),
     );
   }
 
-  List<shadcn.MenuItem> _taskMenuItems(BuildContext context, Schedule task) {
+  List<MenuItem> _taskMenuItems(BuildContext context, Schedule task) {
     final pageContext = this.context;
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
-    shadcn.MenuButton item({
+    MenuButton item({
       required IconData icon,
       required String title,
       required Future<void> Function(BuildContext overlayContext) onPressed,
       bool destructive = false,
     }) {
       final color = destructive ? cs.destructive : cs.foreground;
-      return shadcn.MenuButton(
+      return MenuButton(
         leading: Icon(icon, size: theme.scaling * 15, color: color),
         autoClose: false,
         onPressed: onPressed,
         child: SizedBox(
           width: 140,
-          child: Text(
-            title,
-            style: theme.typography.small.copyWith(color: color),
-          ),
+          child: Text(title, style: theme.typography.small.copyWith(color: color)),
         ),
       );
     }
 
     return [
       item(
-        icon: shadcn.LucideIcons.play,
+        icon: LucideIcons.play,
         title: '执行',
         onPressed: (ctx) async {
-          unawaited(shadcn.closeOverlay(ctx));
+          unawaited(closeOverlay(ctx));
           await _runTaskOnce(task);
         },
       ),
       item(
-        icon: shadcn.LucideIcons.pencil,
+        icon: LucideIcons.pencil,
         title: '编辑',
         onPressed: (ctx) async {
-          unawaited(shadcn.closeOverlay(ctx));
+          unawaited(closeOverlay(ctx));
           await Future<void>.delayed(const Duration(milliseconds: 240));
           if (!mounted || !pageContext.mounted) return;
           _openEdit(pageContext, ref, task);
         },
       ),
-      const shadcn.MenuDivider(),
+      const MenuDivider(),
       item(
-        icon: shadcn.LucideIcons.trash2,
+        icon: LucideIcons.trash2,
         title: '删除',
         destructive: true,
         onPressed: (ctx) async {
-          unawaited(shadcn.closeOverlay(ctx));
+          unawaited(closeOverlay(ctx));
           await Future<void>.delayed(const Duration(milliseconds: 240));
           if (!mounted || !pageContext.mounted) return;
           _DeleteConfirmDialog.show(pageContext, ref, task);
@@ -858,14 +694,10 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
     }
   }
 
-  Widget _buildKwargsBadge(
-    BuildContext context,
-    Schedule task,
-    String summary,
-  ) {
+  Widget _buildKwargsBadge(BuildContext context, Schedule task, String summary) {
     return _buildTaskParamPill(
       context,
-      icon: shadcn.LucideIcons.listTree,
+      icon: LucideIcons.listTree,
       label: summary,
       color: _taskTagColor(context, 2),
       enabled: task.enabled,
@@ -885,12 +717,8 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
       if (task.task.contains('种子迁移')) {
         final srcId = kwargs['source_downloader_id'];
         final distId = kwargs['dist_downloader_id'];
-        final srcName =
-            downloaders.firstWhereOrNull((d) => d.id == srcId)?.name ??
-            '#$srcId';
-        final distName =
-            downloaders.firstWhereOrNull((d) => d.id == distId)?.name ??
-            '#$distId';
+        final srcName = downloaders.firstWhereOrNull((d) => d.id == srcId)?.name ?? '#$srcId';
+        final distName = downloaders.firstWhereOrNull((d) => d.id == distId)?.name ?? '#$distId';
         parts.add('$srcName → $distName');
 
         final folders = kwargs['folder_map'] as List?;
@@ -908,13 +736,13 @@ class _TaskListViewState extends ConsumerState<_TaskListView> {
 
   IconData _taskIcon(String type) {
     return switch (type) {
-      '自动签到任务' || '阿里云签到' => shadcn.LucideIcons.check,
-      '批量抓取站点信息' => shadcn.LucideIcons.globe,
-      'RSS订阅' => shadcn.LucideIcons.rss,
-      '下载器辅种任务' => shadcn.LucideIcons.copy,
-      '种子迁移任务' => shadcn.LucideIcons.arrowRightLeft,
-      '自动清理内存' => shadcn.LucideIcons.trash2,
-      _ => shadcn.LucideIcons.calendarClock,
+      '自动签到任务' || '阿里云签到' => LucideIcons.check,
+      '批量抓取站点信息' => LucideIcons.globe,
+      'RSS订阅' => LucideIcons.rss,
+      '下载器辅种任务' => LucideIcons.copy,
+      '种子迁移任务' => LucideIcons.arrowRightLeft,
+      '自动清理内存' => LucideIcons.trash2,
+      _ => LucideIcons.calendarClock,
     };
   }
 }
@@ -935,25 +763,14 @@ class _TaskResultListView extends ConsumerWidget {
             onRefresh: () => ref.invalidate(taskResultsProvider),
             onClear: null,
           ),
-          const Expanded(
-            child: Center(
-              child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
+          const Expanded(child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
         ],
       ),
       error: (e, _) => Column(
         children: [
-          _TaskResultStatusBar(
-            results: const [],
-            onRefresh: () => ref.invalidate(taskResultsProvider),
-            onClear: null,
-          ),
+          _TaskResultStatusBar(results: const [], onRefresh: () => ref.invalidate(taskResultsProvider), onClear: null),
           Expanded(
-            child: _ErrorView(
-              error: e,
-              onRetry: () => ref.invalidate(taskResultsProvider),
-            ),
+            child: _ErrorView(error: e, onRetry: () => ref.invalidate(taskResultsProvider)),
           ),
         ],
       ),
@@ -962,18 +779,14 @@ class _TaskResultListView extends ConsumerWidget {
           _TaskResultStatusBar(
             results: results,
             onRefresh: () => ref.invalidate(taskResultsProvider),
-            onClear: results.isEmpty
-                ? null
-                : () => _TaskResultClearDialog.show(context, ref),
+            onClear: results.isEmpty ? null : () => _TaskResultClearDialog.show(context, ref),
           ),
           Expanded(
             child: EasyRefresh(
               onRefresh: () async => ref.invalidate(taskResultsProvider),
               header: appRefreshHeader(context),
               child: results.isEmpty
-                  ? _TaskResultEmptyView(
-                      onRefresh: () => ref.invalidate(taskResultsProvider),
-                    )
+                  ? _TaskResultEmptyView(onRefresh: () => ref.invalidate(taskResultsProvider))
                   : _TaskResultList(results: results),
             ),
           ),
@@ -998,7 +811,7 @@ class _TaskResultStatusBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final horizontalInset = context.isMobile ? 12.0 : 24.0;
     final successCount = results.where((result) => result.isSuccess).length;
@@ -1019,19 +832,19 @@ class _TaskResultStatusBar extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 StatusBarMetric(
-                  icon: shadcn.LucideIcons.history,
+                  icon: LucideIcons.history,
                   label: '记录',
                   value: loading ? '-' : '${results.length}',
                   color: cs.primary,
                 ),
                 StatusBarMetric(
-                  icon: shadcn.LucideIcons.circleCheck,
+                  icon: LucideIcons.circleCheck,
                   label: '成功',
                   value: loading ? '-' : '$successCount',
                   color: const Color(0xFF16A34A),
                 ),
                 StatusBarMetric(
-                  icon: shadcn.LucideIcons.circleAlert,
+                  icon: LucideIcons.circleAlert,
                   label: '失败',
                   value: loading ? '-' : '$failureCount',
                   color: failureCount > 0 ? cs.destructive : cs.mutedForeground,
@@ -1042,13 +855,13 @@ class _TaskResultStatusBar extends StatelessWidget {
           const SizedBox(width: 8),
           StatusBarIconButton(
             onTap: onRefresh,
-            icon: shadcn.LucideIcons.refreshCw,
+            icon: LucideIcons.refreshCw,
             tooltip: '刷新执行记录',
             color: cs.mutedForeground,
           ),
           StatusBarIconButton(
             onTap: onClear,
-            icon: shadcn.LucideIcons.trash2,
+            icon: LucideIcons.trash2,
             tooltip: '清理执行记录',
             color: onClear == null ? null : cs.destructive,
           ),
@@ -1065,7 +878,7 @@ class _TaskResultEmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return ListView(
@@ -1077,18 +890,11 @@ class _TaskResultEmptyView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                shadcn.LucideIcons.clipboardList,
-                size: 48,
-                color: cs.mutedForeground,
-              ),
+              Icon(LucideIcons.clipboardList, size: 48, color: cs.mutedForeground),
               const SizedBox(height: 16),
               Text('暂无执行记录', style: theme.typography.large),
               const SizedBox(height: 16),
-              shadcn.Button.outline(
-                onPressed: onRefresh,
-                child: const Text('刷新'),
-              ),
+              Button.outline(onPressed: onRefresh, child: const Text('刷新')),
             ],
           ),
         ),
@@ -1126,7 +932,7 @@ class _TaskResultTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
     final statusColor = _taskResultStatusColor(context, result.status);
@@ -1136,7 +942,7 @@ class _TaskResultTile extends ConsumerWidget {
     final displaySummary = _taskResultDisplaySummary(result);
     final id = result.displayId;
 
-    return shadcn.ContextMenu(
+    return ContextMenu(
       items: _taskResultMenuItems(context, ref, result),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -1155,16 +961,9 @@ class _TaskResultTile extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: statusColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(7),
-                  border: Border.all(
-                    color: statusColor.withValues(alpha: 0.24),
-                    width: 0.5,
-                  ),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.24), width: 0.5),
                 ),
-                child: Icon(
-                  _taskResultStatusIcon(result.status),
-                  size: 18,
-                  color: statusColor,
-                ),
+                child: Icon(_taskResultStatusIcon(result.status), size: 18, color: statusColor),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1179,16 +978,11 @@ class _TaskResultTile extends ConsumerWidget {
                             displayTitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: typo.small.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: typo.small.copyWith(fontWeight: FontWeight.w700),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        _TaskResultStatusBadge(
-                          status: result.status,
-                          color: statusColor,
-                        ),
+                        _TaskResultStatusBadge(status: result.status, color: statusColor),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -1197,22 +991,10 @@ class _TaskResultTile extends ConsumerWidget {
                       runSpacing: 4,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        if (startedAt.isNotEmpty)
-                          _TaskResultMeta(
-                            icon: shadcn.LucideIcons.clock,
-                            text: startedAt,
-                          ),
-                        if (finishedAt.isNotEmpty)
-                          _TaskResultMeta(
-                            icon: shadcn.LucideIcons.check,
-                            text: finishedAt,
-                          ),
+                        if (startedAt.isNotEmpty) _TaskResultMeta(icon: LucideIcons.clock, text: startedAt),
+                        if (finishedAt.isNotEmpty) _TaskResultMeta(icon: LucideIcons.check, text: finishedAt),
                         if (id.isNotEmpty)
-                          _TaskResultMeta(
-                            icon: shadcn.LucideIcons.fileText,
-                            text: _shortTaskResultId(id),
-                            monospace: true,
-                          ),
+                          _TaskResultMeta(icon: LucideIcons.fileText, text: _shortTaskResultId(id), monospace: true),
                       ],
                     ),
                     if (displaySummary.isNotEmpty) ...[
@@ -1228,11 +1010,7 @@ class _TaskResultTile extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(
-                shadcn.LucideIcons.chevronRight,
-                size: 16,
-                color: cs.mutedForeground.withValues(alpha: 0.62),
-              ),
+              Icon(LucideIcons.chevronRight, size: 16, color: cs.mutedForeground.withValues(alpha: 0.62)),
             ],
           ),
         ),
@@ -1249,7 +1027,7 @@ class _TaskResultStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final label = _taskResultStatusLabel(status);
 
     return Container(
@@ -1264,11 +1042,7 @@ class _TaskResultStatusBadge extends StatelessWidget {
         label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: theme.typography.xSmall.copyWith(
-          color: color,
-          fontWeight: FontWeight.w700,
-          height: 1.1,
-        ),
+        style: theme.typography.xSmall.copyWith(color: color, fontWeight: FontWeight.w700, height: 1.1),
       ),
     );
   }
@@ -1279,15 +1053,11 @@ class _TaskResultMeta extends StatelessWidget {
   final String text;
   final bool monospace;
 
-  const _TaskResultMeta({
-    required this.icon,
-    required this.text,
-    this.monospace = false,
-  });
+  const _TaskResultMeta({required this.icon, required this.text, this.monospace = false});
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return Row(
@@ -1300,9 +1070,7 @@ class _TaskResultMeta extends StatelessWidget {
           style: theme.typography.xSmall.copyWith(
             color: cs.mutedForeground,
             fontFamily: monospace ? 'monospace' : null,
-            fontFeatures: monospace
-                ? const [FontFeature.tabularFigures()]
-                : null,
+            fontFeatures: monospace ? const [FontFeature.tabularFigures()] : null,
           ),
         ),
       ],
@@ -1316,7 +1084,7 @@ class _TaskResultDetailDialog {
 
     appShowDialog(
       context: context,
-      builder: (ctx) => shadcn.AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('执行记录详情'),
         content: SizedBox(
           width: context.isMobile ? double.infinity : 680,
@@ -1327,29 +1095,15 @@ class _TaskResultDetailDialog {
                   builder: (context, ref, _) {
                     final async = ref.watch(taskResultDetailProvider(taskId));
                     return async.when(
-                      loading: () => _TaskResultDetailContent(
-                        result: result,
-                        loading: true,
-                      ),
-                      error: (_, _) => _TaskResultDetailContent(
-                        result: result,
-                        loading: false,
-                      ),
-                      data: (detail) => _TaskResultDetailContent(
-                        result: detail ?? result,
-                        fallback: result,
-                        loading: false,
-                      ),
+                      loading: () => _TaskResultDetailContent(result: result, loading: true),
+                      error: (_, _) => _TaskResultDetailContent(result: result, loading: false),
+                      data: (detail) =>
+                          _TaskResultDetailContent(result: detail ?? result, fallback: result, loading: false),
                     );
                   },
                 ),
         ),
-        actions: [
-          shadcn.Button.outline(
-            onPressed: () => closeAppSheet(ctx),
-            child: const Text('关闭'),
-          ),
-        ],
+        actions: [Button.outline(onPressed: () => closeAppSheet(ctx), child: const Text('关闭'))],
       ),
     );
   }
@@ -1360,15 +1114,11 @@ class _TaskResultDetailContent extends StatelessWidget {
   final TaskResult? fallback;
   final bool loading;
 
-  const _TaskResultDetailContent({
-    required this.result,
-    this.fallback,
-    required this.loading,
-  });
+  const _TaskResultDetailContent({required this.result, this.fallback, required this.loading});
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final statusColor = _taskResultStatusColor(context, result.status);
     final content = _taskResultMarkdownContent(result, fallback);
@@ -1384,18 +1134,12 @@ class _TaskResultDetailContent extends StatelessWidget {
                 displayTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.typography.small.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                style: theme.typography.small.copyWith(fontWeight: FontWeight.w700),
               ),
             ),
             const SizedBox(width: 8),
             if (loading)
-              const SizedBox(
-                width: 16,
-                height: 16,
-                child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-              )
+              const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
             else
               _TaskResultStatusBadge(status: result.status, color: statusColor),
           ],
@@ -1406,21 +1150,11 @@ class _TaskResultDetailContent extends StatelessWidget {
           runSpacing: 6,
           children: [
             if (result.displayId.isNotEmpty)
-              _TaskResultMeta(
-                icon: shadcn.LucideIcons.fileText,
-                text: result.displayId,
-                monospace: true,
-              ),
+              _TaskResultMeta(icon: LucideIcons.fileText, text: result.displayId, monospace: true),
             if (result.createdAt != null)
-              _TaskResultMeta(
-                icon: shadcn.LucideIcons.clock,
-                text: '开始 ${_formatTaskResultTime(result.createdAt)}',
-              ),
+              _TaskResultMeta(icon: LucideIcons.clock, text: '开始 ${_formatTaskResultTime(result.createdAt)}'),
             if (result.finishedAt != null)
-              _TaskResultMeta(
-                icon: shadcn.LucideIcons.check,
-                text: '结束 ${_formatTaskResultTime(result.finishedAt)}',
-              ),
+              _TaskResultMeta(icon: LucideIcons.check, text: '结束 ${_formatTaskResultTime(result.finishedAt)}'),
           ],
         ),
         const SizedBox(height: 12),
@@ -1428,13 +1162,7 @@ class _TaskResultDetailContent extends StatelessWidget {
           child: AppSurfaceContainer(
             padding: const EdgeInsets.all(10),
             borderRadius: BorderRadius.circular(8),
-            color: appSurfaceColor(
-              context,
-              Color.alphaBlend(
-                cs.mutedForeground.withValues(alpha: 0.035),
-                cs.card,
-              ),
-            ),
+            color: appSurfaceColor(context, Color.alphaBlend(cs.mutedForeground.withValues(alpha: 0.035), cs.card)),
             borderColor: cs.border.withValues(alpha: 0.64),
             child: SingleChildScrollView(
               child: SelectionArea(
@@ -1459,16 +1187,13 @@ class _TaskResultClearDialog {
   static void show(BuildContext context, WidgetRef ref) {
     appShowDialog(
       context: context,
-      builder: (ctx) => shadcn.AlertDialog(
-        leading: const Icon(shadcn.LucideIcons.trash2),
+      builder: (ctx) => AlertDialog(
+        leading: const Icon(LucideIcons.trash2),
         title: const Text('清理执行记录'),
         content: const Text('确定要清理所有任务执行记录吗？'),
         actions: [
-          shadcn.Button.outline(
-            onPressed: () => closeAppSheet(ctx),
-            child: const Text('取消'),
-          ),
-          shadcn.Button.destructive(
+          Button.outline(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+          Button.destructive(
             onPressed: () async {
               closeAppSheet(ctx);
               try {
@@ -1488,62 +1213,55 @@ class _TaskResultClearDialog {
   }
 }
 
-List<shadcn.MenuItem> _taskResultMenuItems(
-  BuildContext context,
-  WidgetRef ref,
-  TaskResult result,
-) {
-  final theme = shadcn.Theme.of(context);
+List<MenuItem> _taskResultMenuItems(BuildContext context, WidgetRef ref, TaskResult result) {
+  final theme = Theme.of(context);
   final cs = theme.colorScheme;
 
-  shadcn.MenuButton item({
+  MenuButton item({
     required IconData icon,
     required String title,
     required Future<void> Function(BuildContext overlayContext) onPressed,
     bool destructive = false,
   }) {
     final color = destructive ? cs.destructive : cs.foreground;
-    return shadcn.MenuButton(
+    return MenuButton(
       leading: Icon(icon, size: theme.scaling * 15, color: color),
       autoClose: false,
       onPressed: onPressed,
       child: SizedBox(
         width: 128,
-        child: Text(
-          title,
-          style: theme.typography.small.copyWith(color: color),
-        ),
+        child: Text(title, style: theme.typography.small.copyWith(color: color)),
       ),
     );
   }
 
   return [
     item(
-      icon: shadcn.LucideIcons.fileText,
+      icon: LucideIcons.fileText,
       title: '任务记录详情',
       onPressed: (ctx) async {
-        unawaited(shadcn.closeOverlay(ctx));
+        unawaited(closeOverlay(ctx));
         _TaskResultDetailDialog.show(context, ref, result);
       },
     ),
     if (_taskResultCanCancel(result))
       item(
-        icon: shadcn.LucideIcons.circleX,
+        icon: LucideIcons.circleX,
         title: '取消当前任务',
         destructive: true,
         onPressed: (ctx) async {
-          unawaited(shadcn.closeOverlay(ctx));
+          unawaited(closeOverlay(ctx));
           _TaskResultCancelDialog.show(context, ref, result);
         },
       ),
     if (_taskResultCanDeleteRecord(result)) ...[
-      const shadcn.MenuDivider(),
+      const MenuDivider(),
       item(
-        icon: shadcn.LucideIcons.trash2,
+        icon: LucideIcons.trash2,
         title: '删除任务记录',
         destructive: true,
         onPressed: (ctx) async {
-          unawaited(shadcn.closeOverlay(ctx));
+          unawaited(closeOverlay(ctx));
           _TaskResultDeleteDialog.show(context, ref, result);
         },
       ),
@@ -1561,16 +1279,13 @@ class _TaskResultDeleteDialog {
 
     appShowDialog(
       context: context,
-      builder: (ctx) => shadcn.AlertDialog(
-        leading: const Icon(shadcn.LucideIcons.trash2),
+      builder: (ctx) => AlertDialog(
+        leading: const Icon(LucideIcons.trash2),
         title: const Text('删除执行记录'),
         content: Text('确定要删除「${_taskResultDisplayTitle(result)}」这条执行记录吗？'),
         actions: [
-          shadcn.Button.outline(
-            onPressed: () => closeAppSheet(ctx),
-            child: const Text('取消'),
-          ),
-          shadcn.Button.destructive(
+          Button.outline(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+          Button.destructive(
             onPressed: () async {
               closeAppSheet(ctx);
               try {
@@ -1601,16 +1316,13 @@ class _TaskResultCancelDialog {
 
     appShowDialog(
       context: context,
-      builder: (ctx) => shadcn.AlertDialog(
-        leading: const Icon(shadcn.LucideIcons.circleX),
+      builder: (ctx) => AlertDialog(
+        leading: const Icon(LucideIcons.circleX),
         title: const Text('取消任务'),
         content: Text('确定要取消「${_taskResultDisplayTitle(result)}」吗？'),
         actions: [
-          shadcn.Button.outline(
-            onPressed: () => closeAppSheet(ctx),
-            child: const Text('取消'),
-          ),
-          shadcn.Button.destructive(
+          Button.outline(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+          Button.destructive(
             onPressed: () async {
               closeAppSheet(ctx);
               try {
@@ -1659,26 +1371,14 @@ bool _taskResultCanDeleteRecord(TaskResult result) {
 
 bool _taskResultIsActive(TaskResult result) {
   return switch (result.status.trim().toLowerCase()) {
-    'started' ||
-    'running' ||
-    'progress' ||
-    'retry' ||
-    'pending' ||
-    'queued' ||
-    'received' => true,
+    'started' || 'running' || 'progress' || 'retry' || 'pending' || 'queued' || 'received' => true,
     _ => false,
   };
 }
 
 bool _taskResultIsCompleted(TaskResult result) {
   return switch (result.status.trim().toLowerCase()) {
-    'success' ||
-    'succeeded' ||
-    'done' ||
-    'failure' ||
-    'failed' ||
-    'error' ||
-    'revoked' => true,
+    'success' || 'succeeded' || 'done' || 'failure' || 'failed' || 'error' || 'revoked' => true,
     _ => false,
   };
 }
@@ -1727,31 +1427,19 @@ String _taskResultValueToMarkdown(Object? value) {
 }
 
 MarkdownStyleSheet _taskResultMarkdownStyleSheet(BuildContext context) {
-  final cs = shadcn.Theme.of(context).colorScheme;
-  final typo = shadcn.Theme.of(context).typography;
+  final cs = Theme.of(context).colorScheme;
+  final typo = Theme.of(context).typography;
   final body = typo.small.copyWith(color: cs.foreground, height: 1.55);
 
   return MarkdownStyleSheet(
     a: body.copyWith(color: cs.primary, fontWeight: FontWeight.w600),
     p: body,
     pPadding: const EdgeInsets.only(bottom: 10),
-    h1: typo.xLarge.copyWith(
-      color: cs.foreground,
-      fontWeight: FontWeight.w700,
-      height: 1.35,
-    ),
+    h1: typo.xLarge.copyWith(color: cs.foreground, fontWeight: FontWeight.w700, height: 1.35),
     h1Padding: const EdgeInsets.only(bottom: 10),
-    h2: typo.large.copyWith(
-      color: cs.foreground,
-      fontWeight: FontWeight.w700,
-      height: 1.35,
-    ),
+    h2: typo.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700, height: 1.35),
     h2Padding: const EdgeInsets.only(bottom: 8),
-    h3: typo.base.copyWith(
-      color: cs.foreground,
-      fontWeight: FontWeight.w700,
-      height: 1.35,
-    ),
+    h3: typo.base.copyWith(color: cs.foreground, fontWeight: FontWeight.w700, height: 1.35),
     h3Padding: const EdgeInsets.only(bottom: 8),
     h4: body.copyWith(fontWeight: FontWeight.w700),
     h5: body.copyWith(fontWeight: FontWeight.w700),
@@ -1777,9 +1465,7 @@ MarkdownStyleSheet _taskResultMarkdownStyleSheet(BuildContext context) {
     blockquotePadding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
     blockquoteDecoration: BoxDecoration(
       color: cs.muted.withValues(alpha: 0.18),
-      border: Border(
-        left: BorderSide(color: cs.primary.withValues(alpha: 0.55), width: 3),
-      ),
+      border: Border(left: BorderSide(color: cs.primary.withValues(alpha: 0.55), width: 3)),
     ),
     horizontalRuleDecoration: BoxDecoration(
       border: Border(top: BorderSide(color: cs.border, width: 1)),
@@ -1817,49 +1503,31 @@ String _taskResultStatusLabel(String status) {
 
 IconData _taskResultStatusIcon(String status) {
   final normalized = status.toLowerCase();
-  if (normalized == 'success' ||
-      normalized == 'succeeded' ||
-      normalized == 'done') {
-    return shadcn.LucideIcons.circleCheck;
+  if (normalized == 'success' || normalized == 'succeeded' || normalized == 'done') {
+    return LucideIcons.circleCheck;
   }
-  if (normalized == 'failure' ||
-      normalized == 'failed' ||
-      normalized == 'error' ||
-      normalized == 'revoked') {
-    return shadcn.LucideIcons.circleAlert;
+  if (normalized == 'failure' || normalized == 'failed' || normalized == 'error' || normalized == 'revoked') {
+    return LucideIcons.circleAlert;
   }
-  if (normalized == 'started' ||
-      normalized == 'running' ||
-      normalized == 'progress' ||
-      normalized == 'retry') {
-    return shadcn.LucideIcons.loaderCircle;
+  if (normalized == 'started' || normalized == 'running' || normalized == 'progress' || normalized == 'retry') {
+    return LucideIcons.loaderCircle;
   }
-  return shadcn.LucideIcons.clock;
+  return LucideIcons.clock;
 }
 
 Color _taskResultStatusColor(BuildContext context, String status) {
-  final cs = shadcn.Theme.of(context).colorScheme;
+  final cs = Theme.of(context).colorScheme;
   final normalized = status.toLowerCase();
-  if (normalized == 'success' ||
-      normalized == 'succeeded' ||
-      normalized == 'done') {
+  if (normalized == 'success' || normalized == 'succeeded' || normalized == 'done') {
     return const Color(0xFF16A34A);
   }
-  if (normalized == 'failure' ||
-      normalized == 'failed' ||
-      normalized == 'error' ||
-      normalized == 'revoked') {
+  if (normalized == 'failure' || normalized == 'failed' || normalized == 'error' || normalized == 'revoked') {
     return cs.destructive;
   }
-  if (normalized == 'started' ||
-      normalized == 'running' ||
-      normalized == 'progress' ||
-      normalized == 'retry') {
+  if (normalized == 'started' || normalized == 'running' || normalized == 'progress' || normalized == 'retry') {
     return cs.primary;
   }
-  if (normalized == 'pending' ||
-      normalized == 'queued' ||
-      normalized == 'received') {
+  if (normalized == 'pending' || normalized == 'queued' || normalized == 'received') {
     return const Color(0xFFD97706);
   }
   return cs.mutedForeground;
@@ -1878,16 +1546,13 @@ class _DeleteConfirmDialog {
   static void show(BuildContext context, WidgetRef ref, Schedule task) {
     appShowDialog(
       context: context,
-      builder: (ctx) => shadcn.AlertDialog(
-        leading: const Icon(shadcn.LucideIcons.trash2),
+      builder: (ctx) => AlertDialog(
+        leading: const Icon(LucideIcons.trash2),
         title: const Text('确认删除'),
         content: Text('确定要删除任务「${task.name}」吗？'),
         actions: [
-          shadcn.Button.outline(
-            onPressed: () => closeAppSheet(ctx),
-            child: const Text('取消'),
-          ),
-          shadcn.Button.destructive(
+          Button.outline(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+          Button.destructive(
             onPressed: () async {
               closeAppSheet(ctx);
               await ref.read(scheduleProvider.notifier).delete(task.id);

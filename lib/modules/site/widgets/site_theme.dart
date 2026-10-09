@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:harvest/core/utils/ui/responsive.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
-shadcn.ThemeData siteTheme(BuildContext context) => shadcn.Theme.of(context);
+ThemeData siteTheme(BuildContext context) => Theme.of(context);
 
-shadcn.ColorScheme siteColors(BuildContext context) =>
-    siteTheme(context).colorScheme;
+ColorScheme siteColors(BuildContext context) => siteTheme(context).colorScheme;
 
 Color siteTone(
   Color color, {
@@ -23,25 +21,15 @@ Color siteTone(
       .withValues(alpha: alpha);
 }
 
-Color siteSuccess(BuildContext context, {double alpha = 1}) =>
-    siteColors(context).primary.withValues(alpha: alpha);
+Color siteSuccess(BuildContext context, {double alpha = 1}) => siteColors(context).primary.withValues(alpha: alpha);
 
-Color siteDanger(BuildContext context, {double alpha = 1}) =>
-    siteColors(context).destructive.withValues(alpha: alpha);
+Color siteDanger(BuildContext context, {double alpha = 1}) => siteColors(context).destructive.withValues(alpha: alpha);
 
-Color siteWarning(BuildContext context, {double alpha = 1}) => siteTone(
-  siteColors(context).primary,
-  hueShift: 42,
-  lightnessDelta: 0.04,
-  alpha: alpha,
-);
+Color siteWarning(BuildContext context, {double alpha = 1}) =>
+    siteTone(siteColors(context).primary, hueShift: 42, lightnessDelta: 0.04, alpha: alpha);
 
-Color siteInfo(BuildContext context, {double alpha = 1}) => siteTone(
-  siteColors(context).primary,
-  hueShift: -34,
-  saturationScale: 0.9,
-  alpha: alpha,
-);
+Color siteInfo(BuildContext context, {double alpha = 1}) =>
+    siteTone(siteColors(context).primary, hueShift: -34, saturationScale: 0.9, alpha: alpha);
 
 Color siteAccent(BuildContext context, int index, {double alpha = 1}) {
   final cs = siteColors(context);
@@ -60,8 +48,7 @@ Color siteAccent(BuildContext context, int index, {double alpha = 1}) {
   return palette[index % palette.length].withValues(alpha: alpha);
 }
 
-Color siteTransparent(BuildContext context) =>
-    siteColors(context).background.withValues(alpha: 0);
+Color siteTransparent(BuildContext context) => siteColors(context).background.withValues(alpha: 0);
 
 Color siteShadow(BuildContext context, {double alpha = 0.10}) =>
     siteColors(context).foreground.withValues(alpha: alpha);
@@ -79,21 +66,15 @@ BorderRadius siteRadius(BuildContext context, {String size = 'md'}) {
 
 class SiteCardTokens {
   final BuildContext context;
-  final shadcn.ThemeData theme;
+  final ThemeData theme;
   final bool compact;
   final double scale;
 
-  SiteCardTokens._({
-    required this.context,
-    required this.theme,
-    required this.compact,
-    required this.scale,
-  });
+  SiteCardTokens._({required this.context, required this.theme, required this.compact, required this.scale});
 
   factory SiteCardTokens.of(BuildContext context, {bool? compact}) {
     final theme = siteTheme(context);
-    final compactLayout =
-        compact ?? MediaQuery.sizeOf(context).width < kMobileBreakpoint;
+    final compactLayout = compact ?? MediaQuery.sizeOf(context).width < kMobileBreakpoint;
     final densityScale = (theme.density.baseGap / 8).clamp(0.88, 1.14);
     final visualScale = (theme.scaling * densityScale).clamp(0.84, 1.18);
     return SiteCardTokens._(
@@ -104,31 +85,18 @@ class SiteCardTokens {
     );
   }
 
-  shadcn.ColorScheme get colors => theme.colorScheme;
+  ColorScheme get colors => theme.colorScheme;
 
   bool get isDark => colors.brightness == Brightness.dark;
 
   double size(num value) => value.toDouble() * scale;
 
-  EdgeInsets edgeFromLTRB(
-    double left,
-    double top,
-    double right,
-    double bottom,
-  ) {
-    return EdgeInsets.fromLTRB(
-      size(left),
-      size(top),
-      size(right),
-      size(bottom),
-    );
+  EdgeInsets edgeFromLTRB(double left, double top, double right, double bottom) {
+    return EdgeInsets.fromLTRB(size(left), size(top), size(right), size(bottom));
   }
 
   EdgeInsets symmetric({double horizontal = 0, double vertical = 0}) {
-    return EdgeInsets.symmetric(
-      horizontal: size(horizontal),
-      vertical: size(vertical),
-    );
+    return EdgeInsets.symmetric(horizontal: size(horizontal), vertical: size(vertical));
   }
 
   BorderRadius get cardRadius => siteRadius(context, size: 'lg');
@@ -141,25 +109,14 @@ class SiteCardTokens {
 
   BorderRadius get pillRadius => siteRadius(context, size: 'xl');
 
-  Color get cardColor => isDark
-      ? Color.alphaBlend(
-          colors.muted.withValues(alpha: 0.09),
-          colors.background,
-        )
-      : colors.card;
+  Color get cardColor =>
+      isDark ? Color.alphaBlend(colors.muted.withValues(alpha: 0.09), colors.background) : colors.card;
 
-  Color get borderColor => isDark
-      ? colors.border.withValues(alpha: 0.58)
-      : colors.border.withValues(alpha: 0.86);
+  Color get borderColor => isDark ? colors.border.withValues(alpha: 0.58) : colors.border.withValues(alpha: 0.86);
 
-  Color get dividerColor => isDark
-      ? colors.border.withValues(alpha: 0.38)
-      : colors.border.withValues(alpha: 0.72);
+  Color get dividerColor => isDark ? colors.border.withValues(alpha: 0.38) : colors.border.withValues(alpha: 0.72);
 
-  BoxDecoration cardDecoration({
-    double borderWidth = 0.8,
-    double shadowStrength = 1,
-  }) {
+  BoxDecoration cardDecoration({double borderWidth = 0.8, double shadowStrength = 1}) {
     return BoxDecoration(
       color: cardColor,
       borderRadius: cardRadius,

@@ -1,10 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/http.dart';
-import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 Widget inviteUserTile(BuildContext context) {
   return _InviteTile(onTap: () => _showInviteDialog(context));
@@ -21,12 +20,11 @@ class _InviteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
+    return GestureDetector(
       onTap: onTap,
       child: const Padding(
         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Row(children: [Icon(shadcn.LucideIcons.userPlus, size: 18), SizedBox(width: 10), Text('邀请试用')]),
+        child: Row(children: [Icon(LucideIcons.userPlus, size: 18), SizedBox(width: 10), Text('邀请试用')]),
       ),
     );
   }
@@ -41,7 +39,7 @@ void _showInviteDialog(BuildContext context) {
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) {
         final maxContentWidth = ctx.isMobile ? MediaQuery.sizeOf(ctx).width - 48 : 420.0;
-        return shadcn.AlertDialog(
+        return AlertDialog(
           title: const Text('试用邀请'),
           content: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxContentWidth),
@@ -62,14 +60,14 @@ void _showInviteDialog(BuildContext context) {
                   Row(
                     children: [
                       Expanded(
-                        child: shadcn.Button.outline(
+                        child: Button.outline(
                           onPressed: () => Navigator.pop(ctx),
                           child: Center(child: const Text('取消')),
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: shadcn.Button.primary(
+                        child: Button.primary(
                           onPressed: sending
                               ? null
                               : () async {
@@ -95,9 +93,7 @@ void _showInviteDialog(BuildContext context) {
                               ? const SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: Center(
-                                    child: shadcn.CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                  ),
+                                  child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
                                 )
                               : Center(child: const Text('邀请')),
                         ),

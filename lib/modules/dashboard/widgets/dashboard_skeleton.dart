@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 class DashboardSkeleton extends StatelessWidget {
   const DashboardSkeleton({super.key});
@@ -18,7 +17,7 @@ class DashboardSkeleton extends StatelessWidget {
   }
 
   Widget _box(BuildContext context, {double height = 100}) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     return Container(
       height: height,
       decoration: BoxDecoration(

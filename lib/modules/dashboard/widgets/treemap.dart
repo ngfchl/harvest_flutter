@@ -1,9 +1,9 @@
-import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:harvest/core/utils/utils.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/shadcn_compat.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter_material/shadcn_flutter_material.dart';
 
 import '../dashboard_page.dart';
 import '../model/dashboard_data.dart';
@@ -57,89 +57,73 @@ class _TreemapSectionState extends State<TreemapSection> {
       _tooltipName = _mask(item.name, widget.privacy);
       _tooltipUpload = formatBytes(ul);
       _tooltipDownload = dl > 0 ? formatBytes(dl) : null;
-      _tooltipDlRatio = (dl > 0 && dl > ul)
-          ? '(${(dl / ul * 100).toStringAsFixed(0)}%)'
-          : null;
+      _tooltipDlRatio = (dl > 0 && dl > ul) ? '(${(dl / ul * 100).toStringAsFixed(0)}%)' : null;
     });
   }
 
   Widget _buildTooltipContent() {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     return Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        mainAxisSize: MainAxisSize.min,
-        spacing: 8,
-        children: [
-          Text(
-            _tooltipName ?? '',
-            style: theme.typography.small.copyWith(fontWeight: FontWeight.w700),
-          ),
-          // const SizedBox(height: 6),
-          Row(
-            spacing: 8,
-            children: [
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.min,
+      spacing: 8,
+      children: [
+        Text(_tooltipName ?? '', style: theme.typography.small.copyWith(fontWeight: FontWeight.w700)),
+        // const SizedBox(height: 6),
+        Row(
+          spacing: 8,
+          children: [
+            Row(
+              children: [
+                Icon(LucideIcons.arrowUp, size: 10, color: const Color(0xFF10B981)),
+                const SizedBox(width: 4),
+                // Text('上传', style: theme.typography.xSmall.copyWith(color: theme.colorScheme.mutedForeground)),
+                // const SizedBox(width: 8),
+                Text(
+                  _tooltipUpload ?? '',
+                  style: theme.typography.xSmall.copyWith(color: const Color(0xFF10B981), fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            if (_tooltipDownload != null) ...[
+              // const SizedBox(height: 4),
               Row(
                 children: [
-                  Icon(
-                    shadcn.LucideIcons.arrowUp,
-                    size: 10,
-                    color: const Color(0xFF10B981),
-                  ),
+                  Icon(LucideIcons.arrowDown, size: 10, color: const Color(0xFFEF4444)),
                   const SizedBox(width: 4),
-                  // Text('上传', style: theme.typography.xSmall.copyWith(color: theme.colorScheme.mutedForeground)),
+                  // Text('下载', style: theme.typography.xSmall.copyWith(color: theme.colorScheme.mutedForeground)),
                   // const SizedBox(width: 8),
                   Text(
-                    _tooltipUpload ?? '',
+                    _tooltipDownload!,
                     style: theme.typography.xSmall.copyWith(
-                      color: const Color(0xFF10B981),
+                      color: const Color(0xFFEF4444),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
-              ),
-              if (_tooltipDownload != null) ...[
-                // const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      shadcn.LucideIcons.arrowDown,
-                      size: 10,
-                      color: const Color(0xFFEF4444),
-                    ),
+                  if (_tooltipDlRatio != null) ...[
                     const SizedBox(width: 4),
-                    // Text('下载', style: theme.typography.xSmall.copyWith(color: theme.colorScheme.mutedForeground)),
-                    // const SizedBox(width: 8),
                     Text(
-                      _tooltipDownload!,
+                      _tooltipDlRatio!,
                       style: theme.typography.xSmall.copyWith(
                         color: const Color(0xFFEF4444),
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    if (_tooltipDlRatio != null) ...[
-                      const SizedBox(width: 4),
-                      Text(
-                        _tooltipDlRatio!,
-                        style: theme.typography.xSmall.copyWith(
-                          color: const Color(0xFFEF4444),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
                   ],
-                ),
-              ],
+                ],
+              ),
             ],
-          ),
-        ],
+          ],
+        ),
+      ],
     );
   }
 
   Widget _buildTooltipPanel() {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    return shadcn.ModalContainer(
+    return ModalContainer(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: SizedBox(
         width: 300,
@@ -148,10 +132,10 @@ class _TreemapSectionState extends State<TreemapSection> {
           children: [
             Expanded(child: _buildTooltipContent()),
             const SizedBox(width: 8),
-            shadcn.IconButton.ghost(
-              density: shadcn.ButtonDensity.compact,
-              icon: Icon(shadcn.LucideIcons.x, size: 15, color: cs.mutedForeground),
-              onPressed: () => shadcn.closeOverlay(context),
+            IconButton.ghost(
+              density: ButtonDensity.compact,
+              icon: Icon(LucideIcons.x, size: 15, color: cs.mutedForeground),
+              onPressed: () => closeOverlay(context),
             ),
           ],
         ),
@@ -200,9 +184,7 @@ class _TreemapSectionState extends State<TreemapSection> {
               .take(_step)
               .fold<double>(0, (sum, e) => sum + e.value.uploaded.toDouble()),
           downloaded: 0,
-          color: shadcn.Theme.of(
-            context,
-          ).colorScheme.mutedForeground.withValues(alpha: 0.3),
+          color: Theme.of(context).colorScheme.mutedForeground.withValues(alpha: 0.3),
           isReduce: true,
         ),
       );
@@ -212,13 +194,9 @@ class _TreemapSectionState extends State<TreemapSection> {
       items.add(
         _TreemapItem(
           name: '更多',
-          uploaded: widget.data
-              .skip(_displayCount)
-              .fold<double>(0, (sum, e) => sum + e.value.uploaded.toDouble()),
+          uploaded: widget.data.skip(_displayCount).fold<double>(0, (sum, e) => sum + e.value.uploaded.toDouble()),
           downloaded: 0,
-          color: shadcn.Theme.of(
-            context,
-          ).colorScheme.primary.withValues(alpha: 0.3),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
           isLast: true,
           remainingCount: widget.data.length - _displayCount,
         ),
@@ -226,70 +204,52 @@ class _TreemapSectionState extends State<TreemapSection> {
     }
 
     return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: widget.height,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final rects = _squarify(
-                  items.map((e) => e.uploaded).toList(),
-                  Rect.fromLTWH(
-                    0,
-                    0,
-                    constraints.maxWidth,
-                    constraints.maxHeight,
-                  ),
-                );
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: widget.height,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final rects = _squarify(
+                items.map((e) => e.uploaded).toList(),
+                Rect.fromLTWH(0, 0, constraints.maxWidth, constraints.maxHeight),
+              );
 
-                return Stack(
-                  children: List.generate(items.length, (i) {
-                    final r = rects[i];
-                    final item = items[i];
-                    final dlColor = complementColor(item.color);
+              return Stack(
+                children: List.generate(items.length, (i) {
+                  final r = rects[i];
+                  final item = items[i];
+                  final dlColor = complementColor(item.color);
 
-                    return Positioned(
-                      left: r.left,
-                      top: r.top,
-                      width: r.width,
-                      height: r.height,
-                      child: Builder(
-                        builder: (tileContext) => GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            if (item.isReduce) {
-                              setState(
-                                () => _displayCount = (_displayCount - _step)
-                                    .clamp(_step, widget.data.length),
-                              );
-                              return;
-                            }
-                            if (item.isLast) {
-                              setState(
-                                () => _displayCount = (_displayCount + _step)
-                                    .clamp(0, widget.data.length),
-                              );
-                              return;
-                            }
-                            final siteIndex = widget.data.indexWhere(
-                              (e) => _mask(e.name, widget.privacy) == item.name,
-                            );
-                            if (siteIndex >= 0) {
-                              _showSiteDetail(widget.data[siteIndex]);
-                              _showTreemapTooltip(tileContext);
-                            }
-                          },
+                  return Positioned(
+                    left: r.left,
+                    top: r.top,
+                    width: r.width,
+                    height: r.height,
+                    child: Builder(
+                      builder: (tileContext) => GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          if (item.isReduce) {
+                            setState(() => _displayCount = (_displayCount - _step).clamp(_step, widget.data.length));
+                            return;
+                          }
+                          if (item.isLast) {
+                            setState(() => _displayCount = (_displayCount + _step).clamp(0, widget.data.length));
+                            return;
+                          }
+                          final siteIndex = widget.data.indexWhere((e) => _mask(e.name, widget.privacy) == item.name);
+                          if (siteIndex >= 0) {
+                            _showSiteDetail(widget.data[siteIndex]);
+                            _showTreemapTooltip(tileContext);
+                          }
+                        },
                         child: Container(
                           margin: const EdgeInsets.all(1.5),
                           decoration: BoxDecoration(
                             color: item.color,
-                            borderRadius: shadcn.Theme.of(
-                              context,
-                            ).borderRadiusSm,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.22),
-                              width: 0.6,
-                            ),
+                            borderRadius: Theme.of(context).borderRadiusSm,
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.22), width: 0.6),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.08),
@@ -299,9 +259,7 @@ class _TreemapSectionState extends State<TreemapSection> {
                             ],
                           ),
                           child: ClipRRect(
-                            borderRadius: shadcn.Theme.of(
-                              context,
-                            ).borderRadiusSm,
+                            borderRadius: Theme.of(context).borderRadiusSm,
                             child: Stack(
                               children: [
                                 Positioned.fill(
@@ -318,29 +276,18 @@ class _TreemapSectionState extends State<TreemapSection> {
                                     ),
                                   ),
                                 ),
-                                if (!item.isLast &&
-                                    !item.isReduce &&
-                                    item.downloaded > 0 &&
-                                    item.uploaded > 0)
+                                if (!item.isLast && !item.isReduce && item.downloaded > 0 && item.uploaded > 0)
                                   Positioned(
                                     left: 0,
                                     right: 0,
                                     bottom: 0,
-                                    height:
-                                        r.height *
-                                        (item.downloaded / item.uploaded).clamp(
-                                          0.0,
-                                          1.0,
-                                        ),
-                                    child: Container(
-                                      color: dlColor.withValues(alpha: 0.55),
-                                    ),
+                                    height: r.height * (item.downloaded / item.uploaded).clamp(0.0, 1.0),
+                                    child: Container(color: dlColor.withValues(alpha: 0.55)),
                                   ),
                                 if (item.isReduce)
                                   Center(
                                     child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.remove_rounded,
@@ -362,8 +309,7 @@ class _TreemapSectionState extends State<TreemapSection> {
                                 else if (item.isLast)
                                   Center(
                                     child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.add_rounded,
@@ -393,22 +339,20 @@ class _TreemapSectionState extends State<TreemapSection> {
                                           width: max(r.width - 6, 1),
                                           height: max(r.height - 6, 1),
                                           child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               Text(
                                                 item.name,
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 10,
                                                   fontWeight: FontWeight.w600,
                                                   shadows: [
                                                     Shadow(
-                                                      color: Colors.black38,
+                                                      color: Colors.black,
                                                       blurRadius: 4,
-                                                      offset: Offset(0, 1),
+                                                      offset: const Offset(0, 1),
                                                     ),
                                                   ],
                                                 ),
@@ -417,10 +361,8 @@ class _TreemapSectionState extends State<TreemapSection> {
                                               ),
                                               if (r.height > 45) ...[
                                                 Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
+                                                  mainAxisSize: MainAxisSize.max,
+                                                  mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
                                                     Container(
                                                       width: 4,
@@ -433,68 +375,45 @@ class _TreemapSectionState extends State<TreemapSection> {
                                                     const SizedBox(width: 1),
                                                     Flexible(
                                                       child: Text(
-                                                        formatBytes(
-                                                          item.uploaded.toInt(),
-                                                        ),
-                                                        style: const TextStyle(
-                                                          color: Colors.white70,
-                                                          fontSize: 9,
-                                                        ),
+                                                        formatBytes(item.uploaded.toInt()),
+                                                        style: const TextStyle(color: Colors.white, fontSize: 9),
                                                         maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                                 if (item.downloaded > 0)
                                                   Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
+                                                    mainAxisSize: MainAxisSize.max,
+                                                    mainAxisAlignment: MainAxisAlignment.center,
                                                     children: [
                                                       Container(
                                                         width: 4,
                                                         height: 4,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                              color: dlColor,
-                                                              shape: BoxShape
-                                                                  .circle,
-                                                            ),
+                                                        decoration: BoxDecoration(
+                                                          color: dlColor,
+                                                          shape: BoxShape.circle,
+                                                        ),
                                                       ),
                                                       const SizedBox(width: 1),
                                                       Flexible(
                                                         child: Text(
-                                                          formatBytes(
-                                                                item.downloaded
-                                                                    .toInt(),
-                                                              ) +
-                                                              (item.downloaded >
-                                                                      item.uploaded
+                                                          formatBytes(item.downloaded.toInt()) +
+                                                              (item.downloaded > item.uploaded
                                                                   ? ' (${(item.downloaded / item.uploaded * 100).toStringAsFixed(0)}%)'
                                                                   : ''),
                                                           style: TextStyle(
-                                                            color:
-                                                                item.downloaded >
-                                                                    item.uploaded
+                                                            color: item.downloaded > item.uploaded
                                                                 ? dlColor
-                                                                : Colors
-                                                                      .white70,
+                                                                : Colors.white,
                                                             fontSize: 9,
-                                                            fontWeight:
-                                                                item.downloaded >
-                                                                    item.uploaded
-                                                                ? FontWeight
-                                                                      .w700
-                                                                : FontWeight
-                                                                      .w400,
+                                                            fontWeight: item.downloaded > item.uploaded
+                                                                ? FontWeight.w700
+                                                                : FontWeight.w400,
                                                           ),
                                                           maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
+                                                          overflow: TextOverflow.ellipsis,
                                                         ),
                                                       ),
                                                     ],
@@ -510,15 +429,15 @@ class _TreemapSectionState extends State<TreemapSection> {
                             ),
                           ),
                         ),
-                        ),
                       ),
-                    );
-                  }),
-                );
-              },
-            ),
+                    ),
+                  );
+                }),
+              );
+            },
           ),
-        ],
+        ),
+      ],
     );
   }
 
@@ -556,35 +475,21 @@ class _TreemapSectionState extends State<TreemapSection> {
       final fraction = a / rowSum;
       if (w >= h) {
         final cellH = h * fraction;
-        rowRects.add(
-          Rect.fromLTWH(rect.left, rect.top + offset, rowSum / h, cellH),
-        );
+        rowRects.add(Rect.fromLTWH(rect.left, rect.top + offset, rowSum / h, cellH));
         offset += cellH;
       } else {
         final cellW = w * fraction;
-        rowRects.add(
-          Rect.fromLTWH(rect.left + offset, rect.top, cellW, rowSum / w),
-        );
+        rowRects.add(Rect.fromLTWH(rect.left + offset, rect.top, cellW, rowSum / w));
         offset += cellW;
       }
     }
     Rect remaining;
     if (w >= h) {
       final rowW = rowSum / h;
-      remaining = Rect.fromLTWH(
-        rect.left + rowW,
-        rect.top,
-        max(w - rowW, 0),
-        h,
-      );
+      remaining = Rect.fromLTWH(rect.left + rowW, rect.top, max(w - rowW, 0), h);
     } else {
       final rowH = rowSum / w;
-      remaining = Rect.fromLTWH(
-        rect.left,
-        rect.top + rowH,
-        w,
-        max(h - rowH, 0),
-      );
+      remaining = Rect.fromLTWH(rect.left, rect.top + rowH, w, max(h - rowH, 0));
     }
     return [...rowRects, ..._layout(areas.sublist(i), remaining)];
   }
@@ -599,9 +504,7 @@ class _TreemapSectionState extends State<TreemapSection> {
     for (final a in row) {
       final cellLen = a / rowWidth;
       if (cellLen <= 0) continue;
-      final ratio = rowWidth > cellLen
-          ? rowWidth / cellLen
-          : cellLen / rowWidth;
+      final ratio = rowWidth > cellLen ? rowWidth / cellLen : cellLen / rowWidth;
       if (ratio > worst) worst = ratio;
     }
     return worst;

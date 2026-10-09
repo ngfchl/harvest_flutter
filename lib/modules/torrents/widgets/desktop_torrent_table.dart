@@ -1,16 +1,14 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:harvest/core/theme/app_surface.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/feedback/toast.dart';
-import 'package:harvest/widgets/app_menu.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
+import 'package:harvest/widgets/app_sheet.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter_material/shadcn_flutter_material.dart';
 
 import '../../download/model/downloader.dart';
 import '../model/torrent_model.dart';
@@ -28,26 +26,16 @@ double desktopTorrentTableWidth(List<TorrentColumn> columns) {
   return columns.fold<double>(24, (sum, c) => sum + c.width);
 }
 
-final desktopTorrentColumnsProvider =
-    StateProvider.autoDispose<Set<TorrentColumn>>(
-      (_) => TorrentColumn.values
-          .where((column) => column != TorrentColumn.queueId)
-          .toSet(),
-    );
+final desktopTorrentColumnsProvider = StateProvider.autoDispose<Set<TorrentColumn>>(
+  (_) => TorrentColumn.values.where((column) => column != TorrentColumn.queueId).toSet(),
+);
 
-List<TorrentColumn> visibleDesktopTorrentColumns(
-  Set<TorrentColumn> configured,
-  bool queueEnabled,
-) {
-  return availableDesktopTorrentColumns(
-    queueEnabled,
-  ).where((c) => configured.contains(c)).toList();
+List<TorrentColumn> visibleDesktopTorrentColumns(Set<TorrentColumn> configured, bool queueEnabled) {
+  return availableDesktopTorrentColumns(queueEnabled).where((c) => configured.contains(c)).toList();
 }
 
 List<TorrentColumn> availableDesktopTorrentColumns(bool queueEnabled) {
-  return TorrentColumn.values
-      .where((c) => queueEnabled || c != TorrentColumn.queueId)
-      .toList();
+  return TorrentColumn.values.where((c) => queueEnabled || c != TorrentColumn.queueId).toList();
 }
 
 class DesktopTorrentTable extends ConsumerStatefulWidget {
@@ -73,8 +61,7 @@ class DesktopTorrentTable extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<DesktopTorrentTable> createState() =>
-      _DesktopTorrentTableState();
+  ConsumerState<DesktopTorrentTable> createState() => _DesktopTorrentTableState();
 }
 
 class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
@@ -95,52 +82,40 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final downloaderId = widget.downloaderId;
     final asyncData = ref.watch(torrentListProvider(downloaderId));
-    final torrents =
-        widget.torrents ??
-        ref.watch(filteredTorrentsProvider(downloaderId)) ??
-        const <Torrent>[];
+    final torrents = widget.torrents ?? ref.watch(filteredTorrentsProvider(downloaderId)) ?? const <Torrent>[];
     final categories = ref.watch(availableCategoriesProvider(downloaderId));
     final tags = ref.watch(availableTagsProvider(downloaderId));
     final matcher = ref.watch(torrentSiteMatcherProvider);
-    final visibleColumns = visibleDesktopTorrentColumns(
-      ref.watch(desktopTorrentColumnsProvider),
-      widget.queueEnabled,
-    );
-    final indexByKey = <String, int>{
-      for (var i = 0; i < torrents.length; i++)
-        torrentIdentityKey(torrents[i]): i,
-    };
+    final visibleColumns = visibleDesktopTorrentColumns(ref.watch(desktopTorrentColumnsProvider), widget.queueEnabled);
+    final indexByKey = <String, int>{for (var i = 0; i < torrents.length; i++) torrentIdentityKey(torrents[i]): i};
     final tableWidth = desktopTorrentTableWidth(visibleColumns);
 
     if (asyncData.isLoading && asyncData.value == null) {
-      return Center(child: shadcn.CircularProgressIndicator(size: 18));
+      return Center(child: CircularProgressIndicator(size: 18));
     }
 
     if (asyncData is AsyncError) {
-      return DesktopEmptyState(
-        icon: shadcn.LucideIcons.cloudOff,
-        title: '连接失败',
-      );
+      return DesktopEmptyState(icon: LucideIcons.cloudOff, title: '连接失败');
     }
 
     if (torrents.isEmpty) {
       return DesktopEmptyState(
-        icon: shadcn.LucideIcons.inbox,
+        icon: LucideIcons.inbox,
         title: (asyncData.value?.torrents.isEmpty ?? true) ? '暂无种子' : '当前筛选无结果',
       );
     }
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-      child: shadcn.Card(
+      child: Card(
         filled: true,
         fillColor: appSurfaceColor(context, cs.card),
         borderColor: cs.border,
         borderWidth: 0.5,
-        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+        borderRadius: Theme.of(context).borderRadiusMd,
         clipBehavior: Clip.antiAlias,
         padding: EdgeInsets.zero,
         child: LayoutBuilder(
@@ -160,46 +135,28 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
                   height: constraints.maxHeight,
                   child: Column(
                     children: [
-                      _DesktopTorrentHeader(
-                        columns: visibleColumns,
-                        queueEnabled: widget.queueEnabled,
-                      ),
+                      _DesktopTorrentHeader(columns: visibleColumns, queueEnabled: widget.queueEnabled),
                       Divider(height: 1, color: cs.border),
                       Expanded(
                         child: ListView.separated(
                           findItemIndexCallback: (key) {
-                            final value = key is ValueKey<String>
-                                ? key.value
-                                : null;
+                            final value = key is ValueKey<String> ? key.value : null;
                             return value == null ? null : indexByKey[value];
                           },
                           itemCount: torrents.length,
-                          separatorBuilder: (_, _) => Divider(
-                            height: 1,
-                            color: cs.border.withValues(alpha: 0.6),
-                          ),
+                          separatorBuilder: (_, _) => Divider(height: 1, color: cs.border.withValues(alpha: 0.6)),
                           itemBuilder: (context, index) {
                             final torrent = torrents[index];
                             final hash = torrent.hashString;
-                            final selectedByBatch =
-                                hash.isNotEmpty &&
-                                widget.selectedHashes.contains(hash);
+                            final selectedByBatch = hash.isNotEmpty && widget.selectedHashes.contains(hash);
                             return DesktopTorrentRow(
                               key: ValueKey(torrentIdentityKey(torrent)),
                               columns: visibleColumns,
                               torrent: torrent,
-                              selected:
-                                  selectedByBatch ||
-                                  (hash.isNotEmpty &&
-                                      hash == widget.selectedHash),
+                              selected: selectedByBatch || (hash.isNotEmpty && hash == widget.selectedHash),
                               siteMatch: matcher.match(torrent),
-                              onTap: () =>
-                                  _handleRowTap(torrent, index, torrents),
-                              onDoubleTap: () => _showDetail(
-                                context,
-                                torrent,
-                                matcher.match(torrent),
-                              ),
+                              onTap: () => _handleRowTap(torrent, index, torrents),
+                              onDoubleTap: () => _showDetail(context, torrent, matcher.match(torrent)),
                               onSecondaryTapDown: (details) => _showContextMenu(
                                 context,
                                 ref,
@@ -235,15 +192,10 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
 
   bool get _rangeSelectionPressed {
     final keys = HardwareKeyboard.instance.logicalKeysPressed;
-    return keys.contains(LogicalKeyboardKey.shiftLeft) ||
-        keys.contains(LogicalKeyboardKey.shiftRight);
+    return keys.contains(LogicalKeyboardKey.shiftLeft) || keys.contains(LogicalKeyboardKey.shiftRight);
   }
 
-  void _handleRowTap(
-    Torrent torrent,
-    int index,
-    List<Torrent> visibleTorrents,
-  ) {
+  void _handleRowTap(Torrent torrent, int index, List<Torrent> visibleTorrents) {
     final hash = torrent.hashString;
     if (hash.isEmpty) {
       widget.onSelect(torrent);
@@ -252,9 +204,7 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
     }
 
     if (_rangeSelectionPressed && _selectionAnchorHash != null) {
-      final anchorIndex = visibleTorrents.indexWhere(
-        (item) => item.hashString == _selectionAnchorHash,
-      );
+      final anchorIndex = visibleTorrents.indexWhere((item) => item.hashString == _selectionAnchorHash);
       if (anchorIndex >= 0) {
         final start = min(anchorIndex, index);
         final end = max(anchorIndex, index);
@@ -283,18 +233,11 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
     widget.onSelectionChange({hash});
   }
 
-  void _showDetail(
-    BuildContext context,
-    Torrent torrent,
-    TorrentSiteMatch? siteMatch,
-  ) {
+  void _showDetail(BuildContext context, Torrent torrent, TorrentSiteMatch? siteMatch) {
     showAppSheet(
       context: context,
-      builder: (_) => TorrentDetailSheet(
-        downloaderId: widget.downloaderId,
-        torrent: torrent,
-        siteMatch: siteMatch,
-      ),
+      showDragHandle: false,
+      builder: (_) => TorrentDetailSheet(downloaderId: widget.downloaderId, torrent: torrent, siteMatch: siteMatch),
     );
   }
 
@@ -309,11 +252,8 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
     List<String> tags,
   ) async {
     final hash = torrent.hashString;
-    final selectedTorrents =
-        hash.isNotEmpty && widget.selectedHashes.contains(hash)
-        ? visibleTorrents
-              .where((item) => widget.selectedHashes.contains(item.hashString))
-              .toList()
+    final selectedTorrents = hash.isNotEmpty && widget.selectedHashes.contains(hash)
+        ? visibleTorrents.where((item) => widget.selectedHashes.contains(item.hashString)).toList()
         : <Torrent>[torrent];
     if (hash.isNotEmpty && !widget.selectedHashes.contains(hash)) {
       _selectionAnchorHash = hash;
@@ -332,9 +272,7 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
           tags: tags,
         ),
         submenus: {
-          torrentCategorySubmenuAction: torrentBatchCategorySubmenuItems(
-            categories: categories,
-          ),
+          torrentCategorySubmenuAction: torrentBatchCategorySubmenuItems(categories: categories),
           torrentTagSubmenuAction: torrentBatchTagSubmenuItems(tags: tags),
         },
       );
@@ -347,18 +285,11 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
         torrents: selectedTorrents,
         action: action,
         onAction: (action, params) =>
-            executeTorrentAction(
-              ref: ref,
-              downloaderId: widget.downloaderId,
-              action: action,
-              params: params,
-            ).then((success) {
+            executeTorrentAction(ref: ref, downloaderId: widget.downloaderId, action: action, params: params).then((
+              success,
+            ) {
               if (success) {
-                unawaited(
-                  ref
-                      .read(torrentListProvider(widget.downloaderId).notifier)
-                      .refresh(),
-                );
+                unawaited(ref.read(torrentListProvider(widget.downloaderId).notifier).refresh());
               }
               return success;
             }),
@@ -369,21 +300,10 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
     final action = await showTorrentContextMenu(
       context: context,
       position: position,
-      items: torrentContextMenuItems(
-        torrent: torrent,
-        type: widget.downloaderType,
-        categories: categories,
-        tags: tags,
-      ),
+      items: torrentContextMenuItems(torrent: torrent, type: widget.downloaderType, categories: categories, tags: tags),
       submenus: {
-        torrentCategorySubmenuAction: torrentCategorySubmenuItems(
-          torrent: torrent,
-          categories: categories,
-        ),
-        torrentTagSubmenuAction: torrentTagSubmenuItems(
-          torrent: torrent,
-          tags: tags,
-        ),
+        torrentCategorySubmenuAction: torrentCategorySubmenuItems(torrent: torrent, categories: categories),
+        torrentTagSubmenuAction: torrentTagSubmenuItems(torrent: torrent, tags: tags),
         torrentCopySubmenuAction: torrentCopySubmenuItems(),
       },
     );
@@ -396,12 +316,8 @@ class _DesktopTorrentTableState extends ConsumerState<DesktopTorrentTable> {
       torrent: torrent,
       siteMatch: siteMatch,
       action: action,
-      onAction: (action, params) => executeTorrentAction(
-        ref: ref,
-        downloaderId: widget.downloaderId,
-        action: action,
-        params: params,
-      ),
+      onAction: (action, params) =>
+          executeTorrentAction(ref: ref, downloaderId: widget.downloaderId, action: action, params: params),
     );
   }
 }
@@ -410,26 +326,21 @@ class _DesktopTorrentHeader extends ConsumerWidget {
   final List<TorrentColumn> columns;
   final bool queueEnabled;
 
-  const _DesktopTorrentHeader({
-    required this.columns,
-    required this.queueEnabled,
-  });
+  const _DesktopTorrentHeader({required this.columns, required this.queueEnabled});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedColumns = ref.watch(desktopTorrentColumnsProvider);
     final availableColumns = availableDesktopTorrentColumns(queueEnabled);
-    
-    return shadcn.ContextMenu(
+
+    return ContextMenu(
       items: [
-        shadcn.MenuLabel(child: const Text('显示列').xSmall.muted),
-        const shadcn.MenuDivider(),
+        MenuLabel(child: const Text('显示列').xSmall.muted),
+        const MenuDivider(),
         for (final column in availableColumns)
-          shadcn.MenuButton(
+          MenuButton(
             leading: Icon(
-              selectedColumns.contains(column)
-                  ? Icons.check_box_rounded
-                  : Icons.check_box_outline_blank_rounded,
+              selectedColumns.contains(column) ? Icons.check_box_rounded : Icons.check_box_outline_blank_rounded,
               size: 16,
             ),
             onPressed: (_) {
@@ -457,11 +368,7 @@ class _DesktopTorrentHeader extends ConsumerWidget {
             for (final column in columns)
               column.sort == null
                   ? _TableHeaderText(label: column.label, width: column.width)
-                  : _SortableHeader(
-                      label: column.label,
-                      width: column.width,
-                      sort: column.sort!,
-                    ),
+                  : _SortableHeader(label: column.label, width: column.width, sort: column.sort!),
           ],
         ),
       ),
@@ -479,11 +386,7 @@ class _TableHeaderText extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
-      child: Text(
-        label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ).xSmall.muted,
+      child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis).xSmall.muted,
     );
   }
 }
@@ -493,15 +396,11 @@ class _SortableHeader extends ConsumerWidget {
   final double width;
   final TorrentSort sort;
 
-  const _SortableHeader({
-    required this.label,
-    required this.width,
-    required this.sort,
-  });
+  const _SortableHeader({required this.label, required this.width, required this.sort});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final currentSort = ref.watch(torrentSortProvider);
     final sortAsc = ref.watch(torrentSortAscProvider);
     final active = currentSort == sort;
@@ -535,13 +434,7 @@ class _SortableHeader extends ConsumerWidget {
             ),
             if (active) ...[
               const SizedBox(width: 3),
-              Icon(
-                sortAsc
-                    ? shadcn.LucideIcons.arrowUp
-                    : shadcn.LucideIcons.arrowDown,
-                size: 11,
-                color: cs.primary,
-              ),
+              Icon(sortAsc ? LucideIcons.arrowUp : LucideIcons.arrowDown, size: 11, color: cs.primary),
             ],
           ],
         ),
@@ -549,5 +442,3 @@ class _SortableHeader extends ConsumerWidget {
     );
   }
 }
-
-

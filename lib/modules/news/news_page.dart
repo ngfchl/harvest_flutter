@@ -1,17 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:harvest/core/theme/app_surface.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-
 import 'package:harvest/core/cache/session_cache.dart';
+import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
-import '../shell/provider/screenshot_provider.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+
 import '../../widgets/cache_status_banner.dart';
+import '../shell/provider/screenshot_provider.dart';
 import 'douban/douban_page.dart';
 import 'douban/provider/douban_provider.dart';
 import 'provider/media_info_settings_provider.dart';
-import 'tmdb/tmdb_page.dart';
 import 'tmdb/provider/tmdb_provider.dart';
+import 'tmdb/tmdb_page.dart';
 
 class NewsPage extends ConsumerStatefulWidget {
   const NewsPage({super.key});
@@ -47,12 +46,12 @@ class _NewsToolbar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (tmdbEnabled && doubanEnabled) ...[
-            shadcn.Tabs(
+            Tabs(
               index: tabIndex,
               onChanged: onTabChanged,
               children: const [
-                shadcn.TabItem(child: Text('TMDB')),
-                shadcn.TabItem(child: Text('豆瓣')),
+                TabItem(child: Text('TMDB')),
+                TabItem(child: Text('豆瓣')),
               ],
             ),
             if (cacheInfo.isCached) const SizedBox(height: 6),
@@ -76,8 +75,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       registerPageScrollController(ref, 0, _scrollController);
-      ref.read(activeScrollControllerProvider.notifier).state =
-          _scrollController;
+      ref.read(activeScrollControllerProvider.notifier).state = _scrollController;
     });
   }
 
@@ -123,11 +121,11 @@ class _NewsPageState extends ConsumerState<NewsPage> {
       _refreshCachedTabOnce(cacheInfo, currentTabIndex);
     }
 
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final pageBackground = appSurfaceColor(context, cs.background);
 
     return AppBackground(
-      child: shadcn.Scaffold(
+      child: Scaffold(
         backgroundColor: pageBackground,
         headerBackgroundColor: pageBackground,
         headers: [
@@ -141,7 +139,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
           ),
         ],
         child: settings.enabled
-            ? shadcn.Switcher(
+            ? Switcher(
                 index: bothEnabled ? currentTabIndex : 0,
                 direction: AxisDirection.left,
                 onIndexChanged: bothEnabled
@@ -151,18 +149,9 @@ class _NewsPageState extends ConsumerState<NewsPage> {
                       }
                     : null,
                 children: [
-                  if (settings.tmdbEnabled)
-                    TmdbPage(
-                      scrollController: currentTabIndex == 0
-                          ? _scrollController
-                          : null,
-                    ),
+                  if (settings.tmdbEnabled) TmdbPage(scrollController: currentTabIndex == 0 ? _scrollController : null),
                   if (settings.doubanEnabled)
-                    DoubanPage(
-                      scrollController: currentTabIndex == 1
-                          ? _scrollController
-                          : null,
-                    ),
+                    DoubanPage(scrollController: currentTabIndex == 1 ? _scrollController : null),
                 ],
               )
             : const SizedBox.shrink(),
@@ -170,10 +159,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
     );
   }
 
-  DataCacheInfo _combinedCacheInfo(
-    Map<String, DataCacheInfo> infos,
-    Set<String> visibleKeys,
-  ) {
+  DataCacheInfo _combinedCacheInfo(Map<String, DataCacheInfo> infos, Set<String> visibleKeys) {
     DateTime? latest;
     for (final key in visibleKeys) {
       final info = infos[key];
@@ -183,9 +169,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
         latest = info.cachedAt;
       }
     }
-    return latest == null
-        ? const DataCacheInfo.none()
-        : DataCacheInfo.cached(latest);
+    return latest == null ? const DataCacheInfo.none() : DataCacheInfo.cached(latest);
   }
 
   void _refreshCachedTabOnce(DataCacheInfo cacheInfo, int tabIndex) {

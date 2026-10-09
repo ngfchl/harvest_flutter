@@ -1,14 +1,11 @@
-import 'package:flutter/widgets.dart';
-import 'package:flutter/material.dart' show SelectionArea;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
+import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/browser_page.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart'
-    show IconExtension, TextExtension;
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/shadcn_compat.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/update_log_model.dart';
 import '../provider/update_provider.dart';
@@ -33,17 +30,13 @@ class UpdateSummaryCard extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: shadcn.CardButton(
+      child: CardButton(
         onPressed: onOpen,
         child: Row(
           children: [
             hasUpdate
-                ? const Icon(
-                    shadcn.LucideIcons.circleAlert,
-                  ).iconSmall.iconPrimary
-                : const Icon(
-                    shadcn.LucideIcons.refreshCw,
-                  ).iconSmall.iconMutedForeground,
+                ? const Icon(LucideIcons.circleAlert).iconSmall.iconPrimary
+                : const Icon(LucideIcons.refreshCw).iconSmall.iconMutedForeground,
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -51,20 +44,14 @@ class UpdateSummaryCard extends ConsumerWidget {
                 children: [
                   const Text('程序更新').small.semiBold,
                   const SizedBox(height: 2),
-                  Text(
-                    summary,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ).xSmall.muted,
+                  Text(summary, maxLines: 1, overflow: TextOverflow.ellipsis).xSmall.muted,
                 ],
               ),
             ),
             if (state.isLoading)
               const OptionInlineProgress(label: '检查中', size: 16)
             else
-              const Icon(
-                shadcn.LucideIcons.chevronRight,
-              ).iconSmall.iconMutedForeground,
+              const Icon(LucideIcons.chevronRight).iconSmall.iconMutedForeground,
           ],
         ),
       ),
@@ -89,7 +76,7 @@ class UpdatePanel extends ConsumerWidget {
         _UpdateTargetCard(
           info: state.backend,
           target: UpdateTarget.backend,
-          icon: shadcn.LucideIcons.package,
+          icon: LucideIcons.package,
           isLoading: state.isBackendLoading,
           maxCommitCount: maxCommitCount,
         ),
@@ -97,7 +84,7 @@ class UpdatePanel extends ConsumerWidget {
         _UpdateTargetCard(
           info: state.sites,
           target: UpdateTarget.sites,
-          icon: shadcn.LucideIcons.fileText,
+          icon: LucideIcons.fileText,
           isLoading: state.isSitesLoading,
           maxCommitCount: maxCommitCount,
         ),
@@ -123,7 +110,7 @@ class _UpdateOverview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final summary = state.hasAnyUpdate
         ? (state.updateCount > 0 ? '发现 ${state.updateCount} 条待更新记录' : '发现可用更新')
         : state.allLatest
@@ -137,35 +124,27 @@ class _UpdateOverview extends ConsumerWidget {
       child: AppSurfaceCard(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
         color: state.hasAnyUpdate ? cs.primary.withValues(alpha: 0.10) : null,
-        borderColor: state.hasAnyUpdate
-            ? cs.primary.withValues(alpha: 0.35)
-            : null,
+        borderColor: state.hasAnyUpdate ? cs.primary.withValues(alpha: 0.35) : null,
         child: Row(
           children: [
-            (state.hasAnyUpdate
-                    ? const Icon(shadcn.LucideIcons.circleAlert)
-                    : const Icon(shadcn.LucideIcons.refreshCw))
+            (state.hasAnyUpdate ? const Icon(LucideIcons.circleAlert) : const Icon(LucideIcons.refreshCw))
                 .iconSmall
                 .iconPrimary,
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('程序更新').base.bold,
-                  const SizedBox(height: 2),
-                  Text(summary).xSmall.muted,
-                ],
+                children: [const Text('程序更新').base.bold, const SizedBox(height: 2), Text(summary).xSmall.muted],
               ),
             ),
-            shadcn.Tooltip(
+            Tooltip(
               tooltip: (_) => const Text('检查全部'),
-              child: shadcn.IconButton.ghost(
-                size: shadcn.ButtonSize.small,
-                density: shadcn.ButtonDensity.iconDense,
+              child: IconButton.ghost(
+                size: ButtonSize.small,
+                density: ButtonDensity.iconDense,
                 icon: state.isLoading
                     ? const OptionInlineProgress(label: '检查中', size: 16)
-                    : const Icon(shadcn.LucideIcons.refreshCw).iconSmall,
+                    : const Icon(LucideIcons.refreshCw).iconSmall,
                 onPressed: state.isLoading || state.isUpdating
                     ? null
                     : () => ref.read(updateProvider.notifier).refresh(),
@@ -195,7 +174,7 @@ class _UpdateTargetCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final state = ref.watch(updateProvider);
     final current = info;
     final action = target.upgradeAction;
@@ -211,12 +190,8 @@ class _UpdateTargetCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: AppSurfaceCard(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-        color: current?.needsUpdate == true
-            ? cs.primary.withValues(alpha: 0.08)
-            : null,
-        borderColor: current?.needsUpdate == true
-            ? cs.primary.withValues(alpha: 0.35)
-            : null,
+        color: current?.needsUpdate == true ? cs.primary.withValues(alpha: 0.08) : null,
+        borderColor: current?.needsUpdate == true ? cs.primary.withValues(alpha: 0.35) : null,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -231,8 +206,7 @@ class _UpdateTargetCard extends ConsumerWidget {
                       Text(target.title).small.bold,
                       const SizedBox(height: 2),
                       Text(
-                        current?.detailText ??
-                            (isLoading ? '正在获取更新日志' : '还未获取更新日志'),
+                        current?.detailText ?? (isLoading ? '正在获取更新日志' : '还未获取更新日志'),
                         maxLines: 4,
                         overflow: TextOverflow.ellipsis,
                       ).xSmall.muted,
@@ -243,10 +217,7 @@ class _UpdateTargetCard extends ConsumerWidget {
                   SizedBox(
                     width: 16,
                     height: 16,
-                    child: shadcn.CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: cs.mutedForeground,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2, color: cs.mutedForeground),
                   )
                 else
                   _StatusBadge(info: current),
@@ -256,20 +227,13 @@ class _UpdateTargetCard extends ConsumerWidget {
             if (current == null && isLoading)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 18),
-                child: OptionLoadingState(
-                  label: '正在获取更新日志...',
-                  compact: true,
-                  padding: EdgeInsets.zero,
-                ),
+                child: OptionLoadingState(label: '正在获取更新日志...', compact: true, padding: EdgeInsets.zero),
               )
             else if (current != null)
               ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 280),
                 child: SingleChildScrollView(
-                  child: _CommitTimeline(
-                    info: current,
-                    maxCommitCount: maxCommitCount,
-                  ),
+                  child: _CommitTimeline(info: current, maxCommitCount: maxCommitCount),
                 ),
               )
             else
@@ -278,34 +242,20 @@ class _UpdateTargetCard extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: shadcn.Button.outline(
+                  child: Button.outline(
                     onPressed: isLoading || state.isUpdating
                         ? null
-                        : () => ref
-                              .read(updateProvider.notifier)
-                              .refreshTarget(target),
-                    child: const _ButtonContent(
-                      icon: shadcn.LucideIcons.refreshCw,
-                      label: '检查',
-                    ),
+                        : () => ref.read(updateProvider.notifier).refreshTarget(target),
+                    child: const _ButtonContent(icon: LucideIcons.refreshCw, label: '检查'),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: shadcn.Button.primary(
-                    onPressed: canAction
-                        ? () => _runUpgrade(context, ref, action)
-                        : null,
+                  child: Button.primary(
+                    onPressed: canAction ? () => _runUpgrade(context, ref, action) : null,
                     child: isUpdating
-                        ? OptionInlineProgress(
-                            label: '更新中',
-                            size: 16,
-                            color: cs.primaryForeground,
-                          )
-                        : _ButtonContent(
-                            icon: shadcn.LucideIcons.download,
-                            label: actionLabel,
-                          ),
+                        ? OptionInlineProgress(label: '更新中', size: 16, color: cs.primaryForeground)
+                        : _ButtonContent(icon: LucideIcons.download, label: actionLabel),
                   ),
                 ),
               ],
@@ -324,7 +274,7 @@ class _GlobalActions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: AppSurfaceCard(
@@ -337,34 +287,20 @@ class _GlobalActions extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: shadcn.Button.outline(
-                    onPressed: state.isUpdating
-                        ? null
-                        : () => _runUpgrade(context, ref, UpgradeAction.webui),
+                  child: Button.outline(
+                    onPressed: state.isUpdating ? null : () => _runUpgrade(context, ref, UpgradeAction.webui),
                     child: state.updatingAction == UpgradeAction.webui
                         ? const OptionInlineProgress(label: '更新中', size: 16)
-                        : const _ButtonContent(
-                            icon: shadcn.LucideIcons.download,
-                            label: '更新WEBUI',
-                          ),
+                        : const _ButtonContent(icon: LucideIcons.download, label: '更新WEBUI'),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: shadcn.Button.primary(
-                    onPressed: state.isUpdating
-                        ? null
-                        : () => _runUpgrade(context, ref, UpgradeAction.all),
+                  child: Button.primary(
+                    onPressed: state.isUpdating ? null : () => _runUpgrade(context, ref, UpgradeAction.all),
                     child: state.updatingAction == UpgradeAction.all
-                        ? OptionInlineProgress(
-                            label: '更新中',
-                            size: 16,
-                            color: cs.primaryForeground,
-                          )
-                        : const _ButtonContent(
-                            icon: shadcn.LucideIcons.download,
-                            label: '更新所有',
-                          ),
+                        ? OptionInlineProgress(label: '更新中', size: 16, color: cs.primaryForeground)
+                        : const _ButtonContent(icon: LucideIcons.download, label: '更新所有'),
                   ),
                 ),
               ],
@@ -384,7 +320,7 @@ class _CommitTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final currentIndex = info.currentCommitIndex;
     final displayCount = _displayCommitCount(
       total: info.commits.length,
@@ -394,12 +330,11 @@ class _CommitTimeline extends StatelessWidget {
     final visibleCommits = info.commits.take(displayCount).toList();
     final hiddenCount = info.commits.length - visibleCommits.length;
 
-    if (visibleCommits.isEmpty &&
-        (info.rawText == null || info.rawText!.trim().isEmpty)) {
+    if (visibleCommits.isEmpty && (info.rawText == null || info.rawText!.trim().isEmpty)) {
       return _EmptyLog(target: info.target);
     }
 
-    final timelineData = <shadcn.TimelineData>[
+    final timelineData = <TimelineData>[
       for (var i = 0; i < visibleCommits.length; i++)
         _timelineDataForCommit(
           context,
@@ -413,8 +348,8 @@ class _CommitTimeline extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        shadcn.ComponentTheme(
-          data: shadcn.TimelineTheme(
+        ComponentTheme(
+          data: TimelineTheme(
             timeConstraints: const BoxConstraints.tightFor(width: 0),
             spacing: 12,
             dotSize: 10,
@@ -424,7 +359,7 @@ class _CommitTimeline extends StatelessWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.only(left: 12),
-            child: shadcn.Timeline(data: timelineData),
+            child: Timeline(data: timelineData),
           ),
         ),
         if (hiddenCount > 0)
@@ -432,9 +367,7 @@ class _CommitTimeline extends StatelessWidget {
             padding: const EdgeInsets.only(left: 46, top: 4, bottom: 8),
             child: Text('还有 $hiddenCount 条远端记录').xSmall.muted,
           ),
-        if (info.rawText != null &&
-            info.rawText!.trim().isNotEmpty &&
-            visibleCommits.isEmpty) ...[
+        if (info.rawText != null && info.rawText!.trim().isNotEmpty && visibleCommits.isEmpty) ...[
           const SizedBox(height: 8),
           _RawLogBox(text: info.rawText!),
         ],
@@ -442,28 +375,22 @@ class _CommitTimeline extends StatelessWidget {
     );
   }
 
-  int _displayCommitCount({
-    required int total,
-    required int currentIndex,
-    required int maxCommitCount,
-  }) {
+  int _displayCommitCount({required int total, required int currentIndex, required int maxCommitCount}) {
     if (total <= maxCommitCount) return total;
     if (currentIndex < 0) return maxCommitCount;
     final countWithCurrentAndBelow = currentIndex + 4;
     if (countWithCurrentAndBelow > total) return total;
-    return countWithCurrentAndBelow > maxCommitCount
-        ? countWithCurrentAndBelow
-        : maxCommitCount;
+    return countWithCurrentAndBelow > maxCommitCount ? countWithCurrentAndBelow : maxCommitCount;
   }
 
-  shadcn.TimelineData _timelineDataForCommit(
+  TimelineData _timelineDataForCommit(
     BuildContext context, {
     required UpdateCommit commit,
     required bool highlighted,
     required bool currentOrBelow,
     required bool current,
   }) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final successColor = cs.chart2;
     final color = highlighted
         ? cs.primary
@@ -471,7 +398,7 @@ class _CommitTimeline extends StatelessWidget {
         ? successColor
         : cs.mutedForeground.withValues(alpha: 0.36);
 
-    return shadcn.TimelineData(
+    return TimelineData(
       color: color,
       time: const SizedBox.shrink(),
       title: _CommitTimelineTitle(
@@ -491,10 +418,7 @@ class _CommitTimeline extends StatelessWidget {
 
   String _timeTextForCommit(UpdateCommit commit) {
     final date = commit.date?.trim();
-    final parts = [
-      if (date != null && date.isNotEmpty) date,
-      if (commit.shortHash.isNotEmpty) commit.shortHash,
-    ];
+    final parts = [if (date != null && date.isNotEmpty) date, if (commit.shortHash.isNotEmpty) commit.shortHash];
     return parts.isEmpty ? '远端' : parts.join('  ');
   }
 }
@@ -516,7 +440,7 @@ class _CommitTimelineTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final authorText = author?.trim();
     final timeColor = highlighted
         ? cs.primary
@@ -532,23 +456,17 @@ class _CommitTimelineTitle extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: highlighted
-                  ? time.xSmall.bold(color: timeColor)
-                  : time.xSmall.medium(color: timeColor),
+              child: highlighted ? time.xSmall.bold(color: timeColor) : time.xSmall.medium(color: timeColor),
             ),
             if (highlighted) const SizedBox(width: 6),
-            if (highlighted) const shadcn.PrimaryBadge(child: Text('待更新')),
+            if (highlighted) const PrimaryBadge(child: Text('待更新')),
             if (current) const SizedBox(width: 6),
-            if (current) const shadcn.SecondaryBadge(child: Text('当前')),
+            if (current) const SecondaryBadge(child: Text('当前')),
           ],
         ),
         if (authorText != null && authorText.isNotEmpty) ...[
           const SizedBox(height: 3),
-          Text(
-            authorText,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ).xSmall.medium(color: authorColor),
+          Text(authorText, maxLines: 1, overflow: TextOverflow.ellipsis).xSmall.medium(color: authorColor),
         ],
       ],
     );
@@ -560,23 +478,17 @@ class _CommitTimelineContent extends StatelessWidget {
   final bool highlighted;
   final bool currentOrBelow;
 
-  const _CommitTimelineContent({
-    required this.message,
-    required this.highlighted,
-    required this.currentOrBelow,
-  });
+  const _CommitTimelineContent({required this.message, required this.highlighted, required this.currentOrBelow});
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final successColor = cs.chart2;
 
-    return shadcn.Card(
+    return Card(
       padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
       filled: currentOrBelow || highlighted,
-      fillColor: currentOrBelow
-          ? successColor.withValues(alpha: 0.08)
-          : cs.primary.withValues(alpha: 0.06),
+      fillColor: currentOrBelow ? successColor.withValues(alpha: 0.08) : cs.primary.withValues(alpha: 0.06),
       borderColor: currentOrBelow
           ? successColor.withValues(alpha: 0.22)
           : highlighted
@@ -588,18 +500,11 @@ class _CommitTimelineContent extends StatelessWidget {
           selectable: false,
           fitContent: false,
           softLineBreak: true,
-          styleSheet: _updateLogMarkdownStyleSheet(
-            context,
-            highlighted: highlighted,
-          ),
+          styleSheet: _updateLogMarkdownStyleSheet(context, highlighted: highlighted),
           onTapLink: (text, href, title) {
             final url = href?.trim();
             if (url == null || url.isEmpty) return;
-            BrowserPage.open(
-              context,
-              url: url,
-              title: text.trim().isEmpty ? null : text.trim(),
-            );
+            BrowserPage.open(context, url: url, title: text.trim().isEmpty ? null : text.trim());
           },
         ),
       ),
@@ -618,33 +523,21 @@ class _StatusBadge extends StatelessWidget {
     final text = info?.statusText ?? '待检查';
 
     if (hasUpdate == true) {
-      return shadcn.PrimaryBadge(child: Text(text));
+      return PrimaryBadge(child: Text(text));
     }
     if (hasUpdate == false || text == '已是最新') {
-      return shadcn.SecondaryBadge(
-        style: _successBadgeStyle(context),
-        child: Text(text),
-      );
+      return SecondaryBadge(style: _successBadgeStyle(context), child: Text(text));
     }
-    return shadcn.OutlineBadge(child: Text(text));
+    return OutlineBadge(child: Text(text));
   }
 }
 
-shadcn.AbstractButtonStyle _successBadgeStyle(BuildContext context) {
-  final successColor = shadcn.Theme.of(context).colorScheme.chart2;
-  return const shadcn.ButtonStyle.secondary(
-        size: shadcn.ButtonSize.small,
-        density: shadcn.ButtonDensity.dense,
-        shape: shadcn.ButtonShape.rectangle,
-      )
+AbstractButtonStyle _successBadgeStyle(BuildContext context) {
+  final successColor = Theme.of(context).colorScheme.chart2;
+  return const ButtonStyle.secondary(size: ButtonSize.small, density: ButtonDensity.dense, shape: ButtonShape.rectangle)
       .withBackgroundColor(color: successColor.withValues(alpha: 0.10))
       .withForegroundColor(color: successColor)
-      .withBorder(
-        border: Border.all(
-          color: successColor.withValues(alpha: 0.24),
-          width: 0.5,
-        ),
-      );
+      .withBorder(border: Border.all(color: successColor.withValues(alpha: 0.24), width: 0.5));
 }
 
 class _ButtonContent extends StatelessWidget {
@@ -672,10 +565,7 @@ class _EmptyLog extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: AppSurfaceCard(
-        padding: const EdgeInsets.all(12),
-        child: Text('${target.title}暂无更新记录').small.muted,
-      ),
+      child: AppSurfaceCard(padding: const EdgeInsets.all(12), child: Text('${target.title}暂无更新记录').small.muted),
     );
   }
 }
@@ -697,18 +587,11 @@ class _RawLogBox extends StatelessWidget {
             selectable: false,
             fitContent: false,
             softLineBreak: true,
-            styleSheet: _updateLogMarkdownStyleSheet(
-              context,
-              highlighted: false,
-            ),
+            styleSheet: _updateLogMarkdownStyleSheet(context, highlighted: false),
             onTapLink: (label, href, title) {
               final url = href?.trim();
               if (url == null || url.isEmpty) return;
-              BrowserPage.open(
-                context,
-                url: url,
-                title: label.trim().isEmpty ? null : label.trim(),
-              );
+              BrowserPage.open(context, url: url, title: label.trim().isEmpty ? null : label.trim());
             },
           ),
         ),
@@ -717,11 +600,8 @@ class _RawLogBox extends StatelessWidget {
   }
 }
 
-MarkdownStyleSheet _updateLogMarkdownStyleSheet(
-  BuildContext context, {
-  required bool highlighted,
-}) {
-  final theme = shadcn.Theme.of(context);
+MarkdownStyleSheet _updateLogMarkdownStyleSheet(BuildContext context, {required bool highlighted}) {
+  final theme = Theme.of(context);
   final cs = theme.colorScheme;
   final typography = theme.typography;
   final body = typography.xSmall
@@ -729,11 +609,7 @@ MarkdownStyleSheet _updateLogMarkdownStyleSheet(
       .copyWith(height: 1.45, color: highlighted ? cs.foreground : cs.chart2);
   final code = typography.xSmall
       .merge(typography.mono)
-      .copyWith(
-        height: 1.35,
-        color: cs.foreground,
-        backgroundColor: cs.muted.withValues(alpha: 0.65),
-      );
+      .copyWith(height: 1.35, color: cs.foreground, backgroundColor: cs.muted.withValues(alpha: 0.65));
 
   return MarkdownStyleSheet(
     p: body,
@@ -759,10 +635,7 @@ MarkdownStyleSheet _updateLogMarkdownStyleSheet(
       border: Border(left: BorderSide(color: cs.border, width: 3)),
     ),
     code: code,
-    codeblockDecoration: BoxDecoration(
-      color: cs.muted.withValues(alpha: 0.65),
-      borderRadius: theme.borderRadiusSm,
-    ),
+    codeblockDecoration: BoxDecoration(color: cs.muted.withValues(alpha: 0.65), borderRadius: theme.borderRadiusSm),
   );
 }
 
@@ -774,32 +647,18 @@ class _MessageBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = Text(
-      text,
-      maxLines: 6,
-      overflow: TextOverflow.ellipsis,
-    ).small;
+    final content = Text(text, maxLines: 6, overflow: TextOverflow.ellipsis).small;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: destructive
-          ? shadcn.Alert.destructive(content: content)
-          : shadcn.Alert(
-              content: Text(
-                text,
-                maxLines: 6,
-                overflow: TextOverflow.ellipsis,
-              ).small.muted,
-            ),
+          ? Alert.destructive(content: content)
+          : Alert(content: Text(text, maxLines: 6, overflow: TextOverflow.ellipsis).small.muted),
     );
   }
 }
 
-Future<void> _runUpgrade(
-  BuildContext context,
-  WidgetRef ref,
-  UpgradeAction action,
-) async {
+Future<void> _runUpgrade(BuildContext context, WidgetRef ref, UpgradeAction action) async {
   final confirmed = await _confirmUpdate(context, action);
   if (!confirmed) return;
 
@@ -814,24 +673,13 @@ Future<void> _runUpgrade(
 Future<bool> _confirmUpdate(BuildContext context, UpgradeAction action) async {
   final result = await appShowDialog<bool>(
     context: context,
-    builder: (ctx) => shadcn.AlertDialog(
-      leading: const Icon(
-        shadcn.LucideIcons.download,
-      ).iconSmall.iconMutedForeground,
+    builder: (ctx) => AlertDialog(
+      leading: const Icon(LucideIcons.download).iconSmall.iconMutedForeground,
       title: Text(action.label),
-      content: SizedBox(
-        width: 360,
-        child: Text('将调用后端升级接口执行 ${action.tag}。升级过程中服务可能会短暂不可用。').small.muted,
-      ),
+      content: SizedBox(width: 360, child: Text('将调用后端升级接口执行 ${action.tag}。升级过程中服务可能会短暂不可用。').small.muted),
       actions: [
-        shadcn.Button.outline(
-          onPressed: () => Navigator.of(ctx).pop(false),
-          child: const Text('取消'),
-        ),
-        shadcn.Button.primary(
-          onPressed: () => Navigator.of(ctx).pop(true),
-          child: const Text('确认执行'),
-        ),
+        Button.outline(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+        Button.primary(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('确认执行')),
       ],
     ),
   );

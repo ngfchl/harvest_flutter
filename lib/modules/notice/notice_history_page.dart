@@ -1,13 +1,14 @@
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/browser_page.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/shadcn_compat.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import 'model/notice_history.dart';
 import 'provider/notice_provider.dart';
@@ -24,21 +25,14 @@ class NoticeHistoryPage extends ConsumerWidget {
       child: AppBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: Column(
+          child: Column(
             children: [
-              _NoticePageHeader(
-                title: '通知历史',
-                onBack: () => Navigator.of(context).pop(),
-              ),
+              _NoticePageHeader(title: '通知历史', onBack: () => Navigator.of(context).pop()),
               Expanded(
                 child: noticesAsync.when(
-                  loading: () =>
-                      const Center(child: shadcn.CircularProgressIndicator()),
-                  error: (error, _) => _NoticeErrorView(
-                    error: error,
-                    onRetry: () =>
-                        ref.read(noticeHistoryProvider.notifier).refresh(),
-                  ),
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, _) =>
+                      _NoticeErrorView(error: error, onRetry: () => ref.read(noticeHistoryProvider.notifier).refresh()),
                   data: (notices) => _NoticeHistoryBody(notices: notices),
                 ),
               ),
@@ -58,7 +52,7 @@ class _NoticePageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final top = MediaQuery.paddingOf(context).top;
     final leadingInset = appHeaderLeadingInset(context);
@@ -66,32 +60,21 @@ class _NoticePageHeader extends StatelessWidget {
 
     return AppSurfaceContainer(
       height: top + kAppHeaderHeight,
-      padding: EdgeInsets.fromLTRB(
-        8 + leadingInset,
-        top + 6,
-        16 + trailingInset,
-        6,
-      ),
+      padding: EdgeInsets.fromLTRB(8 + leadingInset, top + 6, 16 + trailingInset, 6),
       borderRadius: BorderRadius.zero,
       color: appSurfaceColor(context, cs.background),
       borderColor: cs.border.withValues(alpha: 0.5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          shadcn.IconButton.ghost(
-            icon: const Icon(shadcn.LucideIcons.chevronLeft),
-            onPressed: onBack,
-          ),
+          IconButton.ghost(icon: const Icon(LucideIcons.chevronLeft), onPressed: onBack),
           const SizedBox(width: 4),
           Expanded(
             child: Text(
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: theme.typography.large.copyWith(
-                color: cs.foreground,
-                fontWeight: FontWeight.w700,
-              ),
+              style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -116,9 +99,7 @@ class _NoticeHistoryBody extends ConsumerWidget {
           child: EasyRefresh(
             onRefresh: () => ref.read(noticeHistoryProvider.notifier).refresh(),
             header: appRefreshHeader(context),
-            child: notices.isEmpty
-                ? const _EmptyNoticeView()
-                : _NoticeList(notices: notices),
+            child: notices.isEmpty ? const _EmptyNoticeView() : _NoticeList(notices: notices),
           ),
         ),
       ],
@@ -134,8 +115,8 @@ class _NoticeToolbar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
 
     return AppSurfaceContainer(
       height: 44,
@@ -145,13 +126,7 @@ class _NoticeToolbar extends ConsumerWidget {
       borderColor: cs.border.withValues(alpha: 0.5),
       child: Row(
         children: [
-          Icon(
-            unreadCount > 0
-                ? shadcn.LucideIcons.bellRing
-                : shadcn.LucideIcons.bell,
-            size: 16,
-            color: cs.mutedForeground,
-          ),
+          Icon(unreadCount > 0 ? LucideIcons.bellRing : LucideIcons.bell, size: 16, color: cs.mutedForeground),
           const SizedBox(width: 8),
           Text(
             totalCount == 0
@@ -159,15 +134,13 @@ class _NoticeToolbar extends ConsumerWidget {
                 : unreadCount > 0
                 ? '$unreadCount 条未读通知'
                 : '$totalCount 条通知均已读',
-            style: typo.small.copyWith(
-              color: unreadCount > 0 ? cs.foreground : cs.mutedForeground,
-            ),
+            style: typo.small.copyWith(color: unreadCount > 0 ? cs.foreground : cs.mutedForeground),
           ),
           const Spacer(),
           if (totalCount > 0) ...[
             _NoticeToolbarAction(
               tooltip: '删除全部',
-              icon: shadcn.LucideIcons.trash2,
+              icon: LucideIcons.trash2,
               color: cs.destructive,
               onPress: () async {
                 final confirmed = await _confirmNoticeAction(
@@ -192,7 +165,7 @@ class _NoticeToolbar extends ConsumerWidget {
             const SizedBox(width: 4),
             _NoticeToolbarAction(
               tooltip: '全部已读',
-              icon: shadcn.LucideIcons.checkCheck,
+              icon: LucideIcons.checkCheck,
               color: cs.foreground,
               onPress: () async {
                 final confirmed = await _confirmNoticeAction(
@@ -224,18 +197,13 @@ class _NoticeToolbarAction extends StatelessWidget {
   final Color color;
   final VoidCallback onPress;
 
-  const _NoticeToolbarAction({
-    required this.tooltip,
-    required this.icon,
-    required this.color,
-    required this.onPress,
-  });
+  const _NoticeToolbarAction({required this.tooltip, required this.icon, required this.color, required this.onPress});
 
   @override
   Widget build(BuildContext context) {
-    return shadcn.Tooltip(
+    return Tooltip(
       tooltip: (_) => Text(tooltip),
-      child: shadcn.IconButton.ghost(
+      child: IconButton.ghost(
         icon: Icon(icon, size: 16, color: color),
         onPressed: onPress,
       ),
@@ -267,26 +235,17 @@ Future<bool> _confirmNoticeAction(
   required String confirmText,
   bool destructive = false,
 }) async {
-  final result = await showDialog<bool>(
+  final result = await appShowDialog(
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text(title),
       content: Text(message),
       actions: [
-        shadcn.Button.ghost(
-          onPressed: () => Navigator.of(ctx).pop(false),
-          child: const Text('取消'),
-        ),
+        Button.ghost(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
         if (destructive)
-          shadcn.Button.destructive(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(confirmText),
-          )
+          Button.destructive(onPressed: () => Navigator.of(ctx).pop(true), child: Text(confirmText))
         else
-          shadcn.Button.primary(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(confirmText),
-          ),
+          Button.primary(onPressed: () => Navigator.of(ctx).pop(true), child: Text(confirmText)),
       ],
     ),
   );
@@ -300,23 +259,17 @@ class _NoticeTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final typo = shadcn.Theme.of(context).typography;
+    final cs = Theme.of(context).colorScheme;
+    final typo = Theme.of(context).typography;
     final unread = !notice.isRead;
     final title = _cleanTitle(notice.title);
     final summary = _summary(notice.content);
     final time = _displayTime(notice);
 
-    return Material(
-      color: Colors.transparent,
+    return InkWell(
       borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: () => Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (_, _, _) => NoticeDetailPage(notice: notice),
-          ),
-        ),
+        onTap: () =>
+            Navigator.of(context).push(PageRouteBuilder(pageBuilder: (_, _, _) => NoticeDetailPage(notice: notice))),
         child: AppSurfaceContainer(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
           borderRadius: BorderRadius.circular(8),
@@ -329,10 +282,7 @@ class _NoticeTile extends ConsumerWidget {
                 height: 8,
                 child: unread
                     ? const DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Color(0xFFEF4444),
-                          shape: BoxShape.circle,
-                        ),
+                        decoration: BoxDecoration(color: Color(0xFFEF4444), shape: BoxShape.circle),
                       )
                     : null,
               ),
@@ -374,17 +324,12 @@ class _NoticeTile extends ConsumerWidget {
                 ),
               ],
               const SizedBox(width: 8),
-              Icon(
-                shadcn.LucideIcons.chevronRight,
-                size: 14,
-                color: cs.mutedForeground,
-              ),
+              Icon(LucideIcons.chevronRight, size: 14, color: cs.mutedForeground),
             ],
           ),
         ),
-      ),
-    );
-  }
+      );
+    }
 }
 
 class NoticeDetailPage extends ConsumerWidget {
@@ -394,11 +339,8 @@ class NoticeDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final current = _latestNotice(
-      ref.watch(noticeHistoryProvider).value,
-      notice,
-    );
+    final cs = Theme.of(context).colorScheme;
+    final current = _latestNotice(ref.watch(noticeHistoryProvider).value, notice);
     final title = _cleanTitle(current.title);
     final time = _displayTime(current);
     final hasUrl = current.url != null && current.url!.trim().isNotEmpty;
@@ -408,20 +350,17 @@ class NoticeDetailPage extends ConsumerWidget {
       child: AppBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: Column(
+          child: Column(
             children: [
-              _NoticePageHeader(
-                title: '通知详情',
-                onBack: () => Navigator.of(context).pop(),
-              ),
+              _NoticePageHeader(title: '通知详情', onBack: () => Navigator.of(context).pop()),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
                   children: [
                     Text(
                       title,
-                      style: shadcn.Theme.of(context).typography.xLarge.copyWith(
-                        color: shadcn.Theme.of(context).colorScheme.foreground,
+                      style: Theme.of(context).typography.xLarge.copyWith(
+                        color: Theme.of(context).colorScheme.foreground,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -435,15 +374,12 @@ class NoticeDetailPage extends ConsumerWidget {
                                   time,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: shadcn.Theme.of(context)
-                                      .typography
-                                      .xSmall
-                                      .copyWith(color: cs.mutedForeground),
+                                  style: Theme.of(context).typography.xSmall.copyWith(color: cs.mutedForeground),
                                 ),
                         ),
                         _NoticeToolbarAction(
                           tooltip: '删除通知',
-                          icon: shadcn.LucideIcons.trash2,
+                          icon: LucideIcons.trash2,
                           color: cs.destructive,
                           onPress: () async {
                             final confirmed = await _confirmNoticeAction(
@@ -456,9 +392,7 @@ class NoticeDetailPage extends ConsumerWidget {
                             if (!confirmed) return;
                             if (!context.mounted) return;
                             try {
-                              await ref
-                                  .read(noticeHistoryProvider.notifier)
-                                  .deleteNotice(current);
+                              await ref.read(noticeHistoryProvider.notifier).deleteNotice(current);
                               Toast.success('通知已删除');
                               if (context.mounted) Navigator.of(context).pop();
                             } catch (_) {
@@ -470,13 +404,11 @@ class NoticeDetailPage extends ConsumerWidget {
                           const SizedBox(width: 4),
                           _NoticeToolbarAction(
                             tooltip: '标记已读',
-                            icon: shadcn.LucideIcons.check,
+                            icon: LucideIcons.check,
                             color: cs.foreground,
                             onPress: () async {
                               try {
-                                await ref
-                                    .read(noticeHistoryProvider.notifier)
-                                    .markRead(current);
+                                await ref.read(noticeHistoryProvider.notifier).markRead(current);
                               } catch (_) {
                                 Toast.error('标记已读失败');
                               }
@@ -488,9 +420,7 @@ class NoticeDetailPage extends ConsumerWidget {
                     const SizedBox(height: 18),
                     SelectionArea(
                       child: MarkdownBody(
-                        data: current.content.trim().isEmpty
-                            ? '暂无内容'
-                            : current.content.trim(),
+                        data: current.content.trim().isEmpty ? '暂无内容' : current.content.trim(),
                         selectable: false,
                         fitContent: false,
                         softLineBreak: true,
@@ -499,22 +429,14 @@ class NoticeDetailPage extends ConsumerWidget {
                         onTapLink: (text, href, title) {
                           final url = href?.trim();
                           if (url == null || url.isEmpty) return;
-                          BrowserPage.open(
-                            context,
-                            url: url,
-                            title: text.trim().isEmpty ? null : text.trim(),
-                          );
+                          BrowserPage.open(context, url: url, title: text.trim().isEmpty ? null : text.trim());
                         },
                       ),
                     ),
                     if (hasUrl) ...[
                       const SizedBox(height: 20),
-                      shadcn.Button.outline(
-                        onPressed: () => BrowserPage.open(
-                          context,
-                          url: current.url!.trim(),
-                          title: title,
-                        ),
+                      Button.outline(
+                        onPressed: () => BrowserPage.open(context, url: current.url!.trim(), title: title),
                         child: const Text('打开链接'),
                       ),
                     ],
@@ -529,10 +451,7 @@ class NoticeDetailPage extends ConsumerWidget {
   }
 }
 
-NoticeHistory _latestNotice(
-  List<NoticeHistory>? notices,
-  NoticeHistory fallback,
-) {
+NoticeHistory _latestNotice(List<NoticeHistory>? notices, NoticeHistory fallback) {
   if (notices == null) return fallback;
   for (final notice in notices) {
     if (notice.id == fallback.id) return notice;
@@ -551,31 +470,19 @@ String _displayTime(NoticeHistory notice) {
 }
 
 MarkdownStyleSheet _markdownStyleSheet(BuildContext context) {
-  final cs = shadcn.Theme.of(context).colorScheme;
-  final typo = shadcn.Theme.of(context).typography;
+  final cs = Theme.of(context).colorScheme;
+  final typo = Theme.of(context).typography;
   final body = typo.small.copyWith(color: cs.foreground, height: 1.55);
 
   return MarkdownStyleSheet(
     a: body.copyWith(color: cs.primary, fontWeight: FontWeight.w600),
     p: body,
     pPadding: const EdgeInsets.only(bottom: 10),
-    h1: typo.xLarge.copyWith(
-      color: cs.foreground,
-      fontWeight: FontWeight.w700,
-      height: 1.35,
-    ),
+    h1: typo.xLarge.copyWith(color: cs.foreground, fontWeight: FontWeight.w700, height: 1.35),
     h1Padding: const EdgeInsets.only(bottom: 10),
-    h2: typo.large.copyWith(
-      color: cs.foreground,
-      fontWeight: FontWeight.w700,
-      height: 1.35,
-    ),
+    h2: typo.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700, height: 1.35),
     h2Padding: const EdgeInsets.only(bottom: 8),
-    h3: typo.base.copyWith(
-      color: cs.foreground,
-      fontWeight: FontWeight.w700,
-      height: 1.35,
-    ),
+    h3: typo.base.copyWith(color: cs.foreground, fontWeight: FontWeight.w700, height: 1.35),
     h3Padding: const EdgeInsets.only(bottom: 8),
     h4: body.copyWith(fontWeight: FontWeight.w700),
     h5: body.copyWith(fontWeight: FontWeight.w700),
@@ -601,9 +508,7 @@ MarkdownStyleSheet _markdownStyleSheet(BuildContext context) {
     blockquotePadding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
     blockquoteDecoration: BoxDecoration(
       color: cs.muted.withValues(alpha: 0.18),
-      border: Border(
-        left: BorderSide(color: cs.primary.withValues(alpha: 0.55), width: 3),
-      ),
+      border: Border(left: BorderSide(color: cs.primary.withValues(alpha: 0.55), width: 3)),
     ),
     horizontalRuleDecoration: BoxDecoration(
       border: Border(top: BorderSide(color: cs.border, width: 1)),
@@ -638,23 +543,11 @@ String _summary(String content) {
 
 String _stripInlineMarkdown(String value) {
   return value
-      .replaceAllMapped(
-        RegExp(r'!\[([^\]]*)\]\([^\)]*\)'),
-        (match) => match.group(1) ?? '',
-      )
-      .replaceAllMapped(
-        RegExp(r'\[([^\]]+)\]\([^\)]*\)'),
-        (match) => match.group(1) ?? '',
-      )
+      .replaceAllMapped(RegExp(r'!\[([^\]]*)\]\([^\)]*\)'), (match) => match.group(1) ?? '')
+      .replaceAllMapped(RegExp(r'\[([^\]]+)\]\([^\)]*\)'), (match) => match.group(1) ?? '')
       .replaceAllMapped(RegExp(r'`([^`]*)`'), (match) => match.group(1) ?? '')
-      .replaceAllMapped(
-        RegExp(r'(\*\*|__)(.*?)(\*\*|__)'),
-        (match) => match.group(2) ?? '',
-      )
-      .replaceAllMapped(
-        RegExp(r'(\*|_)(.*?)(\*|_)'),
-        (match) => match.group(2) ?? '',
-      )
+      .replaceAllMapped(RegExp(r'(\*\*|__)(.*?)(\*\*|__)'), (match) => match.group(2) ?? '')
+      .replaceAllMapped(RegExp(r'(\*|_)(.*?)(\*|_)'), (match) => match.group(2) ?? '')
       .replaceAllMapped(RegExp(r'~~(.*?)~~'), (match) => match.group(1) ?? '')
       .trim();
 }
@@ -664,7 +557,7 @@ class _EmptyNoticeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -674,18 +567,9 @@ class _EmptyNoticeView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                shadcn.LucideIcons.inbox,
-                size: 44,
-                color: cs.mutedForeground.withValues(alpha: 0.45),
-              ),
+              Icon(LucideIcons.inbox, size: 44, color: cs.mutedForeground.withValues(alpha: 0.45)),
               const SizedBox(height: 14),
-              Text(
-                '暂无通知',
-                style: shadcn.Theme.of(
-                  context,
-                ).typography.small.copyWith(color: cs.mutedForeground),
-              ),
+              Text('暂无通知', style: Theme.of(context).typography.small.copyWith(color: cs.mutedForeground)),
             ],
           ),
         ),
@@ -702,32 +586,26 @@ class _NoticeErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            shadcn.LucideIcons.triangleAlert,
-            size: 44,
-            color: cs.destructive,
-          ),
+          Icon(LucideIcons.triangleAlert, size: 44, color: cs.destructive),
           const SizedBox(height: 16),
-          Text('通知加载失败', style: shadcn.Theme.of(context).typography.large),
+          Text('通知加载失败', style: Theme.of(context).typography.large),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
               '$error',
               textAlign: TextAlign.center,
-              style: shadcn.Theme.of(
-                context,
-              ).typography.small.copyWith(color: cs.mutedForeground),
+              style: Theme.of(context).typography.small.copyWith(color: cs.mutedForeground),
             ),
           ),
           const SizedBox(height: 22),
-          shadcn.Button.primary(onPressed: onRetry, child: const Text('重试')),
+          Button.primary(onPressed: onRetry, child: const Text('重试')),
         ],
       ),
     );

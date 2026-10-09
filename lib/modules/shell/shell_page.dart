@@ -1,14 +1,11 @@
-import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest/core/utils/utils.dart';
-import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/modules/admin_user/admin_user_access.dart';
 import 'package:harvest/modules/auth/auth_provider.dart';
 import 'package:harvest/modules/notice/model/notice_history.dart';
@@ -16,9 +13,12 @@ import 'package:harvest/modules/notice/notice_history_page.dart';
 import 'package:harvest/modules/notice/provider/notice_provider.dart';
 import 'package:harvest/modules/option/widgets/app_upgrade_page.dart';
 import 'package:harvest/modules/shell/widgets/invite_user.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/escape_back_scope.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/shadcn_compat.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter_material/shadcn_flutter_material.dart';
 
 import '../admin_user/admin_user_page.dart';
 import '../dashboard/dashboard_page.dart';
@@ -57,28 +57,14 @@ class _ShellPageState extends ConsumerState<ShellPage> {
   final _appUpgradeController = AppUpgradeController();
   PageController? _pageController;
 
-  static const _routes = [
-    '/home',
-    '/sites',
-    '/dashboard',
-    '/downloads',
-    '/tasks',
-    '/search',
-  ];
+  static const _routes = ['/home', '/sites', '/dashboard', '/downloads', '/tasks', '/search'];
   static const _primaryPageCount = 5;
   static const _defaultPrimaryPageIndex = 2;
   static const _newsPageIndex = 0;
   static const _searchPageIndex = 5;
   static const _downloadsPageIndex = 3;
   static const _pageTitles = ['资讯', '站点', '仪表盘', '下载器', '任务中心', '搜索'];
-  static const _pageSubtitles = [
-    '跟踪最新动态与公告',
-    '维护站点配置与状态',
-    '查看关键运行指标',
-    '管理下载器与传输任务',
-    '处理自动化与后台任务',
-    '检索影视信息与站点资源',
-  ];
+  static const _pageSubtitles = ['跟踪最新动态与公告', '维护站点配置与状态', '查看关键运行指标', '管理下载器与传输任务', '处理自动化与后台任务', '检索影视信息与站点资源'];
 
   final _bodyScreenshotKey = GlobalKey();
   bool _capturing = false;
@@ -175,15 +161,9 @@ class _ShellPageState extends ConsumerState<ShellPage> {
       await WidgetsBinding.instance.endOfFrame;
 
       final currentIndex = _getCurrentIndex();
-      final sc =
-          ref.read(pageScrollControllersProvider)[currentIndex] ??
-          ref.read(activeScrollControllerProvider);
-      final bytes =
-          (sc != null && sc.hasClients && sc.position.maxScrollExtent > 0)
-          ? await ScreenshotSaver.captureLong(
-              scrollKey: _bodyScreenshotKey,
-              scrollController: sc,
-            )
+      final sc = ref.read(pageScrollControllersProvider)[currentIndex] ?? ref.read(activeScrollControllerProvider);
+      final bytes = (sc != null && sc.hasClients && sc.position.maxScrollExtent > 0)
+          ? await ScreenshotSaver.captureLong(scrollKey: _bodyScreenshotKey, scrollController: sc)
           : await ScreenshotSaver.capture(_bodyScreenshotKey);
 
       if (!wasPrivacyMode && mounted && ref.read(privacyModeProvider)) {
@@ -225,18 +205,12 @@ class _ShellPageState extends ConsumerState<ShellPage> {
     _exitDialogOpen = true;
     final ok = await appShowDialog<bool>(
       context: context,
-      builder: (ctx) => shadcn.AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('退出应用'),
         content: const Text('确定要退出应用吗？'),
         actions: [
-          shadcn.Button.outline(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
-          ),
-          shadcn.Button.destructive(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('退出'),
-          ),
+          Button.outline(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+          Button.destructive(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('退出')),
         ],
       ),
     );
@@ -272,9 +246,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
 
   void _openDrawer() {
     if (context.isDesktop) {
-      final notifier = ref.read(
-        desktopNavigationSidebarVisibleProvider.notifier,
-      );
+      final notifier = ref.read(desktopNavigationSidebarVisibleProvider.notifier);
       notifier.state = !notifier.state;
       return;
     }
@@ -305,19 +277,16 @@ class _ShellPageState extends ConsumerState<ShellPage> {
     final authInfo = ref.watch(authInfoProvider).value;
     final showAdminUser = canOpenAdminUsers(authInfo);
     final updateState = ref.watch(updateProvider);
-    final appUpgradeStatus = kIsWeb
-        ? null
-        : ref.watch(appUpgradeStatusProvider);
+    final appUpgradeStatus = kIsWeb ? null : ref.watch(appUpgradeStatusProvider);
     final hasAppUpgrade = appUpgradeStatus?.value?.hasNewVersion == true;
     final showNews = ref.watch(mediaInfoSettingsProvider).enabled;
     final unreadCount = ref.watch(noticeUnreadCountProvider);
-    final notices =
-        ref.watch(noticeHistoryProvider).value ?? const <NoticeHistory>[];
+    final notices = ref.watch(noticeHistoryProvider).value ?? const <NoticeHistory>[];
     final unread = [
       for (final n in notices)
         if (!n.isRead) n,
     ];
-    final colors = shadcn.Theme.of(context).colorScheme;
+    final colors = Theme.of(context).colorScheme;
     if (context.isDesktop) {
       ref.watch(desktopNavigationSidebarVisibleProvider);
     }
@@ -369,12 +338,8 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                   subtitle: _pageSubtitles[currentIndex],
                   unreadCount: unreadCount,
                   unreadNotices: unread,
-                  onOpenNotices: () => Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (_, _, _) => const NoticeHistoryPage(),
-                    ),
-                  ),
+                  onOpenNotices: () =>
+                      Navigator.push(context, PageRouteBuilder(pageBuilder: (_, _, _) => const NoticeHistoryPage())),
                   onOpenDrawer: _openDrawer,
                   hasAppUpgrade: hasAppUpgrade,
                   onAppUpgrade: _openAppUpgradeFromHeader,
@@ -383,8 +348,7 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                     user: user,
                     isSuperuser: isSuperuser,
                     showAdminUser: showAdminUser,
-                    showAccountSwitcher:
-                        ref.watch(loginHistoryProvider).length >= 2,
+                    showAccountSwitcher: ref.watch(loginHistoryProvider).length >= 2,
                     hasAppUpgrade: hasAppUpgrade,
                     updateState: updateState,
                     onScreenshot: _takeScreenshot,
@@ -405,19 +369,14 @@ class _ShellPageState extends ConsumerState<ShellPage> {
                 IgnorePointer(
                   child: Align(
                     alignment: Alignment.topLeft,
-                    child: AppUpgradePage(
-                      controller: _appUpgradeController,
-                      child: const SizedBox.shrink(),
-                    ),
+                    child: AppUpgradePage(controller: _appUpgradeController, child: const SizedBox.shrink()),
                   ),
                 ),
               if (_capturing)
                 Positioned.fill(
                   child: ColoredBox(
                     color: colors.foreground.withValues(alpha: 0.08),
-                    child: const Center(
-                      child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                    child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                   ),
                 ),
             ],
@@ -437,8 +396,7 @@ class _KeepAlivePage extends StatefulWidget {
   const _KeepAlivePage({required this.child});
 }
 
-class _KeepAlivePageState extends State<_KeepAlivePage>
-    with AutomaticKeepAliveClientMixin {
+class _KeepAlivePageState extends State<_KeepAlivePage> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -483,76 +441,57 @@ class _ShellHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final hasUnread = unreadCount > 0;
     final canShowTicker = hasUnread && unreadNotices.isNotEmpty;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: cs.brightness == Brightness.dark
-          ? SystemUiOverlayStyle.light
-          : SystemUiOverlayStyle.dark,
+      value: cs.brightness == Brightness.dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Material(
         color: cs.background,
         child: SafeArea(
           bottom: false,
-          child: shadcn.AnimatedContainer(
+          child: AnimatedContainer(
             duration: Duration(milliseconds: 100),
-            child: shadcn.AppBar(
+            child: AppBar(
               height: kAppHeaderHeight - 12,
               padding: appHeaderPadding(context),
               leading: [
-                shadcn.IconButton.ghost(
-                  size: shadcn.ButtonSize.small,
-                  density: shadcn.ButtonDensity.iconDense,
+                IconButton.ghost(
+                  size: ButtonSize.small,
+                  density: ButtonDensity.iconDense,
                   onPressed: onOpenDrawer,
                   icon: const SizedBox(
                     width: _headerActionBoxSize,
                     height: _headerActionBoxSize,
-                    child: Icon(
-                      shadcn.LucideIcons.panelLeft,
-                      size: _headerActionIconSize,
-                    ),
+                    child: Icon(LucideIcons.panelLeft, size: _headerActionIconSize),
                   ),
                 ),
               ],
               title: canShowTicker
-                  ? _NoticeTicker(
-                      notices: unreadNotices,
-                      unreadCount: unreadCount,
-                      onTap: onOpenNotices,
-                    )
+                  ? _NoticeTicker(notices: unreadNotices, unreadCount: unreadCount, onTap: onOpenNotices)
                   : Text(
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.typography.lead.copyWith(
-                        color: cs.foreground,
-                        fontWeight: FontWeight.w800,
-                      ),
+                      style: theme.typography.lead.copyWith(color: cs.foreground, fontWeight: FontWeight.w800),
                     ),
               trailing: [
                 if (!canShowTicker)
-                  _HeaderNoticeButton(
-                    unreadCount: unreadCount,
-                    hasUnread: hasUnread,
-                    onTap: onOpenNotices,
-                  ),
+                  _HeaderNoticeButton(unreadCount: unreadCount, hasUnread: hasUnread, onTap: onOpenNotices),
                 if (hasAppUpgrade)
                   _HeaderDotButton(
-                    icon: shadcn.LucideIcons.circleArrowUp,
+                    icon: LucideIcons.circleArrowUp,
                     color: cs.destructive,
                     tooltip: '发现 APP 新版本',
                     onTap: onAppUpgrade,
                   ),
                 if (updateState.hasAnyUpdate)
                   _HeaderBadgeButton(
-                    icon: shadcn.LucideIcons.download,
+                    icon: LucideIcons.download,
                     count: updateState.updateCount,
                     tooltip: '发现程序更新',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const UpdatePage()),
-                    ),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpdatePage())),
                   ),
                 avatar,
                 SizedBox(width: context.isMobile ? 0 : 10),
@@ -570,11 +509,7 @@ class _NoticeTicker extends ConsumerStatefulWidget {
   final int unreadCount;
   final VoidCallback onTap;
 
-  const _NoticeTicker({
-    required this.notices,
-    required this.unreadCount,
-    required this.onTap,
-  });
+  const _NoticeTicker({required this.notices, required this.unreadCount, required this.onTap});
 
   @override
   ConsumerState<_NoticeTicker> createState() => _NoticeTickerState();
@@ -618,7 +553,7 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final notice = widget.notices[_index.clamp(0, widget.notices.length - 1)];
     final count = widget.unreadCount;
@@ -627,7 +562,7 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
     return GestureDetector(
       onTap: widget.onTap,
       behavior: HitTestBehavior.opaque,
-      child: shadcn.OutlinedContainer(
+      child: OutlinedContainer(
         borderColor: cs.primary.withValues(alpha: 0.72),
         backgroundColor: cs.primary.withValues(alpha: 0.055),
         borderRadius: theme.borderRadiusLg,
@@ -639,15 +574,12 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(shadcn.LucideIcons.bell, size: 16, color: cs.foreground),
+                Icon(LucideIcons.bell, size: 16, color: cs.foreground),
                 Positioned(
                   top: -4,
                   right: -6,
                   child: Container(
-                    constraints: const BoxConstraints(
-                      minWidth: 14,
-                      minHeight: 14,
-                    ),
+                    constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     decoration: BoxDecoration(
                       color: cs.destructive,
@@ -657,12 +589,7 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
                     alignment: Alignment.center,
                     child: Text(
                       count > 99 ? '99+' : '$count',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                        height: 1,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 8, height: 1, fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -675,16 +602,10 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 320),
                 transitionBuilder: (child, anim) {
-                  final offset =
-                      Tween<Offset>(
-                        begin: const Offset(0.2, 0),
-                        end: Offset.zero,
-                      ).animate(
-                        CurvedAnimation(
-                          parent: anim,
-                          curve: Curves.easeOutCubic,
-                        ),
-                      );
+                  final offset = Tween<Offset>(
+                    begin: const Offset(0.2, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic));
                   return FadeTransition(
                     opacity: anim,
                     child: SlideTransition(position: offset, child: child),
@@ -700,12 +621,9 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
                               _cleanTitle(notice.title),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: theme.typography.small.copyWith(
-                                color: cs.foreground,
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
                             )
-                          : shadcn.OverflowMarquee(
+                          : OverflowMarquee(
                               child: Text(
                                 _cleanTitle(notice.title),
                                 style: theme.typography.small.copyWith(
@@ -722,9 +640,7 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
                           _cleanContent(notice),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: theme.typography.xSmall.copyWith(
-                            color: cs.mutedForeground,
-                          ),
+                          style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
                         ),
                       ),
                     ],
@@ -736,24 +652,18 @@ class _NoticeTickerState extends ConsumerState<_NoticeTicker> {
             const SizedBox(width: 6),
 
             // ── 已读按钮 ──
-            shadcn.Tooltip(
+            Tooltip(
               tooltip: (_) => const Text('标记已读'),
-              child: shadcn.IconButton.ghost(
-                density: shadcn.ButtonDensity.compact,
+              child: IconButton.ghost(
+                density: ButtonDensity.compact,
                 onPressed: () async {
                   try {
-                    await ref
-                        .read(noticeHistoryProvider.notifier)
-                        .markRead(notice);
+                    await ref.read(noticeHistoryProvider.notifier).markRead(notice);
                   } catch (_) {
                     Toast.error('标记已读失败');
                   }
                 },
-                icon: Icon(
-                  shadcn.LucideIcons.check,
-                  size: 15,
-                  color: cs.mutedForeground,
-                ),
+                icon: Icon(LucideIcons.check, size: 15, color: cs.mutedForeground),
               ),
             ),
           ],
@@ -781,22 +691,18 @@ class _HeaderNoticeButton extends StatelessWidget {
   final bool hasUnread;
   final VoidCallback onTap;
 
-  const _HeaderNoticeButton({
-    required this.unreadCount,
-    required this.hasUnread,
-    required this.onTap,
-  });
+  const _HeaderNoticeButton({required this.unreadCount, required this.hasUnread, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final display = unreadCount > 99 ? '99+' : '$unreadCount';
 
-    return shadcn.Tooltip(
+    return Tooltip(
       tooltip: (_) => Text(hasUnread ? '$display 条未读通知' : '通知列表'),
-      child: shadcn.IconButton.ghost(
-        size: shadcn.ButtonSize.small,
-        density: shadcn.ButtonDensity.iconDense,
+      child: IconButton.ghost(
+        size: ButtonSize.small,
+        density: ButtonDensity.iconDense,
         onPressed: onTap,
         icon: SizedBox(
           width: _headerActionBoxSize,
@@ -805,20 +711,13 @@ class _HeaderNoticeButton extends StatelessWidget {
             clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
-              Icon(
-                shadcn.LucideIcons.bell,
-                size: _headerActionIconSize,
-                color: cs.foreground,
-              ),
+              Icon(LucideIcons.bell, size: _headerActionIconSize, color: cs.foreground),
               if (hasUnread)
                 Positioned(
                   top: -2,
                   right: -8,
                   child: Container(
-                    constraints: const BoxConstraints(
-                      minWidth: 14,
-                      minHeight: 14,
-                    ),
+                    constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
                     padding: const EdgeInsets.symmetric(horizontal: 3),
                     decoration: BoxDecoration(
                       color: cs.destructive,
@@ -828,12 +727,7 @@ class _HeaderNoticeButton extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Text(
                       display,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                        height: 1,
-                        fontWeight: FontWeight.w800,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 8, height: 1, fontWeight: FontWeight.w800),
                     ),
                   ),
                 ),
@@ -856,24 +750,19 @@ class _HeaderBadgeButton extends StatelessWidget {
   final String tooltip;
   final VoidCallback onTap;
 
-  const _HeaderBadgeButton({
-    required this.icon,
-    required this.count,
-    required this.tooltip,
-    required this.onTap,
-  });
+  const _HeaderBadgeButton({required this.icon, required this.count, required this.tooltip, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final display = count > 99 ? '99+' : '$count';
     final accent = cs.primary;
 
-    return shadcn.Tooltip(
+    return Tooltip(
       tooltip: (_) => Text(tooltip),
-      child: shadcn.IconButton.ghost(
-        size: shadcn.ButtonSize.small,
-        density: shadcn.ButtonDensity.iconDense,
+      child: IconButton.ghost(
+        size: ButtonSize.small,
+        density: ButtonDensity.iconDense,
         onPressed: onTap,
         icon: SizedBox(
           width: _headerActionBoxSize,
@@ -892,32 +781,20 @@ class _HeaderBadgeButton extends StatelessWidget {
                 top: -3,
                 right: -9,
                 child: Container(
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
+                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     color: cs.chart4,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: cs.background, width: 1.2),
                     boxShadow: [
-                      BoxShadow(
-                        color: cs.chart4.withValues(alpha: 0.22),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
+                      BoxShadow(color: cs.chart4.withValues(alpha: 0.22), blurRadius: 6, offset: const Offset(0, 2)),
                     ],
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     display,
-                    style: TextStyle(
-                      color: cs.primaryForeground,
-                      fontSize: 9,
-                      height: 1,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(color: cs.primaryForeground, fontSize: 9, height: 1, fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -936,23 +813,18 @@ class _HeaderDotButton extends StatelessWidget {
   final String tooltip;
   final VoidCallback onTap;
 
-  const _HeaderDotButton({
-    required this.icon,
-    this.color,
-    required this.tooltip,
-    required this.onTap,
-  });
+  const _HeaderDotButton({required this.icon, this.color, required this.tooltip, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final accent = color ?? cs.destructive;
 
-    return shadcn.Tooltip(
+    return Tooltip(
       tooltip: (_) => Text(tooltip),
-      child: shadcn.IconButton.ghost(
-        size: shadcn.ButtonSize.small,
-        density: shadcn.ButtonDensity.iconDense,
+      child: IconButton.ghost(
+        size: ButtonSize.small,
+        density: ButtonDensity.iconDense,
         onPressed: onTap,
         icon: SizedBox(
           width: _headerActionBoxSize,
@@ -978,11 +850,7 @@ class _HeaderDotButton extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: cs.background, width: 1.2),
                     boxShadow: [
-                      BoxShadow(
-                        color: accent.withValues(alpha: 0.25),
-                        blurRadius: 5,
-                        offset: const Offset(0, 1),
-                      ),
+                      BoxShadow(color: accent.withValues(alpha: 0.25), blurRadius: 5, offset: const Offset(0, 1)),
                     ],
                   ),
                 ),
@@ -1054,12 +922,12 @@ class _AccountMenuButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: isSuperuser ? () => _showMenu(context, ref) : null,
-      child: shadcn.Avatar(
+      child: Avatar(
         initials: user?.username?.substring(0, 1).toUpperCase() ?? '?',
         size: 32,
         backgroundColor: cs.primary,
@@ -1068,143 +936,96 @@ class _AccountMenuButton extends ConsumerWidget {
   }
 
   void _showMenu(BuildContext context, WidgetRef ref) {
-    final colors = shadcn.Theme.of(context).colorScheme;
+    final colors = Theme.of(context).colorScheme;
     final menuKey = GlobalKey();
 
     showPopover<void>(
       context: context,
       alignment: Alignment.topRight,
       anchorAlignment: Alignment.bottomRight,
-      widthConstraint: shadcn.PopoverConstraint.intrinsic,
+      widthConstraint: PopoverConstraint.intrinsic,
       offset: const Offset(0, 8),
       consumeOutsideTaps: false,
       regionGroupId: menuKey,
       handler: const PopoverOverlayHandler(),
-      overlayBarrier: shadcn.OverlayBarrier(
-        borderRadius: BorderRadius.circular(shadcn.Theme.of(context).radiusMd),
-      ),
+      overlayBarrier: OverlayBarrier(borderRadius: BorderRadius.circular(Theme.of(context).radiusMd)),
       builder: (_) {
-        final menu = shadcn.DropdownMenu(
+        final menu = DropdownMenu(
           children: [
-            shadcn.MenuLabel(child: const Text('账号')),
-              if (isSuperuser)
-                _item(
-                  context,
-                  icon: shadcn.LucideIcons.user,
-                  title: '用户中心',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const UserManagementPage()),
-                  ),
-                ),
-              if (isSuperuser && showAdminUser)
-                _item(
-                  context,
-                  icon: shadcn.LucideIcons.shieldCheck,
-                  title: '授权管理',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AdminUserPage()),
-                  ),
-                ),
-              if (isSuperuser)
-                _item(
-                  context,
-                  icon: shadcn.LucideIcons.userPlus,
-                  title: '邀请用户',
-                  onTap: () => showInviteUserDialog(context),
-                ),
-              if (showAccountSwitcher)
-                _item(
-                  context,
-                  icon: shadcn.LucideIcons.users,
-                  title: '切换账号',
-                  onTap: () => ref
-                      .read(authProvider.notifier)
-                      .logout(redirectTo: '/login-history'),
-                ),
+            MenuLabel(child: const Text('账号')),
+            if (isSuperuser)
               _item(
                 context,
-                icon: shadcn.LucideIcons.logOut,
-                title: '退出登录',
-                color: colors.destructive,
-                onTap: () => ref.read(authProvider.notifier).logout(),
+                icon: LucideIcons.user,
+                title: '用户中心',
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UserManagementPage())),
               ),
-              const shadcn.MenuDivider(),
-              shadcn.MenuLabel(child: const Text('设置')),
+            if (isSuperuser && showAdminUser)
               _item(
                 context,
-                icon: shadcn.LucideIcons.palette,
-                title: '主题设置',
-                onTap: () => showThemeDialog(context),
+                icon: LucideIcons.shieldCheck,
+                title: '授权管理',
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminUserPage())),
               ),
-              if (!kIsWeb)
-                _item(
-                  context,
-                  icon: shadcn.LucideIcons.camera,
-                  title: '截图分享',
-                  onTap: onScreenshot,
-                ),
+            if (isSuperuser)
+              _item(context, icon: LucideIcons.userPlus, title: '邀请用户', onTap: () => showInviteUserDialog(context)),
+            if (showAccountSwitcher)
               _item(
                 context,
-                icon: shadcn.LucideIcons.download,
-                title: '程序更新',
-                highlighted: updateState.hasAnyUpdate,
-                trailing: updateState.hasAnyUpdate
-                    ? _UpdateBadge(count: updateState.updateCount)
-                    : null,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const UpdatePage()),
-                ),
+                icon: LucideIcons.users,
+                title: '切换账号',
+                onTap: () => ref.read(authProvider.notifier).logout(redirectTo: '/login-history'),
               ),
-              if (!kIsWeb)
-                _item(
-                  context,
-                  icon: shadcn.LucideIcons.circleArrowUp,
-                  title: 'APP升级',
-                  highlighted: hasAppUpgrade,
-                  onTap: () => context.push('/app-upgrade'),
-                ),
+            _item(
+              context,
+              icon: LucideIcons.logOut,
+              title: '退出登录',
+              color: colors.destructive,
+              onTap: () => ref.read(authProvider.notifier).logout(),
+            ),
+            const MenuDivider(),
+            MenuLabel(child: const Text('设置')),
+            _item(context, icon: LucideIcons.palette, title: '主题设置', onTap: () => showThemeDialog(context)),
+            if (!kIsWeb) _item(context, icon: LucideIcons.camera, title: '截图分享', onTap: onScreenshot),
+            _item(
+              context,
+              icon: LucideIcons.download,
+              title: '程序更新',
+              highlighted: updateState.hasAnyUpdate,
+              trailing: updateState.hasAnyUpdate ? _UpdateBadge(count: updateState.updateCount) : null,
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UpdatePage())),
+            ),
+            if (!kIsWeb)
               _item(
                 context,
-                icon: shadcn.LucideIcons.settings,
-                title: '设置中心',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const OptionPage()),
-                ),
+                icon: LucideIcons.circleArrowUp,
+                title: 'APP升级',
+                highlighted: hasAppUpgrade,
+                onTap: () => context.push('/app-upgrade'),
               ),
-              _item(
-                context,
-                icon: shadcn.LucideIcons.scrollText,
-                title: '日志中心',
-                onTap: () => context.push('/log-center'),
-              ),
-              _item(
-                context,
-                icon: shadcn.LucideIcons.terminal,
-                title: '日志浮窗',
-                onTap: () => LogOverlayManager.toggle(context),
-              ),
+            _item(
+              context,
+              icon: LucideIcons.settings,
+              title: '设置中心',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OptionPage())),
+            ),
+            _item(context, icon: LucideIcons.scrollText, title: '日志中心', onTap: () => context.push('/log-center')),
+            _item(context, icon: LucideIcons.terminal, title: '日志浮窗', onTap: () => LogOverlayManager.toggle(context)),
           ],
         );
 
-        return shadcn.Data.inherit(
-          data: shadcn.DropdownMenuData(menuKey),
+        return Data.inherit(
+          data: DropdownMenuData(menuKey),
           child: context.isMobile
               // 移动端自适应为底部 sheet，撑满宽度
               ? SizedBox(width: double.infinity, child: menu)
-              : ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 180),
-                  child: menu,
-                ),
+              : ConstrainedBox(constraints: const BoxConstraints(maxWidth: 180), child: menu),
         );
       },
     );
   }
 
-  shadcn.MenuButton _item(
+  MenuButton _item(
     BuildContext context, {
     required IconData icon,
     required String title,
@@ -1215,10 +1036,8 @@ class _AccountMenuButton extends ConsumerWidget {
   }) {
     const hl = Color(0xFFF59E0B);
     final c = highlighted ? hl : color;
-    final style = c == null
-        ? null
-        : TextStyle(color: c, fontWeight: FontWeight.w700);
-    return shadcn.MenuButton(
+    final style = c == null ? null : TextStyle(color: c, fontWeight: FontWeight.w700);
+    return MenuButton(
       onPressed: (_) => unawaited(Future<void>.sync(onTap)),
       child: SizedBox(
         width: 148,
@@ -1227,12 +1046,7 @@ class _AccountMenuButton extends ConsumerWidget {
             Icon(icon, size: 16, color: c),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: style,
-              ),
+              child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: style),
             ),
             if (trailing != null) ...[const SizedBox(width: 8), trailing],
           ],
@@ -1249,7 +1063,7 @@ class _UpdateBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = shadcn.Theme.of(context).colorScheme.chart4;
+    final color = Theme.of(context).colorScheme.chart4;
     return Container(
       constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
       padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -1261,12 +1075,7 @@ class _UpdateBadge extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         count > 99 ? '99+' : '$count',
-        style: TextStyle(
-          color: color,
-          fontSize: 10,
-          height: 1,
-          fontWeight: FontWeight.w700,
-        ),
+        style: TextStyle(color: color, fontSize: 10, height: 1, fontWeight: FontWeight.w700),
       ),
     );
   }

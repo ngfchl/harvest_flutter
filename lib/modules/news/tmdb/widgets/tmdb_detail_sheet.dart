@@ -1,10 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/app_dialog.dart';
+import 'package:harvest/widgets/app_sheet.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../../../search/model/search_mode.dart';
 import '../../../search/unified_search_page.dart';
@@ -20,7 +19,7 @@ void openTmdbDetail(BuildContext context, MediaItem item) {
     showAppSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: shadcn.Theme.of(context).colorScheme.background.withValues(alpha: 0),
+      backgroundColor: Theme.of(context).colorScheme.background.withValues(alpha: 0),
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.85,
         minChildSize: 0.5,
@@ -30,11 +29,11 @@ void openTmdbDetail(BuildContext context, MediaItem item) {
       ),
     );
   } else {
-    final theme = shadcn.Theme.of(context);
-    showDialog<void>(
+    final theme = Theme.of(context);
+    appShowDialog<void>(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: theme.borderRadiusLg),
+      builder: (context) => Container(
+        decoration: BoxDecoration(borderRadius: theme.borderRadiusLg),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520, maxHeight: 700),
           child: _TmdbDetailSheet(item: item, navigatorContext: navigatorContext),
@@ -53,7 +52,7 @@ class _TmdbDetailSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isMovie = item.mediaType == 'movie';
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     final content = isMovie ? ref.watch(movieDetailProvider(item.id)) : ref.watch(tvShowDetailProvider(item.id));
@@ -67,12 +66,12 @@ class _TmdbDetailSheet extends ConsumerWidget {
     }
 
     final body = content.when(
-      loading: () => const Center(child: shadcn.CircularProgressIndicator()),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('加载失败: $e').small.muted),
       data: (detail) => _buildContent(context, detail),
     );
 
-    return shadcn.Card(
+    return Card(
       filled: true,
       fillColor: cs.background,
       borderRadius: theme.borderRadiusLg,
@@ -85,8 +84,8 @@ class _TmdbDetailSheet extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
             child: Row(
               children: [
-                shadcn.IconButton.ghost(
-                  icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 20),
+                IconButton.ghost(
+                  icon: const Icon(LucideIcons.arrowLeft, size: 20),
                   onPressed: () => closeAppSheet(context),
                 ),
                 const SizedBox(width: 4),
@@ -94,7 +93,7 @@ class _TmdbDetailSheet extends ConsumerWidget {
               ],
             ),
           ),
-          const Padding(padding: EdgeInsets.symmetric(vertical: 6), child: shadcn.Divider()),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 6), child: Divider()),
           Flexible(child: body),
         ],
       ),
@@ -102,7 +101,7 @@ class _TmdbDetailSheet extends ConsumerWidget {
   }
 
   Widget _buildContent(BuildContext context, dynamic detail) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final backdropUrl = TmdbService.imageUrl(detail.backdropPath, size: 'w780');
     final posterUrl = TmdbService.imageUrl(detail.posterPath, size: 'w342');
@@ -171,14 +170,14 @@ class _TmdbDetailSheet extends ConsumerWidget {
                           Wrap(
                             spacing: 4,
                             runSpacing: 4,
-                            children: genres.map((g) => shadcn.SecondaryBadge(child: Text(g))).toList(),
+                            children: genres.map((g) => SecondaryBadge(child: Text(g))).toList(),
                           ),
                         ],
                         if (voteAverage > 0) ...[
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              Icon(shadcn.LucideIcons.star, size: 16, color: cs.chart4),
+                              Icon(LucideIcons.star, size: 16, color: cs.chart4),
                               const SizedBox(width: 4),
                               Text(voteAverage.toStringAsFixed(1)).base.bold,
                               const SizedBox(width: 4),
@@ -225,14 +224,16 @@ class _TmdbDetailSheet extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: SizedBox(
               width: double.infinity,
-              child: shadcn.Button.primary(
+              child: Button.primary(
                 alignment: Alignment.center,
-                leading: const Icon(shadcn.LucideIcons.search, size: 16),
+                leading: const Icon(LucideIcons.search, size: 16),
                 onPressed: () {
                   closeAppSheet(context);
                   Navigator.of(navigatorContext).push(
-                    MaterialPageRoute(
-                      builder: (_) => UnifiedSearchPage(initialQuery: searchQuery, initialMode: SearchMode.resource),
+                    PageRouteBuilder(
+                      pageBuilder: (_, _, _) =>
+                          UnifiedSearchPage(initialQuery: searchQuery, initialMode: SearchMode.resource),
+                      transitionsBuilder: (_, animation, _, child) => FadeTransition(opacity: animation, child: child),
                     ),
                   );
                 },
@@ -248,14 +249,14 @@ class _TmdbDetailSheet extends ConsumerWidget {
   Widget _loadingBox({double? width, required double height}) {
     return Builder(
       builder: (context) {
-        final cs = shadcn.Theme.of(context).colorScheme;
+        final cs = Theme.of(context).colorScheme;
         return ColoredBox(
           color: cs.muted,
           child: SizedBox(
             width: width,
             height: height,
             child: const Center(
-              child: SizedBox(width: 20, height: 20, child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
+              child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
             ),
           ),
         );
@@ -264,13 +265,13 @@ class _TmdbDetailSheet extends ConsumerWidget {
   }
 
   Widget _posterFallback(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return ColoredBox(
       color: cs.muted,
       child: SizedBox(
         width: 100,
         height: 150,
-        child: Icon(shadcn.LucideIcons.film, color: cs.mutedForeground.withValues(alpha: 0.3)),
+        child: Icon(LucideIcons.film, color: cs.mutedForeground.withValues(alpha: 0.3)),
       ),
     );
   }

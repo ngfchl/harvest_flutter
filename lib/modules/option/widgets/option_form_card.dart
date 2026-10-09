@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart' hide Switch, Theme;
 import 'package:harvest/core/theme/app_surface.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/option_model.dart';
 
@@ -20,14 +19,7 @@ class FormFieldDef {
   final String? helperText;
   final bool readOnly;
 
-  const FormFieldDef(
-    this.key,
-    this.label,
-    this.getValue, {
-    this.maxLines = 1,
-    this.helperText,
-    this.readOnly = false,
-  });
+  const FormFieldDef(this.key, this.label, this.getValue, {this.maxLines = 1, this.helperText, this.readOnly = false});
 }
 
 class SwitchFieldDef {
@@ -49,11 +41,7 @@ class FormConfig {
   final List<SwitchFieldDef> switchFields;
   final Widget Function(Map<String, TextEditingController> ctrls)? extraBuilder;
   final bool showSaveButton;
-  final OptionValue Function(
-    Map<String, TextEditingController> ctrls,
-    Map<String, bool> switches,
-    OptionValue current,
-  )
+  final OptionValue Function(Map<String, TextEditingController> ctrls, Map<String, bool> switches, OptionValue current)
   buildValue;
 
   const FormConfig({
@@ -72,7 +60,7 @@ class FormConfig {
 // ══════════════════════════════════════════════════════════
 
 BorderRadius _optionCardRadius(BuildContext context, {String size = 'md'}) {
-  final theme = shadcn.Theme.of(context);
+  final theme = Theme.of(context);
   return switch (size) {
     'xs' => theme.borderRadiusXs,
     'sm' => theme.borderRadiusSm,
@@ -95,10 +83,7 @@ class _ActionButtonFrame extends StatelessWidget {
 
     return Align(
       alignment: Alignment.centerRight,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 160, maxWidth: 260),
-        child: child,
-      ),
+      child: ConstrainedBox(constraints: const BoxConstraints(minWidth: 160, maxWidth: 260), child: child),
     );
   }
 }
@@ -108,16 +93,11 @@ class OptionLoadingOverlay extends StatelessWidget {
   final Widget child;
   final String label;
 
-  const OptionLoadingOverlay({
-    super.key,
-    required this.loading,
-    required this.child,
-    this.label = '处理中...',
-  });
+  const OptionLoadingOverlay({super.key, required this.loading, required this.child, this.label = '处理中...'});
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return Stack(
       children: [
         AbsorbPointer(absorbing: loading, child: child),
@@ -127,29 +107,20 @@ class OptionLoadingOverlay extends StatelessWidget {
               color: appSurfaceColor(context, cs.card).withValues(alpha: 0.72),
               child: Center(
                 child: AppSurfaceContainer(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   borderRadius: _optionCardRadius(context, size: 'lg'),
                   color: appSurfaceColor(context, cs.card),
                   borderColor: cs.border.withValues(alpha: 0.72),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-                      ),
+                      const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
                       const SizedBox(width: 8),
                       Text(
                         label,
-                        style: shadcn.Theme.of(context).typography.small
-                            .copyWith(
-                              color: cs.foreground,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style: Theme.of(
+                          context,
+                        ).typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -180,7 +151,7 @@ class OptionLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typo = theme.typography;
 
@@ -188,10 +159,7 @@ class OptionLoadingState extends StatelessWidget {
       child: Padding(
         padding: padding,
         child: AppSurfaceContainer(
-          padding: EdgeInsets.symmetric(
-            horizontal: compact ? 12 : 16,
-            vertical: compact ? 10 : 14,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16, vertical: compact ? 10 : 14),
           borderRadius: _optionCardRadius(context, size: 'lg'),
           color: appSurfaceColor(context, cs.card),
           borderColor: cs.border.withValues(alpha: 0.6),
@@ -201,17 +169,12 @@ class OptionLoadingState extends StatelessWidget {
               SizedBox(
                 width: indicatorSize,
                 height: indicatorSize,
-                child: shadcn.CircularProgressIndicator(
-                  strokeWidth: strokeWidth,
-                ),
+                child: CircularProgressIndicator(strokeWidth: strokeWidth),
               ),
               const SizedBox(width: 10),
               Text(
                 label,
-                style: typo.small.copyWith(
-                  color: cs.foreground,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: typo.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -227,13 +190,7 @@ class OptionInlineProgress extends StatelessWidget {
   final double size;
   final double strokeWidth;
 
-  const OptionInlineProgress({
-    super.key,
-    required this.label,
-    this.color,
-    this.size = 14,
-    this.strokeWidth = 2,
-  });
+  const OptionInlineProgress({super.key, required this.label, this.color, this.size = 14, this.strokeWidth = 2});
 
   @override
   Widget build(BuildContext context) {
@@ -243,10 +200,7 @@ class OptionInlineProgress extends StatelessWidget {
         SizedBox(
           width: size,
           height: size,
-          child: shadcn.CircularProgressIndicator(
-            strokeWidth: strokeWidth,
-            color: color,
-          ),
+          child: CircularProgressIndicator(strokeWidth: strokeWidth, color: color),
         ),
         const SizedBox(width: 6),
         Text(label),
@@ -263,11 +217,7 @@ class OptionFormCard extends StatefulWidget {
   final List<FormFieldDef> textFields;
   final List<SwitchFieldDef> switchFields;
   final Widget Function(Map<String, TextEditingController> ctrls)? extraBuilder;
-  final OptionValue Function(
-    Map<String, TextEditingController> ctrls,
-    Map<String, bool> switches,
-    OptionValue current,
-  )
+  final OptionValue Function(Map<String, TextEditingController> ctrls, Map<String, bool> switches, OptionValue current)
   buildValue;
   final Future<bool> Function(Option option) onSave;
   final Future<void> Function(Option option)? onToggleActive;
@@ -301,6 +251,7 @@ class _OptionFormCardState extends State<OptionFormCard> {
   late bool _expanded;
   bool _saving = false;
   bool _toggling = false;
+
   bool get _busy => _saving || _toggling;
 
   @override
@@ -309,10 +260,7 @@ class _OptionFormCardState extends State<OptionFormCard> {
     final v = widget.option?.value;
     _expanded = false;
     _isActive = widget.option?.isActive ?? true;
-    _ctrls = {
-      for (var f in widget.textFields)
-        f.key: TextEditingController(text: f.getValue(v) ?? ''),
-    };
+    _ctrls = {for (var f in widget.textFields) f.key: TextEditingController(text: f.getValue(v) ?? '')};
     _switches = {for (var s in widget.switchFields) s.key: s.getValue(v)};
   }
 
@@ -326,7 +274,7 @@ class _OptionFormCardState extends State<OptionFormCard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typography = theme.typography;
     return AppSurfaceContainer(
@@ -362,11 +310,7 @@ class _OptionFormCardState extends State<OptionFormCard> {
     );
   }
 
-  Widget _buildHeader(
-    BuildContext context,
-    shadcn.ColorScheme cs,
-    shadcn.Typography typography,
-  ) {
+  Widget _buildHeader(BuildContext context, ColorScheme cs, Typography typography) {
     return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
       behavior: HitTestBehavior.opaque,
@@ -375,20 +319,13 @@ class _OptionFormCardState extends State<OptionFormCard> {
         child: Row(
           children: [
             if (widget.icon != null) ...[
-              Icon(
-                widget.icon,
-                size: 18,
-                color: cs.foreground.withValues(alpha: 0.6),
-              ),
+              Icon(widget.icon, size: 18, color: cs.foreground.withValues(alpha: 0.6)),
               const SizedBox(width: 10),
             ],
             Expanded(
               child: Text(
                 widget.title,
-                style: typography.small.copyWith(
-                  color: cs.foreground,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
               ),
             ),
             if (widget.option != null && widget.onToggleActive != null)
@@ -397,9 +334,7 @@ class _OptionFormCardState extends State<OptionFormCard> {
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: Icon(
-                    _isActive
-                        ? shadcn.LucideIcons.badgeCheck
-                        : shadcn.LucideIcons.circleOff,
+                    _isActive ? LucideIcons.badgeCheck : LucideIcons.circleOff,
                     size: 18,
                     color: _isActive ? cs.primary : cs.destructive,
                   ),
@@ -408,11 +343,7 @@ class _OptionFormCardState extends State<OptionFormCard> {
             AnimatedRotation(
               turns: _expanded ? 0.5 : 0,
               duration: const Duration(milliseconds: 200),
-              child: Icon(
-                shadcn.LucideIcons.chevronDown,
-                size: 20,
-                color: cs.foreground.withValues(alpha: 0.4),
-              ),
+              child: Icon(LucideIcons.chevronDown, size: 20, color: cs.foreground.withValues(alpha: 0.4)),
             ),
           ],
         ),
@@ -420,11 +351,7 @@ class _OptionFormCardState extends State<OptionFormCard> {
     );
   }
 
-  Widget _buildBody(
-    BuildContext context,
-    shadcn.ColorScheme cs,
-    shadcn.Typography typography,
-  ) {
+  Widget _buildBody(BuildContext context, ColorScheme cs, Typography typography) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
       child: Column(
@@ -439,29 +366,21 @@ class _OptionFormCardState extends State<OptionFormCard> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(
-                      f.label,
-                      style: typography.xSmall.copyWith(
-                        color: cs.mutedForeground,
-                      ),
-                    ),
+                    child: Text(f.label, style: typography.xSmall.copyWith(color: cs.mutedForeground)),
                   ),
                   ShadTextField(
                     controller: _ctrls[f.key],
                     hintText: f.label,
                     maxLines: f.maxLines,
                     readOnly: f.readOnly,
-                    onSubmitted: (_) =>
-                        FocusManager.instance.primaryFocus?.unfocus(),
+                    onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   ),
                   if (f.helperText != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         f.helperText!,
-                        style: typography.xSmall.copyWith(
-                          color: cs.mutedForeground.withValues(alpha: 0.85),
-                        ),
+                        style: typography.xSmall.copyWith(color: cs.mutedForeground.withValues(alpha: 0.85)),
                       ),
                     ),
                 ],
@@ -475,15 +394,9 @@ class _OptionFormCardState extends State<OptionFormCard> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      s.label,
-                      style: typography.small.copyWith(color: cs.foreground),
-                    ),
+                    child: Text(s.label, style: typography.small.copyWith(color: cs.foreground)),
                   ),
-                  shadcn.Switch(
-                    value: _switches[s.key] ?? false,
-                    onChanged: (v) => setState(() => _switches[s.key] = v),
-                  ),
+                  Switch(value: _switches[s.key] ?? false, onChanged: (v) => setState(() => _switches[s.key] = v)),
                 ],
               ),
             ),
@@ -494,12 +407,10 @@ class _OptionFormCardState extends State<OptionFormCard> {
           if (widget.showSaveButton) ...[
             const SizedBox(height: 6),
             _ActionButtonFrame(
-              child: shadcn.Button.primary(
+              child: Button.primary(
                 onPressed: _busy ? null : _handleSave,
                 alignment: Alignment.center,
-                child: const Center(
-                  child: Text('保存', textAlign: TextAlign.center),
-                ),
+                child: const Center(child: Text('保存', textAlign: TextAlign.center)),
               ),
             ),
           ],
@@ -519,12 +430,7 @@ class _OptionFormCardState extends State<OptionFormCard> {
     });
     try {
       await widget.onToggleActive!(
-        Option(
-          id: widget.option!.id,
-          name: widget.option!.name,
-          value: widget.option!.value,
-          isActive: _isActive,
-        ),
+        Option(id: widget.option!.id, name: widget.option!.name, value: widget.option!.value, isActive: _isActive),
       );
     } catch (e) {
       if (mounted) {
@@ -542,12 +448,7 @@ class _OptionFormCardState extends State<OptionFormCard> {
     try {
       final current = widget.option?.value ?? const OptionValue();
       final newValue = widget.buildValue(_ctrls, _switches, current);
-      final option = Option(
-        id: widget.option?.id,
-        name: widget.optionName,
-        value: newValue,
-        isActive: _isActive,
-      );
+      final option = Option(id: widget.option?.id, name: widget.optionName, value: newValue, isActive: _isActive);
       final success = await widget.onSave(option);
       if (mounted) {
         setState(() => _saving = false);
@@ -581,13 +482,7 @@ class ExpandableCard extends StatefulWidget {
   final Widget? leading;
   final Widget Function(VoidCallback collapse) builder;
 
-  const ExpandableCard({
-    super.key,
-    required this.title,
-    required this.builder,
-    this.icon,
-    this.leading,
-  });
+  const ExpandableCard({super.key, required this.title, required this.builder, this.icon, this.leading});
 
   @override
   State<ExpandableCard> createState() => _ExpandableCardState();
@@ -609,7 +504,7 @@ class _ExpandableCardState extends State<ExpandableCard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final typography = theme.typography;
     return AppSurfaceContainer(
@@ -625,40 +520,26 @@ class _ExpandableCardState extends State<ExpandableCard> {
               onTap: _toggle,
               behavior: HitTestBehavior.opaque,
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 child: Row(
                   children: [
                     if (widget.leading != null) ...[
                       widget.leading!,
                       const SizedBox(width: 10),
                     ] else if (widget.icon != null) ...[
-                      Icon(
-                        widget.icon,
-                        size: 18,
-                        color: cs.foreground.withValues(alpha: 0.6),
-                      ),
+                      Icon(widget.icon, size: 18, color: cs.foreground.withValues(alpha: 0.6)),
                       const SizedBox(width: 10),
                     ],
                     Expanded(
                       child: Text(
                         widget.title,
-                        style: typography.small.copyWith(
-                          color: cs.foreground,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                       ),
                     ),
                     AnimatedRotation(
                       turns: _expanded ? 0.5 : 0,
                       duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        shadcn.LucideIcons.chevronDown,
-                        size: 20,
-                        color: cs.foreground.withValues(alpha: 0.4),
-                      ),
+                      child: Icon(LucideIcons.chevronDown, size: 20, color: cs.foreground.withValues(alpha: 0.4)),
                     ),
                   ],
                 ),
@@ -675,9 +556,7 @@ class _ExpandableCardState extends State<ExpandableCard> {
                         Container(height: 0.5, color: cs.border),
                         Padding(
                           padding: const EdgeInsets.all(14),
-                          child: widget.builder(
-                            () => setState(() => _expanded = false),
-                          ),
+                          child: widget.builder(() => setState(() => _expanded = false)),
                         ),
                       ],
                     )

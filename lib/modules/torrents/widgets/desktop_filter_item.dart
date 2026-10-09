@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/torrent_model.dart';
 import 'torrent_status_utils.dart';
@@ -28,7 +27,7 @@ class DesktopResizableFilterSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final expanded = !collapsed;
 
     return SizedBox(
@@ -55,9 +54,7 @@ class DesktopResizableFilterSection extends StatelessWidget {
                     child: Row(
                       children: [
                         Icon(
-                          expanded
-                              ? shadcn.LucideIcons.chevronDown
-                              : shadcn.LucideIcons.chevronRight,
+                          expanded ? LucideIcons.chevronDown : LucideIcons.chevronRight,
                           size: 14,
                           color: cs.mutedForeground,
                         ),
@@ -67,11 +64,7 @@ class DesktopResizableFilterSection extends StatelessWidget {
                             title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: cs.mutedForeground,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: TextStyle(color: cs.mutedForeground, fontSize: 11, fontWeight: FontWeight.w700),
                           ),
                         ),
                         ...actions,
@@ -95,10 +88,7 @@ class DesktopResizableFilterSection extends StatelessWidget {
                       child: Container(
                         width: 34,
                         height: 3,
-                        decoration: BoxDecoration(
-                          color: cs.border,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
+                        decoration: BoxDecoration(color: cs.border, borderRadius: BorderRadius.circular(999)),
                       ),
                     ),
                   ),
@@ -136,7 +126,7 @@ class DesktopFilterItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -146,18 +136,12 @@ class DesktopFilterItem extends StatelessWidget {
           height: 34,
           padding: EdgeInsets.only(left: 8 + indent, right: 8),
           decoration: BoxDecoration(
-            color: selected
-                ? cs.primary.withValues(alpha: 0.10)
-                : Colors.transparent,
+            color: selected ? cs.primary.withValues(alpha: 0.10) : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
             children: [
-              Icon(
-                icon,
-                size: 14,
-                color: selected ? cs.primary : cs.mutedForeground,
-              ),
+              Icon(icon, size: 14, color: selected ? cs.primary : cs.mutedForeground),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -167,8 +151,7 @@ class DesktopFilterItem extends StatelessWidget {
                   style: TextStyle(
                     color: selected ? cs.primary : cs.foreground,
                     fontSize: 12,
-                    fontWeight:
-                    selected ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               ),
@@ -177,12 +160,9 @@ class DesktopFilterItem extends StatelessWidget {
               if (trailingActions.isNotEmpty) const SizedBox(width: 4),
               Container(
                 constraints: const BoxConstraints(minWidth: 22),
-                padding:
-                const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: selected
-                      ? cs.primary.withValues(alpha: 0.12)
-                      : cs.mutedForeground.withValues(alpha: 0.08),
+                  color: selected ? cs.primary.withValues(alpha: 0.12) : cs.mutedForeground.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
@@ -235,8 +215,7 @@ class _DesktopStatusGroupState extends State<DesktopStatusGroup> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedInGroup = widget.selected == widget.group ||
-        widget.children.contains(widget.selected);
+    final selectedInGroup = widget.selected == widget.group || widget.children.contains(widget.selected);
     return Column(
       children: [
         DesktopFilterItem(
@@ -247,9 +226,7 @@ class _DesktopStatusGroupState extends State<DesktopStatusGroup> {
           onTap: () => widget.onTap(widget.group),
           trailingActions: [
             DesktopInlineActionButton(
-              icon: _expanded
-                  ? shadcn.LucideIcons.chevronDown
-                  : shadcn.LucideIcons.chevronRight,
+              icon: _expanded ? LucideIcons.chevronDown : LucideIcons.chevronRight,
               tooltip: _expanded ? '收起子状态' : '展开子状态',
               onTap: () => setState(() => _expanded = !_expanded),
             ),
@@ -277,24 +254,16 @@ class DesktopFilterActionButton extends StatelessWidget {
   final String tooltip;
   final VoidCallback onTap;
 
-  const DesktopFilterActionButton({
-    super.key,
-    required this.icon,
-    required this.tooltip,
-    required this.onTap,
-  });
+  const DesktopFilterActionButton({super.key, required this.icon, required this.tooltip, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return shadcn.Tooltip(
+    return Tooltip(
       tooltip: (_) => Text(tooltip).small,
       child: SizedBox(
         width: 26,
         height: 26,
-        child: shadcn.IconButton.ghost(
-          onPressed: onTap,
-          icon: Icon(icon, size: 14),
-        ),
+        child: IconButton.ghost(onPressed: onTap, icon: Icon(icon, size: 14)),
       ),
     );
   }
@@ -316,19 +285,15 @@ class DesktopInlineActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    return shadcn.Tooltip(
+    final cs = Theme.of(context).colorScheme;
+    return Tooltip(
       tooltip: (_) => Text(tooltip).small,
       child: SizedBox(
         width: 22,
         height: 22,
-        child: shadcn.IconButton.ghost(
+        child: IconButton.ghost(
           onPressed: onTap,
-          icon: Icon(
-            icon,
-            size: 13,
-            color: destructive ? cs.destructive : null,
-          ),
+          icon: Icon(icon, size: 13, color: destructive ? cs.destructive : null),
         ),
       ),
     );

@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/modules/download/model/downloader.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/torrent_model.dart';
 import '../provider/downloader_provider.dart';
@@ -47,8 +46,7 @@ class DesktopTorrentLayout extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<DesktopTorrentLayout> createState() =>
-      _DesktopTorrentLayoutState();
+  ConsumerState<DesktopTorrentLayout> createState() => _DesktopTorrentLayoutState();
 }
 
 class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
@@ -63,7 +61,7 @@ class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     final torrents = ref.watch(filteredTorrentsProvider(widget.downloaderId));
     final queueEnabled = _downloaderQueueEnabled(widget.downloader);
     final pageData = _pageData(torrents);
@@ -84,9 +82,7 @@ class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
             child: Row(
               children: [
                 if (_sidebarCollapsed)
-                  CollapsedDesktopSidebar(
-                    onExpand: () => setState(() => _sidebarCollapsed = false),
-                  )
+                  CollapsedDesktopSidebar(onExpand: () => setState(() => _sidebarCollapsed = false))
                 else
                   DesktopTorrentSidebar(
                     key: ValueKey('desktop-sidebar-${widget.downloaderId}'),
@@ -103,8 +99,7 @@ class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
                       behavior: HitTestBehavior.translucent,
                       onHorizontalDragUpdate: (details) {
                         setState(() {
-                          _sidebarWidth = (_sidebarWidth + details.delta.dx)
-                              .clamp(_minSidebarWidth, _maxSidebarWidth);
+                          _sidebarWidth = (_sidebarWidth + details.delta.dx).clamp(_minSidebarWidth, _maxSidebarWidth);
                         });
                       },
                       child: SizedBox(
@@ -177,18 +172,10 @@ class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
 
   _DesktopTorrentPageData _pageData(List<Torrent> torrents) {
     if (torrents.isEmpty) {
-      return const _DesktopTorrentPageData(
-        items: <Torrent>[],
-        page: 1,
-        totalPages: 1,
-        start: 0,
-        end: 0,
-      );
+      return const _DesktopTorrentPageData(items: <Torrent>[], page: 1, totalPages: 1, start: 0, end: 0);
     }
 
-    final totalPages = ((torrents.length + _pageSize - 1) / _pageSize)
-        .floor()
-        .clamp(1, 1 << 31);
+    final totalPages = ((torrents.length + _pageSize - 1) / _pageSize).floor().clamp(1, 1 << 31);
     final page = _page.clamp(1, totalPages).toInt();
     if (page != _page) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -211,11 +198,7 @@ class _DesktopTorrentLayoutState extends ConsumerState<DesktopTorrentLayout> {
   bool _downloaderQueueEnabled(Downloader? downloader) {
     if (downloader == null) return false;
     if (downloader.isQb) {
-      return _pickBool(downloader.prefs, const [
-            'queueing_enabled',
-            'queueingEnabled',
-          ]) ??
-          false;
+      return _pickBool(downloader.prefs, const ['queueing_enabled', 'queueingEnabled']) ?? false;
     }
     if (downloader.isTr) {
       return true;
@@ -280,7 +263,7 @@ class _DesktopTorrentPaginationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return Container(
@@ -293,36 +276,24 @@ class _DesktopTorrentPaginationBar extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            totalItems == 0
-                ? '共 0 条'
-                : '显示 $pageStart-$pageEnd / 共 $totalItems 条',
-            style: theme.typography.xSmall.copyWith(
-              color: cs.mutedForeground,
-              fontWeight: FontWeight.w600,
-            ),
+            totalItems == 0 ? '共 0 条' : '显示 $pageStart-$pageEnd / 共 $totalItems 条',
+            style: theme.typography.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
           ),
           const Spacer(),
           Text(
             '每页',
-            style: theme.typography.xSmall.copyWith(
-              color: cs.mutedForeground,
-              fontWeight: FontWeight.w600,
-            ),
+            style: theme.typography.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 8),
           SizedBox(
             width: 92,
-            child: shadcn.Select<int>(
+            child: Select<int>(
               value: pageSize,
               itemBuilder: (_, value) => Text('$value'),
-              popup: shadcn.SelectPopup<int>(
-                items: shadcn.SelectItemList(
+              popup: SelectPopup<int>(
+                items: SelectItemList(
                   children: [
-                    for (final value in pageSizeOptions)
-                      shadcn.SelectItemButton<int>(
-                        value: value,
-                        child: Text('$value'),
-                      ),
+                    for (final value in pageSizeOptions) SelectItemButton<int>(value: value, child: Text('$value')),
                   ],
                 ),
               ).call,
@@ -333,7 +304,7 @@ class _DesktopTorrentPaginationBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          shadcn.Pagination(
+          Pagination(
             page: page,
             totalPages: totalPages,
             maxPages: 5,

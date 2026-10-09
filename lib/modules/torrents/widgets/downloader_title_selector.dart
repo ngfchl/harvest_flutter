@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:harvest/modules/download/model/downloader.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 class DownloaderTitleSelector extends StatelessWidget {
   final List<Downloader> downloaders;
@@ -23,25 +21,21 @@ class DownloaderTitleSelector extends StatelessWidget {
       return Text(fallbackTitle).small.bold;
     }
 
-    final currentIndex = downloaders.indexWhere(
-          (d) => d.id == currentDownloaderId,
-    );
+    final currentIndex = downloaders.indexWhere((d) => d.id == currentDownloaderId);
     final safeIndex = currentIndex >= 0 ? currentIndex : 0;
 
     return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxWidth: MediaQuery.sizeOf(context).width - 104,
-      ),
+      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width - 104),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-        child: shadcn.Tabs(
+        child: Tabs(
           index: safeIndex,
           onChanged: (index) => onSelect(downloaders[index]),
           children: [
             for (final d in downloaders)
-              shadcn.TabItem(
-                child: shadcn.Tooltip(
+              TabItem(
+                child: Tooltip(
                   tooltip: (_) => Text(
                     d.isTr
                         ? '${d.name.isEmpty ? '未命名' : d.name} · Transmission'
@@ -50,20 +44,11 @@ class DownloaderTitleSelector extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        d.isTr
-                            ? shadcn.LucideIcons.radioTower
-                            : shadcn.LucideIcons.download,
-                        size: 13,
-                      ),
+                      Icon(d.isTr ? LucideIcons.radioTower : LucideIcons.download, size: 13),
                       const SizedBox(width: 6),
                       ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 120),
-                        child: Text(
-                          d.name.isEmpty ? '未命名下载器' : d.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        child: Text(d.name.isEmpty ? '未命名下载器' : d.name, maxLines: 1, overflow: TextOverflow.ellipsis),
                       ),
                     ],
                   ),

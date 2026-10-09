@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/cache/session_cache.dart';
 import 'package:harvest/core/config/app_config.dart';
@@ -17,7 +16,7 @@ import 'package:harvest/core/theme/theme_provider.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/cache_status_banner.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../models/kv/kv.dart';
@@ -38,10 +37,7 @@ class _DesktopDashboardIconTooltip extends StatelessWidget {
   final String message;
   final Widget child;
 
-  const _DesktopDashboardIconTooltip({
-    required this.message,
-    required this.child,
-  });
+  const _DesktopDashboardIconTooltip({required this.message, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +49,7 @@ class _DesktopDashboardIconTooltip extends StatelessWidget {
         anchorAlignment: Alignment.bottomCenter,
         offset: const Offset(0, 8),
         consumeOutsideTaps: false,
-        builder: (context) =>
-            _DesktopDashboardIconTooltipPanel(message: message),
+        builder: (context) => _DesktopDashboardIconTooltipPanel(message: message),
       ),
       child: child,
     );
@@ -68,13 +63,13 @@ class _DesktopDashboardIconTooltipPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final lines = message.split('\n');
     final title = lines.isNotEmpty ? lines.first : '详情';
     final body = lines.length > 1 ? lines.skip(1).toList() : const <String>[];
 
-    return shadcn.ModalContainer(
+    return ModalContainer(
       padding: EdgeInsets.all(theme.density.baseContentPadding * theme.scaling),
       child: SizedBox(
         width: 260,
@@ -89,20 +84,13 @@ class _DesktopDashboardIconTooltipPanel extends StatelessWidget {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.typography.small.copyWith(
-                      color: cs.foreground,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w800),
                   ),
                 ),
-                shadcn.IconButton.ghost(
-                  density: shadcn.ButtonDensity.compact,
-                  icon: Icon(
-                    shadcn.LucideIcons.x,
-                    size: 15,
-                    color: cs.mutedForeground,
-                  ),
-                  onPressed: () => shadcn.closeOverlay(context),
+                IconButton.ghost(
+                  density: ButtonDensity.compact,
+                  icon: Icon(LucideIcons.x, size: 15, color: cs.mutedForeground),
+                  onPressed: () => closeOverlay(context),
                 ),
               ],
             ),
@@ -111,12 +99,7 @@ class _DesktopDashboardIconTooltipPanel extends StatelessWidget {
               ...body.map(
                 (line) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text(
-                    line,
-                    style: theme.typography.xSmall.copyWith(
-                      color: cs.mutedForeground,
-                    ),
-                  ),
+                  child: Text(line, style: theme.typography.xSmall.copyWith(color: cs.mutedForeground)),
                 ),
               ),
             ],
@@ -131,27 +114,40 @@ class DesktopDashboardPage extends ConsumerStatefulWidget {
   const DesktopDashboardPage({super.key});
 
   @override
-  ConsumerState<DesktopDashboardPage> createState() =>
-      _DesktopDashboardPageState();
+  ConsumerState<DesktopDashboardPage> createState() => _DesktopDashboardPageState();
 }
 
 class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   _DashboardThemeTokens get _tokens => _DashboardThemeTokens.of(context);
+
   Color get _panel => _tokens.panel;
+
   Color get _panelSoft => _tokens.panelSoft;
+
   Color get _line => _tokens.line;
+
   Color get _text => _tokens.text;
+
   Color get _muted => _tokens.muted;
-  bool get _isDark =>
-      shadcn.Theme.of(context).colorScheme.brightness == Brightness.dark;
+
+  bool get _isDark => Theme.of(context).colorScheme.brightness == Brightness.dark;
+
   Color get _cyan => _tokens.cyan;
+
   Color get _green => _tokens.green;
+
   Color get _amber => _tokens.amber;
+
   Color get _red => _tokens.red;
+
   Color get _blue => _tokens.blue;
+
   Color get _violet => _tokens.violet;
+
   Color get _orange => _tokens.orange;
+
   double get _bottomGap => _tokens.bottomGap;
+
   List<Color> get _treemapColors => _tokens.treemapColors;
 
   static const _designations = <int, String>{
@@ -199,8 +195,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       _syncDesktopMonitorCards(_chartVisibility);
       if (mounted) {
         registerPageScrollController(ref, 2, _scrollController);
-        ref.read(activeScrollControllerProvider.notifier).state =
-            _scrollController;
+        ref.read(activeScrollControllerProvider.notifier).state = _scrollController;
       }
     });
   }
@@ -250,19 +245,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         onSaved: (_, visibility, _, treemapCount, _) {
           ref
               .read(serverResourceIntervalProvider.notifier)
-              .update(
-                HiveManager.get<int>(StorageKeys.serverResourceInterval) ??
-                    kDefaultServerResourceInterval,
-              );
+              .update(HiveManager.get<int>(StorageKeys.serverResourceInterval) ?? kDefaultServerResourceInterval);
           ref
               .read(serverResourceDurationProvider.notifier)
-              .update(
-                HiveManager.get<int>(StorageKeys.serverResourceDuration) ??
-                    kDefaultServerResourceDuration,
-              );
+              .update(HiveManager.get<int>(StorageKeys.serverResourceDuration) ?? kDefaultServerResourceDuration);
           final autoStart =
-              HiveManager.get<bool>(StorageKeys.serverResourceAutoStart) ??
-              kDefaultServerResourceAutoStart;
+              HiveManager.get<bool>(StorageKeys.serverResourceAutoStart) ?? kDefaultServerResourceAutoStart;
           ref.read(serverResourceAutoStartProvider.notifier).update(autoStart);
           _syncDesktopMonitorCards(visibility);
           setState(() {
@@ -284,8 +272,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     }
   }
 
-  String _taskEndpoint(String api) =>
-      api.endsWith('/') ? api.substring(0, api.length - 1) : api;
+  String _taskEndpoint(String api) => api.endsWith('/') ? api.substring(0, api.length - 1) : api;
 
   Future<void> _refreshDashboard() async {
     if (_busy) return;
@@ -345,10 +332,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     final host = uri?.host.isNotEmpty == true ? uri!.host : server;
     final port = uri?.hasPort == true ? ':${uri!.port}' : '';
     if (!privacy) return '$host$port';
-    final maskedHost = host
-        .split('.')
-        .map((part) => _mask(part, true))
-        .join('.');
+    final maskedHost = host.split('.').map((part) => _mask(part, true)).join('.');
     return '$maskedHost$port';
   }
 
@@ -363,8 +347,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return '$month月';
   }
 
-  String _monthKey(String date) =>
-      date.length >= 7 ? date.substring(0, 7) : date;
+  String _monthKey(String date) => date.length >= 7 ? date.substring(0, 7) : date;
 
   String _formatDay(String date) {
     if (date.length >= 10) return date.substring(5, 10);
@@ -421,33 +404,18 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     final tokens = _tokens;
 
     return MediaQuery(
-      data: MediaQuery.of(
-        context,
-      ).copyWith(textScaler: TextScaler.linear(tokens.textScale)),
+      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(tokens.textScale)),
       child: AppBackground(
         child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: appSurfaceColor(context, tokens.background),
-            gradient: tokens.pageGradient,
-          ),
+          decoration: BoxDecoration(color: appSurfaceColor(context, tokens.background), gradient: tokens.pageGradient),
           child: Stack(
             children: [
               Positioned.fill(
                 child: data == null
                     ? _initialLoading
-                          ? Center(
-                              child: shadcn.CircularProgressIndicator(
-                                size: tokens.size(18),
-                              ),
-                            )
+                          ? Center(child: CircularProgressIndicator(size: tokens.size(18)))
                           : _buildDashboardEmptyState(context)
-                    : _buildBoard(
-                        context,
-                        data,
-                        cacheInfo,
-                        privacy,
-                        refreshSerial,
-                      ),
+                    : _buildBoard(context, data, cacheInfo, privacy, refreshSerial),
               ),
             ],
           ),
@@ -473,12 +441,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverPadding(
-            padding: _tokens.edgeLTRB(
-              20,
-              18,
-              20,
-              _bottomGap + ShellBottomSpacing.value(context),
-            ),
+            padding: _tokens.edgeLTRB(20, 18, 20, _bottomGap + ShellBottomSpacing.value(context)),
             sliver: SliverLayoutBuilder(
               builder: (context, constraints) {
                 final compact = constraints.crossAxisExtent < 1180;
@@ -487,19 +450,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildHeader(data, cacheInfo, privacy),
-                      CacheStatusBanner(
-                        info: cacheInfo,
-                        margin: _tokens.edgeOnly(top: 10),
-                      ),
+                      CacheStatusBanner(info: cacheInfo, margin: _tokens.edgeOnly(top: 10)),
                       if (_isChartVisible('desktopKpi')) ...[
                         _tokens.vGap(14),
                         _buildKpiStrip(data, constraints.crossAxisExtent),
                       ],
                       _tokens.vGap(14),
-                      if (compact)
-                        _buildCompactContent(data, privacy)
-                      else
-                        _buildWideContent(data, privacy),
+                      if (compact) _buildCompactContent(data, privacy) else _buildWideContent(data, privacy),
                     ],
                   ),
                 );
@@ -554,11 +511,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                         color: _cyan.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(tokens.size(14)),
                       ),
-                      child: Icon(
-                        shadcn.LucideIcons.chartNoAxesCombined,
-                        size: tokens.size(23),
-                        color: _cyan,
-                      ),
+                      child: Icon(LucideIcons.chartNoAxesCombined, size: tokens.size(23), color: _cyan),
                     ),
                     SizedBox(height: tokens.size(14)),
                     Text(
@@ -573,10 +526,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     Text(
                       '当前还没有可展示的统计数据。可以先刷新首页，或执行一次站点数据任务后再查看。',
                       textAlign: TextAlign.center,
-                      style: tokens.theme.typography.small.copyWith(
-                        color: _muted,
-                        height: 1.45,
-                      ),
+                      style: tokens.theme.typography.small.copyWith(color: _muted, height: 1.45),
                     ),
                     SizedBox(height: tokens.size(18)),
                     Wrap(
@@ -584,12 +534,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                       runSpacing: tokens.size(10),
                       alignment: WrapAlignment.center,
                       children: [
-                        shadcn.Button.primary(
+                        Button.primary(
                           onPressed: _busy ? null : _refreshDashboard,
                           alignment: Alignment.center,
                           child: Text(_refreshingDashboard ? '刷新中' : '刷新首页'),
                         ),
-                        shadcn.Button.outline(
+                        Button.outline(
                           onPressed: _busy ? null : _refreshSiteData,
                           alignment: Alignment.center,
                           child: Text(_refreshingSites ? '执行中' : '站点数据'),
@@ -606,11 +556,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _buildHeader(
-    DashboardData data,
-    DataCacheInfo cacheInfo,
-    bool privacy,
-  ) {
+  Widget _buildHeader(DashboardData data, DataCacheInfo cacheInfo, bool privacy) {
     final tokens = _tokens;
     return _panelContainer(
       padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
@@ -621,10 +567,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
             height: tokens.size(44),
             decoration: BoxDecoration(
               color: _cyan.withValues(alpha: 0.14),
-              borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+              borderRadius: Theme.of(context).borderRadiusMd,
               border: Border.all(color: _cyan.withValues(alpha: 0.42)),
             ),
-            child: Icon(shadcn.LucideIcons.chartNoAxesCombined, color: _cyan),
+            child: Icon(LucideIcons.chartNoAxesCombined, color: _cyan),
           ),
           tokens.hGap(14),
           Expanded(
@@ -647,48 +593,32 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   '${data.siteCount.toInt()} 个站点接入 · ${_cacheText(cacheInfo, data)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: _muted,
-                    fontSize: tokens.font(12),
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(color: _muted, fontSize: tokens.font(12), fontWeight: FontWeight.w600),
                 ),
               ],
             ),
           ),
           tokens.hGap(10),
           _headerAction(
-            icon: shadcn.LucideIcons.refreshCw,
+            icon: LucideIcons.refreshCw,
             label: _refreshingDashboard ? '刷新中' : '刷新',
             onTap: (_) => _refreshDashboard(),
           ),
           tokens.hGap(8),
           _headerAction(
-            icon: shadcn.LucideIcons.database,
+            icon: LucideIcons.database,
             label: _refreshingSites ? '执行中' : '站点数据',
             onTap: (_) => _refreshSiteData(),
           ),
           tokens.hGap(8),
-          _headerAction(
-            icon: shadcn.LucideIcons.checkCheck,
-            label: _signingIn ? '签到中' : '签到',
-            onTap: (_) => _signInSites(),
-          ),
+          _headerAction(icon: LucideIcons.checkCheck, label: _signingIn ? '签到中' : '签到', onTap: (_) => _signInSites()),
+          tokens.hGap(8),
+          _headerAction(icon: LucideIcons.trash2, label: '清缓存', onTap: showDashboardCacheClearPopover),
+          tokens.hGap(8),
+          _headerAction(icon: LucideIcons.slidersHorizontal, label: '模块', onTap: _showChartSettings),
           tokens.hGap(8),
           _headerAction(
-            icon: shadcn.LucideIcons.trash2,
-            label: '清缓存',
-            onTap: showDashboardCacheClearPopover,
-          ),
-          tokens.hGap(8),
-          _headerAction(
-            icon: shadcn.LucideIcons.slidersHorizontal,
-            label: '模块',
-            onTap: _showChartSettings,
-          ),
-          tokens.hGap(8),
-          _headerAction(
-            icon: privacy ? shadcn.LucideIcons.eyeOff : shadcn.LucideIcons.eye,
+            icon: privacy ? LucideIcons.eyeOff : LucideIcons.eye,
             label: privacy ? '隐私' : '明文',
             onTap: (_) => ref.read(privacyModeProvider.notifier).toggle(),
           ),
@@ -701,7 +631,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
 
   Widget _themeModeSegmentedControl() {
     final mode = ref.watch(themeProvider).mode;
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tokens = _tokens;
 
@@ -717,25 +647,25 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _themeModeSegment(
-            mode: shadcn.ThemeMode.light,
+            mode: ThemeMode.light,
             current: mode,
-            icon: shadcn.LucideIcons.sun,
+            icon: LucideIcons.sun,
             label: '明',
             tooltip: '亮色模式',
             colors: cs,
           ),
           _themeModeSegment(
-            mode: shadcn.ThemeMode.dark,
+            mode: ThemeMode.dark,
             current: mode,
-            icon: shadcn.LucideIcons.moon,
+            icon: LucideIcons.moon,
             label: '暗',
             tooltip: '暗色模式',
             colors: cs,
           ),
           _themeModeSegment(
-            mode: shadcn.ThemeMode.system,
+            mode: ThemeMode.system,
             current: mode,
-            icon: shadcn.LucideIcons.monitorCog,
+            icon: LucideIcons.monitorCog,
             label: '自动',
             tooltip: '跟随系统',
             colors: cs,
@@ -746,16 +676,16 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }
 
   Widget _themeModeSegment({
-    required shadcn.ThemeMode mode,
-    required shadcn.ThemeMode current,
+    required ThemeMode mode,
+    required ThemeMode current,
     required IconData icon,
     required String label,
     required String tooltip,
-    required shadcn.ColorScheme colors,
+    required ColorScheme colors,
   }) {
     final tokens = _tokens;
     final selected = current == mode;
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -765,9 +695,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         height: tokens.size(32),
         padding: tokens.edgeSymmetric(horizontal: 8),
         decoration: BoxDecoration(
-          color: selected
-              ? colors.primary
-              : colors.background.withValues(alpha: 0),
+          color: selected ? colors.primary : colors.background.withValues(alpha: 0),
           borderRadius: theme.borderRadiusSm,
         ),
         child: Row(
@@ -775,11 +703,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           children: [
             _DesktopDashboardIconTooltip(
               message: tooltip,
-              child: Icon(
-                icon,
-                size: tokens.size(14),
-                color: selected ? colors.primaryForeground : _cyan,
-              ),
+              child: Icon(icon, size: tokens.size(14), color: selected ? colors.primaryForeground : _cyan),
             ),
             tokens.hGap(4),
             Text(
@@ -796,11 +720,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _headerAction({
-    required IconData icon,
-    required String label,
-    required ValueChanged<BuildContext> onTap,
-  }) {
+  Widget _headerAction({required IconData icon, required String label, required ValueChanged<BuildContext> onTap}) {
     final tokens = _tokens;
     return Builder(
       builder: (buttonContext) => GestureDetector(
@@ -811,7 +731,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           padding: tokens.edgeSymmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: _panelSoft.withValues(alpha: 0.86),
-            borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+            borderRadius: Theme.of(context).borderRadiusMd,
             border: Border.all(color: _line.withValues(alpha: 0.92)),
           ),
           child: Row(
@@ -821,11 +741,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
               tokens.hGap(6),
               Text(
                 label,
-                style: TextStyle(
-                  color: _text,
-                  fontSize: tokens.font(12),
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(color: _text, fontSize: tokens.font(12), fontWeight: FontWeight.w800),
               ),
             ],
           ),
@@ -836,62 +752,32 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
 
   Widget _buildKpiStrip(DashboardData data, double maxWidth) {
     final items = [
-      _Kpi(
-        '站点数',
-        data.siteCount.toInt().toString(),
-        '站点接入',
-        _cyan,
-        shadcn.LucideIcons.globe,
-      ),
+      _Kpi('站点数', data.siteCount.toInt().toString(), '站点接入', _cyan, LucideIcons.globe),
       _Kpi(
         '总上传',
         formatBytes(data.totalUploaded),
         '今日 +${formatBytes(data.todayUploadIncrement)}',
         _green,
-        shadcn.LucideIcons.arrowUp,
+        LucideIcons.arrowUp,
       ),
       _Kpi(
         '总下载',
         formatBytes(data.totalDownloaded),
         '今日 +${formatBytes(data.todayDownloadIncrement)}',
         _red,
-        shadcn.LucideIcons.arrowDown,
+        LucideIcons.arrowDown,
       ),
       _Kpi(
         '做种体积',
         formatBytes(data.totalSeedVol),
         '${_formatCount(data.totalSeeding)} 个做种',
         _blue,
-        shadcn.LucideIcons.hardDrive,
+        LucideIcons.hardDrive,
       ),
-      _Kpi(
-        '做种数',
-        _formatCount(data.totalSeeding),
-        '活跃做种任务',
-        _tokens.treemapColors[7],
-        shadcn.LucideIcons.database,
-      ),
-      _Kpi(
-        '下载中',
-        _formatCount(data.totalLeeching),
-        '正在下载任务',
-        _orange,
-        shadcn.LucideIcons.download,
-      ),
-      _Kpi(
-        '发布总量',
-        _formatCount(data.totalPublished),
-        '累计发布种子',
-        _amber,
-        shadcn.LucideIcons.upload,
-      ),
-      _Kpi(
-        'P龄',
-        _accountAge(data),
-        data.earliestSite?.site ?? '暂无站点',
-        _violet,
-        shadcn.LucideIcons.calendar,
-      ),
+      _Kpi('做种数', _formatCount(data.totalSeeding), '活跃做种任务', _tokens.treemapColors[7], LucideIcons.database),
+      _Kpi('下载中', _formatCount(data.totalLeeching), '正在下载任务', _orange, LucideIcons.download),
+      _Kpi('发布总量', _formatCount(data.totalPublished), '累计发布种子', _amber, LucideIcons.upload),
+      _Kpi('P龄', _accountAge(data), data.earliestSite?.site ?? '暂无站点', _violet, LucideIcons.calendar),
     ];
 
     Widget row(List<_Kpi> rowItems) {
@@ -903,9 +789,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
             Expanded(
               child: _buildKpiTile(
                 rowItems[i],
-                onTap: rowItems[i].label == 'P龄'
-                    ? () => setState(() => _showWeeks = !_showWeeks)
-                    : null,
+                onTap: rowItems[i].label == 'P龄' ? () => setState(() => _showWeeks = !_showWeeks) : null,
               ),
             ),
           ],
@@ -914,13 +798,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     }
 
     if (maxWidth >= 1080) {
-      return Column(
-        children: [
-          row(items.take(4).toList()),
-          _tokens.vGap(10),
-          row(items.skip(4).toList()),
-        ],
-      );
+      return Column(children: [row(items.take(4).toList()), _tokens.vGap(10), row(items.skip(4).toList())]);
     }
     return Column(
       children: [
@@ -952,42 +830,27 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   item.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: _muted,
-                    fontSize: tokens.font(12),
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(color: _muted, fontSize: tokens.font(12), fontWeight: FontWeight.w700),
                 ),
               ),
               if (onTap != null)
                 SizedBox.square(
                   dimension: tokens.size(26),
-                  child: shadcn.IconButton.ghost(
+                  child: IconButton.ghost(
                     onPressed: onTap,
-                    icon: Icon(
-                      shadcn.LucideIcons.refreshCw,
-                      size: tokens.size(14),
-                      color: item.color,
-                    ),
+                    icon: Icon(LucideIcons.refreshCw, size: tokens.size(14), color: item.color),
                   ),
                 ),
             ],
           ),
           Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: _kpiValue(item),
-            ),
+            child: Align(alignment: Alignment.centerLeft, child: _kpiValue(item)),
           ),
           Text(
             item.caption,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: _muted,
-              fontSize: tokens.font(11),
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(color: _muted, fontSize: tokens.font(11), fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -1016,11 +879,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                 color: item.color.withValues(alpha: _isDark ? 0.36 : 0.46),
                 blurRadius: _isDark ? 13 : 16,
               ),
-              if (!_isDark)
-                Shadow(
-                  color: _tokens.background.withValues(alpha: 0.95),
-                  blurRadius: 2,
-                ),
+              if (!_isDark) Shadow(color: _tokens.background.withValues(alpha: 0.95), blurRadius: 2),
             ],
           ),
         ),
@@ -1048,14 +907,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (showTrend)
-                Expanded(flex: 7, child: _buildTrendPanel(data, privacy)),
+              if (showTrend) Expanded(flex: 7, child: _buildTrendPanel(data, privacy)),
               if (showTrend && showToday) tokens.hGap(10),
-              if (showToday)
-                Expanded(
-                  flex: 4,
-                  child: _buildTodayPanel(data, privacy, height: 390),
-                ),
+              if (showToday) Expanded(flex: 4, child: _buildTodayPanel(data, privacy, height: 390)),
             ],
           ),
           tokens.vGap(10),
@@ -1064,29 +918,16 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (showStatus)
-                Expanded(
-                  flex: 7,
-                  child: _buildStatusTreemapPanel(data, privacy, height: 440),
-                ),
-              if (showStatus && (showDesignation || showResource))
-                tokens.hGap(10),
+              if (showStatus) Expanded(flex: 7, child: _buildStatusTreemapPanel(data, privacy, height: 440)),
+              if (showStatus && (showDesignation || showResource)) tokens.hGap(10),
               if (showDesignation || showResource)
                 Expanded(
                   flex: 4,
                   child: Column(
                     children: [
-                      if (showDesignation)
-                        _buildDesignationPanel(
-                          data,
-                          height: showResource ? 128 : 440,
-                        ),
+                      if (showDesignation) _buildDesignationPanel(data, height: showResource ? 128 : 440),
                       if (showDesignation && showResource) tokens.vGap(10),
-                      if (showResource)
-                        _buildResourcePanel(
-                          data,
-                          height: showDesignation ? 302 : 440,
-                        ),
+                      if (showResource) _buildResourcePanel(data, height: showDesignation ? 302 : 440),
                     ],
                   ),
                 ),
@@ -1094,25 +935,15 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           ),
           tokens.vGap(10),
         ],
-        if (showUploaded || showSeed) ...[
-          _buildDistributionRow(data, privacy, stacked: false),
-          tokens.vGap(10),
-        ],
+        if (showUploaded || showSeed) ...[_buildDistributionRow(data, privacy, stacked: false), tokens.vGap(10)],
         if (showServerResource || showAccount) ...[
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (showServerResource)
-                Expanded(
-                  flex: showAccount ? 7 : 1,
-                  child: _buildServerResourcePanel(height: 300),
-                ),
+                Expanded(flex: showAccount ? 7 : 1, child: _buildServerResourcePanel(height: 300)),
               if (showServerResource && showAccount) tokens.hGap(10),
-              if (showAccount)
-                Expanded(
-                  flex: 4,
-                  child: _buildAccountPanel(data, privacy, height: 300),
-                ),
+              if (showAccount) Expanded(flex: 4, child: _buildAccountPanel(data, privacy, height: 300)),
             ],
           ),
           tokens.vGap(10),
@@ -1121,17 +952,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (showRank)
-                Expanded(
-                  flex: 7,
-                  child: _buildRankPanel(data, privacy, height: 340),
-                ),
+              if (showRank) Expanded(flex: 7, child: _buildRankPanel(data, privacy, height: 340)),
               if (showRank && showPublished) tokens.hGap(10),
-              if (showPublished)
-                Expanded(
-                  flex: 4,
-                  child: _buildMonthlyPublishPanel(data, privacy, height: 340),
-                ),
+              if (showPublished) Expanded(flex: 4, child: _buildMonthlyPublishPanel(data, privacy, height: 340)),
             ],
           ),
         ],
@@ -1143,10 +966,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     final tokens = _tokens;
     final showDesignation = _isChartVisible('desktopDesignation');
     final showTrend = _isChartVisible('desktopTrend');
-    final showDistribution = _anyChartVisible(const [
-      'desktopUploadShare',
-      'desktopSeedShare',
-    ]);
+    final showDistribution = _anyChartVisible(const ['desktopUploadShare', 'desktopSeedShare']);
     final showStatus = _isChartVisible('desktopStatus');
     final showResource = _isChartVisible('desktopResource');
     final showServerResource = _isChartVisible('desktopServerResource');
@@ -1160,24 +980,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         if (showDesignation) ...[_buildDesignationPanel(data), tokens.vGap(10)],
         if (showTrend) ...[_buildTrendPanel(data, privacy), tokens.vGap(10)],
         if (showToday) ...[_buildTodayPanel(data, privacy), tokens.vGap(10)],
-        if (showServerResource) ...[
-          _buildServerResourcePanel(height: 320),
-          tokens.vGap(10),
-        ],
-        if (showStatus) ...[
-          _buildStatusTreemapPanel(data, privacy, height: 360),
-          tokens.vGap(10),
-        ],
-        if (showDistribution) ...[
-          _buildDistributionRow(data, privacy, stacked: true),
-          tokens.vGap(10),
-        ],
+        if (showServerResource) ...[_buildServerResourcePanel(height: 320), tokens.vGap(10)],
+        if (showStatus) ...[_buildStatusTreemapPanel(data, privacy, height: 360), tokens.vGap(10)],
+        if (showDistribution) ...[_buildDistributionRow(data, privacy, stacked: true), tokens.vGap(10)],
         if (showResource) ...[_buildResourcePanel(data), tokens.vGap(10)],
         if (showRank) ...[_buildRankPanel(data, privacy), tokens.vGap(10)],
-        if (showPublished) ...[
-          _buildMonthlyPublishPanel(data, privacy),
-          tokens.vGap(10),
-        ],
+        if (showPublished) ...[_buildMonthlyPublishPanel(data, privacy), tokens.vGap(10)],
         if (showAccount) _buildAccountPanel(data, privacy),
       ],
     );
@@ -1203,14 +1011,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
               height: tokens.size(54),
               decoration: BoxDecoration(
                 color: _red.withValues(alpha: 0.16),
-                borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+                borderRadius: Theme.of(context).borderRadiusMd,
                 border: Border.all(color: _red.withValues(alpha: 0.42)),
               ),
-              child: Icon(
-                shadcn.LucideIcons.award,
-                size: tokens.size(30),
-                color: _red,
-              ),
+              child: Icon(LucideIcons.award, size: tokens.size(30), color: _red),
             ),
             tokens.hGap(12),
             _DesignationCard(
@@ -1258,21 +1062,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: tokens.size(3),
-                    height: tokens.size(15),
-                    color: _cyan,
-                  ),
+                  Container(width: tokens.size(3), height: tokens.size(15), color: _cyan),
                   tokens.hGap(8),
                   Text(
                     '服务器状态',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: _text,
-                      fontSize: tokens.font(15),
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: TextStyle(color: _text, fontSize: tokens.font(15), fontWeight: FontWeight.w900),
                   ),
                 ],
               ),
@@ -1283,27 +1079,17 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     '$serverHost · ${interval}s · $remainingText',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: _muted,
-                      fontSize: tokens.font(11),
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(color: _muted, fontSize: tokens.font(11), fontWeight: FontWeight.w600),
                   ),
                   tokens.hGap(8),
                   Tooltip(
-                    message: statusText,
-                    child: shadcn.IconButton.ghost(
-                      onPressed: () =>
-                          ref.read(serverResourceProvider.notifier).toggle(),
+                    tooltip: (context) => Text(statusText),
+                    child: IconButton.ghost(
+                      onPressed: () => ref.read(serverResourceProvider.notifier).toggle(),
                       icon: running && state.data == null
-                          ? shadcn.CircularProgressIndicator(
-                              size: tokens.size(15),
-                              strokeWidth: 2,
-                            )
+                          ? CircularProgressIndicator(size: tokens.size(15), strokeWidth: 2)
                           : Icon(
-                              running
-                                  ? shadcn.LucideIcons.pause
-                                  : shadcn.LucideIcons.play,
+                              running ? LucideIcons.pause : LucideIcons.play,
                               size: tokens.size(15),
                               color: running ? _red : _green,
                             ),
@@ -1324,7 +1110,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     '${(data?.cpu.percent ?? 0).toStringAsFixed(2)}%',
                     '${(data?.cpu.limitCores ?? 0).toStringAsFixed(1)} 核',
                     _blue,
-                    shadcn.LucideIcons.cpu,
+                    LucideIcons.cpu,
                   ),
                 ),
                 tokens.hGap(10),
@@ -1334,7 +1120,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     '${(data?.memory.percent ?? 0).toStringAsFixed(2)}%',
                     '${formatBytes(data?.memory.workingSet ?? 0)} / ${formatBytes(data?.memory.limit ?? 0)}',
                     _violet,
-                    shadcn.LucideIcons.memoryStick,
+                    LucideIcons.memoryStick,
                   ),
                 ),
                 tokens.hGap(10),
@@ -1344,7 +1130,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     formatSpeed(data?.network.uploadSpeed ?? 0),
                     formatBytes(data?.network.bytesSent ?? 0),
                     _green,
-                    shadcn.LucideIcons.arrowUp,
+                    LucideIcons.arrowUp,
                   ),
                 ),
                 tokens.hGap(10),
@@ -1354,7 +1140,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     formatSpeed(data?.network.downloadSpeed ?? 0),
                     formatBytes(data?.network.bytesRecv ?? 0),
                     _red,
-                    shadcn.LucideIcons.arrowDown,
+                    LucideIcons.arrowDown,
                   ),
                 ),
               ],
@@ -1371,8 +1157,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     history: state.history,
                     valueOf: (item) => item.cpu.percent,
                     color: _blue,
-                    displayValue:
-                        '${(data?.cpu.percent ?? 0).toStringAsFixed(2)}%',
+                    displayValue: '${(data?.cpu.percent ?? 0).toStringAsFixed(2)}%',
                     formatY: (v) => '${v.toStringAsFixed(0)}%',
                   ),
                 ),
@@ -1417,9 +1202,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }) {
     final tokens = _tokens;
     final points = _serverResourceUsagePoints(history, valueOf);
-    final dataMax = points.isEmpty
-        ? 0.0
-        : points.map((p) => p.value).reduce((a, b) => a > b ? a : b);
+    final dataMax = points.isEmpty ? 0.0 : points.map((p) => p.value).reduce((a, b) => a > b ? a : b);
     final maxValue = dataMax <= 0 ? 100.0 : dataMax * 2;
     final interval = maxValue <= 30
         ? 10.0
@@ -1434,7 +1217,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       padding: tokens.edgeLTRB(10, 9, 10, 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+        borderRadius: Theme.of(context).borderRadiusMd,
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Column(
@@ -1447,11 +1230,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: _text,
-                    fontSize: tokens.font(12),
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: TextStyle(color: _text, fontSize: tokens.font(12), fontWeight: FontWeight.w900),
                 ),
               ),
               tokens.hGap(8),
@@ -1462,11 +1241,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   child: Text(
                     valueText,
                     maxLines: 1,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: tokens.font(12),
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: TextStyle(color: color, fontSize: tokens.font(12), fontWeight: FontWeight.w900),
                   ),
                 ),
               ),
@@ -1478,20 +1253,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                 ? Center(
                     child: Text(
                       '等待数据',
-                      style: TextStyle(
-                        color: _muted,
-                        fontSize: tokens.font(11),
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: TextStyle(color: _muted, fontSize: tokens.font(11), fontWeight: FontWeight.w600),
                     ),
                   )
                 : SfCartesianChart(
                     plotAreaBorderWidth: 0,
                     margin: EdgeInsets.zero,
-                    primaryXAxis: CategoryAxis(
-                      isVisible: false,
-                      majorGridLines: const MajorGridLines(width: 0),
-                    ),
+                    primaryXAxis: CategoryAxis(isVisible: false, majorGridLines: const MajorGridLines(width: 0)),
                     primaryYAxis: NumericAxis(
                       minimum: 0,
                       maximum: maxValue,
@@ -1499,10 +1267,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                       isVisible: false,
                       axisLine: const AxisLine(width: 0),
                       majorTickLines: const MajorTickLines(size: 0),
-                      majorGridLines: MajorGridLines(
-                        width: 0.6,
-                        color: _line.withValues(alpha: 0.55),
-                      ),
+                      majorGridLines: MajorGridLines(width: 0.6, color: _line.withValues(alpha: 0.55)),
                     ),
                     series: <CartesianSeries>[
                       SplineAreaSeries<_ServerResourceUsagePoint, String>(
@@ -1527,21 +1292,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     required List<ServerResourceStatus> history,
   }) {
     final tokens = _tokens;
-    final uploadPoints = _serverResourceUsagePoints(
-      history,
-      (item) => item.network.uploadSpeed.toDouble(),
-    );
-    final downloadPoints = _serverResourceUsagePoints(
-      history,
-      (item) => item.network.downloadSpeed.toDouble(),
-    );
-    final values = [
-      ...uploadPoints.map((p) => p.value),
-      ...downloadPoints.map((p) => p.value),
-    ];
-    final dataMax = values.isEmpty
-        ? 0.0
-        : values.reduce((a, b) => a > b ? a : b);
+    final uploadPoints = _serverResourceUsagePoints(history, (item) => item.network.uploadSpeed.toDouble());
+    final downloadPoints = _serverResourceUsagePoints(history, (item) => item.network.downloadSpeed.toDouble());
+    final values = [...uploadPoints.map((p) => p.value), ...downloadPoints.map((p) => p.value)];
+    final dataMax = values.isEmpty ? 0.0 : values.reduce((a, b) => a > b ? a : b);
     final maxValue = dataMax <= 0 ? 1024.0 : dataMax * 1.8;
     final interval = maxValue <= 1024
         ? 256.0
@@ -1553,7 +1307,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       padding: tokens.edgeLTRB(10, 9, 10, 6),
       decoration: BoxDecoration(
         color: _green.withValues(alpha: 0.06),
-        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+        borderRadius: Theme.of(context).borderRadiusMd,
         border: Border.all(color: _green.withValues(alpha: 0.18)),
       ),
       child: Column(
@@ -1566,11 +1320,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: _text,
-                    fontSize: tokens.font(12),
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: TextStyle(color: _text, fontSize: tokens.font(12), fontWeight: FontWeight.w900),
                 ),
               ),
               tokens.hGap(8),
@@ -1581,11 +1331,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   child: Text(
                     displayValue,
                     maxLines: 1,
-                    style: TextStyle(
-                      color: _green,
-                      fontSize: tokens.font(12),
-                      fontWeight: FontWeight.w900,
-                    ),
+                    style: TextStyle(color: _green, fontSize: tokens.font(12), fontWeight: FontWeight.w900),
                   ),
                 ),
               ),
@@ -1597,20 +1343,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                 ? Center(
                     child: Text(
                       '等待数据',
-                      style: TextStyle(
-                        color: _muted,
-                        fontSize: tokens.font(11),
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: TextStyle(color: _muted, fontSize: tokens.font(11), fontWeight: FontWeight.w600),
                     ),
                   )
                 : SfCartesianChart(
                     plotAreaBorderWidth: 0,
                     margin: EdgeInsets.zero,
-                    primaryXAxis: CategoryAxis(
-                      isVisible: false,
-                      majorGridLines: const MajorGridLines(width: 0),
-                    ),
+                    primaryXAxis: CategoryAxis(isVisible: false, majorGridLines: const MajorGridLines(width: 0)),
                     primaryYAxis: NumericAxis(
                       minimum: 0,
                       maximum: maxValue,
@@ -1618,10 +1357,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                       isVisible: false,
                       axisLine: const AxisLine(width: 0),
                       majorTickLines: const MajorTickLines(size: 0),
-                      majorGridLines: MajorGridLines(
-                        width: 0.6,
-                        color: _line.withValues(alpha: 0.55),
-                      ),
+                      majorGridLines: MajorGridLines(width: 0.6, color: _line.withValues(alpha: 0.55)),
                     ),
                     series: <CartesianSeries>[
                       SplineSeries<_ServerResourceUsagePoint, String>(
@@ -1661,19 +1397,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     }).toList();
   }
 
-  Widget _serverResourceMetric(
-    String label,
-    String value,
-    String subtitle,
-    Color color,
-    IconData icon,
-  ) {
+  Widget _serverResourceMetric(String label, String value, String subtitle, Color color, IconData icon) {
     final tokens = _tokens;
     return Container(
       padding: tokens.edgeAll(8),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
-        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+        borderRadius: Theme.of(context).borderRadiusMd,
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: LayoutBuilder(
@@ -1691,11 +1421,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                       label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: _muted,
-                        fontSize: tokens.font(11),
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: TextStyle(color: _muted, fontSize: tokens.font(11), fontWeight: FontWeight.w700),
                     ),
                   ),
                 ],
@@ -1709,12 +1435,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     child: Text(
                       value,
                       maxLines: 1,
-                      style: TextStyle(
-                        color: color,
-                        fontSize: tokens.font(16),
-                        fontWeight: FontWeight.w900,
-                        height: 1,
-                      ),
+                      style: TextStyle(color: color, fontSize: tokens.font(16), fontWeight: FontWeight.w900, height: 1),
                     ),
                   ),
                 ),
@@ -1724,11 +1445,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: _muted,
-                    fontSize: tokens.font(10),
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(color: _muted, fontSize: tokens.font(10), fontWeight: FontWeight.w600),
                 ),
             ],
           );
@@ -1738,8 +1455,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }
 
   _DesignationProgress _designationProgress(int siteCount) {
-    final levels = _designations.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+    final levels = _designations.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
     final first = levels.first;
 
     if (siteCount < first.key) {
@@ -1835,16 +1551,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     ),
                     primaryYAxis: NumericAxis(
                       opposedPosition: false,
-                      majorGridLines: MajorGridLines(
-                        width: 0.7,
-                        color: _line.withValues(alpha: 0.55),
-                      ),
+                      majorGridLines: MajorGridLines(width: 0.7, color: _line.withValues(alpha: 0.55)),
                       axisLine: const AxisLine(width: 0),
                       labelStyle: _axisStyle(),
-                      axisLabelFormatter: (details) => ChartAxisLabel(
-                        _formatYAxis(details.value),
-                        _axisStyle(),
-                      ),
+                      axisLabelFormatter: (details) => ChartAxisLabel(_formatYAxis(details.value), _axisStyle()),
                     ),
                     axes: [
                       NumericAxis(
@@ -1853,19 +1563,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                         majorGridLines: const MajorGridLines(width: 0),
                         axisLine: const AxisLine(width: 0),
                         labelStyle: _axisStyle(),
-                        axisLabelFormatter: (details) => ChartAxisLabel(
-                          _formatYAxis(details.value),
-                          _axisStyle(),
-                        ),
+                        axisLabelFormatter: (details) => ChartAxisLabel(_formatYAxis(details.value), _axisStyle()),
                       ),
                     ],
                     legend: Legend(
                       isVisible: true,
                       position: LegendPosition.bottom,
-                      textStyle: TextStyle(
-                        color: _muted,
-                        fontSize: _tokens.font(11),
-                      ),
+                      textStyle: TextStyle(color: _muted, fontSize: _tokens.font(11)),
                       iconHeight: 8,
                       iconWidth: 8,
                     ),
@@ -1877,13 +1581,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                       lineWidth: 1,
                       tooltipSettings: const InteractiveTooltip(enable: false),
                       builder: (context, details) {
-                        _scheduleTrendTooltip(
-                          details,
-                          month,
-                          daily,
-                          data,
-                          privacy,
-                        );
+                        _scheduleTrendTooltip(details, month, daily, data, privacy);
                         return const SizedBox.shrink();
                       },
                     ),
@@ -1894,9 +1592,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                         xValueMapper: (p, _) => _formatMonth(p.label),
                         yValueMapper: (p, _) => p.uploaded,
                         color: _green.withValues(alpha: 0.78),
-                        borderRadius: BorderRadius.vertical(
-                          top: shadcn.Theme.of(context).radiusXsRadius,
-                        ),
+                        borderRadius: BorderRadius.vertical(top: Theme.of(context).radiusXsRadius),
                       ),
                       ColumnSeries<_TrendPoint, String>(
                         name: '月下载',
@@ -1904,9 +1600,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                         xValueMapper: (p, _) => _formatMonth(p.label),
                         yValueMapper: (p, _) => p.downloaded,
                         color: _red.withValues(alpha: 0.72),
-                        borderRadius: BorderRadius.vertical(
-                          top: shadcn.Theme.of(context).radiusXsRadius,
-                        ),
+                        borderRadius: BorderRadius.vertical(top: Theme.of(context).radiusXsRadius),
                       ),
                       SplineAreaSeries<_TrendPoint, String>(
                         name: '近期上传',
@@ -1962,11 +1656,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _buildDistributionRow(
-    DashboardData data,
-    bool privacy, {
-    required bool stacked,
-  }) {
+  Widget _buildDistributionRow(DashboardData data, bool privacy, {required bool stacked}) {
     final showUploaded = _isChartVisible('desktopUploadShare');
     final showSeed = _isChartVisible('desktopSeedShare');
     final tokens = _tokens;
@@ -1983,22 +1673,16 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
 
     return Row(
       children: [
-        if (showUploaded)
-          Expanded(child: _buildUploadSharePanel(data, privacy)),
+        if (showUploaded) Expanded(child: _buildUploadSharePanel(data, privacy)),
         if (showUploaded && showSeed) tokens.hGap(10),
         if (showSeed) Expanded(child: _buildSeedSharePanel(data, privacy)),
       ],
     );
   }
 
-  Widget _buildStatusTreemapPanel(
-    DashboardData data,
-    bool privacy, {
-    double height = 440,
-  }) {
-    final items =
-        data.statusList.where((item) => item.value.uploaded > 0).toList()
-          ..sort((a, b) => b.value.uploaded.compareTo(a.value.uploaded));
+  Widget _buildStatusTreemapPanel(DashboardData data, bool privacy, {double height = 440}) {
+    final items = data.statusList.where((item) => item.value.uploaded > 0).toList()
+      ..sort((a, b) => b.value.uploaded.compareTo(a.value.uploaded));
 
     return _boardPanel(
       title: '站点状态',
@@ -2021,19 +1705,14 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }
 
   Widget _buildUploadSharePanel(DashboardData data, bool privacy) {
-    final items = _topStatus(
-      data.statusList,
-      privacy,
-      (record) => record.value.uploaded,
-      limit: 10,
-    );
+    final items = _topStatus(data.statusList, privacy, (record) => record.value.uploaded, limit: 10);
     return _boardPanel(
       title: '上传占比',
       subtitle: '累计上传分布 · 前十站点',
       height: 360,
       child: _distributionShareContent(
         items: items,
-        baseColor: shadcn.Theme.of(context).colorScheme.primary,
+        baseColor: Theme.of(context).colorScheme.primary,
         formatter: formatBytes,
       ),
     );
@@ -2072,18 +1751,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                 height: tokens.size(150),
                 child: _donutChart(items, baseColor, formatter: formatter),
               ),
-              Container(
-                height: tokens.size(1),
-                margin: tokens.edgeSymmetric(vertical: 10),
-                color: _line,
-              ),
+              Container(height: tokens.size(1), margin: tokens.edgeSymmetric(vertical: 10), color: _line),
               Expanded(
-                child: _rankList(
-                  title: '图例前十',
-                  items: legendItems ?? items,
-                  color: baseColor,
-                  formatter: formatter,
-                ),
+                child: _rankList(title: '图例前十', items: legendItems ?? items, color: baseColor, formatter: formatter),
               ),
             ],
           );
@@ -2091,23 +1761,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
 
         return Row(
           children: [
-            Expanded(
-              flex: 5,
-              child: _donutChart(items, baseColor, formatter: formatter),
-            ),
-            Container(
-              width: tokens.size(1),
-              margin: tokens.edgeSymmetric(horizontal: 14),
-              color: _line,
-            ),
+            Expanded(flex: 5, child: _donutChart(items, baseColor, formatter: formatter)),
+            Container(width: tokens.size(1), margin: tokens.edgeSymmetric(horizontal: 14), color: _line),
             Expanded(
               flex: 4,
-              child: _rankList(
-                title: '图例前十',
-                items: legendItems ?? items,
-                color: baseColor,
-                formatter: formatter,
-              ),
+              child: _rankList(title: '图例前十', items: legendItems ?? items, color: baseColor, formatter: formatter),
             ),
           ],
         );
@@ -2115,11 +1773,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _donutChart(
-    List<_NameValuePoint> items,
-    Color baseColor, {
-    required String Function(num) formatter,
-  }) {
+  Widget _donutChart(List<_NameValuePoint> items, Color baseColor, {required String Function(num) formatter}) {
     final tokens = _tokens;
     if (items.isEmpty) {
       return _boardEmpty('暂无数据');
@@ -2136,12 +1790,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       color: _panel,
       canShowMarker: false,
       builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
-          _donutTooltip(
-            dataPoint,
-            items,
-            formatter,
-            onClose: () => tooltipBehavior.hide(),
-          ),
+          _donutTooltip(dataPoint, items, formatter, onClose: () => tooltipBehavior.hide()),
     );
     return SfCircularChart(
       margin: EdgeInsets.zero,
@@ -2155,20 +1804,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                 formatter(total),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: _text,
-                  fontSize: tokens.font(13),
-                  fontWeight: FontWeight.w900,
-                ),
+                style: TextStyle(color: _text, fontSize: tokens.font(13), fontWeight: FontWeight.w900),
               ),
               tokens.vGap(2),
               Text(
                 '总计',
-                style: TextStyle(
-                  color: _muted,
-                  fontSize: tokens.font(10),
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(color: _muted, fontSize: tokens.font(10), fontWeight: FontWeight.w700),
               ),
             ],
           ),
@@ -2199,23 +1840,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           Expanded(
             child: Row(
               children: [
-                Expanded(
-                  child: _resourceMetric(
-                    '总上传',
-                    formatBytes(data.totalUploaded),
-                    _green,
-                    shadcn.LucideIcons.arrowUp,
-                  ),
-                ),
+                Expanded(child: _resourceMetric('总上传', formatBytes(data.totalUploaded), _green, LucideIcons.arrowUp)),
                 tokens.hGap(8),
-                Expanded(
-                  child: _resourceMetric(
-                    '总下载',
-                    formatBytes(data.totalDownloaded),
-                    _red,
-                    shadcn.LucideIcons.arrowDown,
-                  ),
-                ),
+                Expanded(child: _resourceMetric('总下载', formatBytes(data.totalDownloaded), _red, LucideIcons.arrowDown)),
               ],
             ),
           ),
@@ -2223,23 +1850,9 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           Expanded(
             child: Row(
               children: [
-                Expanded(
-                  child: _resourceMetric(
-                    '做种体积',
-                    formatBytes(data.totalSeedVol),
-                    _blue,
-                    shadcn.LucideIcons.hardDrive,
-                  ),
-                ),
+                Expanded(child: _resourceMetric('做种体积', formatBytes(data.totalSeedVol), _blue, LucideIcons.hardDrive)),
                 tokens.hGap(8),
-                Expanded(
-                  child: _resourceMetric(
-                    '发布数',
-                    _formatCount(data.totalPublished),
-                    _amber,
-                    shadcn.LucideIcons.upload,
-                  ),
-                ),
+                Expanded(child: _resourceMetric('发布数', _formatCount(data.totalPublished), _amber, LucideIcons.upload)),
               ],
             ),
           ),
@@ -2252,17 +1865,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     '做种任务',
                     _formatCount(data.totalSeeding),
                     tokens.treemapColors[7],
-                    shadcn.LucideIcons.database,
+                    LucideIcons.database,
                   ),
                 ),
                 tokens.hGap(8),
                 Expanded(
-                  child: _resourceMetric(
-                    '下载任务',
-                    _formatCount(data.totalLeeching),
-                    _orange,
-                    shadcn.LucideIcons.download,
-                  ),
+                  child: _resourceMetric('下载任务', _formatCount(data.totalLeeching), _orange, LucideIcons.download),
                 ),
               ],
             ),
@@ -2272,18 +1880,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _resourceMetric(
-    String label,
-    String value,
-    Color color,
-    IconData icon,
-  ) {
+  Widget _resourceMetric(String label, String value, Color color, IconData icon) {
     final tokens = _tokens;
     return Container(
       padding: tokens.edgeSymmetric(horizontal: 9, vertical: 7),
       decoration: BoxDecoration(
         color: _panelSoft.withValues(alpha: 0.58),
-        borderRadius: shadcn.Theme.of(context).borderRadiusSm,
+        borderRadius: Theme.of(context).borderRadiusSm,
         border: Border.all(color: color.withValues(alpha: 0.22)),
       ),
       child: Row(
@@ -2303,22 +1906,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     Text(
                       label,
                       maxLines: 1,
-                      style: TextStyle(
-                        color: _muted,
-                        fontSize: tokens.font(10),
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: TextStyle(color: _muted, fontSize: tokens.font(10), fontWeight: FontWeight.w700),
                     ),
                     tokens.vGap(3),
                     Text(
                       value,
                       maxLines: 1,
-                      style: TextStyle(
-                        color: color,
-                        fontSize: tokens.font(17),
-                        fontWeight: FontWeight.w900,
-                        height: 1,
-                      ),
+                      style: TextStyle(color: color, fontSize: tokens.font(17), fontWeight: FontWeight.w900, height: 1),
                     ),
                   ],
                 ),
@@ -2353,10 +1947,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       top = cursor.dy - tooltip.height - gap;
     }
 
-    return Offset(
-      left.clamp(0.0, maxLeft).toDouble(),
-      top.clamp(0.0, maxTop).toDouble(),
-    );
+    return Offset(left.clamp(0.0, maxLeft).toDouble(), top.clamp(0.0, maxTop).toDouble());
   }
 
   void _scheduleTrendTooltip(
@@ -2450,12 +2041,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return null;
   }
 
-  Widget _monthlyTrackballTooltip(
-    TrackballDetails details,
-    List<_TrendPoint> items,
-    DashboardData data,
-    bool privacy,
-  ) {
+  Widget _monthlyTrackballTooltip(TrackballDetails details, List<_TrendPoint> items, DashboardData data, bool privacy) {
     final info = details.groupingModeInfo;
     final pointIndex = info != null && info.currentPointIndices.isNotEmpty
         ? info.currentPointIndices.first
@@ -2482,13 +2068,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       rows.add(_TooltipLine.rich('汇总', summary));
     }
     rows.addAll(
-      _monthlySiteRows(
-        data,
-        dataPoint.label,
-        privacy,
-        valueOf: (record) => record.published,
-        formatter: _formatCount,
-      ),
+      _monthlySiteRows(data, dataPoint.label, privacy, valueOf: (record) => record.published, formatter: _formatCount),
     );
 
     return _chartTooltip(_formatMonth(dataPoint.label), rows, width: 250);
@@ -2531,9 +2111,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     }
     if (downloaded > 0) {
       addSpace();
-      segments.add(
-        _TooltipSegment('↓${formatBytes(downloaded)}', downloadColor),
-      );
+      segments.add(_TooltipSegment('↓${formatBytes(downloaded)}', downloadColor));
     }
     if (published > 0) {
       addSpace();
@@ -2542,12 +2120,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return segments;
   }
 
-  List<_TooltipLine> _dailySiteTransferRows(
-    DashboardData data,
-    String date,
-    bool privacy, {
-    int limit = 10,
-  }) {
+  List<_TooltipLine> _dailySiteTransferRows(DashboardData data, String date, bool privacy, {int limit = 10}) {
     final rows = <_TrendSitePoint>[];
     for (final site in data.stackChartDataList) {
       num uploaded = 0;
@@ -2559,16 +2132,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         }
       }
       if (uploaded > 0 || downloaded > 0) {
-        rows.add(
-          _TrendSitePoint(_mask(site.name, privacy), uploaded, downloaded, 0),
-        );
+        rows.add(_TrendSitePoint(_mask(site.name, privacy), uploaded, downloaded, 0));
       }
     }
 
-    rows.sort(
-      (a, b) =>
-          (b.uploaded + b.downloaded).compareTo(a.uploaded + a.downloaded),
-    );
+    rows.sort((a, b) => (b.uploaded + b.downloaded).compareTo(a.uploaded + a.downloaded));
     final visible = rows.length > limit ? rows.take(limit).toList() : rows;
     final hidden = rows.length - visible.length;
     return [
@@ -2585,12 +2153,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     ];
   }
 
-  List<_TooltipLine> _monthlySiteTransferRows(
-    DashboardData data,
-    String month,
-    bool privacy, {
-    int limit = 10,
-  }) {
+  List<_TooltipLine> _monthlySiteTransferRows(DashboardData data, String month, bool privacy, {int limit = 10}) {
     final rows = <_TrendSitePoint>[];
     for (final site in data.uploadMonthIncrementDataList) {
       num uploaded = 0;
@@ -2604,21 +2167,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         }
       }
       if (uploaded > 0 || downloaded > 0 || published > 0) {
-        rows.add(
-          _TrendSitePoint(
-            _mask(site.name, privacy),
-            uploaded,
-            downloaded,
-            published,
-          ),
-        );
+        rows.add(_TrendSitePoint(_mask(site.name, privacy), uploaded, downloaded, published));
       }
     }
 
-    rows.sort(
-      (a, b) =>
-          (b.uploaded + b.downloaded).compareTo(a.uploaded + a.downloaded),
-    );
+    rows.sort((a, b) => (b.uploaded + b.downloaded).compareTo(a.uploaded + a.downloaded));
     final visible = rows.length > limit ? rows.take(limit).toList() : rows;
     final hidden = rows.length - visible.length;
     return [
@@ -2661,8 +2214,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     final visible = rows.length > limit ? rows.take(limit).toList() : rows;
     final hidden = rows.length - visible.length;
     return [
-      for (final row in visible)
-        _TooltipLine(row.name, formatter(row.value), _text),
+      for (final row in visible) _TooltipLine(row.name, formatter(row.value), _text),
       if (hidden > 0) _TooltipLine('其余', '$hidden 项', _muted),
     ];
   }
@@ -2678,7 +2230,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     final hasSummary = rows.isNotEmpty && rows.first.label == '汇总';
     final summary = hasSummary ? rows.first : null;
     final detailRows = hasSummary ? rows.skip(1).toList() : rows;
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     if (onClose != null) _scheduleChartTooltipClose(onClose);
 
     return Container(
@@ -2688,7 +2240,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: cs.popover,
-        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+        borderRadius: Theme.of(context).borderRadiusMd,
         border: Border.all(color: cs.border.withValues(alpha: 0.72)),
         boxShadow: [
           BoxShadow(
@@ -2709,26 +2261,15 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   hasSummary ? '$title汇总' : title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: _text,
-                    fontSize: tokens.font(12),
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: TextStyle(color: _text, fontSize: tokens.font(12), fontWeight: FontWeight.w900),
                 ),
               ),
-              if (summary != null) ...[
-                tokens.hGap(12),
-                _tooltipValue(summary, fontSize: tokens.font(11)),
-              ],
+              if (summary != null) ...[tokens.hGap(12), _tooltipValue(summary, fontSize: tokens.font(11))],
               if (onClose != null) ...[
                 tokens.hGap(8),
-                shadcn.IconButton.ghost(
-                  density: shadcn.ButtonDensity.compact,
-                  icon: Icon(
-                    shadcn.LucideIcons.x,
-                    size: tokens.size(14),
-                    color: _muted,
-                  ),
+                IconButton.ghost(
+                  density: ButtonDensity.compact,
+                  icon: Icon(LucideIcons.x, size: tokens.size(14), color: _muted),
                   onPressed: onClose,
                 ),
               ],
@@ -2765,19 +2306,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
             row.label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: _muted,
-              fontSize: tokens.font(11),
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(color: _muted, fontSize: tokens.font(11), fontWeight: FontWeight.w700),
           ),
         ),
         tokens.hGap(12),
         Flexible(
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: _tooltipValue(row),
-          ),
+          child: Align(alignment: Alignment.centerRight, child: _tooltipValue(row)),
         ),
       ],
     );
@@ -2791,11 +2325,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           ? Text(
               row.value,
               textAlign: TextAlign.right,
-              style: TextStyle(
-                color: row.color ?? _text,
-                fontSize: fontSize,
-                fontWeight: FontWeight.w900,
-              ),
+              style: TextStyle(color: row.color ?? _text, fontSize: fontSize, fontWeight: FontWeight.w900),
             )
           : RichText(
               textAlign: TextAlign.right,
@@ -2804,11 +2334,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                   for (final segment in row.segments)
                     TextSpan(
                       text: segment.text,
-                      style: TextStyle(
-                        color: segment.color,
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.w900,
-                      ),
+                      style: TextStyle(color: segment.color, fontSize: fontSize, fontWeight: FontWeight.w900),
                     ),
                 ],
               ),
@@ -2816,24 +2342,10 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _buildRankPanel(
-    DashboardData data,
-    bool privacy, {
-    double height = 440,
-  }) {
+  Widget _buildRankPanel(DashboardData data, bool privacy, {double height = 440}) {
     final tokens = _tokens;
-    final uploaded = _topStatus(
-      data.statusList,
-      privacy,
-      (record) => record.value.uploaded,
-      limit: 10,
-    );
-    final downloaded = _topStatus(
-      data.statusList,
-      privacy,
-      (record) => record.value.downloaded,
-      limit: 10,
-    );
+    final uploaded = _topStatus(data.statusList, privacy, (record) => record.value.uploaded, limit: 10);
+    final downloaded = _topStatus(data.statusList, privacy, (record) => record.value.downloaded, limit: 10);
     return _boardPanel(
       title: '累计排行',
       subtitle: '站点上传/下载 TOP',
@@ -2841,45 +2353,23 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       child: Row(
         children: [
           Expanded(
-            child: _rankList(
-              title: '累计上传 TOP',
-              items: uploaded,
-              color: _green,
-              formatter: formatBytes,
-            ),
+            child: _rankList(title: '累计上传 TOP', items: uploaded, color: _green, formatter: formatBytes),
           ),
-          Container(
-            width: tokens.size(1),
-            margin: tokens.edgeSymmetric(horizontal: 12),
-            color: _line,
-          ),
+          Container(width: tokens.size(1), margin: tokens.edgeSymmetric(horizontal: 12), color: _line),
           Expanded(
-            child: _rankList(
-              title: '累计下载 TOP',
-              items: downloaded,
-              color: _red,
-              formatter: formatBytes,
-            ),
+            child: _rankList(title: '累计下载 TOP', items: downloaded, color: _red, formatter: formatBytes),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTodayPanel(
-    DashboardData data,
-    bool privacy, {
-    double height = 360,
-  }) {
+  Widget _buildTodayPanel(DashboardData data, bool privacy, {double height = 360}) {
     final tokens = _tokens;
     final upload = _topKv(data.uploadIncrementDataList, privacy, limit: 10);
     final download = _topKv(data.downloadIncrementDataList, privacy, limit: 10);
     final uploadAll = _topKv(data.uploadIncrementDataList, privacy, limit: 999);
-    final downloadAll = _topKv(
-      data.downloadIncrementDataList,
-      privacy,
-      limit: 999,
-    );
+    final downloadAll = _topKv(data.downloadIncrementDataList, privacy, limit: 999);
     return _boardPanel(
       title: '今日增量',
       subtitle: '上传/下载增量结构与 TOP 明细',
@@ -2896,54 +2386,32 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                     items: uploadAll,
                     total: data.todayUploadIncrement,
                     baseColor: _cyan,
-                    icon: shadcn.LucideIcons.arrowUp,
+                    icon: LucideIcons.arrowUp,
                   ),
                 ),
-                Container(
-                  width: tokens.size(1),
-                  margin: tokens.edgeSymmetric(horizontal: 12),
-                  color: _line,
-                ),
+                Container(width: tokens.size(1), margin: tokens.edgeSymmetric(horizontal: 12), color: _line),
                 Expanded(
                   child: _todayIncrementDonutBlock(
                     title: '今日下载',
                     items: downloadAll,
                     total: data.todayDownloadIncrement,
                     baseColor: _orange,
-                    icon: shadcn.LucideIcons.arrowDown,
+                    icon: LucideIcons.arrowDown,
                   ),
                 ),
               ],
             ),
           ),
-          Container(
-            height: tokens.size(1),
-            margin: tokens.edgeSymmetric(vertical: 12),
-            color: _line,
-          ),
+          Container(height: tokens.size(1), margin: tokens.edgeSymmetric(vertical: 12), color: _line),
           Expanded(
             child: Row(
               children: [
                 Expanded(
-                  child: _rankList(
-                    title: '上传 TOP',
-                    items: upload,
-                    color: _cyan,
-                    formatter: formatBytes,
-                  ),
+                  child: _rankList(title: '上传 TOP', items: upload, color: _cyan, formatter: formatBytes),
                 ),
-                Container(
-                  width: tokens.size(1),
-                  margin: tokens.edgeSymmetric(horizontal: 12),
-                  color: _line,
-                ),
+                Container(width: tokens.size(1), margin: tokens.edgeSymmetric(horizontal: 12), color: _line),
                 Expanded(
-                  child: _rankList(
-                    title: '下载 TOP',
-                    items: download,
-                    color: _orange,
-                    formatter: formatBytes,
-                  ),
+                  child: _rankList(title: '下载 TOP', items: download, color: _orange, formatter: formatBytes),
                 ),
               ],
             ),
@@ -2976,22 +2444,14 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: _text,
-                  fontSize: tokens.font(12),
-                  fontWeight: FontWeight.w900,
-                ),
+                style: TextStyle(color: _text, fontSize: tokens.font(12), fontWeight: FontWeight.w900),
               ),
             ),
           ],
         ),
         tokens.vGap(8),
         Expanded(
-          child: _todayIncrementDonutChart(
-            items: items,
-            total: displayTotal,
-            baseColor: baseColor,
-          ),
+          child: _todayIncrementDonutChart(items: items, total: displayTotal, baseColor: baseColor),
         ),
       ],
     );
@@ -3013,19 +2473,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _line.withValues(alpha: 0.72),
-                    width: tokens.size(16),
-                  ),
+                  border: Border.all(color: _line.withValues(alpha: 0.72), width: tokens.size(16)),
                 ),
               ),
               Text(
                 '无数据',
-                style: TextStyle(
-                  color: _muted,
-                  fontSize: tokens.font(11),
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(color: _muted, fontSize: tokens.font(11), fontWeight: FontWeight.w800),
               ),
             ],
           ),
@@ -3044,11 +2497,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       color: _panel,
       canShowMarker: false,
       builder: (dataPoint, point, series, pointIndex, seriesIndex) =>
-          _todayIncrementDonutTooltip(
-            dataPoint,
-            items,
-            onClose: () => tooltipBehavior.hide(),
-          ),
+          _todayIncrementDonutTooltip(dataPoint, items, onClose: () => tooltipBehavior.hide()),
     );
 
     return SfCircularChart(
@@ -3063,20 +2512,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                 formatBytes(total),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: _text,
-                  fontSize: tokens.font(13),
-                  fontWeight: FontWeight.w900,
-                ),
+                style: TextStyle(color: _text, fontSize: tokens.font(13), fontWeight: FontWeight.w900),
               ),
               tokens.vGap(2),
               Text(
                 '总计',
-                style: TextStyle(
-                  color: _muted,
-                  fontSize: tokens.font(10),
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(color: _muted, fontSize: tokens.font(10), fontWeight: FontWeight.w700),
               ),
             ],
           ),
@@ -3096,11 +2537,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  Widget _todayIncrementDonutTooltip(
-    dynamic dataPoint,
-    List<_NameValuePoint> items, {
-    VoidCallback? onClose,
-  }) {
+  Widget _todayIncrementDonutTooltip(dynamic dataPoint, List<_NameValuePoint> items, {VoidCallback? onClose}) {
     if (dataPoint is! _NameValuePoint) {
       return const SizedBox.shrink();
     }
@@ -3113,11 +2550,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     ], onClose: onClose);
   }
 
-  Widget _buildMonthlyPublishPanel(
-    DashboardData data,
-    bool privacy, {
-    double height = 300,
-  }) {
+  Widget _buildMonthlyPublishPanel(DashboardData data, bool privacy, {double height = 300}) {
     final items = _monthTrend(data);
     return _boardPanel(
       title: '月度发布',
@@ -3126,19 +2559,12 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       child: SfCartesianChart(
         plotAreaBorderWidth: 0,
         margin: EdgeInsets.zero,
-        primaryXAxis: CategoryAxis(
-          majorGridLines: const MajorGridLines(width: 0),
-          labelStyle: _axisStyle(),
-        ),
+        primaryXAxis: CategoryAxis(majorGridLines: const MajorGridLines(width: 0), labelStyle: _axisStyle()),
         primaryYAxis: NumericAxis(
-          majorGridLines: MajorGridLines(
-            width: 0.7,
-            color: _line.withValues(alpha: 0.55),
-          ),
+          majorGridLines: MajorGridLines(width: 0.7, color: _line.withValues(alpha: 0.55)),
           axisLine: const AxisLine(width: 0),
           labelStyle: _axisStyle(),
-          axisLabelFormatter: (details) =>
-              ChartAxisLabel(_formatCount(details.value), _axisStyle()),
+          axisLabelFormatter: (details) => ChartAxisLabel(_formatCount(details.value), _axisStyle()),
         ),
         trackballBehavior: TrackballBehavior(
           enable: true,
@@ -3147,8 +2573,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
           lineColor: _amber.withValues(alpha: 0.58),
           lineWidth: 1,
           tooltipSettings: const InteractiveTooltip(enable: false),
-          builder: (context, details) =>
-              _monthlyTrackballTooltip(details, items, data, privacy),
+          builder: (context, details) => _monthlyTrackballTooltip(details, items, data, privacy),
         ),
         series: <CartesianSeries>[
           SplineAreaSeries<_TrendPoint, String>(
@@ -3166,20 +2591,14 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
             xValueMapper: (p, _) => _formatMonth(p.label),
             yValueMapper: (p, _) => p.published,
             color: _amber.withValues(alpha: 0.72),
-            borderRadius: BorderRadius.vertical(
-              top: shadcn.Theme.of(context).radiusXsRadius,
-            ),
+            borderRadius: BorderRadius.vertical(top: Theme.of(context).radiusXsRadius),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAccountPanel(
-    DashboardData data,
-    bool privacy, {
-    double height = 340,
-  }) {
+  Widget _buildAccountPanel(DashboardData data, bool privacy, {double height = 340}) {
     final tokens = _tokens;
     final email = _topKv(data.emailCount, privacy, limit: 8);
     final username = _topKv(data.usernameCount, privacy, limit: 8);
@@ -3190,25 +2609,11 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
       child: Row(
         children: [
           Expanded(
-            child: _rankList(
-              title: '邮箱分布',
-              items: email,
-              color: _violet,
-              formatter: _formatCount,
-            ),
+            child: _rankList(title: '邮箱分布', items: email, color: _violet, formatter: _formatCount),
           ),
-          Container(
-            width: tokens.size(1),
-            margin: tokens.edgeSymmetric(horizontal: 12),
-            color: _line,
-          ),
+          Container(width: tokens.size(1), margin: tokens.edgeSymmetric(horizontal: 12), color: _line),
           Expanded(
-            child: _rankList(
-              title: '用户名分布',
-              items: username,
-              color: _blue,
-              formatter: _formatCount,
-            ),
+            child: _rankList(title: '用户名分布', items: username, color: _blue, formatter: _formatCount),
           ),
         ],
       ),
@@ -3222,20 +2627,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     required String Function(num) formatter,
   }) {
     final tokens = _tokens;
-    final maxValue = items.fold<num>(
-      0,
-      (max, item) => math.max(max, item.value),
-    );
+    final maxValue = items.fold<num>(0, (max, item) => math.max(max, item.value));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: TextStyle(
-            color: _text,
-            fontSize: tokens.font(13),
-            fontWeight: FontWeight.w900,
-          ),
+          style: TextStyle(color: _text, fontSize: tokens.font(13), fontWeight: FontWeight.w900),
         ),
         tokens.vGap(12),
         Expanded(
@@ -3271,21 +2669,13 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
                                 item.name,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: _text,
-                                  fontSize: tokens.font(12),
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: TextStyle(color: _text, fontSize: tokens.font(12), fontWeight: FontWeight.w700),
                               ),
                             ),
                             tokens.hGap(8),
                             Text(
                               formatter(item.value),
-                              style: TextStyle(
-                                color: _muted,
-                                fontSize: tokens.font(11),
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: TextStyle(color: _muted, fontSize: tokens.font(11), fontWeight: FontWeight.w700),
                             ),
                           ],
                         ),
@@ -3305,11 +2695,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     return Center(
       child: Text(
         text,
-        style: TextStyle(
-          color: _muted,
-          fontSize: tokens.font(12),
-          fontWeight: FontWeight.w700,
-        ),
+        style: TextStyle(color: _muted, fontSize: tokens.font(12), fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -3318,29 +2704,18 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     final tokens = _tokens;
     return Container(
       height: tokens.size(4),
-      decoration: BoxDecoration(
-        color: _line.withValues(alpha: 0.55),
-        borderRadius: shadcn.Theme.of(context).borderRadiusXs,
-      ),
+      decoration: BoxDecoration(color: _line.withValues(alpha: 0.55), borderRadius: Theme.of(context).borderRadiusXs),
       alignment: Alignment.centerLeft,
       child: FractionallySizedBox(
         widthFactor: value.clamp(0.0, 1.0).toDouble(),
         child: Container(
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: shadcn.Theme.of(context).borderRadiusXs,
-          ),
+          decoration: BoxDecoration(color: color, borderRadius: Theme.of(context).borderRadiusXs),
         ),
       ),
     );
   }
 
-  Widget _boardPanel({
-    required String title,
-    required String subtitle,
-    required double height,
-    required Widget child,
-  }) {
+  Widget _boardPanel({required String title, required String subtitle, required double height, required Widget child}) {
     final tokens = _tokens;
     return _panelContainer(
       height: height,
@@ -3350,33 +2725,21 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
         children: [
           Row(
             children: [
-              Container(
-                width: tokens.size(3),
-                height: tokens.size(15),
-                color: _cyan,
-              ),
+              Container(width: tokens.size(3), height: tokens.size(15), color: _cyan),
               tokens.hGap(8),
               Expanded(
                 child: Text(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: _text,
-                    fontSize: tokens.font(15),
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: TextStyle(color: _text, fontSize: tokens.font(15), fontWeight: FontWeight.w900),
                 ),
               ),
               Text(
                 subtitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: _muted,
-                  fontSize: tokens.font(11),
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(color: _muted, fontSize: tokens.font(11), fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -3393,7 +2756,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     double? height,
   }) {
     final tokens = _tokens;
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     return Container(
       height: height == null ? null : tokens.size(height),
       padding: tokens.resolvePadding(padding),
@@ -3421,8 +2784,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     );
   }
 
-  TextStyle _axisStyle() =>
-      TextStyle(color: _muted, fontSize: _tokens.font(10));
+  TextStyle _axisStyle() => TextStyle(color: _muted, fontSize: _tokens.font(10));
 
   List<_TrendPoint> _monthTrend(DashboardData data) {
     final map = SplayTreeMap<String, _TrendPoint>();
@@ -3446,8 +2808,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
     final map = SplayTreeMap<String, _TrendPoint>();
     for (final site in data.stackChartDataList) {
       for (final record in site.value) {
-        final old =
-            map[record.createdAt] ?? _TrendPoint(record.createdAt, 0, 0, 0);
+        final old = map[record.createdAt] ?? _TrendPoint(record.createdAt, 0, 0, 0);
         map[record.createdAt] = old.copyWith(
           uploaded: old.uploaded + record.uploaded,
           downloaded: old.downloaded + record.downloaded,
@@ -3467,10 +2828,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }) {
     final items =
         source
-            .map(
-              (record) =>
-                  _NameValuePoint(_mask(record.name, privacy), valueOf(record)),
-            )
+            .map((record) => _NameValuePoint(_mask(record.name, privacy), valueOf(record)))
             .where((item) => item.value > 0)
             .toList()
           ..sort((a, b) => b.value.compareTo(a.value));
@@ -3481,10 +2839,7 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   List<_NameValuePoint> _topKv(List<KV> source, bool privacy, {int limit = 8}) {
     final items =
         source
-            .map(
-              (record) =>
-                  _NameValuePoint(_mask(record.name, privacy), record.value),
-            )
+            .map((record) => _NameValuePoint(_mask(record.name, privacy), record.value))
             .where((item) => item.value > 0)
             .toList()
           ..sort((a, b) => b.value.compareTo(a.value));
@@ -3493,25 +2848,18 @@ class _DesktopDashboardPageState extends ConsumerState<DesktopDashboardPage> {
   }
 
   List<_NameValuePoint> _seedAverageGroups(List<KV> source, bool privacy) {
-    final seeds = source.where((item) => item.value > 0).toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    final seeds = source.where((item) => item.value > 0).toList()..sort((a, b) => b.value.compareTo(a.value));
     if (seeds.isEmpty) return const [];
 
     final total = seeds.fold<num>(0, (sum, item) => sum + item.value);
     final average = total / seeds.length;
     final visible = seeds.where((item) => item.value >= average).toList();
     final belowAverage = seeds.where((item) => item.value < average).toList();
-    final items = [
-      for (final record in visible)
-        _NameValuePoint(_mask(record.name, privacy), record.value),
-    ];
+    final items = [for (final record in visible) _NameValuePoint(_mask(record.name, privacy), record.value)];
 
     if (belowAverage.isNotEmpty) {
       items.add(
-        _NameValuePoint(
-          '低于平均 ${belowAverage.length} 个站点',
-          belowAverage.fold<num>(0, (sum, item) => sum + item.value),
-        ),
+        _NameValuePoint('低于平均 ${belowAverage.length} 个站点', belowAverage.fold<num>(0, (sum, item) => sum + item.value)),
       );
     }
 
@@ -3544,8 +2892,7 @@ class _DesignationCard extends StatefulWidget {
   State<_DesignationCard> createState() => _DesignationCardState();
 }
 
-class _DesignationCardState extends State<_DesignationCard>
-    with TickerProviderStateMixin {
+class _DesignationCardState extends State<_DesignationCard> with TickerProviderStateMixin {
   late AnimationController _animCtrl;
 
   static const _designations = <int, String>{
@@ -3562,10 +2909,7 @@ class _DesignationCardState extends State<_DesignationCard>
   @override
   void initState() {
     super.initState();
-    _animCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat();
+    _animCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
   }
 
   @override
@@ -3606,9 +2950,9 @@ class _DesignationCardState extends State<_DesignationCard>
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => showDialog(
+      onTap: () => appShowDialog(
         context: context,
-        builder: (_) => Dialog(child: _buildPopoverContent(tokens, cs, typo)),
+        builder: (_) => _buildPopoverContent(tokens, cs, typo),
       ),
       child: Container(
         width: widget.width,
@@ -3618,19 +2962,13 @@ class _DesignationCardState extends State<_DesignationCard>
         child: SizedBox(
           width: widget.width - tokens.size(24),
           height: widget.height,
-          child: _animatedDesignationText(
-            fontSize: widget.fontSize,
-            tokens: tokens,
-          ),
+          child: _animatedDesignationText(fontSize: widget.fontSize, tokens: tokens),
         ),
       ),
     );
   }
 
-  Widget _animatedDesignationText({
-    required double fontSize,
-    required _DashboardThemeTokens tokens,
-  }) {
+  Widget _animatedDesignationText({required double fontSize, required _DashboardThemeTokens tokens}) {
     return AnimatedBuilder(
       animation: _animCtrl,
       builder: (context, child) {
@@ -3640,13 +2978,9 @@ class _DesignationCardState extends State<_DesignationCard>
           child: ShaderMask(
             shaderCallback: (bounds) {
               final colors = _colors(tokens);
-              final stops = List.generate(
-                colors.length,
-                (i) => i / (colors.length - 1),
-              );
+              final stops = List.generate(colors.length, (i) => i / (colors.length - 1));
               final offset = _animCtrl.value;
-              final animatedStops =
-                  stops.map((s) => (s + offset) % 1.0).toList()..sort();
+              final animatedStops = stops.map((s) => (s + offset) % 1.0).toList()..sort();
 
               return LinearGradient(
                 colors: colors,
@@ -3659,11 +2993,7 @@ class _DesignationCardState extends State<_DesignationCard>
             blendMode: BlendMode.srcIn,
             child: Stack(
               children: [
-                for (final offset in const [
-                  Offset.zero,
-                  Offset(0.45, 0),
-                  Offset(0, 0.35),
-                ])
+                for (final offset in const [Offset.zero, Offset(0.45, 0), Offset(0, 0.35)])
                   Transform.translate(
                     offset: offset,
                     child: Text(
@@ -3684,20 +3014,15 @@ class _DesignationCardState extends State<_DesignationCard>
     );
   }
 
-  Widget _buildPopoverContent(
-    _DashboardThemeTokens tokens,
-    shadcn.ColorScheme cs,
-    shadcn.Typography typo,
-  ) {
-    final entries = _designations.entries.toList()
-      ..sort((a, b) => b.key.compareTo(a.key));
+  Widget _buildPopoverContent(_DashboardThemeTokens tokens, ColorScheme cs, Typography typo) {
+    final entries = _designations.entries.toList()..sort((a, b) => b.key.compareTo(a.key));
     final progress = _unlockProgress();
     return Container(
       width: tokens.size(230),
       padding: tokens.edgeAll(12),
       decoration: BoxDecoration(
         color: appSurfaceColor(context, cs.background),
-        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+        borderRadius: Theme.of(context).borderRadiusMd,
         border: Border.all(color: cs.border),
         boxShadow: [
           BoxShadow(
@@ -3726,9 +3051,7 @@ class _DesignationCardState extends State<_DesignationCard>
                     width: tokens.size(6),
                     height: tokens.size(6),
                     decoration: BoxDecoration(
-                      color: isCurrent
-                          ? tokens.red
-                          : (isActive ? tokens.green : cs.border),
+                      color: isCurrent ? tokens.red : (isActive ? tokens.green : cs.border),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -3738,9 +3061,7 @@ class _DesignationCardState extends State<_DesignationCard>
                     child: Text(
                       '${entry.key}站',
                       style: typo.xSmall.copyWith(
-                        color: isActive
-                            ? cs.foreground
-                            : cs.mutedForeground.withValues(alpha: 0.4),
+                        color: isActive ? cs.foreground : cs.mutedForeground.withValues(alpha: 0.4),
                         fontSize: tokens.font(11),
                       ),
                     ),
@@ -3750,11 +3071,7 @@ class _DesignationCardState extends State<_DesignationCard>
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (isCurrent) ...[
-                          Icon(
-                            shadcn.LucideIcons.check,
-                            size: tokens.size(13),
-                            color: tokens.red,
-                          ),
+                          Icon(LucideIcons.check, size: tokens.size(13), color: tokens.red),
                           tokens.hGap(6),
                         ],
                         Flexible(
@@ -3764,14 +3081,8 @@ class _DesignationCardState extends State<_DesignationCard>
                             style: typo.xSmall.copyWith(
                               color: isCurrent
                                   ? tokens.red
-                                  : (isActive
-                                        ? cs.foreground
-                                        : cs.mutedForeground.withValues(
-                                            alpha: 0.4,
-                                          )),
-                              fontWeight: isCurrent
-                                  ? FontWeight.w700
-                                  : FontWeight.normal,
+                                  : (isActive ? cs.foreground : cs.mutedForeground.withValues(alpha: 0.4)),
+                              fontWeight: isCurrent ? FontWeight.w700 : FontWeight.normal,
                               fontSize: tokens.font(12),
                             ),
                           ),
@@ -3789,8 +3100,7 @@ class _DesignationCardState extends State<_DesignationCard>
   }
 
   _DesignationProgress _unlockProgress() {
-    final levels = _designations.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+    final levels = _designations.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
     var current = levels.first;
     MapEntry<int, String>? next;
 
@@ -3830,15 +3140,15 @@ class _DesignationCardState extends State<_DesignationCard>
 
   Widget _buildUnlockProgress(
     _DashboardThemeTokens tokens,
-    shadcn.ColorScheme cs,
-    shadcn.Typography typo,
+    ColorScheme cs,
+    Typography typo,
     _DesignationProgress progress,
   ) {
     return Container(
       padding: tokens.edgeAll(10),
       decoration: BoxDecoration(
         color: cs.muted.withValues(alpha: 0.18),
-        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+        borderRadius: Theme.of(context).borderRadiusMd,
         border: Border.all(color: cs.border.withValues(alpha: 0.6)),
       ),
       child: Column(
@@ -3849,21 +3159,12 @@ class _DesignationCardState extends State<_DesignationCard>
             children: [
               Text(
                 '${widget.siteCount}站',
-                style: typo.small.copyWith(
-                  color: tokens.red,
-                  fontWeight: FontWeight.w800,
-                  fontSize: tokens.font(13),
-                ),
+                style: typo.small.copyWith(color: tokens.red, fontWeight: FontWeight.w800, fontSize: tokens.font(13)),
               ),
               const Spacer(),
               Text(
-                progress.completed
-                    ? '已解锁最高称号'
-                    : '距 ${progress.nextTitle} 还差 ${progress.remaining}站',
-                style: typo.xSmall.copyWith(
-                  color: cs.mutedForeground,
-                  fontSize: tokens.font(11),
-                ),
+                progress.completed ? '已解锁最高称号' : '距 ${progress.nextTitle} 还差 ${progress.remaining}站',
+                style: typo.xSmall.copyWith(color: cs.mutedForeground, fontSize: tokens.font(11)),
               ),
             ],
           ),
@@ -3872,16 +3173,13 @@ class _DesignationCardState extends State<_DesignationCard>
             height: tokens.size(5),
             decoration: BoxDecoration(
               color: cs.border.withValues(alpha: 0.55),
-              borderRadius: shadcn.Theme.of(context).borderRadiusXs,
+              borderRadius: Theme.of(context).borderRadiusXs,
             ),
             alignment: Alignment.centerLeft,
             child: FractionallySizedBox(
               widthFactor: progress.ratio.clamp(0.0, 1.0).toDouble(),
               child: Container(
-                decoration: BoxDecoration(
-                  color: tokens.red,
-                  borderRadius: shadcn.Theme.of(context).borderRadiusXs,
-                ),
+                decoration: BoxDecoration(color: tokens.red, borderRadius: Theme.of(context).borderRadiusXs),
               ),
             ),
           ),
@@ -3892,11 +3190,7 @@ class _DesignationCardState extends State<_DesignationCard>
                 : '${progress.currentLevel}站 ${progress.currentTitle} → ${progress.nextLevel}站 ${progress.nextTitle}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: typo.xSmall.copyWith(
-              color: cs.foreground,
-              fontSize: tokens.font(11),
-              fontWeight: FontWeight.w600,
-            ),
+            style: typo.xSmall.copyWith(color: cs.foreground, fontSize: tokens.font(11), fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -3943,12 +3237,7 @@ class _TrendPoint {
   const _TrendPoint(this.label, this.uploaded, this.downloaded, this.published);
 
   _TrendPoint copyWith({num? uploaded, num? downloaded, num? published}) {
-    return _TrendPoint(
-      label,
-      uploaded ?? this.uploaded,
-      downloaded ?? this.downloaded,
-      published ?? this.published,
-    );
+    return _TrendPoint(label, uploaded ?? this.uploaded, downloaded ?? this.downloaded, published ?? this.published);
   }
 }
 
@@ -3972,12 +3261,7 @@ class _TrendSitePoint {
   final num downloaded;
   final num published;
 
-  const _TrendSitePoint(
-    this.name,
-    this.uploaded,
-    this.downloaded,
-    this.published,
-  );
+  const _TrendSitePoint(this.name, this.uploaded, this.downloaded, this.published);
 }
 
 class _ChartTooltipData {
@@ -3993,8 +3277,7 @@ class _TooltipLine {
   final Color? color;
   final List<_TooltipSegment> segments;
 
-  const _TooltipLine(this.label, this.value, [this.color])
-    : segments = const [];
+  const _TooltipLine(this.label, this.value, [this.color]) : segments = const [];
 
   const _TooltipLine.rich(this.label, this.segments) : value = '', color = null;
 
@@ -4012,8 +3295,8 @@ class _TooltipSegment {
 }
 
 class _DashboardThemeTokens {
-  final shadcn.ThemeData theme;
-  final shadcn.ColorScheme cs;
+  final ThemeData theme;
+  final ColorScheme cs;
   final bool isDark;
   final double densityScale;
   final double textScale;
@@ -4053,22 +3336,14 @@ class _DashboardThemeTokens {
   });
 
   factory _DashboardThemeTokens.of(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = cs.brightness == Brightness.dark;
-    final densityScale =
-        ((theme.density.baseContainerPadding / 20.0) * theme.scaling).clamp(
-          0.48,
-          1.45,
-        );
+    final densityScale = ((theme.density.baseContainerPadding / 20.0) * theme.scaling).clamp(0.48, 1.45);
     final textScale = theme.scaling.clamp(0.82, 1.35);
     final accent = cs.primary;
     final danger = cs.destructive;
-    final cool = _tone(
-      accent,
-      hueShift: isDark ? 18 : 10,
-      saturationScale: 1.12,
-    );
+    final cool = _tone(accent, hueShift: isDark ? 18 : 10, saturationScale: 1.12);
     final success = _tone(accent, hueShift: 120, saturationScale: 0.98);
     final warning = _tone(accent, hueShift: 62, saturationScale: 1.08);
     final info = _tone(accent, hueShift: -34, saturationScale: 1.04);
@@ -4097,12 +3372,7 @@ class _DashboardThemeTokens {
     );
   }
 
-  static Color _tone(
-    Color color, {
-    double hueShift = 0,
-    double saturationScale = 1,
-    double lightnessDelta = 0,
-  }) {
+  static Color _tone(Color color, {double hueShift = 0, double saturationScale = 1, double lightnessDelta = 0}) {
     final hsl = HSLColor.fromColor(color);
     return hsl
         .withHue((hsl.hue + hueShift) % 360)
@@ -4127,11 +3397,7 @@ class _DashboardThemeTokens {
         : LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color.lerp(background, cyan, 0.08)!,
-              background,
-              Color.lerp(background, blue, 0.07)!,
-            ],
+            colors: [Color.lerp(background, cyan, 0.08)!, background, Color.lerp(background, blue, 0.07)!],
           );
   }
 
@@ -4140,18 +3406,13 @@ class _DashboardThemeTokens {
     end: Alignment.bottomRight,
     colors: isDark
         ? [cs.card, Color.lerp(cs.card, panelSoft, 0.30)!]
-        : [
-            Color.lerp(cs.card, background, 0.55)!,
-            Color.lerp(cs.card, cyan, 0.08)!,
-          ],
+        : [Color.lerp(cs.card, background, 0.55)!, Color.lerp(cs.card, cyan, 0.08)!],
   );
 
-  Color get panelBorder => isDark
-      ? line.withValues(alpha: 0.82)
-      : Color.lerp(line, cyan, 0.30)!.withValues(alpha: 0.84);
+  Color get panelBorder =>
+      isDark ? line.withValues(alpha: 0.82) : Color.lerp(line, cyan, 0.30)!.withValues(alpha: 0.84);
 
-  Color get panelShadow =>
-      isDark ? text.withValues(alpha: 0.06) : cyan.withValues(alpha: 0.11);
+  Color get panelShadow => isDark ? text.withValues(alpha: 0.06) : cyan.withValues(alpha: 0.11);
 
   List<Color> get treemapColors => [
     cyan,
@@ -4173,32 +3434,15 @@ class _DashboardThemeTokens {
   EdgeInsets edgeLTRB(num left, num top, num right, num bottom) =>
       EdgeInsets.fromLTRB(size(left), size(top), size(right), size(bottom));
 
-  EdgeInsets edgeOnly({
-    num left = 0,
-    num top = 0,
-    num right = 0,
-    num bottom = 0,
-  }) => EdgeInsets.only(
-    left: size(left),
-    top: size(top),
-    right: size(right),
-    bottom: size(bottom),
-  );
+  EdgeInsets edgeOnly({num left = 0, num top = 0, num right = 0, num bottom = 0}) =>
+      EdgeInsets.only(left: size(left), top: size(top), right: size(right), bottom: size(bottom));
 
   EdgeInsets edgeSymmetric({num horizontal = 0, num vertical = 0}) =>
-      EdgeInsets.symmetric(
-        horizontal: size(horizontal),
-        vertical: size(vertical),
-      );
+      EdgeInsets.symmetric(horizontal: size(horizontal), vertical: size(vertical));
 
   EdgeInsetsGeometry resolvePadding(EdgeInsetsGeometry padding) {
     final resolved = padding.resolve(TextDirection.ltr);
-    return EdgeInsets.fromLTRB(
-      size(resolved.left),
-      size(resolved.top),
-      size(resolved.right),
-      size(resolved.bottom),
-    );
+    return EdgeInsets.fromLTRB(size(resolved.left), size(resolved.top), size(resolved.right), size(resolved.bottom));
   }
 
   Widget vGap(num value) => SizedBox(height: size(value));

@@ -1,10 +1,8 @@
-import 'package:harvest/widgets/shadcn_compat.dart';
 import 'dart:async';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:harvest/core/config/app_config.dart';
@@ -19,7 +17,8 @@ import 'package:harvest/router/app_router.dart';
 import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_header_layout.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/shadcn_compat.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../login/login_history_provider.dart';
 import '../login/login_record.dart';
@@ -53,8 +52,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final webServer = kIsWeb ? _webServerFromPageUrl() : null;
     if (kDebugMode) {
       _serverController = TextEditingController(
-        text:
-            webServer ?? (savedServer.isNotEmpty ? savedServer : _debugServer),
+        text: webServer ?? (savedServer.isNotEmpty ? savedServer : _debugServer),
       );
       _usernameController = TextEditingController(text: _debugUsername);
       _passwordController = TextEditingController(text: _debugPassword);
@@ -101,10 +99,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final cs = theme.colorScheme;
 
     _fillFromLoginHistory(loginHistory);
-    ref.listen(
-      loginHistoryProvider,
-      (prev, next) => _fillFromLoginHistory(next),
-    );
+    ref.listen(loginHistoryProvider, (prev, next) => _fillFromLoginHistory(next));
     ref.listen<String?>(setupDialogBaseUrlProvider, (prev, next) {
       if (next == null || next.isEmpty) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -130,33 +125,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               child: AnimatedPadding(
                 duration: const Duration(milliseconds: 180),
                 curve: Curves.easeOutCubic,
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.viewInsetsOf(context).bottom,
-                ),
+                padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
                 child: SafeArea(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final verticalPadding = tokens.size(24);
-                      final minHeight =
-                          (constraints.maxHeight - verticalPadding * 2)
-                              .clamp(0.0, double.infinity)
-                              .toDouble();
+                      final minHeight = (constraints.maxHeight - verticalPadding * 2)
+                          .clamp(0.0, double.infinity)
+                          .toDouble();
 
                       return SingleChildScrollView(
-                        keyboardDismissBehavior:
-                            ScrollViewKeyboardDismissBehavior.onDrag,
-                        padding: tokens.edgeSymmetric(
-                          horizontal: 16,
-                          vertical: 24,
-                        ),
+                        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                        padding: tokens.edgeSymmetric(horizontal: 16, vertical: 24),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(minHeight: minHeight),
                           child: Align(
                             alignment: Alignment.center,
                             child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: tokens.formWidth,
-                              ),
+                              constraints: BoxConstraints(maxWidth: tokens.formWidth),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -179,15 +165,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   ShadTextField(
                                     controller: _serverController,
                                     placeholder: const Text('服务器地址'),
-                                    onSubmitted: (_) =>
-                                        FocusScope.of(context).unfocus(),
+                                    onSubmitted: (_) => FocusScope.of(context).unfocus(),
                                   ),
                                   tokens.fieldGap,
                                   ShadTextField(
                                     controller: _usernameController,
                                     placeholder: const Text('账号'),
-                                    onSubmitted: (_) =>
-                                        FocusScope.of(context).unfocus(),
+                                    onSubmitted: (_) => FocusScope.of(context).unfocus(),
                                   ),
                                   tokens.fieldGap,
                                   ShadTextField(
@@ -195,126 +179,77 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     placeholder: const Text('密码'),
                                     obscureText: true,
                                     maxLines: 1,
-                                    features: const [
-                                      shadcn.InputFeature.passwordToggle(),
-                                    ],
-                                    onSubmitted: (_) =>
-                                        FocusScope.of(context).unfocus(),
+                                    features: const [InputFeature.passwordToggle()],
+                                    onSubmitted: (_) => FocusScope.of(context).unfocus(),
                                   ),
                                   tokens.vGap(20),
                                   Row(
                                     children: [
                                       Expanded(
-                                        child: shadcn.Button.primary(
+                                        child: Button.primary(
                                           onPressed: auth.loading
                                               ? null
                                               : () async {
-                                                  final serverError =
-                                                      _validateServerAddress(
-                                                        _serverController.text,
-                                                      );
+                                                  final serverError = _validateServerAddress(_serverController.text);
                                                   if (serverError != null) {
                                                     Toast.error(serverError);
                                                     return;
                                                   }
-                                                  final baseUrl =
-                                                      AppConfig.normalizeBaseUrl(
-                                                        _serverController.text,
-                                                      );
-                                                  final setupStatus =
-                                                      await _fetchSetupStatus(
-                                                        baseUrl,
-                                                      );
-                                                  if (setupStatus?.needsSetup ==
-                                                      true) {
-                                                    await _showSetupDialog(
-                                                      baseUrl,
-                                                      setupStatus: setupStatus,
-                                                    );
+                                                  final baseUrl = AppConfig.normalizeBaseUrl(_serverController.text);
+                                                  final setupStatus = await _fetchSetupStatus(baseUrl);
+                                                  if (setupStatus?.needsSetup == true) {
+                                                    await _showSetupDialog(baseUrl, setupStatus: setupStatus);
                                                     return;
                                                   }
                                                   try {
                                                     await ref
-                                                        .read(
-                                                          authProvider
-                                                              .notifier,
-                                                        )
+                                                        .read(authProvider.notifier)
                                                         .login(
                                                           baseUrl,
-                                                          _usernameController
-                                                              .text
-                                                              .trim(),
-                                                          _passwordController
-                                                              .text,
+                                                          _usernameController.text.trim(),
+                                                          _passwordController.text,
                                                         );
                                                   } catch (e, trace) {
                                                     AppLogger.error(e);
                                                     AppLogger.error(trace);
-                                                    if (_isSetupRequiredError(
-                                                      e,
-                                                    )) {
+                                                    if (_isSetupRequiredError(e)) {
                                                       if (context.mounted) {
-                                                        await _showSetupDialog(
-                                                          baseUrl,
-                                                        );
+                                                        await _showSetupDialog(baseUrl);
                                                       }
                                                       return;
                                                     }
                                                     if (context.mounted) {
-                                                      Toast.error(
-                                                        _loginErrorMessage(e),
-                                                      );
+                                                      Toast.error(_loginErrorMessage(e));
                                                     }
                                                   }
                                                 },
-                                          child: Center(
-                                            child: Text(
-                                              auth.loading ? '登录中...' : '登录',
-                                            ),
-                                          ),
+                                          child: Center(child: Text(auth.loading ? '登录中...' : '登录')),
                                         ),
                                       ),
                                       if (showLoginHistory) ...[
                                         tokens.actionGap,
-                                        shadcn.IconButton.outline(
-                                          onPressed: auth.loading
-                                              ? null
-                                              : () => context.go(
-                                                  '/login-history',
-                                                ),
-                                          icon: shadcn.Tooltip(
+                                        IconButton.outline(
+                                          onPressed: auth.loading ? null : () => context.go('/login-history'),
+                                          icon: Tooltip(
                                             tooltip: (_) => const Text('登录历史'),
-                                            child: Icon(
-                                              shadcn.LucideIcons.history,
-                                              size: tokens.iconSize,
-                                            ),
+                                            child: Icon(LucideIcons.history, size: tokens.iconSize),
                                           ),
                                         ),
                                       ],
                                       tokens.actionGap,
-                                      shadcn.IconButton.outline(
-                                        onPressed: () =>
-                                            LogOverlayManager.toggle(context),
-                                        icon: shadcn.Tooltip(
+                                      IconButton.outline(
+                                        onPressed: () => LogOverlayManager.toggle(context),
+                                        icon: Tooltip(
                                           tooltip: (_) => const Text('日志中心'),
-                                          child: Icon(
-                                            shadcn.LucideIcons.terminal,
-                                            size: tokens.iconSize,
-                                          ),
+                                          child: Icon(LucideIcons.terminal, size: tokens.iconSize),
                                         ),
                                       ),
                                       tokens.actionGap,
-                                      shadcn.IconButton.outline(
-                                        onPressed: auth.loading
-                                            ? null
-                                            : _clearAllPersistentData,
-                                        icon: shadcn.Tooltip(
-                                          tooltip: (_) =>
-                                              const Text('清理所有持久化数据'),
-                                          child: Icon(
-                                            shadcn.LucideIcons.databaseZap,
-                                            size: tokens.iconSize,
-                                          ),
+                                      IconButton.outline(
+                                        onPressed: auth.loading ? null : _clearAllPersistentData,
+                                        icon: Tooltip(
+                                          tooltip: (_) => const Text('清理所有持久化数据'),
+                                          child: Icon(LucideIcons.databaseZap, size: tokens.iconSize),
                                         ),
                                       ),
                                     ],
@@ -354,27 +289,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      shadcn.IconButton.outline(
+                      IconButton.outline(
                         onPressed: _takeScreenshot,
-                        icon: shadcn.Tooltip(
+                        icon: Tooltip(
                           tooltip: (_) => const Text('截图分享'),
-                          child: Icon(
-                            shadcn.LucideIcons.camera,
-                            size: tokens.iconSize,
-                          ),
+                          child: Icon(LucideIcons.camera, size: tokens.iconSize),
                         ),
                       ),
                       tokens.actionGap,
-                      shadcn.IconButton.outline(
-                        onPressed: () =>
-                            unawaited(_appUpgradeController.openDialog()),
-                        icon: shadcn.Tooltip(
+                      IconButton.outline(
+                        onPressed: () => unawaited(_appUpgradeController.openDialog()),
+                        icon: Tooltip(
                           tooltip: (_) => const Text('APP 升级'),
-                          child: Icon(
-                            shadcn.LucideIcons.circleArrowUp,
-                            size: tokens.iconSize,
-                            color: cs.primary,
-                          ),
+                          child: Icon(LucideIcons.circleArrowUp, size: tokens.iconSize, color: cs.primary),
                         ),
                       ),
                     ],
@@ -436,10 +363,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
-  Future<void> _showSetupDialog(
-    String baseUrl, {
-    _SetupStatus? setupStatus,
-  }) async {
+  Future<void> _showSetupDialog(String baseUrl, {_SetupStatus? setupStatus}) async {
     if (!mounted) return;
     final status = setupStatus ?? await _fetchSetupStatus(baseUrl);
     if (!mounted) return;
@@ -447,7 +371,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       context: context,
       builder: (ctx) {
         final size = MediaQuery.sizeOf(ctx);
-        return shadcn.AlertDialog(
+        return AlertDialog(
           content: SizedBox(
             width: min(size.width - 32, 760),
             child: _SetupDialogContent(baseUrl: baseUrl, setupStatus: status),
@@ -478,18 +402,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _clearAllPersistentData() async {
     final confirmed = await appShowDialog<bool>(
       context: context,
-      builder: (ctx) => shadcn.AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: const Text('清理所有持久化数据'),
         content: const Text('将清理登录态、登录历史、全局设置和所有本地空间数据。当前输入框内容也会清空。'),
         actions: [
-          shadcn.Button.outline(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
-          ),
-          shadcn.Button.destructive(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('清理'),
-          ),
+          Button.outline(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('取消')),
+          Button.destructive(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('清理')),
         ],
       ),
     );
@@ -524,8 +442,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   String _loginErrorMessage(Object error) {
     if (error is DioException) {
-      if (error.type == DioExceptionType.cancel &&
-          _isCredentialErrorMessage(error.error?.toString())) {
+      if (error.type == DioExceptionType.cancel && _isCredentialErrorMessage(error.error?.toString())) {
         return '账号或密码错误';
       }
       final status = error.response?.statusCode;
@@ -581,29 +498,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 }
 
 class _LoginThemeTokens {
-  final shadcn.ThemeData theme;
+  final ThemeData theme;
   final double densityScale;
   final double textScale;
 
-  _LoginThemeTokens._({
-    required this.theme,
-    required this.densityScale,
-    required this.textScale,
-  });
+  _LoginThemeTokens._({required this.theme, required this.densityScale, required this.textScale});
 
   factory _LoginThemeTokens.of(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
-    final densityScale =
-        ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(
-          0.62,
-          1.45,
-        );
+    final theme = Theme.of(context);
+    final densityScale = ((theme.density.baseContentPadding / 16.0) * theme.scaling).clamp(0.62, 1.45);
     final textScale = theme.scaling.clamp(0.86, 1.30);
-    return _LoginThemeTokens._(
-      theme: theme,
-      densityScale: densityScale.toDouble(),
-      textScale: textScale.toDouble(),
-    );
+    return _LoginThemeTokens._(theme: theme, densityScale: densityScale.toDouble(), textScale: textScale.toDouble());
   }
 
   double size(num value) => value * densityScale;
@@ -621,10 +526,7 @@ class _LoginThemeTokens {
   SizedBox get actionGap => hGap(10);
 
   EdgeInsets edgeSymmetric({num horizontal = 0, num vertical = 0}) =>
-      EdgeInsets.symmetric(
-        horizontal: size(horizontal),
-        vertical: size(vertical),
-      );
+      EdgeInsets.symmetric(horizontal: size(horizontal), vertical: size(vertical));
 
   SizedBox hGap(num value) => SizedBox(width: size(value));
 
@@ -636,11 +538,7 @@ class _SetupStatus {
   final bool needsSetup;
   final Map<String, _DatabaseDefaults> databaseDefaults;
 
-  const _SetupStatus({
-    required this.initialized,
-    required this.needsSetup,
-    required this.databaseDefaults,
-  });
+  const _SetupStatus({required this.initialized, required this.needsSetup, required this.databaseDefaults});
 
   factory _SetupStatus.fromMap(Map<dynamic, dynamic> data) {
     final defaults = <String, _DatabaseDefaults>{};
@@ -714,7 +612,7 @@ class _SetupDialogContent extends StatefulWidget {
 }
 
 class _SetupDialogContentState extends State<_SetupDialogContent> {
-  final _stepperController = shadcn.StepperController();
+  final _stepperController = StepperController();
   final _hostCtrl = TextEditingController();
   final _portCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
@@ -753,14 +651,12 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return OverlayManagerLayer(
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.82,
-        ),
+        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.82),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -774,18 +670,10 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
                       children: [
                         Text(
                           'Go Harvest 初始化',
-                          style: theme.typography.large.copyWith(
-                            color: cs.foreground,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          _stepSubtitle,
-                          style: theme.typography.small.copyWith(
-                            color: cs.mutedForeground,
-                          ),
-                        ),
+                        Text(_stepSubtitle, style: theme.typography.small.copyWith(color: cs.mutedForeground)),
                       ],
                     ),
                   ),
@@ -796,14 +684,9 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
               _setupStepper(context),
               if (_error != null) ...[
                 const SizedBox(height: 12),
-                shadcn.Alert.destructive(
-                  leading: const Icon(shadcn.LucideIcons.circleAlert),
-                  content: Text(
-                    _error!,
-                    style: theme.typography.small.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                Alert.destructive(
+                  leading: const Icon(LucideIcons.circleAlert),
+                  content: Text(_error!, style: theme.typography.small.copyWith(fontWeight: FontWeight.w600)),
                 ),
               ],
               const SizedBox(height: 18),
@@ -826,36 +709,26 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
   Widget _statusBadge(BuildContext context) {
     final label = Text(_submitting ? '处理中' : '第 ${_step + 1}/3 步');
     if (_submitting) {
-      return shadcn.OutlineBadge(
-        leading: const SizedBox(
-          width: 12,
-          height: 12,
-          child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-        ),
+      return OutlineBadge(
+        leading: const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
         child: label,
       );
     }
 
-    return shadcn.OutlineBadge(child: label);
+    return OutlineBadge(child: label);
   }
 
   Widget _setupStepper(BuildContext context) {
     final horizontal = MediaQuery.sizeOf(context).width >= 720;
-    final stepper = shadcn.Stepper(
+    final stepper = Stepper(
       controller: _stepperController,
       direction: horizontal ? Axis.horizontal : Axis.vertical,
-      size: shadcn.StepSize.small,
-      variant: shadcn.StepVariant.line,
+      size: StepSize.small,
+      variant: StepVariant.line,
       steps: [
-        shadcn.Step(
-          title: const Text('数据库类型'),
-          contentBuilder: _databaseTypeStep,
-        ),
-        shadcn.Step(
-          title: const Text('数据库同步'),
-          contentBuilder: _databaseSyncStep,
-        ),
-        shadcn.Step(title: const Text('管理员账号'), contentBuilder: _adminStep),
+        Step(title: const Text('数据库类型'), contentBuilder: _databaseTypeStep),
+        Step(title: const Text('数据库同步'), contentBuilder: _databaseSyncStep),
+        Step(title: const Text('管理员账号'), contentBuilder: _adminStep),
       ],
     );
 
@@ -872,18 +745,18 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
         type: 'pgsql',
         title: 'PostgreSQL',
         description: '使用接口返回的 PGSQL 配置',
-        icon: shadcn.LucideIcons.server,
+        icon: LucideIcons.server,
       ),
       _databaseTypeCard(
         context,
         type: 'sqlite',
         title: 'SQLite',
         description: '使用本地 sqlite 数据库文件',
-        icon: shadcn.LucideIcons.fileText,
+        icon: LucideIcons.fileText,
       ),
     ];
 
-    return shadcn.RadioGroup<String>(
+    return RadioGroup<String>(
       value: _databaseType,
       enabled: !_submitting,
       onChanged: _selectDatabaseType,
@@ -895,10 +768,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
             if (compact)
               Column(
                 children: [
-                  for (var i = 0; i < choices.length; i++) ...[
-                    if (i > 0) const SizedBox(height: 10),
-                    choices[i],
-                  ],
+                  for (var i = 0; i < choices.length; i++) ...[if (i > 0) const SizedBox(height: 10), choices[i]],
                 ],
               )
             else
@@ -923,11 +793,11 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
     required String description,
     required IconData icon,
   }) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final selected = _databaseType == type;
 
-    return shadcn.RadioCard<String>(
+    return RadioCard<String>(
       value: type,
       enabled: !_submitting,
       filled: false,
@@ -941,21 +811,13 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
               height: 38,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: selected
-                    ? cs.primary.withValues(alpha: 0.10)
-                    : cs.muted.withValues(alpha: 0.18),
+                color: selected ? cs.primary.withValues(alpha: 0.10) : cs.muted.withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: selected
-                      ? cs.primary.withValues(alpha: 0.32)
-                      : cs.border.withValues(alpha: 0.70),
+                  color: selected ? cs.primary.withValues(alpha: 0.32) : cs.border.withValues(alpha: 0.70),
                 ),
               ),
-              child: Icon(
-                icon,
-                size: 18,
-                color: selected ? cs.primary : cs.mutedForeground,
-              ),
+              child: Icon(icon, size: 18, color: selected ? cs.primary : cs.mutedForeground),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -967,19 +829,14 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.typography.small.copyWith(
-                      color: cs.foreground,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 5),
                   Text(
                     description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.typography.xSmall.copyWith(
-                      color: cs.mutedForeground,
-                    ),
+                    style: theme.typography.xSmall.copyWith(color: cs.mutedForeground),
                   ),
                 ],
               ),
@@ -988,17 +845,8 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 160),
               child: selected
-                  ? Icon(
-                      shadcn.LucideIcons.circleCheck,
-                      key: const ValueKey('selected'),
-                      size: 18,
-                      color: cs.primary,
-                    )
-                  : SizedBox(
-                      key: const ValueKey('empty'),
-                      width: 18,
-                      height: 18,
-                    ),
+                  ? Icon(LucideIcons.circleCheck, key: const ValueKey('selected'), size: 18, color: cs.primary)
+                  : SizedBox(key: const ValueKey('empty'), width: 18, height: 18),
             ),
           ],
         ),
@@ -1072,7 +920,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
                 labelText: '数据库密码',
                 obscureText: true,
                 maxLines: 1,
-                features: const [shadcn.InputFeature.passwordToggle()],
+                features: const [InputFeature.passwordToggle()],
                 onChanged: (_) => _markDatabaseDirty(),
               ),
               _debugSwitchField(context),
@@ -1094,7 +942,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
     bool obscureText = false,
     int? maxLines = 1,
     TextInputType? keyboardType,
-    List<shadcn.InputFeature> features = const [],
+    List<InputFeature> features = const [],
     ValueChanged<String>? onChanged,
   }) {
     return ShadTextField(
@@ -1114,27 +962,17 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
     );
   }
 
-  BoxDecoration _formFieldDecoration(
-    BuildContext context, {
-    bool readOnly = false,
-  }) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+  BoxDecoration _formFieldDecoration(BuildContext context, {bool readOnly = false}) {
+    final cs = Theme.of(context).colorScheme;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final fillColor = readOnly
         ? cs.muted.withValues(alpha: dark ? 0.20 : 0.24)
-        : Color.alphaBlend(
-            cs.primary.withValues(alpha: dark ? 0.035 : 0.018),
-            cs.background,
-          );
+        : Color.alphaBlend(cs.primary.withValues(alpha: dark ? 0.035 : 0.018), cs.background);
 
     return BoxDecoration(
       color: fillColor,
       borderRadius: BorderRadius.circular(8),
-      border: Border.all(
-        color: readOnly
-            ? cs.border.withValues(alpha: 0.56)
-            : cs.border.withValues(alpha: 0.82),
-      ),
+      border: Border.all(color: readOnly ? cs.border.withValues(alpha: 0.56) : cs.border.withValues(alpha: 0.82)),
       boxShadow: readOnly
           ? null
           : [
@@ -1148,7 +986,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
   }
 
   Widget _debugSwitchField(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return Column(
@@ -1162,23 +1000,16 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
           decoration: _formFieldDecoration(context),
           child: Row(
             children: [
-              Icon(
-                shadcn.LucideIcons.terminal,
-                size: 16,
-                color: cs.mutedForeground,
-              ),
+              Icon(LucideIcons.terminal, size: 16, color: cs.mutedForeground),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   '开启',
-                  style: theme.typography.small.copyWith(
-                    color: cs.foreground,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
                 ),
               ),
               const SizedBox(width: 12),
-              shadcn.Switch(
+              Switch(
                 value: _debug,
                 enabled: !_submitting,
                 onChanged: _submitting
@@ -1218,7 +1049,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
                 label: _requiredLabel(context, '密码'),
                 obscureText: true,
                 maxLines: 1,
-                features: const [shadcn.InputFeature.passwordToggle()],
+                features: const [InputFeature.passwordToggle()],
               ),
               _setupTextField(
                 context,
@@ -1226,7 +1057,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
                 label: _requiredLabel(context, '确认密码'),
                 obscureText: true,
                 maxLines: 1,
-                features: const [shadcn.InputFeature.passwordToggle()],
+                features: const [InputFeature.passwordToggle()],
               ),
             ],
           ),
@@ -1236,11 +1067,11 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
   }
 
   Widget _stepPanel(BuildContext context, {required Widget child}) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Padding(
       padding: const EdgeInsets.only(top: 18, bottom: 10),
-      child: shadcn.Card(
+      child: Card(
         padding: const EdgeInsets.all(16),
         filled: true,
         fillColor: cs.muted.withValues(alpha: 0.08),
@@ -1251,20 +1082,13 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
     );
   }
 
-  Widget _fieldGrid(
-    BuildContext context, {
-    required List<Widget> children,
-    int maxColumns = 2,
-  }) {
+  Widget _fieldGrid(BuildContext context, {required List<Widget> children, int maxColumns = 2}) {
     final compact = MediaQuery.sizeOf(context).width < 720;
     if (compact) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (var i = 0; i < children.length; i++) ...[
-            if (i > 0) const SizedBox(height: 10),
-            children[i],
-          ],
+          for (var i = 0; i < children.length; i++) ...[if (i > 0) const SizedBox(height: 10), children[i]],
         ],
       );
     }
@@ -1276,29 +1100,24 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
         return Wrap(
           spacing: 16,
           runSpacing: 10,
-          children: [
-            for (final child in children) SizedBox(width: width, child: child),
-          ],
+          children: [for (final child in children) SizedBox(width: width, child: child)],
         );
       },
     );
   }
 
   Widget _fieldLabel(BuildContext context, String text) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return Text(
       text,
-      style: theme.typography.small.copyWith(
-        color: cs.foreground,
-        fontWeight: FontWeight.w600,
-      ),
+      style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
     );
   }
 
   Widget _requiredLabel(BuildContext context, String text) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     return Row(
@@ -1306,18 +1125,12 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
       children: [
         Text(
           text,
-          style: theme.typography.small.copyWith(
-            color: cs.foreground,
-            fontWeight: FontWeight.w600,
-          ),
+          style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
         ),
         const SizedBox(width: 3),
         Text(
           '*',
-          style: theme.typography.small.copyWith(
-            color: cs.destructive,
-            fontWeight: FontWeight.w700,
-          ),
+          style: theme.typography.small.copyWith(color: cs.destructive, fontWeight: FontWeight.w700),
         ),
       ],
     );
@@ -1326,10 +1139,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
   Widget _actions(BuildContext context) {
     final primaryText = switch (_step) {
       0 => '下一步',
-      1 =>
-        _submitting
-            ? '同步中...'
-            : (_databaseType == 'sqlite' ? '同步数据库' : '校验并同步'),
+      1 => _submitting ? '同步中...' : (_databaseType == 'sqlite' ? '同步数据库' : '校验并同步'),
       _ => _submitting ? '初始化中...' : '完成初始化',
     };
 
@@ -1338,30 +1148,18 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
       runSpacing: 8,
       alignment: WrapAlignment.end,
       children: [
-        shadcn.Button.outline(
+        Button.outline(
           onPressed: _submitting ? null : _handleSecondaryAction,
           alignment: Alignment.center,
-          leading: Icon(
-            _step == 0 ? shadcn.LucideIcons.x : shadcn.LucideIcons.arrowLeft,
-            size: 16,
-          ),
+          leading: Icon(_step == 0 ? LucideIcons.x : LucideIcons.arrowLeft, size: 16),
           child: Text(_step == 0 ? '取消' : '上一步'),
         ),
-        shadcn.Button.primary(
+        Button.primary(
           onPressed: _submitting ? null : _handlePrimaryAction,
           alignment: Alignment.center,
           leading: _submitting
-              ? const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: shadcn.CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Icon(
-                  _step == 2
-                      ? shadcn.LucideIcons.check
-                      : shadcn.LucideIcons.arrowRight,
-                  size: 16,
-                ),
+              ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+              : Icon(_step == 2 ? LucideIcons.check : LucideIcons.arrowRight, size: 16),
           child: Text(primaryText),
         ),
       ],
@@ -1437,7 +1235,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
   Future<void> _prepareDatabase() async {
     final validationError = _validateDatabase();
     if (validationError != null) {
-      _stepperController.setStatus(_step, shadcn.StepState.failed);
+      _stepperController.setStatus(_step, StepState.failed);
       setState(() => _error = validationError);
       return;
     }
@@ -1459,7 +1257,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
     } catch (e, st) {
       AppLogger.error('数据库初始化失败', e, st);
       if (mounted) {
-        _stepperController.setStatus(_step, shadcn.StepState.failed);
+        _stepperController.setStatus(_step, StepState.failed);
         setState(() => _error = _extractSetupMessage(e) ?? '$e');
       }
     } finally {
@@ -1471,13 +1269,9 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
     final adminUser = _adminUserCtrl.text.trim();
     final adminPass = _adminPassCtrl.text;
     final adminPassConfirm = _adminPassConfirmCtrl.text;
-    final validationError = _validateAdmin(
-      adminUser,
-      adminPass,
-      adminPassConfirm,
-    );
+    final validationError = _validateAdmin(adminUser, adminPass, adminPassConfirm);
     if (validationError != null) {
-      _stepperController.setStatus(2, shadcn.StepState.failed);
+      _stepperController.setStatus(2, StepState.failed);
       setState(() => _error = validationError);
       return;
     }
@@ -1488,19 +1282,14 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
     });
 
     try {
-      await _postSetup(API.setupInit, {
-        'admin_user': adminUser,
-        'admin_pass': adminPass,
-      });
+      await _postSetup(API.setupInit, {'admin_user': adminUser, 'admin_pass': adminPass});
       if (mounted) {
-        Navigator.of(
-          context,
-        ).pop(_SetupCredentials(username: adminUser, password: adminPass));
+        Navigator.of(context).pop(_SetupCredentials(username: adminUser, password: adminPass));
       }
     } catch (e, st) {
       AppLogger.error('初始化失败', e, st);
       if (mounted) {
-        _stepperController.setStatus(2, shadcn.StepState.failed);
+        _stepperController.setStatus(2, StepState.failed);
         setState(() => _error = _extractSetupMessage(e) ?? '$e');
       }
     } finally {
@@ -1510,11 +1299,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
 
   Map<String, dynamic> _databasePayload() {
     if (_databaseType == 'sqlite') {
-      return <String, dynamic>{
-        'database_type': 'sqlite',
-        'debug': _debug,
-        'name': _nameCtrl.text.trim(),
-      };
+      return <String, dynamic>{'database_type': 'sqlite', 'debug': _debug, 'name': _nameCtrl.text.trim()};
     }
 
     return <String, dynamic>{
@@ -1560,11 +1345,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
     return null;
   }
 
-  String? _validateAdmin(
-    String adminUser,
-    String adminPass,
-    String adminPassConfirm,
-  ) {
+  String? _validateAdmin(String adminUser, String adminPass, String adminPassConfirm) {
     if (!_databaseReady) return '请先完成数据库同步';
     if (adminUser.isEmpty) return '管理员用户名不能为空';
     if (adminPass.isEmpty) return '管理员密码不能为空';
@@ -1575,8 +1356,7 @@ class _SetupDialogContentState extends State<_SetupDialogContent> {
 
   String? _extractSetupMessage(dynamic value) {
     if (value is DioException) {
-      return _extractSetupMessage(value.response?.data) ??
-          value.error?.toString();
+      return _extractSetupMessage(value.response?.data) ?? value.error?.toString();
     }
     if (value is StateError) return value.message;
     if (value is Map) {

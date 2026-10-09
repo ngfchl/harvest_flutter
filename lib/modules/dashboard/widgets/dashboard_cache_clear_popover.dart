@@ -1,12 +1,11 @@
-import 'package:harvest/widgets/shadcn_compat.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/http/api.dart';
 import 'package:harvest/core/http/hooks.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/auth/session_state_reset.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/shadcn_compat.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 const _dashboardCacheClearItems = [
   _DashboardCacheClearItem('豆瓣缓存数据', '*douban*'),
@@ -30,10 +29,7 @@ class _DashboardCacheClearItem {
   const _DashboardCacheClearItem(this.name, this.value);
 }
 
-void showDashboardCacheClearPopover(
-  BuildContext anchorContext, {
-  bool above = false,
-}) {
+void showDashboardCacheClearPopover(BuildContext anchorContext, {bool above = false}) {
   showPopover<void>(
     context: anchorContext,
     alignment: above ? Alignment.bottomRight : Alignment.topRight,
@@ -48,28 +44,22 @@ class DashboardCacheClearPopover extends ConsumerStatefulWidget {
   const DashboardCacheClearPopover({super.key});
 
   @override
-  ConsumerState<DashboardCacheClearPopover> createState() =>
-      _DashboardCacheClearPopoverState();
+  ConsumerState<DashboardCacheClearPopover> createState() => _DashboardCacheClearPopoverState();
 }
 
-class _DashboardCacheClearPopoverState
-    extends ConsumerState<DashboardCacheClearPopover> {
+class _DashboardCacheClearPopoverState extends ConsumerState<DashboardCacheClearPopover> {
   static const _localScopeKey = '__local_scope__';
 
   String? _clearingKey;
 
   @override
   Widget build(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final width = (MediaQuery.sizeOf(context).width - 32)
-        .clamp(280.0, 360.0)
-        .toDouble();
-    final maxHeight = (MediaQuery.sizeOf(context).height * 0.62)
-        .clamp(320.0, 480.0)
-        .toDouble();
+    final width = (MediaQuery.sizeOf(context).width - 32).clamp(280.0, 360.0).toDouble();
+    final maxHeight = (MediaQuery.sizeOf(context).height * 0.62).clamp(320.0, 480.0).toDouble();
 
-    return shadcn.ModalContainer(
+    return ModalContainer(
       padding: EdgeInsets.all(theme.density.baseContentPadding * theme.scaling),
       child: SizedBox(
         width: width,
@@ -81,50 +71,34 @@ class _DashboardCacheClearPopoverState
             children: [
               Row(
                 children: [
-                  Icon(
-                    shadcn.LucideIcons.trash2,
-                    size: theme.scaling * 18,
-                    color: cs.primary,
-                  ),
+                  Icon(LucideIcons.trash2, size: theme.scaling * 18, color: cs.primary),
                   SizedBox(width: theme.density.baseGap * theme.scaling),
                   Expanded(
                     child: Text(
                       '缓存清理',
-                      style: theme.typography.large.copyWith(
-                        color: cs.foreground,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: theme.typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
                     ),
                   ),
-                  shadcn.IconButton.ghost(
-                    icon: Icon(
-                      shadcn.LucideIcons.x,
-                      size: theme.scaling * 16,
-                      color: cs.mutedForeground,
-                    ),
-                    onPressed: () => shadcn.closeOverlay(context),
+                  IconButton.ghost(
+                    icon: Icon(LucideIcons.x, size: theme.scaling * 16, color: cs.mutedForeground),
+                    onPressed: () => closeOverlay(context),
                   ),
                 ],
               ),
               SizedBox(height: theme.density.baseGap * theme.scaling * 0.5),
               Text(
                 '选择要清理的缓存范围',
-                style: theme.typography.xSmall.copyWith(
-                  color: cs.mutedForeground,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: theme.typography.xSmall.copyWith(color: cs.mutedForeground, fontWeight: FontWeight.w600),
               ),
               SizedBox(height: theme.density.baseGap * theme.scaling),
               _localScopeButton(context),
               SizedBox(height: theme.density.baseGap * theme.scaling * 1.5),
               Flexible(
-                child: shadcn.Card(
+                child: Card(
                   filled: true,
                   fillColor: cs.muted.withValues(alpha: 0.16),
                   borderColor: cs.border.withValues(alpha: 0.24),
-                  padding: EdgeInsets.all(
-                    theme.density.baseGap * theme.scaling,
-                  ),
+                  padding: EdgeInsets.all(theme.density.baseGap * theme.scaling),
                   child: SingleChildScrollView(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -155,57 +129,43 @@ class _DashboardCacheClearPopoverState
   }
 
   Widget _cacheButton(BuildContext context, _DashboardCacheClearItem item) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final clearing = _clearingKey == item.value;
 
     return SizedBox.expand(
-      child: shadcn.Button.outline(
+      child: Button.outline(
         onPressed: _clearingKey == null ? () => _clearCache(item) : null,
         leading: clearing
-            ? shadcn.CircularProgressIndicator(size: theme.scaling * 14)
-            : Icon(
-                shadcn.LucideIcons.database,
-                size: theme.scaling * 14,
-                color: cs.primary,
-              ),
+            ? CircularProgressIndicator(size: theme.scaling * 14)
+            : Icon(LucideIcons.database, size: theme.scaling * 14, color: cs.primary),
         child: Text(
           item.name,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: theme.typography.xSmall.copyWith(
-            color: cs.foreground,
-            fontWeight: FontWeight.w700,
-          ),
+          style: theme.typography.xSmall.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
         ),
       ),
     );
   }
 
   Widget _localScopeButton(BuildContext context) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final clearing = _clearingKey == _localScopeKey;
 
     return SizedBox(
       height: theme.scaling * 38,
-      child: shadcn.Button.outline(
+      child: Button.outline(
         onPressed: _clearingKey == null ? _clearLocalScopeData : null,
         leading: clearing
-            ? shadcn.CircularProgressIndicator(size: theme.scaling * 14)
-            : Icon(
-                shadcn.LucideIcons.databaseZap,
-                size: theme.scaling * 15,
-                color: cs.primary,
-              ),
+            ? CircularProgressIndicator(size: theme.scaling * 14)
+            : Icon(LucideIcons.databaseZap, size: theme.scaling * 15, color: cs.primary),
         child: Text(
           '本地空间数据',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: theme.typography.small.copyWith(
-            color: cs.foreground,
-            fontWeight: FontWeight.w700,
-          ),
+          style: theme.typography.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
         ),
       ),
     );

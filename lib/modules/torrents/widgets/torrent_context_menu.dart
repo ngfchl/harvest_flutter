@@ -1,16 +1,16 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/storage/hive_manager.dart';
 import 'package:harvest/core/storage/storage_keys.dart';
 import 'package:harvest/core/utils/feedback/toast.dart';
-import 'package:harvest/widgets/app_menu.dart';
+import 'package:harvest/widgets/app_dialog.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:harvest/widgets/shad_text_field.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
+import 'package:harvest/widgets/shadcn_compat.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter_material/shadcn_flutter_material.dart';
 
 import '../../download/model/downloader.dart';
 import '../model/torrent_model.dart';
@@ -296,7 +296,7 @@ Future<String?> showTorrentContextMenu({
             onSecondaryTapDown: (_) => close(null),
           ),
         ),
-        shadcn.ContextMenuPopup(
+        ContextMenuPopup(
           anchorContext: context,
           position: position,
           children: _contextMenuEntries(items: items, submenus: submenus, onSelect: close),
@@ -308,7 +308,7 @@ Future<String?> showTorrentContextMenu({
   return completer.future;
 }
 
-List<shadcn.MenuItem> _contextMenuEntries({
+List<MenuItem> _contextMenuEntries({
   required List<TorrentContextMenuItem> items,
   required Map<String, List<TorrentContextMenuItem>> submenus,
   required ValueChanged<String?> onSelect,
@@ -316,14 +316,14 @@ List<shadcn.MenuItem> _contextMenuEntries({
   return [
     for (final item in items)
       switch (item.type) {
-        TorrentContextMenuItemType.divider => const shadcn.MenuDivider(),
-        TorrentContextMenuItemType.label => shadcn.MenuLabel(child: Text(item.label).xSmall.muted),
-        TorrentContextMenuItemType.submenu => shadcn.MenuButton(
+        TorrentContextMenuItemType.divider => const MenuDivider(),
+        TorrentContextMenuItemType.label => MenuLabel(child: Text(item.label).xSmall.muted),
+        TorrentContextMenuItemType.submenu => MenuButton(
           leading: Icon(item.icon ?? Icons.chevron_right, size: 16),
           subMenu: _contextMenuEntries(items: submenus[item.value] ?? const [], submenus: submenus, onSelect: onSelect),
           child: SizedBox(width: 150, child: Text(item.label).small),
         ),
-        TorrentContextMenuItemType.action => shadcn.MenuButton(
+        TorrentContextMenuItemType.action => MenuButton(
           leading: Icon(item.icon ?? Icons.circle, size: 16),
           onPressed: (_) => onSelect(item.value),
           child: SizedBox(width: 150, child: Text(item.label).small),
@@ -419,10 +419,10 @@ class _MobileContextMenuState extends State<_MobileContextMenu> {
   }
 
   Widget _buildBackRow(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return ListTile(
       dense: true,
-      leading: Icon(shadcn.LucideIcons.chevronLeft, size: 20, color: cs.foreground),
+      leading: Icon(LucideIcons.chevronLeft, size: 20, color: cs.foreground),
       title: Text(
         '返回',
         style: TextStyle(fontSize: 14, color: cs.foreground, fontWeight: FontWeight.w600),
@@ -432,7 +432,7 @@ class _MobileContextMenuState extends State<_MobileContextMenu> {
   }
 
   Widget _buildItem(BuildContext context, TorrentContextMenuItem item) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return switch (item.type) {
       TorrentContextMenuItemType.divider => const Divider(height: 1),
@@ -627,6 +627,7 @@ Future<void> handleTorrentContextMenuAction({
   if (action == 'detail') {
     showAppSheet(
       context: context,
+      showDragHandle: false,
       builder: (_) => TorrentDetailSheet(downloaderId: downloaderId, torrent: torrent, siteMatch: siteMatch),
     );
     return;
@@ -762,10 +763,10 @@ void _confirmDeleteTorrents(
   OnTorrentAction onAction,
 ) {
   var deleteFilesWhenUnpreserved = _loadDeleteFilesWhenUnpreservedPref();
-  showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) {
-      final cs = shadcn.Theme.of(ctx).colorScheme;
+      final cs = Theme.of(ctx).colorScheme;
       return StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           title: Text('删除种子', style: TextStyle(color: cs.destructive)),
@@ -780,7 +781,7 @@ void _confirmDeleteTorrents(
                   Expanded(
                     child: Text('无其他站点保种时删除文件', style: TextStyle(color: cs.foreground, fontSize: 13)),
                   ),
-                  shadcn.Switch(
+                  Switch(
                     value: deleteFilesWhenUnpreserved,
                     onChanged: (value) => setDialogState(() {
                       deleteFilesWhenUnpreserved = value;
@@ -794,8 +795,8 @@ void _confirmDeleteTorrents(
             ],
           ),
           actions: [
-            shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
-            shadcn.Button.destructive(
+            Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+            Button.destructive(
               onPressed: () async {
                 closeAppSheet(ctx);
                 await _deleteTorrentsWithOptionalFiles(
@@ -818,10 +819,10 @@ void _confirmDeleteTorrents(
 void _showBatchLocationDialog(BuildContext context, DownloaderType type, List<String> ids, OnTorrentAction onAction) {
   final isQb = type == DownloaderType.qbittorrent;
   final ctrl = TextEditingController();
-  showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) {
-      final cs = shadcn.Theme.of(ctx).colorScheme;
+      final cs = Theme.of(ctx).colorScheme;
       return Dialog(
         backgroundColor: cs.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -849,9 +850,9 @@ void _showBatchLocationDialog(BuildContext context, DownloaderType type, List<St
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                    Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
                     const SizedBox(width: 8),
-                    shadcn.Button.primary(
+                    Button.primary(
                       onPressed: () async {
                         final path = ctrl.text.trim();
                         if (path.isEmpty) {
@@ -881,10 +882,10 @@ void _showBatchLocationDialog(BuildContext context, DownloaderType type, List<St
 
 void _showBatchUploadLimitDialog(BuildContext context, List<String> hashes, OnTorrentAction onAction) {
   final ctrl = TextEditingController();
-  showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) {
-      final cs = shadcn.Theme.of(ctx).colorScheme;
+      final cs = Theme.of(ctx).colorScheme;
       return Dialog(
         backgroundColor: cs.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -915,9 +916,9 @@ void _showBatchUploadLimitDialog(BuildContext context, List<String> hashes, OnTo
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                    Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
                     const SizedBox(width: 8),
-                    shadcn.Button.primary(
+                    Button.primary(
                       onPressed: () async {
                         closeAppSheet(ctx);
                         final value = int.tryParse(ctrl.text.trim()) ?? 0;
@@ -944,10 +945,10 @@ void _showBatchUploadLimitDialog(BuildContext context, List<String> hashes, OnTo
 void _showBatchShareLimitDialog(BuildContext context, List<String> hashes, OnTorrentAction onAction) {
   final ratioCtrl = TextEditingController();
   final timeCtrl = TextEditingController();
-  showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) {
-      final cs = shadcn.Theme.of(ctx).colorScheme;
+      final cs = Theme.of(ctx).colorScheme;
       return Dialog(
         backgroundColor: cs.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -981,9 +982,9 @@ void _showBatchShareLimitDialog(BuildContext context, List<String> hashes, OnTor
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                    Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
                     const SizedBox(width: 8),
-                    shadcn.Button.primary(
+                    Button.primary(
                       onPressed: () async {
                         closeAppSheet(ctx);
                         final ratio = double.tryParse(ratioCtrl.text.trim()) ?? -1.0;
@@ -1021,10 +1022,10 @@ void _confirmDeleteTorrent(
   OnTorrentAction onAction,
 ) {
   var deleteFilesWhenUnpreserved = _loadDeleteFilesWhenUnpreservedPref();
-  showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) {
-      final cs = shadcn.Theme.of(ctx).colorScheme;
+      final cs = Theme.of(ctx).colorScheme;
       return StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           title: Text('删除种子', style: TextStyle(color: cs.destructive)),
@@ -1039,7 +1040,7 @@ void _confirmDeleteTorrent(
                   Expanded(
                     child: Text('无其他站点保种时删除文件', style: TextStyle(color: cs.foreground, fontSize: 13)),
                   ),
-                  shadcn.Switch(
+                  Switch(
                     value: deleteFilesWhenUnpreserved,
                     onChanged: (value) => setDialogState(() {
                       deleteFilesWhenUnpreserved = value;
@@ -1053,8 +1054,8 @@ void _confirmDeleteTorrent(
             ],
           ),
           actions: [
-            shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
-            shadcn.Button.destructive(
+            Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+            Button.destructive(
               onPressed: () async {
                 closeAppSheet(ctx);
                 await _deleteTorrentsWithOptionalFiles(
@@ -1084,10 +1085,10 @@ void _showLocationDialog(
 ) {
   final isQb = type == DownloaderType.qbittorrent;
   final ctrl = TextEditingController(text: torrent.downloadDir);
-  showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) {
-      final cs = shadcn.Theme.of(ctx).colorScheme;
+      final cs = Theme.of(ctx).colorScheme;
       return Dialog(
         backgroundColor: cs.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1113,9 +1114,9 @@ void _showLocationDialog(
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                    Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
                     const SizedBox(width: 8),
-                    shadcn.Button.primary(
+                    Button.primary(
                       onPressed: () async {
                         closeAppSheet(ctx);
                         await onAction(
@@ -1152,10 +1153,10 @@ void _showUploadLimitDialog(
   OnTorrentAction onAction,
 ) {
   final ctrl = TextEditingController(text: torrent.uploadLimit > 0 ? '${torrent.uploadLimit ~/ 1024}' : '');
-  showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) {
-      final cs = shadcn.Theme.of(ctx).colorScheme;
+      final cs = Theme.of(ctx).colorScheme;
       return Dialog(
         backgroundColor: cs.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1183,9 +1184,9 @@ void _showUploadLimitDialog(
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                    Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
                     const SizedBox(width: 8),
-                    shadcn.Button.primary(
+                    Button.primary(
                       onPressed: () async {
                         closeAppSheet(ctx);
                         final value = int.tryParse(ctrl.text.trim()) ?? 0;
@@ -1215,10 +1216,10 @@ void _showShareLimitDialog(
   OnTorrentAction onAction,
 ) {
   final ctrl = TextEditingController(text: torrent.seedRatioLimit > 0 ? torrent.seedRatioLimit.toStringAsFixed(2) : '');
-  showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) {
-      final cs = shadcn.Theme.of(ctx).colorScheme;
+      final cs = Theme.of(ctx).colorScheme;
       return Dialog(
         backgroundColor: cs.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1246,9 +1247,9 @@ void _showShareLimitDialog(
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                    Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
                     const SizedBox(width: 8),
-                    shadcn.Button.primary(
+                    Button.primary(
                       onPressed: () async {
                         closeAppSheet(ctx);
                         final value = double.tryParse(ctrl.text.trim()) ?? 0;
@@ -1280,10 +1281,10 @@ void _showTrackerDialog(
 ) {
   final isQb = type == DownloaderType.qbittorrent;
   final ctrl = TextEditingController(text: torrent.trackerUrl);
-  showDialog(
+  appShowDialog(
     context: context,
     builder: (ctx) {
-      final cs = shadcn.Theme.of(ctx).colorScheme;
+      final cs = Theme.of(ctx).colorScheme;
       return Dialog(
         backgroundColor: cs.background,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1309,9 +1310,9 @@ void _showTrackerDialog(
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    shadcn.Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
+                    Button.ghost(onPressed: () => closeAppSheet(ctx), child: const Text('取消')),
                     const SizedBox(width: 8),
-                    shadcn.Button.primary(
+                    Button.primary(
                       onPressed: () async {
                         closeAppSheet(ctx);
                         await onAction(

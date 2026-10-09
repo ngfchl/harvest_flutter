@@ -1,7 +1,8 @@
+import 'package:harvest/widgets/shadcn_compat.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter_material/shadcn_flutter_material.dart';
 
 import 'shell_bottom_navigation.dart';
 
@@ -35,70 +36,63 @@ class ShellScaffold extends ConsumerWidget {
   static const _newsPageIndex = 0;
   static const _downloadsPageIndex = 3;
 
-  static const _items = [
+  static final _items = [
     _AdaptiveShellNavItem(
       label: '资讯',
       sfSymbol: 'newspaper',
       selectedSfSymbol: 'newspaper.fill',
-      cupertinoIcon: CupertinoIcons.news,
-      selectedCupertinoIcon: CupertinoIcons.news_solid,
+      cupertinoIcon: LucideIcons.newspaper,
+      selectedCupertinoIcon: LucideIcons.newspaper,
       pageIndex: 0,
     ),
     _AdaptiveShellNavItem(
       label: '站点',
       sfSymbol: 'globe',
       selectedSfSymbol: 'globe',
-      cupertinoIcon: CupertinoIcons.globe,
-      selectedCupertinoIcon: CupertinoIcons.globe,
+      cupertinoIcon: LucideIcons.globe,
+      selectedCupertinoIcon: LucideIcons.globe,
       pageIndex: 1,
     ),
     _AdaptiveShellNavItem(
       label: '仪表',
       sfSymbol: 'square.grid.2x2',
       selectedSfSymbol: 'square.grid.2x2.fill',
-      cupertinoIcon: CupertinoIcons.square_grid_2x2,
-      selectedCupertinoIcon: CupertinoIcons.square_grid_2x2_fill,
+      cupertinoIcon: LucideIcons.layoutGrid,
+      selectedCupertinoIcon: LucideIcons.layoutGrid,
       pageIndex: 2,
     ),
     _AdaptiveShellNavItem(
       label: '下载',
       sfSymbol: 'arrow.down.circle',
       selectedSfSymbol: 'arrow.down.circle.fill',
-      cupertinoIcon: CupertinoIcons.arrow_down_circle,
-      selectedCupertinoIcon: CupertinoIcons.arrow_down_circle_fill,
+      cupertinoIcon: LucideIcons.circleArrowDown,
+      selectedCupertinoIcon: LucideIcons.circleArrowDown,
       pageIndex: 3,
     ),
     _AdaptiveShellNavItem(
       label: '任务',
       sfSymbol: 'checkmark.square',
       selectedSfSymbol: 'checkmark.square.fill',
-      cupertinoIcon: CupertinoIcons.checkmark_square,
-      selectedCupertinoIcon: CupertinoIcons.checkmark_square_fill,
+      cupertinoIcon: LucideIcons.squareCheck,
+      selectedCupertinoIcon: LucideIcons.squareCheck,
       pageIndex: 4,
     ),
-    _AdaptiveShellNavItem(
+    const _AdaptiveShellNavItem(
       label: '搜索',
       sfSymbol: 'magnifyingglass',
       selectedSfSymbol: 'magnifyingglass',
-      cupertinoIcon: CupertinoIcons.search,
-      selectedCupertinoIcon: CupertinoIcons.search,
+      cupertinoIcon: LucideIcons.search,
+      selectedCupertinoIcon: LucideIcons.search,
       pageIndex: -1,
       isSearch: true,
     ),
   ];
 
   List<_AdaptiveShellNavItem> get _visibleItems {
-    var items = showNews
-        ? _items
-        : _items.where((item) => item.pageIndex != 0).toList(growable: false);
+    var items = showNews ? _items : _items.where((item) => item.pageIndex != 0).toList(growable: false);
     if (restricted) {
       items = items
-          .where(
-            (item) =>
-                item.pageIndex == _newsPageIndex ||
-                item.pageIndex == _downloadsPageIndex ||
-                item.isSearch,
-          )
+          .where((item) => item.pageIndex == _newsPageIndex || item.pageIndex == _downloadsPageIndex || item.isSearch)
           .toList(growable: false);
     }
     return items;
@@ -107,9 +101,7 @@ class ShellScaffold extends ConsumerWidget {
   int get _selectedPageIndex => index.clamp(0, _routeItemCount - 1).toInt();
 
   int get _selectedIndex {
-    final visualIndex = _visibleItems.indexWhere(
-      (item) => item.pageIndex == _selectedPageIndex,
-    );
+    final visualIndex = _visibleItems.indexWhere((item) => item.pageIndex == _selectedPageIndex);
     return visualIndex >= 0 ? visualIndex : 0;
   }
 
@@ -127,12 +119,11 @@ class ShellScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final useNativeIOSBottomBar =
-        PlatformInfo.isIOS && PlatformInfo.isIOS26OrHigher();
+    final useNativeIOSBottomBar = PlatformInfo.isIOS && PlatformInfo.isIOS26OrHigher();
     final effectiveDashboardChrome = dashboardChrome && !useNativeIOSBottomBar;
 
     if (useNativeIOSBottomBar) {
-      final colors = shadcn.Theme.of(context).colorScheme;
+      final colors = Theme.of(context).colorScheme;
 
       return AdaptiveScaffold(
         minimizeBehavior: TabBarMinimizeBehavior.never,
@@ -141,8 +132,7 @@ class ShellScaffold extends ConsumerWidget {
             ? AdaptiveBottomNavigationBar(
                 useNativeBottomBar: true,
                 selectedIndex: _selectedIndex,
-                onTap: (tappedIndex) =>
-                    _handleNavigationTap(context, tappedIndex),
+                onTap: (tappedIndex) => _handleNavigationTap(context, tappedIndex),
                 selectedItemColor: colors.primary,
                 unselectedItemColor: colors.foreground.withValues(alpha: 0.58),
                 items: [
@@ -157,8 +147,8 @@ class ShellScaffold extends ConsumerWidget {
               )
             : null,
         body: _ShellBackground(
-          child: shadcn.ComponentTheme(
-            data: shadcn.ScaffoldTheme(backgroundColor: colors.background),
+          child: ComponentTheme(
+            data: ScaffoldTheme(backgroundColor: colors.background),
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTapDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
@@ -220,10 +210,8 @@ class _CustomShellScaffoldBody extends ConsumerWidget {
       children: [
         const Positioned.fill(child: _ShellBackground()),
         Positioned.fill(
-          child: shadcn.ComponentTheme(
-            data: shadcn.ScaffoldTheme(
-              backgroundColor: shadcn.Theme.of(context).colorScheme.background,
-            ),
+          child: ComponentTheme(
+            data: ScaffoldTheme(backgroundColor: Theme.of(context).colorScheme.background),
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTapDown: (_) => FocusManager.instance.primaryFocus?.unfocus(),
@@ -263,7 +251,7 @@ class _ShellBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     if (child == null) return ColoredBox(color: cs.background);
     return ColoredBox(color: cs.background, child: child);
   }

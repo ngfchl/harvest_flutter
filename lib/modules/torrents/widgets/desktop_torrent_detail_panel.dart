@@ -1,11 +1,9 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/modules/download/service/downloader_service.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../model/torrent_model.dart';
 import '../model/torrent_site_matcher.dart';
@@ -33,7 +31,7 @@ class DesktopTorrentDetailPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final torrents = ref.watch(filteredTorrentsProvider(downloaderId));
     final matcher = ref.watch(torrentSiteMatcherProvider);
@@ -54,7 +52,7 @@ class DesktopTorrentDetailPanel extends ConsumerWidget {
       decoration: BoxDecoration(
         color: appSurfaceColor(context, cs.card),
         border: Border.all(color: cs.border, width: 0.5),
-        borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+        borderRadius: Theme.of(context).borderRadiusMd,
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -68,27 +66,12 @@ class DesktopTorrentDetailPanel extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(14, 0, 8, 0),
                   child: Row(
                     children: [
-                      Icon(
-                        shadcn.LucideIcons.info,
-                        size: 15,
-                        color: cs.mutedForeground,
-                      ),
+                      Icon(LucideIcons.info, size: 15, color: cs.mutedForeground),
                       const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ).small.bold.foreground,
-                      ),
-                      shadcn.IconButton.ghost(
+                      Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis).small.bold.foreground),
+                      IconButton.ghost(
                         onPressed: selected == null ? null : onToggle,
-                        icon: Icon(
-                          expanded
-                              ? shadcn.LucideIcons.chevronDown
-                              : shadcn.LucideIcons.chevronUp,
-                          size: 16,
-                        ),
+                        icon: Icon(expanded ? LucideIcons.chevronDown : LucideIcons.chevronUp, size: 16),
                       ),
                     ],
                   ),
@@ -96,13 +79,9 @@ class DesktopTorrentDetailPanel extends ConsumerWidget {
                 if (selected != null)
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onVerticalDragUpdate: expanded
-                        ? (d) => onResize(d.delta.dy)
-                        : null,
+                    onVerticalDragUpdate: expanded ? (d) => onResize(d.delta.dy) : null,
                     child: MouseRegion(
-                      cursor: expanded
-                          ? SystemMouseCursors.resizeUpDown
-                          : SystemMouseCursors.basic,
+                      cursor: expanded ? SystemMouseCursors.resizeUpDown : SystemMouseCursors.basic,
                       child: SizedBox(
                         width: 80,
                         height: 28,
@@ -112,9 +91,7 @@ class DesktopTorrentDetailPanel extends ConsumerWidget {
                             height: 4,
                             decoration: BoxDecoration(
                               color: cs.mutedForeground.withValues(alpha: 0.35),
-                              borderRadius: shadcn.Theme.of(
-                                context,
-                              ).borderRadiusXxl,
+                              borderRadius: Theme.of(context).borderRadiusXxl,
                             ),
                           ),
                         ),
@@ -128,15 +105,8 @@ class DesktopTorrentDetailPanel extends ConsumerWidget {
             Divider(height: 1, color: cs.border),
             Expanded(
               child: selected == null
-                  ? const DesktopEmptyState(
-                      icon: shadcn.LucideIcons.info,
-                      title: '选择一个种子查看详情',
-                    )
-                  : _DetailBody(
-                      downloaderId: downloaderId,
-                      torrent: selected,
-                      siteMatch: matcher.match(selected),
-                    ),
+                  ? const DesktopEmptyState(icon: LucideIcons.info, title: '选择一个种子查看详情')
+                  : _DetailBody(downloaderId: downloaderId, torrent: selected, siteMatch: matcher.match(selected)),
             ),
           ],
         ],
@@ -159,11 +129,7 @@ class _DetailBody extends StatefulWidget {
   final Torrent torrent;
   final TorrentSiteMatch? siteMatch;
 
-  const _DetailBody({
-    required this.downloaderId,
-    required this.torrent,
-    required this.siteMatch,
-  });
+  const _DetailBody({required this.downloaderId, required this.torrent, required this.siteMatch});
 
   @override
   State<_DetailBody> createState() => _DetailBodyState();
@@ -182,17 +148,13 @@ class _DetailBodyState extends State<_DetailBody> {
   @override
   void didUpdateWidget(covariant _DetailBody old) {
     super.didUpdateWidget(old);
-    if (old.torrent.hashString != widget.torrent.hashString ||
-        old.downloaderId != widget.downloaderId) {
+    if (old.torrent.hashString != widget.torrent.hashString || old.downloaderId != widget.downloaderId) {
       _future = _load();
     }
   }
 
   Future<Map<String, dynamic>> _load() {
-    return DownloaderService.fetchTorrentDetail(
-      widget.downloaderId,
-      widget.torrent.hashString,
-    );
+    return DownloaderService.fetchTorrentDetail(widget.downloaderId, widget.torrent.hashString);
   }
 
   @override
@@ -202,14 +164,8 @@ class _DetailBodyState extends State<_DetailBody> {
       builder: (context, snapshot) {
         final detail = snapshot.data ?? const <String, dynamic>{};
         final loading = snapshot.connectionState == ConnectionState.waiting;
-        final properties = desktopExtractMap(detail, const [
-          'properties',
-          'props',
-        ]);
-        final trackers = desktopExtractList(detail, const [
-          'trackers',
-          'trackerStats',
-        ]);
+        final properties = desktopExtractMap(detail, const ['properties', 'props']);
+        final trackers = desktopExtractList(detail, const ['trackers', 'trackerStats']);
         final files = desktopExtractList(detail, const ['files', 'contents']);
         final rawDetail = Map<String, dynamic>.from(detail)
           ..remove('files')
@@ -219,9 +175,7 @@ class _DetailBodyState extends State<_DetailBody> {
 
         return LayoutBuilder(
           builder: (context, constraints) {
-            final maxHeight = constraints.maxHeight.isFinite
-                ? constraints.maxHeight
-                : 320.0;
+            final maxHeight = constraints.maxHeight.isFinite ? constraints.maxHeight : 320.0;
             final tabHeight = max(0.0, maxHeight - 64);
 
             return Column(
@@ -230,21 +184,16 @@ class _DetailBodyState extends State<_DetailBody> {
                   padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
                   child: AppSurfaceContainer(
                     padding: const EdgeInsets.all(2),
-                    color: appSurfaceColor(
-                      context,
-                      shadcn.Theme.of(context).colorScheme.background,
-                    ),
-                    borderColor: shadcn.Theme.of(
-                      context,
-                    ).colorScheme.border.withValues(alpha: 0.45),
-                    child: shadcn.Tabs(
+                    color: appSurfaceColor(context, Theme.of(context).colorScheme.background),
+                    borderColor: Theme.of(context).colorScheme.border.withValues(alpha: 0.45),
+                    child: Tabs(
                       index: _tabIndex,
                       onChanged: (i) => setState(() => _tabIndex = i),
                       children: const [
-                        shadcn.TabItem(child: Text('概览')),
-                        shadcn.TabItem(child: Text('属性')),
-                        shadcn.TabItem(child: Text('Tracker')),
-                        shadcn.TabItem(child: Text('文件')),
+                        TabItem(child: Text('概览')),
+                        TabItem(child: Text('属性')),
+                        TabItem(child: Text('Tracker')),
+                        TabItem(child: Text('文件')),
                       ],
                     ),
                   ),
@@ -254,12 +203,7 @@ class _DetailBodyState extends State<_DetailBody> {
                     index: _tabIndex,
                     children: [
                       _buildOverview(tabHeight, properties, snapshot),
-                      _buildProperties(
-                        tabHeight,
-                        properties,
-                        loading,
-                        rawDetail,
-                      ),
+                      _buildProperties(tabHeight, properties, loading, rawDetail),
                       _buildTrackers(tabHeight, trackers, loading),
                       _buildFiles(tabHeight, files, loading),
                     ],
@@ -273,42 +217,28 @@ class _DetailBodyState extends State<_DetailBody> {
     );
   }
 
-  Widget _buildOverview(
-    double h,
-    Map<String, dynamic> properties,
-    AsyncSnapshot snapshot,
-  ) {
+  Widget _buildOverview(double h, Map<String, dynamic> properties, AsyncSnapshot snapshot) {
     return SizedBox(
       height: h,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
         children: [
-          DesktopSelectedSummary(
-            torrent: widget.torrent,
-            siteMatch: widget.siteMatch,
-          ),
+          DesktopSelectedSummary(torrent: widget.torrent, siteMatch: widget.siteMatch),
           const SizedBox(height: 12),
           DesktopDetailSection(
             title: '概览',
-            icon: shadcn.LucideIcons.layoutDashboard,
-            child: DesktopDetailMetrics(
-              torrent: widget.torrent,
-              properties: properties,
-            ),
+            icon: LucideIcons.layoutDashboard,
+            child: DesktopDetailMetrics(torrent: widget.torrent, properties: properties),
           ),
           if (snapshot.hasError) ...[
             const SizedBox(height: 10),
-            shadcn.Card(
+            Card(
               filled: true,
-              fillColor: shadcn.Theme.of(
-                context,
-              ).colorScheme.destructive.withValues(alpha: 0.08),
-              borderRadius: shadcn.Theme.of(context).borderRadiusMd,
+              fillColor: Theme.of(context).colorScheme.destructive.withValues(alpha: 0.08),
+              borderRadius: Theme.of(context).borderRadiusMd,
               padding: const EdgeInsets.all(10),
               child: DefaultTextStyle.merge(
-                style: TextStyle(
-                  color: shadcn.Theme.of(context).colorScheme.destructive,
-                ),
+                style: TextStyle(color: Theme.of(context).colorScheme.destructive),
                 child: Text('详情加载失败：${snapshot.error}').xSmall,
               ),
             ),
@@ -318,13 +248,8 @@ class _DetailBodyState extends State<_DetailBody> {
     );
   }
 
-  Widget _buildProperties(
-    double h,
-    Map<String, dynamic> properties,
-    bool loading,
-    Map<String, dynamic> rawDetail,
-  ) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+  Widget _buildProperties(double h, Map<String, dynamic> properties, bool loading, Map<String, dynamic> rawDetail) {
+    final cs = Theme.of(context).colorScheme;
     final torrentData = widget.torrent.toJson();
 
     return SizedBox(
@@ -335,7 +260,7 @@ class _DetailBodyState extends State<_DetailBody> {
           // ── 种子字段（按分类分组） ──
           _PropertyGroup(
             title: '基本信息',
-            icon: shadcn.LucideIcons.fileText,
+            icon: LucideIcons.fileText,
             accent: cs.primary,
             entries: _filterKeys(torrentData, const [
               'name',
@@ -352,7 +277,7 @@ class _DetailBodyState extends State<_DetailBody> {
           const SizedBox(height: 10),
           _PropertyGroup(
             title: '大小与进度',
-            icon: shadcn.LucideIcons.hardDrive,
+            icon: LucideIcons.hardDrive,
             accent: const Color(0xFF60A5FA),
             entries: _filterKeys(torrentData, const [
               'totalSize',
@@ -372,14 +297,13 @@ class _DetailBodyState extends State<_DetailBody> {
               'haveValid': (v) => TorrentUtils.formatBytes(_parseInt(v)),
               'haveUnchecked': (v) => TorrentUtils.formatBytes(_parseInt(v)),
               'percentDone': (v) => TorrentUtils.formatPercent(_parseDouble(v)),
-              'recheckProgress': (v) =>
-                  TorrentUtils.formatPercent(_parseDouble(v)),
+              'recheckProgress': (v) => TorrentUtils.formatPercent(_parseDouble(v)),
             },
           ),
           const SizedBox(height: 10),
           _PropertyGroup(
             title: '传输速度',
-            icon: shadcn.LucideIcons.activity,
+            icon: LucideIcons.activity,
             accent: const Color(0xFF4ADE80),
             entries: _filterKeys(torrentData, const [
               'rateDownload',
@@ -398,24 +322,18 @@ class _DetailBodyState extends State<_DetailBody> {
             formatters: {
               'rateDownload': (v) => TorrentUtils.formatSpeed(_parseInt(v)),
               'rateUpload': (v) => TorrentUtils.formatSpeed(_parseInt(v)),
-              'downloadLimit': (v) => _parseInt(v) <= 0
-                  ? '不限'
-                  : TorrentUtils.formatSpeed(_parseInt(v)),
-              'uploadLimit': (v) => _parseInt(v) <= 0
-                  ? '不限'
-                  : TorrentUtils.formatSpeed(_parseInt(v)),
+              'downloadLimit': (v) => _parseInt(v) <= 0 ? '不限' : TorrentUtils.formatSpeed(_parseInt(v)),
+              'uploadLimit': (v) => _parseInt(v) <= 0 ? '不限' : TorrentUtils.formatSpeed(_parseInt(v)),
               'downloadedEver': (v) => TorrentUtils.formatBytes(_parseInt(v)),
               'uploadedEver': (v) => TorrentUtils.formatBytes(_parseInt(v)),
               'uploadRatio': (v) => TorrentUtils.formatRatio(_parseDouble(v)),
-              'seedRatioLimit': (v) => _parseDouble(v) <= 0
-                  ? '不限'
-                  : TorrentUtils.formatRatio(_parseDouble(v)),
+              'seedRatioLimit': (v) => _parseDouble(v) <= 0 ? '不限' : TorrentUtils.formatRatio(_parseDouble(v)),
             },
           ),
           const SizedBox(height: 10),
           _PropertyGroup(
             title: '状态与时间',
-            icon: shadcn.LucideIcons.clock,
+            icon: LucideIcons.clock,
             accent: const Color(0xFFFBBF24),
             entries: _filterKeys(torrentData, const [
               'status',
@@ -436,16 +354,14 @@ class _DetailBodyState extends State<_DetailBody> {
               'doneDate': (v) => _formatTimestamp(_parseInt(v)),
               'activityDate': (v) => _formatTimestamp(_parseInt(v)),
               'startDate': (v) => _formatTimestamp(_parseInt(v)),
-              'secondsSeeding': (v) =>
-                  TorrentUtils.formatDuration(_parseInt(v)),
-              'secondsDownloading': (v) =>
-                  TorrentUtils.formatDuration(_parseInt(v)),
+              'secondsSeeding': (v) => TorrentUtils.formatDuration(_parseInt(v)),
+              'secondsDownloading': (v) => TorrentUtils.formatDuration(_parseInt(v)),
             },
           ),
           const SizedBox(height: 10),
           _PropertyGroup(
             title: '做种与标签',
-            icon: shadcn.LucideIcons.tags,
+            icon: LucideIcons.tags,
             accent: const Color(0xFFA78BFA),
             entries: _filterKeys(torrentData, const [
               'labels',
@@ -459,9 +375,7 @@ class _DetailBodyState extends State<_DetailBody> {
               'maxConnectedPeers',
               'peerLimit',
             ]),
-            formatters: {
-              'labels': (v) => (v is List && v.isEmpty) ? '无' : '$v',
-            },
+            formatters: {'labels': (v) => (v is List && v.isEmpty) ? '无' : '$v'},
           ),
 
           const SizedBox(height: 16),
@@ -471,20 +385,11 @@ class _DetailBodyState extends State<_DetailBody> {
           // ── 接口属性 ──
           DesktopDetailSection(
             title: '接口属性',
-            icon: shadcn.LucideIcons.database,
+            icon: LucideIcons.database,
             trailing: loading
-                ? SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: shadcn.CircularProgressIndicator(
-                      size: 18,
-                      color: cs.mutedForeground,
-                    ),
-                  )
+                ? SizedBox(width: 14, height: 14, child: CircularProgressIndicator(size: 18, color: cs.mutedForeground))
                 : null,
-            child: properties.isEmpty
-                ? const DesktopMutedLine('暂无接口属性')
-                : DesktopFieldTable(data: properties),
+            child: properties.isEmpty ? const DesktopMutedLine('暂无接口属性') : DesktopFieldTable(data: properties),
           ),
 
           const SizedBox(height: 10),
@@ -492,10 +397,8 @@ class _DetailBodyState extends State<_DetailBody> {
           // ── 原始详情 ──
           DesktopDetailSection(
             title: '原始详情',
-            icon: shadcn.LucideIcons.braces,
-            child: rawDetail.isEmpty
-                ? const DesktopMutedLine('暂无更多字段')
-                : _CollapsibleFieldTable(data: rawDetail),
+            icon: LucideIcons.braces,
+            child: rawDetail.isEmpty ? const DesktopMutedLine('暂无更多字段') : _CollapsibleFieldTable(data: rawDetail),
           ),
         ],
       ),
@@ -504,10 +407,7 @@ class _DetailBodyState extends State<_DetailBody> {
 
   // ── 按 key 过滤 ──
 
-  Map<String, dynamic> _filterKeys(
-    Map<String, dynamic> source,
-    List<String> keys,
-  ) {
+  Map<String, dynamic> _filterKeys(Map<String, dynamic> source, List<String> keys) {
     final result = <String, dynamic>{};
     for (final key in keys) {
       if (source.containsKey(key)) {
@@ -519,8 +419,7 @@ class _DetailBodyState extends State<_DetailBody> {
 
   int _parseInt(dynamic v) => v is int ? v : int.tryParse('$v') ?? 0;
 
-  double _parseDouble(dynamic v) =>
-      v is double ? v : double.tryParse('$v') ?? 0;
+  double _parseDouble(dynamic v) => v is double ? v : double.tryParse('$v') ?? 0;
 
   String _formatTimestamp(int ts) {
     if (ts <= 0) return '-';
@@ -535,18 +434,11 @@ class _DetailBodyState extends State<_DetailBody> {
         children: [
           DesktopDetailSection(
             title: 'Tracker',
-            icon: shadcn.LucideIcons.radioTower,
+            icon: LucideIcons.radioTower,
             trailing: loading
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: shadcn.CircularProgressIndicator(size: 18),
-                  )
+                ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(size: 18))
                 : null,
-            child: DesktopTrackerList(
-              torrent: widget.torrent,
-              trackers: trackers,
-            ),
+            child: DesktopTrackerList(torrent: widget.torrent, trackers: trackers),
           ),
         ],
       ),
@@ -561,13 +453,9 @@ class _DetailBodyState extends State<_DetailBody> {
         children: [
           DesktopDetailSection(
             title: '文件',
-            icon: shadcn.LucideIcons.files,
+            icon: LucideIcons.files,
             trailing: loading
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: shadcn.CircularProgressIndicator(size: 18),
-                  )
+                ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(size: 18))
                 : null,
             child: DesktopFileList(files: files),
           ),
@@ -594,7 +482,7 @@ class _PropertyGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     if (entries.isEmpty) return const SizedBox.shrink();
 
@@ -630,29 +518,18 @@ class _PropertyGroup extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   title,
-                  style: TextStyle(
-                    color: cs.foreground,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(color: cs.foreground, fontSize: 12, fontWeight: FontWeight.w700),
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: cs.mutedForeground.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     '${entries.length}',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: cs.mutedForeground,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 10, color: cs.mutedForeground, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -664,22 +541,15 @@ class _PropertyGroup extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
             child: Column(
               children: [
-                for (final entry
-                    in entries.entries.toList()
-                      ..sort((a, b) => a.key.compareTo(b.key))) ...[
+                for (final entry in entries.entries.toList()..sort((a, b) => a.key.compareTo(b.key))) ...[
                   _PropertyRow(
                     name: entry.key,
-                    value:
-                        formatters?[entry.key]?.call(entry.value) ??
-                        desktopFieldValue(entry.value),
+                    value: formatters?[entry.key]?.call(entry.value) ?? desktopFieldValue(entry.value),
                   ),
                   if (entry.key != entries.keys.last)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5),
-                      child: Divider(
-                        height: 1,
-                        color: cs.border.withValues(alpha: 0.4),
-                      ),
+                      child: Divider(height: 1, color: cs.border.withValues(alpha: 0.4)),
                     ),
                 ],
               ],
@@ -699,7 +569,7 @@ class _PropertyRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -707,11 +577,7 @@ class _PropertyRow extends StatelessWidget {
           width: 140,
           child: Text(
             _humanizeFieldName(name),
-            style: TextStyle(
-              fontSize: 11,
-              color: cs.mutedForeground,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 11, color: cs.mutedForeground, fontWeight: FontWeight.w500),
           ),
         ),
         const SizedBox(width: 12),
@@ -735,14 +601,8 @@ class _PropertyRow extends StatelessWidget {
   String _humanizeFieldName(String name) {
     // camelCase → 人类可读
     final result = name
-        .replaceAllMapped(
-          RegExp(r'([a-z])([A-Z])'),
-          (m) => '${m.group(1)} ${m.group(2)}',
-        )
-        .replaceAllMapped(
-          RegExp(r'^([a-z])'),
-          (m) => m.group(1)!.toUpperCase(),
-        );
+        .replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (m) => '${m.group(1)} ${m.group(2)}')
+        .replaceAllMapped(RegExp(r'^([a-z])'), (m) => m.group(1)!.toUpperCase());
     return result;
   }
 }
@@ -764,14 +624,11 @@ class _CollapsibleFieldTableState extends State<_CollapsibleFieldTable> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = shadcn.Theme.of(context).colorScheme;
-    final entries = widget.data.entries.toList()
-      ..sort((a, b) => a.key.toLowerCase().compareTo(b.key.toLowerCase()));
+    final cs = Theme.of(context).colorScheme;
+    final entries = widget.data.entries.toList()..sort((a, b) => a.key.toLowerCase().compareTo(b.key.toLowerCase()));
     if (entries.isEmpty) return const DesktopMutedLine('暂无字段');
 
-    final visibleEntries = _expanded
-        ? entries
-        : entries.take(_initialCount).toList();
+    final visibleEntries = _expanded ? entries : entries.take(_initialCount).toList();
     final hasMore = entries.length > _initialCount;
 
     return Column(
@@ -781,10 +638,7 @@ class _CollapsibleFieldTableState extends State<_CollapsibleFieldTable> {
           if (entry != visibleEntries.last)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 5),
-              child: Divider(
-                height: 1,
-                color: cs.border.withValues(alpha: 0.4),
-              ),
+              child: Divider(height: 1, color: cs.border.withValues(alpha: 0.4)),
             ),
         ],
         if (hasMore) ...[
@@ -802,21 +656,11 @@ class _CollapsibleFieldTableState extends State<_CollapsibleFieldTable> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    _expanded
-                        ? shadcn.LucideIcons.chevronUp
-                        : shadcn.LucideIcons.chevronDown,
-                    size: 13,
-                    color: cs.primary,
-                  ),
+                  Icon(_expanded ? LucideIcons.chevronUp : LucideIcons.chevronDown, size: 13, color: cs.primary),
                   const SizedBox(width: 4),
                   Text(
                     _expanded ? '收起' : '展开全部 ${entries.length} 项',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: cs.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 11, color: cs.primary, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),

@@ -1,10 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:harvest/widgets/app_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/utils/utils.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' show TextExtension;
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:harvest/widgets/app_dialog.dart';
+import 'package:harvest/widgets/app_sheet.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 import '../../../search/model/search_mode.dart';
 import '../../../search/unified_search_page.dart';
@@ -21,7 +20,7 @@ void openDoubanDetail(BuildContext context, String subjectId) {
     showAppSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: shadcn.Theme.of(context).colorScheme.background.withValues(alpha: 0),
+      backgroundColor: Theme.of(context).colorScheme.background.withValues(alpha: 0),
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.85,
         minChildSize: 0.75,
@@ -31,11 +30,11 @@ void openDoubanDetail(BuildContext context, String subjectId) {
       ),
     );
   } else {
-    final theme = shadcn.Theme.of(context);
-    showDialog<void>(
+    final theme = Theme.of(context);
+    appShowDialog(
       context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: theme.borderRadiusLg),
+      builder: (context) => Container(
+        decoration: BoxDecoration(borderRadius: theme.borderRadiusLg),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520, maxHeight: 700),
           child: _DoubanDetailSheet(subjectId: subjectId, navigatorContext: navigatorContext),
@@ -97,19 +96,19 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
   @override
   Widget build(BuildContext context) {
     final title = _detail?.title ?? '详情';
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
     final Widget body;
     if (_loading) {
-      body = const Center(child: shadcn.CircularProgressIndicator());
+      body = const Center(child: CircularProgressIndicator());
     } else if (_error != null || _detail == null) {
       body = Center(child: Text('加载失败: $_error').small.muted);
     } else {
       body = _buildContent(context, _detail!);
     }
 
-    return shadcn.Card(
+    return Card(
       filled: true,
       fillColor: cs.background,
       borderRadius: theme.borderRadiusLg,
@@ -122,8 +121,8 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
             child: Row(
               children: [
-                shadcn.IconButton.ghost(
-                  icon: const Icon(shadcn.LucideIcons.arrowLeft, size: 20),
+                IconButton.ghost(
+                  icon: const Icon(LucideIcons.arrowLeft, size: 20),
                   onPressed: () => closeAppSheet(context),
                 ),
                 const SizedBox(width: 4),
@@ -131,7 +130,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
               ],
             ),
           ),
-          const Padding(padding: EdgeInsets.symmetric(vertical: 6), child: shadcn.Divider()),
+          const Padding(padding: EdgeInsets.symmetric(vertical: 6), child: Divider()),
           Flexible(child: body),
         ],
       ),
@@ -139,7 +138,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
   }
 
   Widget _buildContent(BuildContext context, VideoDetail detail) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final hasRating = detail.rating.value > 0;
     final ratingText = hasRating ? detail.rating.value.toStringAsFixed(1) : '';
@@ -172,14 +171,14 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
                           Wrap(
                             spacing: 4,
                             runSpacing: 4,
-                            children: detail.genres.map((g) => shadcn.SecondaryBadge(child: Text(g))).toList(),
+                            children: detail.genres.map((g) => SecondaryBadge(child: Text(g))).toList(),
                           ),
                         ],
                         const SizedBox(height: 8),
                         if (hasRating)
                           Row(
                             children: [
-                              Icon(shadcn.LucideIcons.star, size: 16, color: cs.chart4),
+                              Icon(LucideIcons.star, size: 16, color: cs.chart4),
                               const SizedBox(width: 4),
                               Text(ratingText).base.bold,
                               const SizedBox(width: 4),
@@ -194,7 +193,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
                             spacing: 4,
                             runSpacing: 4,
                             children: detail.realtimeHonorInfos
-                                .map((h) => shadcn.OutlineBadge(child: Text('${h.title} #${h.rank}')))
+                                .map((h) => OutlineBadge(child: Text('${h.title} #${h.rank}')))
                                 .toList(),
                           ),
                         ],
@@ -263,14 +262,16 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: SizedBox(
               width: double.infinity,
-              child: shadcn.Button.primary(
+              child: Button.primary(
                 alignment: Alignment.center,
-                leading: const Icon(shadcn.LucideIcons.search, size: 16),
+                leading: const Icon(LucideIcons.search, size: 16),
                 onPressed: () {
                   closeAppSheet(context);
                   Navigator.of(widget.navigatorContext).push(
-                    MaterialPageRoute(
-                      builder: (_) => UnifiedSearchPage(initialQuery: searchQuery, initialMode: SearchMode.resource),
+                    PageRouteBuilder(
+                      pageBuilder: (_, _, _) =>
+                          UnifiedSearchPage(initialQuery: searchQuery, initialMode: SearchMode.resource),
+                      transitionsBuilder: (_, animation, _, child) => FadeTransition(opacity: animation, child: child),
                     ),
                   );
                 },
@@ -288,9 +289,9 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
   }
 
   Widget _vendorCard(BuildContext context, Vendor vendor) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    return shadcn.Card(
+    return Card(
       filled: true,
       fillColor: cs.muted,
       borderColor: cs.border.withValues(alpha: 0.3),
@@ -324,7 +325,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
   }
 
   Widget _trailerCard(BuildContext context, Trailer trailer) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     final cs = theme.colorScheme;
     return ClipRRect(
       borderRadius: theme.borderRadiusMd,
@@ -346,18 +347,18 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
             )
           else
             _mutedBox(context, height: 180),
-          shadcn.Card(
+          Card(
             filled: true,
             fillColor: cs.popover.withValues(alpha: 0.75),
             borderColor: cs.border.withValues(alpha: 0.2),
             borderRadius: theme.borderRadiusLg,
             padding: const EdgeInsets.all(12),
-            child: Icon(shadcn.LucideIcons.play, size: 20, color: cs.popoverForeground),
+            child: Icon(LucideIcons.play, size: 20, color: cs.popoverForeground),
           ),
           Positioned(
             bottom: 8,
             left: 8,
-            child: shadcn.Card(
+            child: Card(
               filled: true,
               fillColor: cs.popover.withValues(alpha: 0.8),
               borderColor: cs.border.withValues(alpha: 0.2),
@@ -372,7 +373,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
   }
 
   Widget _buildBackdrop(BuildContext context, String url) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     return ClipRRect(
       borderRadius: theme.borderRadiusLg,
       child: CachedNetworkImage(
@@ -392,7 +393,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
   }
 
   Widget _buildPoster(BuildContext context, String url) {
-    final theme = shadcn.Theme.of(context);
+    final theme = Theme.of(context);
     return ClipRRect(
       borderRadius: theme.borderRadiusMd,
       child: CachedNetworkImage(
@@ -413,14 +414,14 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
   Widget _loadingBox({double? width, required double height}) {
     return Builder(
       builder: (context) {
-        final cs = shadcn.Theme.of(context).colorScheme;
+        final cs = Theme.of(context).colorScheme;
         return ColoredBox(
           color: cs.muted,
           child: SizedBox(
             width: width,
             height: height,
             child: const Center(
-              child: SizedBox(width: 20, height: 20, child: shadcn.CircularProgressIndicator(strokeWidth: 2)),
+              child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
             ),
           ),
         );
@@ -430,7 +431,7 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
 
   Widget _mutedBox(BuildContext context, {double? width, required double height}) {
     return ColoredBox(
-      color: shadcn.Theme.of(context).colorScheme.muted,
+      color: Theme.of(context).colorScheme.muted,
       child: SizedBox(width: width, height: height),
     );
   }
@@ -442,14 +443,14 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
     required double iconSize,
     required double iconAlpha,
   }) {
-    final cs = shadcn.Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
     return ColoredBox(
       color: cs.muted,
       child: SizedBox(
         width: width,
         height: height,
         child: Icon(
-          shadcn.LucideIcons.film,
+          LucideIcons.film,
           size: iconSize,
           color: cs.mutedForeground.withValues(alpha: iconAlpha),
         ),
@@ -481,6 +482,6 @@ class _DoubanDetailSheetState extends ConsumerState<_DoubanDetailSheet> {
   }
 
   Widget _statChip(String text) {
-    return shadcn.SecondaryBadge(child: Text(text));
+    return SecondaryBadge(child: Text(text));
   }
 }
