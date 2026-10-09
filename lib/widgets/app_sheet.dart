@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 Future<T?> showAppSheet<T>({
   required BuildContext context,
@@ -15,10 +14,9 @@ Future<T?> showAppSheet<T>({
   BoxConstraints? constraints,
 }) {
   final media = MediaQuery.maybeOf(context);
-  final cs = shadcn.Theme.of(context).colorScheme;
+  final cs = Theme.of(context).colorScheme;
   final effectiveShowDragHandle = showDragHandle ?? true;
-  final effectiveSheetColor =
-      (backgroundColor == null || (backgroundColor.a * 255.0).round() == 0)
+  final effectiveSheetColor = (backgroundColor == null || (backgroundColor.a * 255.0).round() == 0)
       ? cs.background
       : backgroundColor;
   final maxHeight = media == null
@@ -27,26 +25,24 @@ Future<T?> showAppSheet<T>({
       ? media.size.height * 0.9
       : media.size.height * 0.72;
 
-  return showModalBottomSheet<T>(
-    context: context,
-    isScrollControlled: isScrollControlled,
-    isDismissible: isDismissible,
-    enableDrag: enableDrag,
-    barrierColor: Colors.black.withValues(alpha: 0.26),
-    showDragHandle: false,
-    backgroundColor: Colors.transparent,
-    shape: shape,
-    constraints:
-        constraints ??
-        (maxHeight == null ? null : BoxConstraints(maxHeight: maxHeight)),
+  return showOverlay<T>(
+    context,
+    SheetConfiguration(
+      position: OverlayPosition.bottom,
+      barrierDismissible: isDismissible,
+      draggable: enableDrag,
+      barrierColor: Colors.black.withValues(alpha: 0.26),
+      constraints: constraints ?? (maxHeight == null ? null : BoxConstraints(maxHeight: maxHeight)),
+    ),
     builder: (sheetContext) {
-      final sheetMedia = MediaQuery.of(sheetContext);
+      final sheetMedia = MediaQuery.maybeOf(sheetContext);
       final child = builder(sheetContext);
       return LayoutBuilder(
         builder: (context, constraints) {
           final maxSheetHeight = constraints.maxHeight.isFinite
               ? constraints.maxHeight
-              : sheetMedia.size.height * (isScrollControlled ? 0.9 : 0.72);
+              : (sheetMedia?.size.height ?? MediaQuery.sizeOf(context).height) *
+                  (isScrollControlled ? 0.9 : 0.72);
           return SafeArea(
             top: false,
             bottom: true,
@@ -57,15 +53,8 @@ Future<T?> showAppSheet<T>({
                 child: Container(
                   decoration: BoxDecoration(
                     color: effectiveSheetColor,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
-                    ),
-                    border: Border(
-                      top: BorderSide(
-                        color: cs.border.withValues(alpha: 0.78),
-                        width: 0.8,
-                      ),
-                    ),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    border: Border(top: BorderSide(color: cs.border.withValues(alpha: 0.78), width: 0.8)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.12),
@@ -81,19 +70,15 @@ Future<T?> showAppSheet<T>({
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (effectiveShowDragHandle)
-                            _AppSheetDragHandle(cs: cs),
+                          if (effectiveShowDragHandle) _AppSheetDragHandle(cs: cs),
                           if (showDefaultHeader)
                             Padding(
                               padding: const EdgeInsets.fromLTRB(8, 4, 8, 2),
                               child: Row(
                                 children: [
-                                  shadcn.IconButton.ghost(
+                                  IconButton.ghost(
                                     onPressed: () => closeAppSheet(sheetContext),
-                                    icon: const Icon(
-                                      shadcn.LucideIcons.arrowLeft,
-                                      size: 16,
-                                    ),
+                                    icon: const Icon(LucideIcons.arrowLeft, size: 16),
                                   ),
                                   const SizedBox(width: 6),
                                   Expanded(
@@ -101,13 +86,9 @@ Future<T?> showAppSheet<T>({
                                       title ?? '',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: shadcn.Theme.of(sheetContext)
-                                          .typography
-                                          .large
-                                          .copyWith(
-                                            color: cs.foreground,
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                                      style: Theme.of(
+                                        sheetContext,
+                                      ).typography.large.copyWith(color: cs.foreground, fontWeight: FontWeight.w700),
                                     ),
                                   ),
                                 ],
@@ -125,11 +106,11 @@ Future<T?> showAppSheet<T>({
         },
       );
     },
-  );
+  ).future;
 }
 
 class _AppSheetDragHandle extends StatelessWidget {
-  final shadcn.ColorScheme cs;
+  final ColorScheme cs;
 
   const _AppSheetDragHandle({required this.cs});
 
@@ -151,12 +132,6 @@ class _AppSheetDragHandle extends StatelessWidget {
   }
 }
 
-Future<void> closeAppSheet<T>(BuildContext context, [T? result]) {
-  final overlay = shadcn.Data.maybeFind(
-    context,
-  );
-  if (overlay != null) {
-    return overlay.closeWithResult<T>(result);
-  }
-  return Navigator.of(context).maybePop<T>(result);
+Future<void> closeAppSheet<T>(BuildContext context, [T? result]) async {
+  await closeOverlay<T>(context, result);
 }
