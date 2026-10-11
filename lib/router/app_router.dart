@@ -20,8 +20,13 @@ final postLogoutRouteProvider = StateProvider<String?>((_) => null);
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = ref.watch(routerRefreshProvider);
-  final isLogin = ref.watch(authProvider);
-  final postLogoutRoute = ref.watch(postLogoutRouteProvider);
+
+  // GoRouter 必须只创建一次：登录态/登出跳转变化时仅触发 redirect
+  // 重估，不重建 router——重建会共用同一个 navigatorKey，
+  // go_router 内部用 GlobalObjectKey(navigatorKey.hashCode) 包
+  // Navigator，新旧子树同 key 会报 Duplicate GlobalKey
+  ref.listen(authProvider, (_, _) => refreshNotifier.refresh());
+  ref.listen(postLogoutRouteProvider, (_, _) => refreshNotifier.refresh());
 
   final router = GoRouter(
     navigatorKey: navigatorKey,
@@ -31,8 +36,9 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refreshNotifier,
 
     redirect: (context, state) {
-      // AppLogger.info('isLogin: ${isLogin.loggedIn}');
-      // AppLogger.info('redirect: ${state.uri.path}');
+      // 每次重估都读当前值，避免捕获旧登录态
+      final isLogin = ref.read(authProvider);
+      final postLogoutRoute = ref.read(postLogoutRouteProvider);
       final authRoute =
           state.uri.path == '/login' || state.uri.path == '/login-history';
 
