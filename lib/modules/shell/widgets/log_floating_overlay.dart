@@ -34,7 +34,11 @@ class LogOverlayManager {
       return;
     }
 
-    final entry = OverlayEntry(builder: (_) => const _LogWindowWorkspace());
+    // 新版 Flutter 的 Overlay 渲染对象（_RenderTheater）不再接受
+    // StackParentData，Positioned.fill 必须有真正的 Stack 祖先
+    final entry = OverlayEntry(
+      builder: (_) => const Stack(children: [_LogWindowWorkspace()]),
+    );
     overlay.insert(entry);
     _entry = entry;
     _visible = true;
