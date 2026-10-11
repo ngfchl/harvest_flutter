@@ -1153,26 +1153,25 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     left = left.clamp(minLeft, maxLeft).toDouble();
 
     _hideDashboardOverlayTooltip();
+    // 单层 Stack 直接承载两个定位子项（Positioned 需 Stack 祖先，勿再多包）
     _dashboardTooltipEntry = OverlayEntry(
-      builder: (_) => Positioned.fill(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: _hideDashboardOverlayTooltip,
-                child: const SizedBox.expand(),
-              ),
+      builder: (_) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: _hideDashboardOverlayTooltip,
+              child: const SizedBox.expand(),
             ),
-            Positioned(
-              left: left,
-              top: top,
-              width: tooltipWidth,
-              height: tooltipHeight,
-              child: GestureDetector(behavior: HitTestBehavior.opaque, onTap: () {}, child: _buildTooltipWidget(text)),
-            ),
-          ],
-        ),
+          ),
+          Positioned(
+            left: left,
+            top: top,
+            width: tooltipWidth,
+            height: tooltipHeight,
+            child: GestureDetector(behavior: HitTestBehavior.opaque, onTap: () {}, child: _buildTooltipWidget(text)),
+          ),
+        ],
       ),
     );
     overlay.insert(_dashboardTooltipEntry!);

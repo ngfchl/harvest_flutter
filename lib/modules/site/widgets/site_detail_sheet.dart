@@ -1332,30 +1332,29 @@ class _SiteDetailSheetState extends ConsumerState<SiteDetailSheet> {
     final left = (position.dx - tooltipWidth / 2).clamp(minLeft, maxLeft).toDouble();
 
     _hideTooltip();
+    // 单层 Stack 直接承载两个定位子项（Positioned 需 Stack 祖先，勿再多包）
     _tooltipEntry = OverlayEntry(
-      builder: (_) => Positioned.fill(
-        child: Stack(
-          children: [
-              Positioned.fill(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: _hideTooltip,
-                  child: const SizedBox.expand(),
-                ),
-              ),
-              Positioned(
-                left: left,
-                top: top,
-                width: tooltipWidth,
-                height: tooltipHeight,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {},
-                  child: _SitePagedTooltip(text: text, onClose: _hideTooltip),
-                ),
-              ),
-            ],
-        ),
+      builder: (_) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: _hideTooltip,
+              child: const SizedBox.expand(),
+            ),
+          ),
+          Positioned(
+            left: left,
+            top: top,
+            width: tooltipWidth,
+            height: tooltipHeight,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {},
+              child: _SitePagedTooltip(text: text, onClose: _hideTooltip),
+            ),
+          ),
+        ],
       ),
     );
     overlay.insert(_tooltipEntry!);
