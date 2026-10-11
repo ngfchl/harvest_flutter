@@ -36,5 +36,11 @@ void unregisterPageScrollController(
   final current = notifier.state;
   if (current[pageIndex] != controller) return;
   final next = Map<int, ScrollController>.of(current)..remove(pageIndex);
-  notifier.state = next;
+  // 该函数会在页面 dispose（finalizeTree 期间）被调用，此时禁止同步
+  // 修改 provider；延迟到当前帧构建结束后再更新
+  Future.microtask(() {
+    if (notifier.state == current) {
+      notifier.state = next;
+    }
+  });
 }
