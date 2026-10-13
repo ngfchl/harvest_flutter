@@ -251,12 +251,24 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # 修复 flutter_inappwebview_android 使用已弃用的 proguard 文件
-          PUB_CACHE="${PUB_CACHE:-$HOME/.pub-cache}"
-          INAPPWEBVIEW_DIR=$(find "$PUB_CACHE" -path "*/flutter_inappwebview_android-*/android/build.gradle" -print -quit 2>/dev/null || true)
-          if [ -n "$INAPPWEBVIEW_DIR" ]; then
-            sed -i "s/getDefaultProguardFile('proguard-android.txt')/getDefaultProguardFile('proguard-android-optimize.txt')/g" "$INAPPWEBVIEW_DIR"
-            echo "Fixed proguard file reference in flutter_inappwebview_android"
+          # flutter_inappwebview_android(<1.2) 使用 AGP9 已移除的 proguard-android.txt,
+          # CI 每次从 pub.dev 重新拉包,必须对 pub-cache 内所有命中文件打补丁并强校验。
+          PUB_CACHE_DIR="${PUB_CACHE:-$HOME/.pub-cache}"
+          PATCHED=0
+          while IFS= read -r -d '' FILE; do
+            sed -i \
+              -e "s/getDefaultProguardFile('proguard-android.txt')/getDefaultProguardFile('proguard-android-optimize.txt')/g" \
+              -e 's/getDefaultProguardFile("proguard-android.txt")/getDefaultProguardFile("proguard-android-optimize.txt")/g' \
+              "$FILE"
+            if grep -q "proguard-android\.txt" "$FILE"; then
+              echo "::error::patch failed, still references proguard-android.txt: $FILE"
+              exit 1
+            fi
+            echo "patched: $FILE"
+            PATCHED=$((PATCHED+1))
+          done < <(find "$PUB_CACHE_DIR/hosted" -path "*flutter_inappwebview_android-*/android/build.gradle" -type f -print0 2>/dev/null)
+          if [ "$PATCHED" -eq 0 ]; then
+            echo "::warning::no flutter_inappwebview_android build.gradle found under $PUB_CACHE_DIR/hosted — nothing to patch"
           fi
 
       - name: 打包 Android arm64 发行版
