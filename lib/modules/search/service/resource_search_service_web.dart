@@ -12,7 +12,7 @@ import 'resource_search_service.dart' as base;
 
 /// Web 平台专属实现:fetch + ReadableStream 真流式读取,
 /// 逐块解析 SSE 事件(浏览器 XHR 会整包缓冲,不适用)。
-class ResourceSearchServiceWeb {
+class ResourceSearchService {
   static Stream<base.SearchEvent> search(
     String query, {
     int maxCount = 5,
