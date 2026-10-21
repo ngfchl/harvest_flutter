@@ -259,15 +259,16 @@ class FilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final scale = Theme.of(context).scaling;
     final active = selected;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onSelected == null ? null : () => onSelected!(!selected),
       child: Container(
-        padding: padding ?? const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding: padding ?? EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 7 * scale),
         decoration: BoxDecoration(
           color: active ? (selectedColor ?? cs.primary.withValues(alpha: 0.15)) : const Color(0x00000000),
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: Theme.of(context).borderRadiusXs,
           border: Border.all(
             color: side?.color ?? cs.border,
             width: side?.width ?? 1,
@@ -281,7 +282,7 @@ class FilterChip extends StatelessWidget {
               const SizedBox(width: 4),
             ],
             DefaultTextStyle.merge(
-              style: labelStyle ?? const TextStyle(fontSize: 12),
+              style: labelStyle ?? TextStyle(fontSize: 12 * scale),
               child: label,
             ),
           ],
