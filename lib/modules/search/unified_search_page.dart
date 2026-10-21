@@ -562,17 +562,22 @@ class _UnifiedSearchPageState extends ConsumerState<UnifiedSearchPage> {
             backgroundColor: pageBackground,
             headerBackgroundColor: pageBackground,
             headers: [
-              _SearchToolbar(
-                mobile: context.isMobile,
-                controller: _ctrl,
-                focusNode: _focusNode,
-                mode: _mode,
-                onTextChanged: _onTextChanged,
-                onSubmit: _doSearch,
-                onClear: _onClear,
-                onClose: _closePage,
-                onShowSettings: _showSearchSettings,
-                trailingInset: headerTrailingInset,
+              // shell 在搜索页激活时隐藏自身 header,状态栏安全区由工具条自行消耗
+              SafeArea(
+                top: true,
+                bottom: false,
+                child: _SearchToolbar(
+                  mobile: context.isMobile,
+                  controller: _ctrl,
+                  focusNode: _focusNode,
+                  mode: _mode,
+                  onTextChanged: _onTextChanged,
+                  onSubmit: _doSearch,
+                  onClear: _onClear,
+                  onClose: _closePage,
+                  onShowSettings: _showSearchSettings,
+                  trailingInset: headerTrailingInset,
+                ),
               ),
             ],
             child: Column(
