@@ -9,6 +9,7 @@ import '../modules/auth/auth_provider.dart';
 import '../modules/auth/login_page.dart';
 import '../modules/login/account_switcher.dart';
 import '../modules/option/widgets/app_upgrade_page.dart';
+import '../modules/rss/rss_page.dart';
 import '../modules/shell/log_center_page.dart';
 import '../modules/shell/shell_page.dart';
 
@@ -65,6 +66,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => const AppUpgradePage(),
       ),
       GoRoute(path: '/log-center', builder: (_, _) => const LogCenterPage()),
+      GoRoute(path: '/rss', builder: (_, _) => const RssPage()),
       GoRoute(
         path: '/:tab',
         pageBuilder: (context, state) => const NoTransitionPage<void>(

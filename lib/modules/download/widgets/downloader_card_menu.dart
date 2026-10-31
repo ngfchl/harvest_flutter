@@ -1,5 +1,6 @@
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/widgets/app_dialog.dart';
+import 'package:harvest/modules/rss/widgets/qb_rss_manager.dart';
 import 'package:harvest/widgets/app_sheet.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -200,6 +201,21 @@ class DownloaderCardMenu {
             showQbManagerSheet(
               context: hostContext,
               builder: () => QbTagManagerSheet(downloader: d),
+            );
+          },
+        ),
+        item(
+          icon: shadcn.LucideIcons.rss,
+          title: 'RSS 管理',
+          onPressed: (ctx) async {
+            if (!hostContext.mounted) return;
+            Navigator.push(
+              hostContext,
+              PageRouteBuilder(
+                pageBuilder: (_, _, _) => QbRssManagerPage(initialDownloaderId: d.id),
+                transitionsBuilder: (_, animation, _, child) =>
+                    FadeTransition(opacity: animation, child: child),
+              ),
             );
           },
         ),
