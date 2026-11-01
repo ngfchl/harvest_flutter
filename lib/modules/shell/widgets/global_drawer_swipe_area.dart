@@ -15,6 +15,7 @@ import 'package:harvest/modules/dashboard/provider/privacy_provider.dart';
 import 'package:harvest/modules/login/login_history_provider.dart';
 import 'package:harvest/modules/news/provider/media_info_settings_provider.dart';
 import 'package:harvest/modules/option/widgets/option_page.dart';
+import 'package:harvest/modules/ai/ai_page.dart';
 import 'package:harvest/modules/rss/rss_page.dart';
 import 'package:harvest/modules/option/widgets/update_page.dart';
 import 'package:harvest/modules/shell/widgets/log_floating_overlay.dart';
@@ -353,6 +354,13 @@ class GlobalNavigationSidebar extends StatelessWidget {
                       icon: LucideIcons.rss,
                       onPressed: () => _push(const RssPage()),
                     ),
+                  if (isSuperuser)
+                    _navButton(
+                      context,
+                      label: 'AI 管理',
+                      icon: LucideIcons.bot,
+                      onPressed: () => _push(const AiPage()),
+                    ),
                   if (isSuperuser) ...[
                     _navGap(context, 8),
                     _navSectionLabel(context, '系统维护'),
@@ -425,6 +433,9 @@ class GlobalNavigationSidebar extends StatelessWidget {
     }
     if (currentPath.startsWith('/rss')) {
       return const ValueKey<String>('rss');
+    }
+    if (currentPath.startsWith('/ai')) {
+      return const ValueKey<String>('ai');
     }
     return null;
   }
