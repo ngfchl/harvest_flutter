@@ -10,6 +10,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:harvest/core/http/http.dart';
 import 'package:harvest/core/provider/app_auto_refresh_provider.dart';
+import 'package:harvest/core/provider/feature_toggles_provider.dart';
 import 'package:harvest/core/theme/app_surface.dart';
 import 'package:harvest/core/utils/utils.dart';
 import 'package:harvest/modules/news/provider/media_info_settings_provider.dart';
@@ -584,6 +585,7 @@ class _OptionPageState extends ConsumerState<OptionPage> {
         const _DataImportExportCard(),
         const _AppAutoRefreshIntervalCard(),
         const _MediaInfoSettingsCard(),
+        const _FeatureTogglesCard(),
         _buildSpeedTest(context, ref),
         _buildNoticeTest(context, ref),
         const _BulkUpgradeCard(),
@@ -2784,4 +2786,80 @@ String _randomString(int length) {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   final random = Random.secure();
   return String.fromCharCodes(Iterable.generate(length, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
+}
+
+
+// ────────────────── AI / RSS 功能开关卡片 ──────────────────
+
+class _FeatureTogglesCard extends ConsumerStatefulWidget {
+  const _FeatureTogglesCard();
+
+  @override
+  ConsumerState<_FeatureTogglesCard> createState() => _FeatureTogglesCardState();
+}
+
+class _FeatureTogglesCardState extends ConsumerState<_FeatureTogglesCard> {
+  @override
+  Widget build(BuildContext context) {
+    final toggles = ref.watch(featureTogglesProvider);
+    final notifier = ref.read(featureTogglesProvider.notifier);
+    final theme = Theme.of(context);
+    final cs = _optionColors(context);
+    final typo = theme.typography;
+
+    Widget row({
+      required String title,
+      required String subtitle,
+      required bool value,
+      required Future<void> Function(bool) onChanged,
+    }) {
+      return AppSurfaceContainer(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        borderRadius: _optionRadius(context),
+        color: appSurfaceColor(context, cs.card),
+        borderColor: cs.border.withValues(alpha: 0.7),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: typo.small.copyWith(color: cs.foreground, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: typo.xSmall.copyWith(color: cs.mutedForeground)),
+                ],
+              ),
+            ),
+            Switch(value: value, onChanged: onChanged),
+          ],
+        ),
+      );
+    }
+
+    return ExpandableCard(
+      title: '功能开关',
+      icon: LucideIcons.toggleLeft,
+      builder: (_) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          row(
+            title: 'AI 管理',
+            subtitle: '开启后在菜单显示「AI 管理」入口（助手/配置/诊断/用量）',
+            value: toggles.aiEnabled,
+            onChanged: (v) => notifier.setAiEnabled(v),
+          ),
+          const SizedBox(height: 8),
+          row(
+            title: 'RSS 订阅',
+            subtitle: '开启后在菜单显示「RSS 订阅」入口（源/标签/方案/订阅/历史）',
+            value: toggles.rssEnabled,
+            onChanged: (v) => notifier.setRssEnabled(v),
+          ),
+        ],
+      ),
+    );
+  }
 }
