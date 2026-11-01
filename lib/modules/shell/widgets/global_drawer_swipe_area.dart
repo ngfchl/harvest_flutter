@@ -16,6 +16,7 @@ import 'package:harvest/modules/login/login_history_provider.dart';
 import 'package:harvest/modules/news/provider/media_info_settings_provider.dart';
 import 'package:harvest/modules/option/widgets/option_page.dart';
 import 'package:harvest/modules/ai/ai_page.dart';
+import 'package:harvest/core/provider/feature_toggles_provider.dart';
 import 'package:harvest/modules/rss/rss_page.dart';
 import 'package:harvest/modules/option/widgets/update_page.dart';
 import 'package:harvest/modules/shell/widgets/log_floating_overlay.dart';
@@ -223,6 +224,7 @@ class GlobalNavigationSidebar extends StatelessWidget {
     final user = ref.watch(authProvider).user;
     final authInfo = ref.watch(authInfoProvider).value;
     final isSuperuser = user?.isSuperuser == true;
+    final toggles = ref.watch(featureTogglesProvider);
     final showAdminUser = canOpenAdminUsers(authInfo);
     final showNews = ref.watch(mediaInfoSettingsProvider).enabled;
     final showAccountSwitcher = ref.watch(loginHistoryProvider).length >= 2;
@@ -347,14 +349,14 @@ class GlobalNavigationSidebar extends StatelessWidget {
                       icon: LucideIcons.listTodo,
                       onTap: () => _go('/tasks'),
                     ),
-                  if (isSuperuser)
+                  if (isSuperuser && toggles.rssEnabled)
                     _navButton(
                       context,
                       label: 'RSS 订阅',
                       icon: LucideIcons.rss,
                       onPressed: () => _push(const RssPage()),
                     ),
-                  if (isSuperuser)
+                  if (isSuperuser && toggles.aiEnabled)
                     _navButton(
                       context,
                       label: 'AI 管理',

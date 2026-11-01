@@ -28,6 +28,7 @@ import '../download/provider/downloader_speed_provider.dart';
 import '../login/login_history_provider.dart';
 import '../news/news_page.dart';
 import '../ai/ai_page.dart';
+import 'package:harvest/core/provider/feature_toggles_provider.dart';
 import '../rss/rss_page.dart';
 import '../news/provider/media_info_settings_provider.dart';
 import '../option/provider/update_provider.dart';
@@ -939,6 +940,7 @@ class _AccountMenuButton extends ConsumerWidget {
 
   void _showMenu(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final toggles = ref.watch(featureTogglesProvider);
     final menuKey = GlobalKey();
 
     showPopover<void>(
@@ -1011,18 +1013,20 @@ class _AccountMenuButton extends ConsumerWidget {
               title: '设置中心',
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OptionPage())),
             ),
-            _item(
-              context,
-              icon: LucideIcons.rss,
-              title: 'RSS 订阅',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RssPage())),
-            ),
-            _item(
-              context,
-              icon: LucideIcons.bot,
-              title: 'AI 管理',
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AiPage())),
-            ),
+            if (toggles.rssEnabled)
+              _item(
+                context,
+                icon: LucideIcons.rss,
+                title: 'RSS 订阅',
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RssPage())),
+              ),
+            if (toggles.aiEnabled)
+              _item(
+                context,
+                icon: LucideIcons.bot,
+                title: 'AI 管理',
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AiPage())),
+              ),
             _item(context, icon: LucideIcons.scrollText, title: '日志中心', onTap: () => context.push('/log-center')),
             _item(context, icon: LucideIcons.terminal, title: '日志浮窗', onTap: () => LogOverlayManager.toggle(context)),
           ],
