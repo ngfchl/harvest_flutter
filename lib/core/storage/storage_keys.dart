@@ -51,4 +51,7 @@ class StorageKeys {
       'local_notice_last_notified_id';
   static const String torrentDeleteFilesWhenUnpreserved =
       'torrent_delete_files_when_unpreserved';
+
+  // ── 功能开关（控制菜单入口显示） ──
+  static const String featureToggles = 'feature_toggles';
 }
