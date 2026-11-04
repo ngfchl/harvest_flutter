@@ -675,6 +675,22 @@ jobs:
           echo "::group::macOS pkg preinstall"
           sed -n '1,220p' pkg_scripts/preinstall
           echo "::endgroup::"
+
+          # 创建 postinstall 脚本：安装完成后在当前登录用户会话中自动打开 APP
+          cat > pkg_scripts/postinstall <<'EOF'
+          #!/bin/bash
+          # 以控制台用户身份启动 APP（postinstall 以 root 运行，需切回 GUI 会话）
+          CONSOLE_UID="$(stat -f '%u' /dev/console 2>/dev/null || echo 501)"
+          sleep 2
+          launchctl asuser "$CONSOLE_UID" open /Applications/harvest.app 2>/dev/null \
+            || open /Applications/harvest.app 2>/dev/null \
+            || true
+          exit 0
+          EOF
+          chmod 755 pkg_scripts/postinstall
+          echo "::group::macOS pkg postinstall"
+          cat pkg_scripts/postinstall
+          echo "::endgroup::"
           
           # 执行 pkgbuild
           # --identifier: 必须唯一，通常用反向域名
@@ -845,6 +861,22 @@ jobs:
           chmod 755 pkg_scripts/preinstall
           echo "::group::macOS pkg preinstall"
           sed -n '1,220p' pkg_scripts/preinstall
+          echo "::endgroup::"
+
+          # 创建 postinstall 脚本：安装完成后在当前登录用户会话中自动打开 APP
+          cat > pkg_scripts/postinstall <<'EOF'
+          #!/bin/bash
+          # 以控制台用户身份启动 APP（postinstall 以 root 运行，需切回 GUI 会话）
+          CONSOLE_UID="$(stat -f '%u' /dev/console 2>/dev/null || echo 501)"
+          sleep 2
+          launchctl asuser "$CONSOLE_UID" open /Applications/harvest.app 2>/dev/null \
+            || open /Applications/harvest.app 2>/dev/null \
+            || true
+          exit 0
+          EOF
+          chmod 755 pkg_scripts/postinstall
+          echo "::group::macOS pkg postinstall"
+          cat pkg_scripts/postinstall
           echo "::endgroup::"
           
           # 执行 pkgbuild
