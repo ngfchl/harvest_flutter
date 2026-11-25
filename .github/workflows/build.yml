@@ -612,6 +612,11 @@ jobs:
             find build/macos -maxdepth 6 -type d 2>/dev/null | sort || true
             exit 1
           fi
+          # 仅 Intel 构建关闭 Impeller，回退 Skia 渲染（兼容黑苹果/老 Intel GPU，避免花屏）
+          MACOS_PLIST=build/macos/Build/Products/Release/harvest.app/Contents/Info.plist
+          /usr/libexec/PlistBuddy -c "Delete :FLTEnableImpeller" "$MACOS_PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :FLTEnableImpeller bool false" "$MACOS_PLIST"
+          echo "FLTEnableImpeller=$( /usr/libexec/PlistBuddy -c 'Print :FLTEnableImpeller' "$MACOS_PLIST" )"
           brew install create-dmg
           create-dmg \
             --volname $FILE_NAME \
